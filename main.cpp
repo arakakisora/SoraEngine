@@ -10,6 +10,8 @@
 #pragma comment(lib,"dxgi.lib")
 #include <dxgidebug.h>
 #pragma comment(lib,"dxguid.lib")
+#include <dxcapi.h>
+#pragma comment(lib, "dxcompiler.lib")
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -58,6 +60,78 @@ std::string ConvertString(const std::wstring& str) {
 
 void Log(const std::string& message) {
 	OutputDebugStringA(message.c_str());
+
+}
+
+
+
+//CompileShader関数の作成
+IDxcBlob* CompileShader(
+	//ComilerするSahaderファイルへのパス
+	const std::wstring& filePath,
+	//compilerに使用するProfile
+	const wchar_t* profile,
+	//初期化で生成したものを3つ	
+	IDxcUtils* dxcUtils,
+	IDxcCompiler3* dxcCompiler,
+	IDxcIncludeHandler* includeHandler) {
+
+
+	//シェーダーをコンパイルする旨をログに出す
+	Log(ConvertString(std::format(L"Begin CompileShader,path:{},profile:{}\n", filePath, profile)));
+	//hlslファイルを読む
+	IDxcBlobEncoding* shaderSource = nullptr;
+	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	//読めなかったら止める
+	assert(SUCCEEDED(hr));
+	//読み込んだファイルの内容を設定する
+	DxcBuffer shaderSourceBuffer;
+	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+	shaderSourceBuffer.Encoding = DXC_CP_UTF8;//UTF8の文字コードであることを通知
+
+	LPCWSTR arguments[] = {
+
+		filePath.c_str(),//コンパイル対象のhlslファイル名
+		L"-E",L"main",//エントリーpointの指定。基本的にmain以外にはしない
+		L"-T",profile,//shaerProfileの設定
+		L"-Zi",L"-Qembed_debug",//デバック用の情報を埋め込む
+		L"-Od",//最適化を外しておく
+		L"-Zpr",//メモリレイアウトは行優先
+	};
+
+	//実際にshaerをコンパイルする
+	IDxcResult* shaderResult = nullptr;
+	hr = dxcCompiler->Compile(
+		&shaderSourceBuffer,//読み込んだファイル
+		arguments,			//コンパイルオプション
+		_countof(arguments),//コンパイルオプションの数
+		includeHandler,		//includeが含まれた
+		IID_PPV_ARGS(&shaderResult)//コンパイル結果
+
+	);
+	//コンパイルエラーではなくDXCが起動できない致命的な状況
+	assert(SUCCEEDED(hr));
+
+	//警告・エラーが出たらログに出して止める
+	IDxcBlobUtf8* shaderError = nullptr;
+	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
+	if (shaderError!= nullptr&& shaderError->GetStringLength()!=0) {
+		Log(shaderError->GetStringPointer());
+		assert(false);
+	}
+
+	//コンパイル結果から実行用のバイナリ部分を取得
+	IDxcBlob* shaderBlob = nullptr;
+	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
+	assert(SUCCEEDED(hr));
+	//成功したログを出す
+	Log(ConvertString(std::format(L"Complite Succeded,path:{},profile:{}\n", filePath, profile)));
+	//使わないリソースを解放
+	shaderSource->Release();
+	shaderResult->Release();
+	//実行用バイナリを返却
+	return shaderBlob;
 
 }
 
@@ -264,15 +338,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
 
-	//初期値0でFenceを作る
-ID3D12Fence* fence = nullptr;
-uint64_t fenceValue = 0;
-hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-assert(SUCCEEDED(hr));
 
-//fenceのSignalを待つためのイベントを作成する
-HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-assert(fenceEvent != nullptr);
+
+	//初期値0でFenceを作る
+	ID3D12Fence* fence = nullptr;
+	uint64_t fenceValue = 0;
+	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+	assert(SUCCEEDED(hr));
+
+	//fenceのSignalを待つためのイベントを作成する
+	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	assert(fenceEvent != nullptr);
+	
+
+	//dicCompilerを初期化
+	IDxcUtils* dxcUtils = nullptr;
+	IDxcCompiler3* dxcCompiler = nullptr;
+	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
+	assert(SUCCEEDED(hr));
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
+	assert(SUCCEEDED(hr));
+	//includeに対する設定
+	IDxcIncludeHandler* includeHandler = nullptr;
+	assert(SUCCEEDED(hr));
 
 //ウィンドウのｘボタンが押されるまでループ
 MSG msg{};
