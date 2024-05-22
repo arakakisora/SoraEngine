@@ -18,10 +18,20 @@
 #include "4x4Matrixcalculation.h"
 #include "Vector3SRT.h"
 #include "RenderingPipeline.h"
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+
+		return true;
+
+	}
 	//メッセージに応じて固有の処理を行う
 	switch (msg) {
 
@@ -69,7 +79,7 @@ void Log(const std::string& message) {
 }
 
 
-#pragma region CompileShader関数の作成
+#pragma region CompileShader関数
 //CompileShader関数の作成
 IDxcBlob* CompileShader(
 	//ComilerするSahaderファイルへのパス
@@ -172,6 +182,23 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
 }
 #pragma endregion 
 
+#pragma region DescriptorHeap関数
+ID3D12DescriptorHeap* CreateDescriptorHeap(
+	ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heaptype, UINT numDescriptrs, bool shaderVisible) {
+
+	//ディスクリプタヒープの生成
+	ID3D12DescriptorHeap* descriptorHeap = nullptr;
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+	descriptorHeapDesc.Type = heaptype;//レンダーターゲットビュー用
+	descriptorHeapDesc.NumDescriptors = numDescriptrs;
+	descriptorHeapDesc.Flags= shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ダブルバッファ用に2つ。多くても別に構わない
+	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+	//ディスクリプトひーぷが作れなかったので起動できない
+	assert(SUCCEEDED(hr));
+	return descriptorHeap;
+}
+#pragma endregion 
+
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
@@ -203,7 +230,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	//ウィンドウ生成
-	HWND hwad = CreateWindow(
+	HWND hwnd = CreateWindow(
 
 		wc.lpszClassName, L"CG2,",
 		WS_OVERLAPPEDWINDOW,
@@ -343,18 +370,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	swapChainDesc.BufferCount = 2;//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;//モニタに写したら、中身を破壊
 	//コマンドキュー、ウィンドウハンドル、設定渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwad, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
 	assert(SUCCEEDED(hr));
 
 
 	//ディスクリプタヒープの生成
-	ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
-	D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
-	rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;//レンダーターゲットビュー用
-	rtvDescriptorHeapDesc.NumDescriptors = 2;//ダブルバッファ用に2つ。多くても別に構わない
-	hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
-	//ディスクリプトひーぷが作れなかったので起動できない
-	assert(SUCCEEDED(hr));
+	//RTV
+	ID3D12DescriptorHeap* rtvDescriptorHeap =CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV,2,false);
+	//SRV
+	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 
 	//SwapChainからResourceをひっぱってくる
 	ID3D12Resource* swapChainResources[2] = { nullptr };
@@ -554,7 +578,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//今回は赤を書き込む
 	*materialData = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
-
+	
 
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -571,7 +595,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 //ウィンドウのｘボタンが押されるまでループ
 MSG msg{};
-ShowWindow(hwad, SW_SHOW);
+ShowWindow(hwnd, SW_SHOW);
+
+//ImGui初期化
+IMGUI_CHECKVERSION();
+ImGui::CreateContext();
+ImGui::StyleColorsDark();
+ImGui_ImplWin32_Init(hwnd);
+ImGui_ImplDX12_Init(device, 
+	swapChainDesc.BufferCount,
+	rtvDesc.Format,
+	srvDescriptorHeap,
+	srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+	srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
 
 //Transform変数を作る
 Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -579,13 +616,37 @@ Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.
 
 
 while (msg.message != WM_QUIT) {
+	
 
 #pragma region CommandList 
 	if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);	
+	
 	}
 	else {
+
+		//更新
+		transform.rotate.y += 0.03f;
+
+
+		Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWindth) / float(kClientHeight), 0.1f, 100.0f);
+		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+		*wvpData = worldViewProjectionMatrix;
+
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+		ImGui::Begin("SetColor");
+		ImGui::ColorEdit4("*materialData" ,&materialData->x);
+		ImGui::End();
+		ImGui::Render();
+
+		
 		//これから書き込むバックバッファのインデックスを取得する
 		UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 		//TransitionBarrierの設定
@@ -607,6 +668,10 @@ while (msg.message != WM_QUIT) {
 		//指定した色で画面全体をクリアする
 		float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 		commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+		//描画用のDescriptHeap
+		ID3D12DescriptorHeap* descriptorHepes[] = { srvDescriptorHeap };
+		commandList->SetDescriptorHeaps(1, descriptorHepes);
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 		//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
 		commandList->RSSetViewports(1, &viewport);
 		commandList->RSSetScissorRects(1, &scissorRect);
@@ -664,26 +729,19 @@ while (msg.message != WM_QUIT) {
 		assert(SUCCEEDED(hr));
 		hr = commandList->Reset(commandAllocator, nullptr);
 		assert(SUCCEEDED(hr));
-
+		
 	}
 #pragma endregion
 
-
-	//更新
-	transform.rotate.y += 0.03f;
-
-
-	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale,cameraTransform.rotate,cameraTransform.translate);
-	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWindth) / float(kClientHeight), 0.1f, 100.0f);
-	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 	
-	*wvpData = worldViewProjectionMatrix;
-
 }
 
+
 #pragma region Release
+ImGui_ImplDX12_Shutdown();
+ImGui_ImplWin32_Shutdown();
+ImGui::DestroyContext();
+srvDescriptorHeap->Release();
 wvpResource->Release();
 materialResource->Release();
 vertexResource->Release();
@@ -714,7 +772,8 @@ debugController->Release();
 #endif // _DEBUG
 #pragma endregion
 
-CloseWindow(hwad);
+
+CloseWindow(hwnd);
 
 #pragma region ResourceCheck 
 
