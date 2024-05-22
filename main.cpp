@@ -12,7 +12,12 @@
 #pragma comment(lib,"dxguid.lib")
 #include <dxcapi.h>
 #pragma comment(lib, "dxcompiler.lib")
+#include "Vector3.h"
 #include "Vector4.h"
+#include "Matrix4x4.h"
+#include "4x4Matrixcalculation.h"
+#include "Vector3SRT.h"
+#include "RenderingPipeline.h"
 
 
 
@@ -29,7 +34,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
-
 
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
@@ -59,14 +63,13 @@ std::string ConvertString(const std::wstring& str) {
 	return result;
 }
 
-
 void Log(const std::string& message) {
 	OutputDebugStringA(message.c_str());
 
 }
 
 
-
+#pragma region CompileShader関数の作成
 //CompileShader関数の作成
 IDxcBlob* CompileShader(
 	//ComilerするSahaderファイルへのパス
@@ -134,9 +137,10 @@ IDxcBlob* CompileShader(
 	shaderResult->Release();
 	//実行用バイナリを返却
 	return shaderBlob;
-
 }
+#pragma endregion
 
+#pragma region Resource関数
 //Resource関数
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
 
@@ -166,11 +170,12 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
 	 return vertexResource;
 
 }
+#pragma endregion 
 
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
-#pragma region windowの生成
+#pragma region Window
 
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("HEllo,DIrectX!\n");
@@ -222,7 +227,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		debugController->SetEnableGPUBasedValidation(TRUE);
 	}
 #endif
+#pragma endregion 
 
+#pragma region DxgiFactory
 	//DXGIファクターの生成
 	IDXGIFactory7* dxgiFactory = nullptr;
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -245,7 +252,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		useAdapter = nullptr;
 	}
 	assert(useAdapter != nullptr);
+#pragma endregion
 
+#pragma region D3D12Device
 	//D3D12Deviceの生成
 	ID3D12Device* device = nullptr;
 	D3D_FEATURE_LEVEL featureLevels[] = {
@@ -295,13 +304,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//指定したメッセージの表示を抑制する
 		infoQueue->PushStorageFilter(&filter);
 
-
-
 	}
 	
 #endif
-	
-		
+#pragma endregion
+
+#pragma region CommandQueue,CommandAllocator,CommandList
 	//コマンドキューを生成する
 	ID3D12CommandQueue* commandQueue = nullptr;
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
@@ -321,7 +329,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		IID_PPV_ARGS(&commandList));
 	//コマンドリストの生成がうまく行かなかったので起動できない
 	assert(SUCCEEDED(hr));
+#pragma endregion
 
+#pragma region SwapChain
 	//スワップチェーンを生成する
 	IDXGISwapChain4* swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
@@ -335,6 +345,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//コマンドキュー、ウィンドウハンドル、設定渡して生成する
 	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, hwad, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(&swapChain));
 	assert(SUCCEEDED(hr));
+
 
 	//ディスクリプタヒープの生成
 	ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
@@ -352,7 +363,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
 	assert(SUCCEEDED(hr));
+#pragma endregion 
 
+#pragma region RTV
 	//RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//出力結果をSRGBに変換して書き込む
@@ -368,10 +381,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	//２つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
+#pragma endregion
 
-
-
-
+#pragma region Fence
 	//初期値0でFenceを作る
 	ID3D12Fence* fence = nullptr;
 	uint64_t fenceValue = 0;
@@ -382,7 +394,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 	
+#pragma endregion
 
+#pragma region DicCompiler
 	//dicCompilerを初期化
 	IDxcUtils* dxcUtils = nullptr;
 	IDxcCompiler3* dxcCompiler = nullptr;
@@ -393,22 +407,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//includeに対する設定
 	IDxcIncludeHandler* includeHandler = nullptr;
 	assert(SUCCEEDED(hr));
+#pragma endregion
 
-
+#pragma region POS
 	//RootSignature作成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	//rootParameters[0]設定
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0;//レジスタ番号0とバインド
+	//rootParameters[1]設定
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//PixelShaderで使う
+	rootParameters[1].Descriptor.ShaderRegister = 0;//レジスタ番号0とバインド
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
-
-	
 
 
 
@@ -458,6 +475,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
+ 
 
 	//PSOを生成する
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -483,30 +501,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
-
+#pragma endregion
 	
+#pragma region Resource
 	//VertexResourceを作成
-	//頂点リソース用ヒープの設定
-	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-	//頂点リソースの設定
-	D3D12_RESOURCE_DESC vertexResourceDesc{};
-	//バッファーリソース。テクスチャの場合はまた別の設定をする
-	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	vertexResourceDesc.Width = sizeof(Vector4) * 3;
-	//バッファの場合はこれらには1する決まり
-	vertexResourceDesc.Height = 1;
-	vertexResourceDesc.DepthOrArraySize = 1;
-	vertexResourceDesc.MipLevels = 1;
-	vertexResourceDesc.SampleDesc.Count = 1;
-	//バッファの場合はこれにする決まり
-	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-	//実際に頂点リソースを作る
-	ID3D12Resource* vertexResource = nullptr;
-	hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
-		&vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
-	assert(SUCCEEDED(hr));
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(Vector4) * 3);;
 
 	//頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
@@ -548,32 +547,47 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
-
 	//マテリアる用のリソースを作る。今回color1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
-	
 	//マテリアルにデータを書き込む	
 	Vector4* materialData = nullptr;
-
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//今回は赤を書き込む
 	*materialData = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
 
+
+	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
+	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* wvpData = nullptr;
+	//書き込むためのアドレスを取得
+	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	//単位行列を書き込む
+	*wvpData = MakeIdentity4x4();
+#pragma endregion
+
+		
+
 //ウィンドウのｘボタンが押されるまでループ
 MSG msg{};
 ShowWindow(hwad, SW_SHOW);
 
+//Transform変数を作る
+Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
+
 
 while (msg.message != WM_QUIT) {
+
+#pragma region CommandList 
 	if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		DispatchMessage(&msg);	
 	}
 	else {
 		//これから書き込むバックバッファのインデックスを取得する
 		UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
 		//TransitionBarrierの設定
 		D3D12_RESOURCE_BARRIER barrier{};
 		//今回のバリアはTransition
@@ -588,14 +602,12 @@ while (msg.message != WM_QUIT) {
 		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 		//Transition Barrierを張る
 		commandList->ResourceBarrier(1, &barrier);
-
 		//描画先のRVTを設定する
 		commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
 		//指定した色で画面全体をクリアする
 		float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 		commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 		//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
-
 		commandList->RSSetViewports(1, &viewport);
 		commandList->RSSetScissorRects(1, &scissorRect);
 		//RootSignatureを設定。POSに設定しているけどベット設定が必要
@@ -605,9 +617,10 @@ while (msg.message != WM_QUIT) {
 		//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		//wvp用のCBufferの場所を設定
+		commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 		//描画！
 		commandList->DrawInstanced(3, 1, 0, 0);
-
 
 		//画面に描く処理はすべて終わり、画面に映すので、状態遷移
 		//今回はRenderTragetからPresentにする
@@ -652,15 +665,26 @@ while (msg.message != WM_QUIT) {
 		hr = commandList->Reset(commandAllocator, nullptr);
 		assert(SUCCEEDED(hr));
 
-
-
-
-
-
-
 	}
+#pragma endregion
+
+
+	//更新
+	transform.rotate.y += 0.03f;
+
+
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale,cameraTransform.rotate,cameraTransform.translate);
+	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWindth) / float(kClientHeight), 0.1f, 100.0f);
+	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	
+	*wvpData = worldViewProjectionMatrix;
 
 }
+
+#pragma region Release
+wvpResource->Release();
 materialResource->Release();
 vertexResource->Release();
 graphicsPipelineState->Release();
@@ -688,8 +712,11 @@ dxgiFactory->Release();
 #ifdef _DEBUG
 debugController->Release();
 #endif // _DEBUG
+#pragma endregion
 
 CloseWindow(hwad);
+
+#pragma region ResourceCheck 
 
 //リソースチェック
 IDXGIDebug1* debug;
@@ -699,6 +726,7 @@ if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))){
 	debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
 	debug->Release();
 	}
+#pragma endregion 
 	return 0;
 		
 }
