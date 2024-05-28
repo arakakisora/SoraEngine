@@ -3,15 +3,25 @@
 #include "Vector3.h"
 #pragma once
 #include <assert.h>
-
 #include <cmath>
 #include <stdio.h>
+#include "Vector4.h"
+#include "Vector2.h"
 
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
 };
+
+struct VertexData {
+
+	Vector4 position;
+	Vector2 texcoord;
+
+
+};
+
 //回転
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 //拡大
