@@ -15,12 +15,13 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Matrix4x4.h"
-#include "4x4Matrixcalculation.h"
-#include "Vector3SRT.h"
+#include"MyMath.h"
 #include "RenderingPipeline.h"
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#include"externals/DirectXTex/DirectXTex.h"
+#include"externals/DirectXTex/d3dx12.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
@@ -203,7 +204,7 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 #pragma region Window
-
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("HEllo,DIrectX!\n");
 
@@ -772,7 +773,7 @@ debugController->Release();
 #endif // _DEBUG
 #pragma endregion
 
-
+CoUninitialize();
 CloseWindow(hwnd);
 
 #pragma region ResourceCheck 
