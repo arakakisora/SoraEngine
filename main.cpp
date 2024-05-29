@@ -220,6 +220,38 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 }
 #pragma endregion 
 
+#pragma region CreateTextureResource関数
+ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
+	//metadataを基にResourceの設定
+	D3D12_RESOURCE_DESC resouceDesc{ };
+	resouceDesc.Width = UINT(metadata.width);//Textureの幅
+	resouceDesc.Height = UINT(metadata.height);//Textureの高さ
+	resouceDesc.MipLevels = UINT16(metadata.mipLevels);//mipmapの数
+	resouceDesc.DepthOrArraySize = UINT16(metadata.arraySize);//奥行きor配Texturaの配列数
+	resouceDesc.Format = metadata.format;//Textureのフォーマット
+	resouceDesc.SampleDesc.Count = 1;//サンプリクト。１固定。
+	resouceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);//Textureの次元数。普段使っているのは２次元
+	//利用するHeapの設定。非常に特殊な運用。
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;//細かい設定を行う
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//writeBackポリシーでCPUアクセス可能
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
+	//Resouceの作成
+	ID3D12Resource* resource = nullptr;
+
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProperties,//Heapの設定
+		D3D12_HEAP_FLAG_NONE,//Heapの特殊設定。特になし
+		&resouceDesc,//Resourceの設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,//Clear最適値。使わないのでnullptr
+		IID_PPV_ARGS(&resource));
+	assert(SUCCEEDED(hr));
+	return resource;
+
+}
+#pragma endregion
+
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
