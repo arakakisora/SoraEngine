@@ -8,6 +8,8 @@
 #include "Vector4.h"
 #include "Vector2.h"
 
+
+
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
