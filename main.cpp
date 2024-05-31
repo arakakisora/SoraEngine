@@ -838,14 +838,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			*wvpData = worldViewProjectionMatrix;
 
+
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
-			ImGui::Begin("SetColor");
-			ImGui::ColorEdit4("*materialData", &materialData->x);
-			ImGui::DragFloat3("*Scale", &transform.scale.x);
-			ImGui::DragFloat3("*Rotate", &transform.rotate.y);
-			ImGui::DragFloat3("Transrate", &transform.translate.x);
+			ImGui::Begin("Setting");
+			
+			
+
+			// 項目1
+			if (ImGui::CollapsingHeader("Setcolor", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::ColorEdit4("*SetColor", &materialData->x);
+			}
+			// 項目2
+			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::DragFloat3("*Scale", &transform.scale.x);
+				ImGui::DragFloat3("*Rotate", &transform.rotate.y);
+				ImGui::DragFloat3("*Transrate", &transform.translate.x);
+			}
+			// 項目3
+			/*if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::DragFloat3("*Scale", &transform.scale.x);
+				ImGui::DragFloat3("*Rotate", &transform.rotate.y);
+				ImGui::DragFloat3("*Transrate", &transform.translate.x);
+			}*/
 			ImGui::End();
 			ImGui::Render();
 
