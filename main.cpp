@@ -553,6 +553,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;
+	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -648,7 +649,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込みします
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	//比較関数はLessEqual
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 
 	//PSOを生成する
@@ -914,14 +915,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//GPUとOSに画面の交換を行う通知する
 			swapChain->Present(1, 0);
 
-
-
 			//Fenceの値の更新
 			fenceValue++;
 			//GPUがここまでたどりついた時に、Fenceの値を指定したあたいに代入するようにsignalを送る
 			commandQueue->Signal(fence, fenceValue);
-
-
 
 			//Femceの値が指定したSignal値にたどり着いているか確認する
 			//GetCompletebValuの初期値はFence作成時に渡した初期値
@@ -951,6 +948,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+	dsvDescriptorHeap->Release();
 	deptjStenciResource->Release();
 	intermediateResouce->Release();
 	textureResource->Release();
