@@ -910,8 +910,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x);
-				ImGui::DragFloat3("*RotateSprite", &transformSprite.rotate.y);
+				ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x,0.1f);
+				ImGui::DragFloat3("*RotateSprite", &transformSprite.rotate.y,0.1f);
 				ImGui::DragFloat3("*TransrateSprite", &transformSprite.translate.x);
 			}
 			ImGui::End();
