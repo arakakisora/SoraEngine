@@ -20,9 +20,11 @@ struct VertexData {
 
 	Vector4 position;
 	Vector2 texcoord;
-
+	Vector3 normal;
 
 };
+
+
 
 //回転
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
