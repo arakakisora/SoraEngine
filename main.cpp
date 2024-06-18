@@ -881,12 +881,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.bottom = kClientHeight;
 
 	//マテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む	
-	Vector4* materialData = nullptr;
+	Material* materialData = nullptr;
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//今回は赤を書き込む
-	*materialData = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//色
+	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	materialData->enableLighting = false;//有効にするか否か
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
@@ -906,6 +907,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//単位行列を書き込んでおく
 	*transformaitionMatrixDataSprite = MakeIdentity4x4();
 
+	//Sprite用のマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+	//マテリアルにデータを書き込む	
+	Material* materialDataSprite = nullptr;
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
+	//色
+	materialDataSprite->color={ Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	materialDataSprite->enableLighting = false;
 #pragma endregion
 
 #pragma region Texturを読む
@@ -1012,7 +1021,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 項目1
 			if (ImGui::CollapsingHeader("Setcolor", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::ColorEdit4("*SetColor", &materialData->x);
+				ImGui::ColorEdit4("*SetColor", &materialData->color.x);
 			}
 			// 項目2
 			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1084,6 +1093,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//sprite用の描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			//TransFomationMatrixBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2,textureSrvHandleGPU);
@@ -1152,6 +1163,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	intermediateResouce2->Release();
 	wvpResource->Release();
 	materialResource->Release();
+	materialResourceSprite->Release();
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
