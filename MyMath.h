@@ -16,6 +16,7 @@ struct Transform {
 	Vector3 translate;
 };
 
+
 struct VertexData {
 
 	Vector4 position;
@@ -25,9 +26,20 @@ struct VertexData {
 
 };
 struct Material {
-	Vector4* color;
+	Vector4 color;
 	int32_t enadleLIghting;
 
+};
+struct TransformationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+
+};
+struct DirectionalLight {
+
+	Vector4 color;//ライトの色
+	Vector3 direction;//ライトの向き
+	float intensity;
 };
 
 //回転

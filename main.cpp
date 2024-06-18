@@ -581,7 +581,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
-	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	D3D12_ROOT_PARAMETER rootParameters[4] = {};
 	//rootParameters[0]設定
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
@@ -595,6 +595,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	//rootParameters[3]設定
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
+	rootParameters[3].Descriptor.ShaderRegister = 1;//レジスタ番号0とバインド
+
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
 
@@ -642,7 +647,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	inputElementDescs[2].SemanticName = "NORMAL";
 	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32_FLOAT;
+	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
@@ -718,7 +723,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* deptjStenciResource = CreateDepthStencilTexturResource(device, kClientWindth, kClientHeight);
 	//Sprite用の頂点リソースを作る
 	ID3D12Resource* vetexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
-
+	////ライト用のリソース
+	//ID3D12Resource* vetexResourcedirectionalLight = CreateBufferResource(device, sizeof(DirectionalLight));
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Format
@@ -821,11 +827,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
-
-
-
-
-
 	////vetexResourceSprite頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{ };
 	//リソースの先頭のアドレスから使う
@@ -860,6 +861,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 
 
+	//////vetexResourcedirectionLight頂点バッファーを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferViewdirectionLight{ };
+	////リソースの先頭のアドレスから使う
+	//vertexBufferViewdirectionLight.BufferLocation = vetexResourcedirectionalLight->GetGPUVirtualAddress();
+	////使用するリソースのサイズは頂点3つ分のサイズ
+	//vertexBufferViewdirectionLight.SizeInBytes = sizeof(DirectionalLight);
+	////1頂点当たりのサイズ
+	//vertexBufferViewdirectionLight.StrideInBytes = sizeof(DirectionalLight);
+	////頂点リソースにデータを書き込む
+	//DirectionalLight* directionalLightData = nullptr;
+	////書き込むためのアドレスを取得
+	//vetexResourcedirectionalLight->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
+	//directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+	//directionalLightData->direction = { 0.0f,-1.0f,0.0f };
+	//directionalLightData->intensity = 1.0f;
+
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
 	//クライアント領域のサイズと一緒にして画面全体に表示
@@ -879,12 +896,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.bottom = kClientHeight;
 
 	//マテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
+	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む	
-	Material* materialData = {nullptr};
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData->color));
+	Material* materialData=nullptr;
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//今回は赤を書き込む
-	*materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->enadleLIghting = true;
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -897,12 +914,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*wvpData = MakeIdentity4x4();
 
 	//スプライトマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Vector4));
+	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む	
 	Material* materialDataSprite = { nullptr };
-	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite->color));
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 	//今回は赤を書き込む
-	*materialDataSprite->color = Vector4(0.0f, 1.0f, 1.0f, 1.0f);
+	materialDataSprite->color = Vector4(0.0f, 1.0f, 1.0f, 1.0f);
 	materialDataSprite->enadleLIghting = false;
 
 	//Sprite用のTransfomationMatrix用のリソースを作る
@@ -913,6 +930,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformaitionMatrixDataSprite));
 	//単位行列を書き込んでおく
 	*transformaitionMatrixDataSprite = MakeIdentity4x4();
+
+	//ライト用のリソースを作る。今回color1つ分のサイズを用意する
+	ID3D12Resource* materialResourcedirectionLight = CreateBufferResource(device, sizeof(DirectionalLight));
+	//マテリアルにデータを書き込む	
+	DirectionalLight* directionLightData = nullptr;
+	materialResourcedirectionLight->Map(0, nullptr, reinterpret_cast<void**>(&directionLightData));
+	//今回は赤を書き込む
+	directionLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionLightData->direction = { 0.0f,-1.0f,0.0f };
+	directionLightData->intensity = 1.0f;
+	
+
+
 
 #pragma endregion
 
@@ -1020,7 +1050,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 項目1
 			if (ImGui::CollapsingHeader("Setcolor", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::ColorEdit4("*SetColor", &materialData->color->x);
+				ImGui::ColorEdit4("*SetColor", &materialData->color.x);
 			}
 			// 項目2
 			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1092,11 +1122,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//sprite用の描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			//TransFomationMatrixBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			//描画！
 			commandList->DrawInstanced(6, 1, 0, 0);
+
+
+			////ライト用の描画
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewdirectionLight);
+			////描画！
+			//commandList->DrawInstanced(6, 1, 0, 0);
+
+
 
 			//画面に描く処理はすべて終わり、画面に映すので、状態遷移
 			//今回はRenderTragetからPresentにする
@@ -1160,6 +1199,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	intermediateResouce2->Release();
 	wvpResource->Release();
 	materialResource->Release();
+	materialResourceSprite->Release();
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
