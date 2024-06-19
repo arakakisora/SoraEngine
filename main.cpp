@@ -993,7 +993,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 	//sprite用のtransformSpriteを作る
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transformSprite{ {0.5f,0.5f,0.5f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	bool useMonsterBall = true;
 	while (msg.message != WM_QUIT) {
 
