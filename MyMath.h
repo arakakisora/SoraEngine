@@ -28,12 +28,21 @@ struct Material {
 	Vector4 color;
 	int32_t enableLighting;
 };
+
+
 struct TransformationMatrix
 {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
 
-}; 
+};
+
+struct DirectionalLight {
+
+	Vector4 color;//ライトの色
+	Vector3 direction;//ライトの向き
+	float intensity;
+};
 
 
 //回転
