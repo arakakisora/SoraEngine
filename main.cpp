@@ -721,7 +721,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DepthStencilTextureをウィンドウサイズで作成
 	ID3D12Resource* deptjStenciResource = CreateDepthStencilTexturResource(device, kClientWindth, kClientHeight);
 	//Sprite用の頂点リソースを作る
-	ID3D12Resource* vetexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* vetexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 4);
+	//Sprite用のindexResourceを作成
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -835,7 +837,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの先頭のアドレスから使う
 	vertexBufferViewSprite.BufferLocation = vetexResourceSprite->GetGPUVirtualAddress();
 	//使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 4;
 	//1頂点当たりのサイズ
 	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
 	//頂点リソースにデータを書き込む
@@ -853,15 +855,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
 	vertexDataSprite[2].normal = { 0.0f,0.0f,-1.0f };
 	//二個目
-	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };//左した
-	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[3].position = { 640.0f,0.0f,0.0f,1.0f };//右上
+	vertexDataSprite[3].texcoord = { 1.0f,0.0f };
 	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };//右上
-	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[4].normal = { 0.0f,0.0f,-1.0f };
-	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };//右下
-	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
-	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
+
+
+	
+
+	//IndexBufferSprite頂点バッファーを作成する
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	//リソース先頭のアドレスから使う
+	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+	//使用するリソースのサイズはインデックス６つ分のサイズ
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+	//インデックスはuint32_tとする
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+	//インデックスリソースにデータ書き込む
+	uint32_t* indexDataSprite = nullptr;
+	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
+
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -1039,9 +1053,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 項目2
 			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::DragFloat3("*Scale", &transform.scale.x,0.01f);
-				ImGui::DragFloat3("*Rotate", &transform.rotate.x,0.01f);
-				ImGui::DragFloat3("*Transrate", &transform.translate.x,0.01f);
+				ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
+				ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
+				ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
 			}
 
 			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1089,7 +1103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//描画用のDescript
 			ID3D12DescriptorHeap* descriptorHepes[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptorHepes);
-			
+
 			//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
 			commandList->RSSetViewports(1, &viewport);
 			commandList->RSSetScissorRects(1, &scissorRect);
@@ -1112,13 +1126,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//sprite用の描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			//TransFomationMatrixBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
-			commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1187,6 +1203,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	wvpResource->Release();
 	materialResource->Release();
 	materialResourceSprite->Release();
+	indexResourceSprite->Release();
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
