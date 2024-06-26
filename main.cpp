@@ -1089,7 +1089,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//描画用のDescript
 			ID3D12DescriptorHeap* descriptorHepes[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptorHepes);
-			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+			
 			//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
 			commandList->RSSetViewports(1, &viewport);
 			commandList->RSSetScissorRects(1, &scissorRect);
@@ -1120,6 +1120,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//描画！
 			commandList->DrawInstanced(6, 1, 0, 0);
 
+			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
 
 			//画面に描く処理はすべて終わり、画面に映すので、状態遷移
