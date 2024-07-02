@@ -860,7 +860,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[3].normal = { 0.0f,0.0f,-1.0f };
 
 
-	
+
 
 	//IndexBufferSprite頂点バッファーを作成する
 	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
@@ -903,6 +903,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//色
 	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialData->enableLighting = true;//有効にするか否か
+	materialData->uvTransform = MekeIdentity4x4();
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -932,6 +933,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//色
 	materialDataSprite->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSprite->enableLighting = false;
+	materialDataSprite->uvTransform = MakeIdentity4x4();
 
 	//平行光源用のResoureceを作成
 	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
@@ -1005,9 +1007,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//wvpData用のTransform変数を作る
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	//カメラ用のTransformを作る
 	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 	//sprite用のtransformSpriteを作る
-	Transform transformSprite{ {0.5f,0.5f,0.5f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+
 	bool useMonsterBall = true;
 	while (msg.message != WM_QUIT) {
 
@@ -1038,6 +1043,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			transformaitionMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 			transformaitionMatrixDataSprite->World = worldMatrix;
 
+			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+			materialDataSprite->uvTransform = uvTransformMatrix;
+
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
@@ -1046,29 +1056,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 			// 項目1
-			if (ImGui::CollapsingHeader("Setcolor", ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::ColorEdit4("*SetColor", &materialData->color.x);
 			}
 			// 項目2
-			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
 				ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
 				ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
 			}
-
-			if (ImGui::CollapsingHeader("Object1", ImGuiTreeNodeFlags_DefaultOpen))
+			//項目３
+			if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x, 0.1f);
 				ImGui::DragFloat3("*RotateSprite", &transformSprite.rotate.y, 0.1f);
 				ImGui::DragFloat3("*TransrateSprite", &transformSprite.translate.x);
 			}
+			//uvTransformSprite
+			if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				
+				ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
+				ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);
+				
+			}
+			//項目4
 			if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
 				ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 			}
+			
+
 			ImGui::End();
 			ImGui::Render();
 
