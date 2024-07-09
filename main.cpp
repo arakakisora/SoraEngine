@@ -1053,21 +1053,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::NewFrame();
 			ImGui::Begin("Setting");
 
-
+			//CameraTransform
+			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.01f);
+				ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);
+			}
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			// 項目1
+			// SphereSetColor
 			if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::ColorEdit4("*SetColor", &materialData->color.x);
 			}
-			// 項目2
+			// SphereTransform
 			if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
 				ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
 				ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
 			}
-			//項目３
+			//SpriteTransform
 			if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x, 0.1f);
