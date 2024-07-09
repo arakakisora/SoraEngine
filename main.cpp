@@ -1017,7 +1017,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	while (msg.message != WM_QUIT) {
 
 
-#pragma region CommandList 
+ 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -1099,7 +1099,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::End();
 			ImGui::Render();
 
-
+#pragma region CommandList
 			//これから書き込むバックバッファのインデックスを取得する
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 			//TransitionBarrierの設定
