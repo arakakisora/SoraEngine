@@ -25,6 +25,8 @@
 #include<vector>
 #include <numbers>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -311,6 +313,61 @@ ID3D12Resource* CreateDepthStencilTexturResource(ID3D12Device* device, int32_t w
 	return resource;
 }
 #pragma endregion
+
+#pragma region LoadObjeFil関数
+ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename) {
+
+	ModelData modelData;//構築するModekData
+	std::vector<Vector4>positions;//位置
+	std::vector<Vector3>normals;//法線
+	std::vector<Vector2>texcoords;//テクスチャ座標
+	std::string line;//ファイルから読んだ1行を格納するもの
+
+//ファイル読み込み
+	std::ifstream file(ditrectoryPath + "/" + filename);//faileを開く
+	assert(file.is_open());//開けなかったら止める
+
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;//先頭の識別子を読む
+
+		if (identifier == "v") {
+
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.w = 1.0f;
+			positions.push_back(position);
+		}
+		else if (identifier == "vt") {
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoords.push_back(texcoord);
+		}
+		else if (identifier == "vn") {
+
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normals.push_back(normal);
+		}
+		else if (identifier == "f") {
+
+			//面は三角形限定。その他は未対応
+			std::string vertexDefinition;
+			s >> vertexDefinition;
+			//頂点の要素へのIndexは「位置・UV・法線」で格納されているので、分解してIndexを取得する
+			std::istringstream v(vertexDefinition);
+			uint32_t elementIndices[3];
+			for (int32_t element = 0; element < 3; ++element) {
+				std::string index;
+				std::getline(v, index, '/');//区切りでインデックスを読んでいく
+				elementIndices
+			}
+		}
+	}
+
+}
+#pragma endregion 
 
 D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDesctiptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 

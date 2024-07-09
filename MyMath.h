@@ -47,6 +47,12 @@ struct DirectionalLight {
 	float intensity;
 };
 
+struct ModelData {
+
+	std::vector<VertexData>vertices;
+
+};
+
 
 //回転
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
