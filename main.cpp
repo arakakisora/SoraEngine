@@ -314,6 +314,39 @@ ID3D12Resource* CreateDepthStencilTexturResource(ID3D12Device* device, int32_t w
 }
 #pragma endregion
 
+
+
+#pragma region MaterialData
+MaterialData LoadMaterialTemplateFile(const std::string& directorypath,const std::string& filename) {
+
+	MaterialData materialData;//構築するMaterialData
+	std::string line;//ファイルから読んだ1行を格納するもの
+	std::ifstream file(directorypath + "/" + filename);//ファイルを開く
+	assert(file.is_open());//とりあえず開けなっかたら止める
+	while (std::getline(file, line)) {
+		std::string identifile;
+		std::stringstream s(line);
+		s >> identifile;
+
+		//identifierの応じた処理
+		if (identifile == "map_Kd") {
+
+			std::string textureFilename;
+			s >> textureFilename;
+			//連結してファイルパスにする
+			materialData.textureFilePath = directorypath + "/"+textureFilename;
+
+		}
+
+
+	}
+
+	return materialData;
+
+}
+#pragma endregion
+
+
 #pragma region LoadObjeFil関数
 ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename) {
 
@@ -337,17 +370,20 @@ ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& fil
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
 			position.w = 1.0f;
+			position.x *= -1;
 			positions.push_back(position);
 		}
 		else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1 - texcoord.y;
 			texcoords.push_back(texcoord);
 		}
 		else if (identifier == "vn") {
 
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
+			normal.x *= -1;
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
@@ -367,10 +403,9 @@ ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& fil
 				}
 				//要素へのIndexから、実際の要素の値を取得して、頂点を構築する
 				Vector4 position = positions[elementIndices[0] - 1];
-				position.x *= -1.0f;
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
-				normal.x *= -1.0f;
+
 				//VertexData veretex = { position,texcoord,normal };
 				//modelData.vertices.push_back(veretex);
 				triangle[faceVertex] = { position,texcoord,normal };
@@ -380,6 +415,16 @@ ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& fil
 			modelData.vertices.push_back(triangle[2]);
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
+
+		}
+		else if (identifier == "mtllib") {
+
+			//materialTemlateLibraryファイルの名前を取得する
+			std::string materialFilename;
+			s >> materialFilename;
+			//基本的にobjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す
+			modelData.material = LoadMaterialTemplateFile(ditrectoryPath, materialFilename);
+
 
 		}
 	}
@@ -790,7 +835,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
-	ModelData modelData = LoadObjeFile("Resources", "plane.obj");
+	ModelData modelData = LoadObjeFile("Resources", "axis.obj");
 
 	//VertexResourceを作成
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
@@ -827,11 +872,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
 	
 	
-
-	
-	
-
-
 
 	////vertexResource頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
@@ -994,12 +1034,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//マテリアる用のリソースを作る。今回color1つ分のサイズを用意する
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//マテリアルにデータを書き込む	
-	Material* materialData = nullptr;
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	Material* materialDataSphere = nullptr;
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
 	//色
-	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-	materialData->enableLighting = true;//有効にするか否か
-	materialData->uvTransform = MekeIdentity4x4();
+	materialDataSphere->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	materialDataSphere->enableLighting = true;//有効にするか否か
+	materialDataSphere->uvTransform = MekeIdentity4x4();
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
@@ -1019,7 +1059,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataModel));
 	//色
 	materialDataModel->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-	materialDataModel->enableLighting = false;//有効にするか否か
+	materialDataModel->enableLighting = true;//有効にするか否か
 	materialDataModel->uvTransform = MekeIdentity4x4();
 
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -1080,6 +1120,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* textureResource2 = CreateTextureResource(device, metadata2);
 	ID3D12Resource* intermediateResouce2 = UploadTextureData(textureResource2, mipImages2, device, commandList);
 
+	//Textur3を読んで転送する
+	DirectX::ScratchImage mipImages3 = LoadTexture(modelData.material.textureFilePath);
+	const DirectX::TexMetadata& metadata3 = mipImages3.GetMetadata();
+	ID3D12Resource* textureResource3 = CreateTextureResource(device, metadata3);
+	ID3D12Resource* intermediateResouce3 = UploadTextureData(textureResource3, mipImages3, device, commandList);
+
+
+
 #pragma endregion 
 
 #pragma region ShaderResourceView
@@ -1095,17 +1143,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
 
+	//meraDara3を気にSRVの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc3{  };
+	srvDesc3.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc3.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+	srvDesc3.Texture2D.MipLevels = UINT(metadata3.mipLevels);
+
 	//SRVを作成するDescriptHeap	の場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = GetCPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU3 = GetCPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU3 = GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	//先頭はImGuiが使っているのでその次を使う
 	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//SRVの設定
 	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
 	device->CreateShaderResourceView(textureResource2, &srvDesc2, textureSrvHandleCPU2);
+	device->CreateShaderResourceView(textureResource3, &srvDesc3, textureSrvHandleCPU3);
 
 #pragma endregion 
 
@@ -1193,7 +1252,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SphereSetColor
 			if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::ColorEdit4("*SetColor", &materialData->color.x);
+				ImGui::ColorEdit4("*SetColor", &materialDataSphere->color.x);
 			}
 			// SphereTransform
 			if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1276,7 +1335,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState);
 
-			//三角形用
+			//Sphere
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1286,7 +1345,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
-			//commandList->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
+			commandList->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
 
 
 			//sprite用の描画
@@ -1309,7 +1368,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceModel->GetGPUVirtualAddress());
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceModel->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU3);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);

@@ -9,6 +9,8 @@
 #include "Vector4.h"
 #include "Vector2.h"
 #include <vector>
+#include <string>
+
 
 
 
@@ -48,11 +50,20 @@ struct DirectionalLight {
 	float intensity;
 };
 
+struct MaterialData {
+
+	std::string textureFilePath;
+	
+
+};
+
 struct ModelData {
 
 	std::vector<VertexData>vertices;
+	MaterialData material;
 
 };
+
 
 
 //回転
