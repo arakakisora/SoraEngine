@@ -856,7 +856,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
-	ModelData modelData = LoadObjeFile("Resources", "axis.obj");
+	ModelData modelData = LoadObjeFile("Resources", "plane.obj");
 
 	//VertexResourceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
@@ -1379,7 +1379,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
 			//commandList->DrawInstanced(6, 1, 0, 0);
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 			//model用
