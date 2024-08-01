@@ -1297,6 +1297,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			wvpData->WVP = worldViewProjectionMatrix;
 			wvpData->World = worldMatrix;
 
+
 			Matrix4x4 worldMatrixmodel = MakeAffineMatrix(transformModel.scale, transformModel.rotate, transformModel.translate);
 			Matrix4x4 worldViewProjectionMatrixModel = Multiply(worldMatrixmodel, Multiply(viewMatrix, projectionMatrix));
 			transformaitionMatrixDataModel->WVP = worldViewProjectionMatrixModel;
