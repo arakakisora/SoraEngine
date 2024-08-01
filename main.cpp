@@ -28,6 +28,7 @@
 #include <fstream>
 #include <sstream>
 #include <wrl.h>
+#include "Input.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -477,6 +478,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("HEllo,DIrectX!\n");
 
+	
+
 
 	WNDCLASS wc{};
 	//ウィンドウプロシージャ
@@ -811,7 +814,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexshaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = CompileShader(L"Object3D.PS.hlsl",
+	IDxcBlob* pixelShaderBlob = CompileShader(L"Resources/Shaders/Object3D.PS.hlsl",
 		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
@@ -1262,6 +1265,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+
+	Input* input = nullptr;
+	input = new Input();
+	input->Initialize(wc.hInstance,hwnd);
+	delete input;
 
 
 	//wvpData用のTransform変数を作る
