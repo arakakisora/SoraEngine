@@ -810,7 +810,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	//shaderをコンパイルする
-	IDxcBlob* vertexshaderBlob = CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",
+	IDxcBlob* vertexshaderBlob = CompileShader(L"Object3D.VS.hlsl",
 		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexshaderBlob != nullptr);
 
@@ -859,7 +859,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
-	ModelData modelData = LoadObjeFile("Resources", "axis.obj");
+	ModelData modelData = LoadObjeFile("Resources", "bunny.obj");
+	ModelData modelDataTeapot = LoadObjeFile("Resources", "teapot.obj");
 
 	//VertexResourceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
@@ -871,6 +872,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
 	//モデル用のVetexResouceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceModel = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
+	//teapotモデル用のVertexResouceを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceTeapotModel = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -894,6 +897,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));
 	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
+
+
+	//vetexResourceModel頂点バッファーを作成する
+	D3D12_VERTEX_BUFFER_VIEW VertexBufferViewTeapotModel{};
+	//リソースの先頭のアドレスから使う
+	VertexBufferViewTeapotModel.BufferLocation = vertexResourceTeapotModel->GetGPUVirtualAddress();
+	//使用するリソースのサイズは頂点分のサイズ
+	VertexBufferViewTeapotModel.SizeInBytes = UINT(sizeof(VertexData) * modelDataTeapot.vertices.size());
+	//1頂点当たりのサイズ
+	VertexBufferViewTeapotModel.StrideInBytes = sizeof(VertexData);
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataTeapotModel = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceTeapotModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataTeapotModel));
+	std::memcpy(vertexDataTeapotModel, modelDataTeapot.vertices.data(), sizeof(VertexData)* modelDataTeapot.vertices.size());
 	
 	
 
@@ -1098,6 +1116,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+	//Teapotmodelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceTeapotModel = CreateBufferResource(device, sizeof(Material));
+	//マテリアルにデータを書き込む	
+	Material* materialDataTeapotModel = nullptr;
+	materialResourceTeapotModel->Map(0, nullptr, reinterpret_cast<void**>(&materialDataTeapotModel));
+	//色
+	materialDataTeapotModel->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	materialDataTeapotModel->enableLighting = true;//有効にするか否か
+	materialDataTeapotModel->uvTransform = MekeIdentity4x4();
+
+	//TeapotModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceTeapotModel = CreateBufferResource(device, sizeof(TransformationMatrix));
+	//データを書き込む
+	TransformationMatrix* transformaitionMatrixDataTeapotModel = nullptr;
+	//書き込むためのアドレスを取得
+	transformationMatrixResourceTeapotModel->Map(0, nullptr, reinterpret_cast<void**>(&transformaitionMatrixDataTeapotModel));
+	//単位行列を書き込む
+	transformaitionMatrixDataTeapotModel->WVP = MakeIdentity4x4();
+	transformaitionMatrixDataTeapotModel->World = MakeIdentity4x4();
+
+
+
 	//Sprite用のTransfomationMatrix用のリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
 	//データを書き込む
@@ -1150,6 +1190,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource3 = CreateTextureResource(device, metadata3);
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResouce3 = UploadTextureData(textureResource3, mipImages3, device, commandList);
 
+	//Textur4を読んで転送する
+	DirectX::ScratchImage mipImages4 = LoadTexture(modelDataTeapot.material.textureFilePath);
+	const DirectX::TexMetadata& metadata4 = mipImages4.GetMetadata();
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource4 = CreateTextureResource(device, metadata4);
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResouce4 = UploadTextureData(textureResource4, mipImages4, device, commandList);
+
 
 
 #pragma endregion 
@@ -1173,6 +1219,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDesc3.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc3.Texture2D.MipLevels = UINT(metadata3.mipLevels);
 
+	//meraDara4を気にSRVの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc4{  };
+	srvDesc4.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc4.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+	srvDesc4.Texture2D.MipLevels = UINT(metadata4.mipLevels);
+
 	//SRVを作成するDescriptHeap	の場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
@@ -1182,6 +1234,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU3 = GetCPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU3 = GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
+
+
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU4 = GetCPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 4);
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU4 = GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 4);
 	//先頭はImGuiが使っているのでその次を使う
 	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -1189,6 +1245,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 	device->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 	device->CreateShaderResourceView(textureResource3.Get(), &srvDesc3, textureSrvHandleCPU3);
+	device->CreateShaderResourceView(textureResource4.Get(), &srvDesc4, textureSrvHandleCPU4);
 
 #pragma endregion 
 
@@ -1217,13 +1274,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//wvpData用のTransform変数を作る
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,3.0f} };
 	//カメラ用のTransformを作る
 	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 	//sprite用のtransformSpriteを作る
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transformSprite{ {0.5f,0.5f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{-2.5f,0.0f,5.0f} };
+	Transform transformTeapotModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{2.5f,0.0f,5.0f} };
 
 	bool useMonsterBall = true;
 	while (msg.message != WM_QUIT) {
@@ -1248,10 +1306,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			wvpData->WVP = worldViewProjectionMatrix;
 			wvpData->World = worldMatrix;
 
+
 			Matrix4x4 worldMatrixmodel = MakeAffineMatrix(transformModel.scale, transformModel.rotate, transformModel.translate);
 			Matrix4x4 worldViewProjectionMatrixModel = Multiply(worldMatrixmodel, Multiply(viewMatrix, projectionMatrix));
 			transformaitionMatrixDataModel->WVP = worldViewProjectionMatrixModel;
 			transformaitionMatrixDataModel->World = worldMatrixmodel;
+
+			Matrix4x4 worldMatrixTeapotmodel = MakeAffineMatrix(transformTeapotModel.scale, transformTeapotModel.rotate, transformTeapotModel.translate);
+			Matrix4x4 worldViewProjectionMatrixTeapotModel = Multiply(worldMatrixTeapotmodel, Multiply(viewMatrix, projectionMatrix));
+			transformaitionMatrixDataTeapotModel->WVP = worldViewProjectionMatrixTeapotModel;
+			transformaitionMatrixDataTeapotModel->World = worldMatrixTeapotmodel;
 
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
@@ -1287,6 +1351,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// SphereTransform
 			if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				ImGui::Combo("SphereLighting", &materialDataSphere->enableLighting, "None\0Lambert\0HalfLambert");
 				ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
 				ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
 				ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
@@ -1294,13 +1359,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// ModelTransform
 			if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				ImGui::Combo("ModelLighting", &materialDataModel->enableLighting, "None\0Lambert\0HalfLambert");
 				ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
 				ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
 				ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
 			}
+			// TeapotModelTransform
+			if (ImGui::CollapsingHeader("TeapotModel", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::Combo("TeapotModelLighting", &materialDataTeapotModel->enableLighting, "None\0Lambert\0HalfLambert");
+				ImGui::DragFloat3("*TeapotModelScale", &transformTeapotModel.scale.x, 0.01f);
+				ImGui::DragFloat3("*TeapotModelRotate", &transformTeapotModel.rotate.x, 0.01f);
+				ImGui::DragFloat3("*TeapotModelTransrate", &transformTeapotModel.translate.x, 0.01f);
+			}
 			//SpriteTransform
 			if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				ImGui::Combo("SpriteLighting", &materialDataSprite->enableLighting, "None\0Lambert\0HalfLambert");
 				ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x, 0.1f);
 				ImGui::DragFloat3("*RotateSprite", &transformSprite.rotate.y, 0.1f);
 				ImGui::DragFloat3("*TransrateSprite", &transformSprite.translate.x);
@@ -1308,7 +1383,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//uvTransformSprite
 			if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-
+				
 				ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 				ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
 				ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);
@@ -1318,9 +1393,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//項目4
 			if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				
 				ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
 				ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
 			}
+
+			
+
 
 
 			ImGui::End();
@@ -1388,7 +1467,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
 			//commandList->DrawInstanced(6, 1, 0, 0);
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 			//model用
@@ -1402,6 +1481,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+
+
+			//Teapotmodel用
+			commandList->IASetVertexBuffers(0, 1, &VertexBufferViewTeapotModel);
+			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
+			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceTeapotModel->GetGPUVirtualAddress());
+			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceTeapotModel->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU4);
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+			//描画！
+			commandList->DrawInstanced(UINT(modelDataTeapot.vertices.size()), 1, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
