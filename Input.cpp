@@ -32,6 +32,8 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 
 void Input::Update()
 {
+	//前回のキー入力を保存
+	memcpy(preKey, key, sizeof(key));
 	//キーボード情報の取得
 	keyboard->Acquire();
 	//全キーボード入力情報を取得
@@ -42,6 +44,14 @@ void Input::Update()
 bool Input::PushKey(BYTE keyNumber)
 {
 	if (key[keyNumber]) {
+
+		return true;
+	}
+}
+
+bool Input::TriggerKey(BYTE keyNumber)
+{
+	if (key[keyNumber] && !preKey[keyNumber]) {
 
 		return true;
 	}

@@ -16,10 +16,12 @@ public:
 
 	//キーの状態
 	bool PushKey(BYTE keyNumber);
+	bool TriggerKey(BYTE keyNumber);
 
 private:
 
 	BYTE key[256] = {};
+	BYTE preKey[256] = {};
 	ComPtr<IDirectInputDevice8>keyboard;
 
 };
