@@ -35,7 +35,14 @@ void Input::Update()
 	//キーボード情報の取得
 	keyboard->Acquire();
 	//全キーボード入力情報を取得
-	BYTE key[256] = {};
 	keyboard->GetDeviceState(sizeof(key), key);
 
+}
+
+bool Input::PushKey(BYTE keyNumber)
+{
+	if (key[keyNumber]) {
+
+		return true;
+	}
 }
