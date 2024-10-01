@@ -863,7 +863,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
-	ModelData modelData = LoadObjeFile("Resources", "axis.obj");
+	ModelData modelData = LoadObjeFile("Resources", "fence.obj");
 
 	//VertexResourceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
@@ -1221,7 +1221,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//sprite用のtransformSpriteを作る
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,3.0f,0.0f} ,{0.0f,0.0f,3.0f} };
 
 	bool useMonsterBall = true;
 	while (msg.message != WM_QUIT) {
@@ -1373,7 +1373,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			//描画！
-			commandList->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
+			//commandList->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
 
 
 			//sprite用の描画
