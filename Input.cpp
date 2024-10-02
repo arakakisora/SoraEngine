@@ -11,7 +11,6 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
 	HRESULT hr;
 	//DirectInputのインスタンスを生成
-	ComPtr<IDirectInput8>directInput = nullptr;
 	hr = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(hr));
 	//キーボードデバイス生成
@@ -47,6 +46,8 @@ bool Input::PushKey(BYTE keyNumber)
 
 		return true;
 	}
+	return false;
+
 }
 
 bool Input::TriggerKey(BYTE keyNumber)
@@ -55,4 +56,5 @@ bool Input::TriggerKey(BYTE keyNumber)
 
 		return true;
 	}
+	return false;
 }

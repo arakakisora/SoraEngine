@@ -151,7 +151,7 @@ IDxcBlob* CompileShader(
 	assert(SUCCEEDED(hr));
 	//成功したログを出す
 	Log(ConvertString(std::format(L"Complite Succeded,path:{},profile:{}\n", filePath, profile)));
-	
+
 	return shaderBlob;
 }
 #pragma endregion
@@ -259,7 +259,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::Com
 
 #pragma region UploadTextureData関数
 [[nodiscard]]
-Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource>texture, const DirectX::ScratchImage& mipImages,Microsoft::WRL::ComPtr<ID3D12Device> device,
+Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource>texture, const DirectX::ScratchImage& mipImages, Microsoft::WRL::ComPtr<ID3D12Device> device,
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	std::vector<D3D12_SUBRESOURCE_DATA> subresouces;
@@ -317,7 +317,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTexturResource(Microsof
 
 
 #pragma region MaterialData
-MaterialData LoadMaterialTemplateFile(const std::string& directorypath,const std::string& filename) {
+MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename) {
 
 	MaterialData materialData;//構築するMaterialData
 	std::string line;//ファイルから読んだ1行を格納するもの
@@ -334,7 +334,7 @@ MaterialData LoadMaterialTemplateFile(const std::string& directorypath,const std
 			std::string textureFilename;
 			s >> textureFilename;
 			//連結してファイルパスにする
-			materialData.textureFilePath = directorypath + "/"+textureFilename;
+			materialData.textureFilePath = directorypath + "/" + textureFilename;
 
 		}
 
@@ -445,7 +445,7 @@ struct D3DResourceLeakChecker {
 			debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 			debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 			debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		
+
 		}
 #pragma endregion 
 
@@ -478,7 +478,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("HEllo,DIrectX!\n");
 
-	
+
 
 
 	WNDCLASS wc{};
@@ -590,7 +590,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 		//警告の時に止まる
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
-		
+
 
 		//抑制するメッセージのID
 		D3D12_MESSAGE_ID denyIds[] = {
@@ -898,9 +898,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataModel = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));
-	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
-	
-	
+	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
+
+
 
 	////vertexResource頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
@@ -1039,7 +1039,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
 
-	
+
 	;
 
 	//ビューポート
@@ -1132,7 +1132,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->intensity = 1.0f;
 
 
-	
+
 
 #pragma endregion
 
@@ -1215,7 +1215,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
-	
+
 
 
 	//wvpData用のTransform変数を作る
@@ -1242,7 +1242,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			input->Update();
 
 			//更新
-			transform.rotate.y += 0.03f;
+			if (input->TriggerKey(DIK_0)) {
+
+				transform.rotate.y += 0.3f;
+
+			}
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1423,7 +1427,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			assert(SUCCEEDED(hr));
 
 			//GPUにコマンドリストの実行を行わせる
-			ID3D12CommandList* commandLists[] = { commandList.Get()};
+			ID3D12CommandList* commandLists[] = { commandList.Get() };
 			commandQueue->ExecuteCommandLists(1, commandLists);
 			//GPUとOSに画面の交換を行う通知する
 			swapChain->Present(1, 0);
@@ -1461,13 +1465,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-	
+
 	CloseHandle(fenceEvent);
 
 	delete input;
-	
+
 #ifdef _DEBUG
-	
+
 #endif // _DEBUG
 #pragma endregion
 
