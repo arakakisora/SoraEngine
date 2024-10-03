@@ -18,14 +18,15 @@ public:
 
 	//初期化
 	void Initialize();
-	//更新
-	void Update();
-
+	
+	//終了処理
 	void Finalize();
 
 	//Getter
 	HWND GetHwnd()const { return hwnd; }
 	HINSTANCE GetHInstance()const { return wc.hInstance; }
+
+	bool ProcessMessage();
 
 private:
 	//ウィンドウ生成
