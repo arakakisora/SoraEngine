@@ -11,9 +11,10 @@ using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
 
+
 void DirectXCommon::DeviceInitialize()
 {
-	
+
 
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
@@ -27,7 +28,7 @@ void DirectXCommon::DeviceInitialize()
 
 #pragma region DxgiFactory
 	//DXGIファクターの生成
-	
+
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	assert(SUCCEEDED(hr));
 #pragma endregion
@@ -54,7 +55,7 @@ void DirectXCommon::DeviceInitialize()
 
 #pragma region D3D12Device
 	//D3D12Deviceの生成
-	
+
 	D3D_FEATURE_LEVEL featureLevels[] = {
 
 	 D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
@@ -115,8 +116,64 @@ void DirectXCommon::SwapChainInitialize()
 	//コマンドキュー、ウィンドウハンドル、設定渡して生成する
 	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp_->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
+
+	//SwapChainからResourceをひっぱってくる
+	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2] = { nullptr };
+	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
+	//うまく取得できなければ起動できない
+	assert(SUCCEEDED(hr));
+	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
+	assert(SUCCEEDED(hr));
 #pragma endregion 
 
+
+}
+
+void DirectXCommon::DepthBufferInitialize()
+{
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Width = WinApp::kClientWindth;//Textureの幅
+	resourceDesc.Height = WinApp::kClientHeight;//Textureの高さ
+	resourceDesc.MipLevels = 1;//mipmapの数
+	resourceDesc.DepthOrArraySize = 1;//奥行きor配列Texturの配列数
+	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DetpthStencilとして利用可能なフォーマット
+	resourceDesc.SampleDesc.Count = 1;//サンプリング。１固定
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;//2次元
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//DepthSrencilとして使う通知
+
+	//利用するhepの設定
+	D3D12_HEAP_PROPERTIES heapProperties{  };
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;//VRAM上に作る
+	//深度値のクリア設定
+	D3D12_CLEAR_VALUE depthClerValue{};
+	depthClerValue.DepthStencil.Depth = 1.0f;//最大値
+	depthClerValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//フォーアット。Resource合わせる
+	//Resourceの生成
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+	hr = device->CreateCommittedResource(
+		&heapProperties,//Heapの設定
+		D3D12_HEAP_FLAG_NONE,//Heapの特殊設定。特になし
+		&resourceDesc,//REesourceの設定
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,//深度値を書き込む状態のしておく
+		&depthClerValue,//Clear最適値
+		IID_PPV_ARGS(&resource));//作成するResourceポインタへのポインタ
+	assert(SUCCEEDED(hr));
+	//DepthStencilTextureをウィンドウサイズで作成
+	depthStenciResource = resource;
+
+}
+
+void DirectXCommon::DescriptorHeepInitialize()
+{
+	//サイズを取得
+	descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	//ディスクリプタヒープの生成
+	rtvDescriptorHeap = CreateDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);//RTV
+	srvDescriptorHeap = CreateDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);//SRV
+	dsvDescriptorHeap = CreateDescriptorHeap( D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);//DVS用のヒープでディスクリプタの数は1．DSVはShader内で触るものではない
 
 }
 
@@ -125,4 +182,18 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	assert(winApp);
 	winApp_ = winApp;
 
+}
+
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heaptype, UINT numDescriptrs, bool shaderVisible)
+{
+	//ディスクリプタヒープの生成
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap = nullptr;
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+	descriptorHeapDesc.Type = heaptype;//レンダーターゲットビュー用
+	descriptorHeapDesc.NumDescriptors = numDescriptrs;
+	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ダブルバッファ用に2つ。多くても別に構わない
+	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+	//ディスクリプトひーぷが作れなかったので起動できない
+	assert(SUCCEEDED(hr));
+	return descriptorHeap;
 }
