@@ -75,6 +75,7 @@ void WinApp::Initialize()
 
 void WinApp::Finalize()
 {
+	
 	CloseWindow(hwnd);
 	CoUninitialize();
 

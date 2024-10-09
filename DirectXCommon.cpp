@@ -187,9 +187,6 @@ void DirectXCommon::RTVInitialize()
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;//2dテクスチャとして書き込む
 	//ディスクリプトの先頭を取得する
 	rtvStarHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//RVTを2つ作るのでディスクリプタを2つ用意
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
-
 	//まず1つ目を作る。1つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
 	rtvHandles[0] = rtvStarHandle;
 	device->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
@@ -216,13 +213,12 @@ void DirectXCommon::FenceInitialize()
 
 #pragma region Fence
 	//初期値0でFenceを作る
-	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
-	uint64_t fenceValue = 0;
+
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 
 	//fenceのSignalを待つためのイベントを作成する
-	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 
 #pragma endregion
@@ -231,8 +227,7 @@ void DirectXCommon::FenceInitialize()
 
 void DirectXCommon::ViewportInitialize()
 {
-	//ビューポート
-	D3D12_VIEWPORT viewport{};
+
 	//クライアント領域のサイズと一緒にして画面全体に表示
 	viewport.Width = WinApp::kClientWindth;
 	viewport.Height = WinApp::kClientHeight;
@@ -302,6 +297,80 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	ScissorInitialize();
 	DxcCompilerInitialize();
 	ImguiInitialize();
+
+}
+
+void DirectXCommon::Begin()
+{
+	//これから書き込むバックバッファのインデックスを取得する
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	//今回のバリアはTransition
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	//Noneにしておく
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	//バリアを張る対象のリソース。現在のバックバッファに対して行う
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+	//遷移前（現在）のResourceState
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	//遷移後のResourceState
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	//Transition Barrierを張る
+	commandList->ResourceBarrier(1, &barrier);
+	//描画先のRVTを設定する
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+	//描画先のRTVとDSVを設定する
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	//指定した色で画面全体をクリアする
+	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
+	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+	//描画用のDescript
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHepes[] = { srvDescriptorHeap };
+	commandList->SetDescriptorHeaps(1, descriptorHepes->GetAddressOf());
+	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
+	commandList->RSSetViewports(1, &viewport);
+	commandList->RSSetScissorRects(1, &scissorRect);
+
+}
+
+void DirectXCommon::End()
+{
+	//バックバッファのインデックスを取得する
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	//画面に描く処理はすべて終わり、画面に映すので、状態遷移
+		//今回はRenderTragetからPresentにする
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	//ToransitionBarrierを張る
+	commandList->ResourceBarrier(1, &barrier);
+	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
+	hr = commandList->Close();
+	assert(SUCCEEDED(hr));
+	//GPUにコマンドリストの実行を行わせる
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists);
+	//GPUとOSに画面の交換を行う通知する
+	swapChain->Present(1, 0);
+	//Fenceの値の更新
+	fenceValue++;
+	//GPUがここまでたどりついた時に、Fenceの値を指定したあたいに代入するようにsignalを送る
+	commandQueue->Signal(fence.Get(), fenceValue);
+	//Femceの値が指定したSignal値にたどり着いているか確認する
+		//GetCompletebValuの初期値はFence作成時に渡した初期値
+	if (fence->GetCompletedValue() < fenceValue) {
+
+		//指定したSignalにたどりついていないので、たどり着くまで待つようにイベントを設定する
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		//イベントを待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+	//次のフレーム用のコマンドリストを準備
+	hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+	hr = commandList->Reset(commandAllocator.Get(), nullptr);
+	assert(SUCCEEDED(hr));
 
 }
 
