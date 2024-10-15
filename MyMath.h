@@ -40,6 +40,7 @@ struct TransformationMatrix
 {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
+	Vector4 color;
 
 };
 
@@ -53,7 +54,7 @@ struct DirectionalLight {
 struct MaterialData {
 
 	std::string textureFilePath;
-	
+
 
 };
 
@@ -64,6 +65,21 @@ struct ModelData {
 
 };
 
+struct Particle {
+
+	Transform transform;
+	Vector3 Velocity;
+	Vector4 color;
+
+};
+
+struct ParticleForGPU
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	Vector4 color;
+
+};
 
 
 //回転
