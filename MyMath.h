@@ -70,6 +70,8 @@ struct Particle {
 	Transform transform;
 	Vector3 Velocity;
 	Vector4 color;
+	float lifetime;
+	float currentTime;
 
 };
 

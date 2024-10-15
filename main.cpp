@@ -479,15 +479,17 @@ Particle MakeNewParticle(std::mt19937& randomEngine) {
 
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 
 	Particle particle;
 
 	particle.transform.scale = { 0.5f,0.5f,0.5f };
 	particle.transform.rotate = { 0.0f,3.0f,0.0f };
 	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine),1 };
+	particle.lifetime = distTime(randomEngine);
+	particle.currentTime = 0;
 
 	return particle;
 }
@@ -836,7 +838,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -862,7 +865,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//Deothの機能を有効化する
 	depthStencilDesc.DepthEnable = true;
 	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	//depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	//比較関数はLessEqual
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -1077,7 +1081,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	;
+	
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -1169,14 +1173,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->intensity = 1.0f;
 
 	//Instancing用のTransformationMatrixリソースを作る
-	const uint32_t kNumInstance = 10;//インスタンス数
+	const uint32_t kNumMaxInstance = 10;//インスタンス数
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce =
-		CreateBufferResource(device, sizeof(ParticleForGPU) * kNumInstance);
+		CreateBufferResource(device, sizeof(ParticleForGPU) * kNumMaxInstance);
 	//書き込むためのアドレスを取得
 	ParticleForGPU* instancingData = nullptr;
 	instancingResouce->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
 	//単位行列を書き込んでおく
-	for (uint32_t index = 0; index < kNumInstance; ++index) {
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+
 		instancingData[index].WVP = MakeIdentity4x4();
 		instancingData[index].World = MakeIdentity4x4();
 		instancingData[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1243,7 +1248,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kNumInstance;
+	instancingSrvDesc.Buffer.NumElements = kNumMaxInstance;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
 	D3D12_CPU_DESCRIPTOR_HANDLE instancingSrvHandleCPU = GetCPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 4);
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 4);
@@ -1290,9 +1295,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,3.0f,0.0f} ,{0.0f,0.0f,3.0f} };
 	std::random_device seedGenerator;
 	std::mt19937 randomEngine(seedGenerator());
+
 	//Instancing用
-	Particle particles[kNumInstance];
-	for (uint32_t index = 0; index < kNumInstance; ++index) {
+	
+	Particle particles[kNumMaxInstance];
+	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 		particles[index] = MakeNewParticle(randomEngine);
 	}
 	const float kDeletaTime = 1.0f / 60.f;
@@ -1315,7 +1322,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			if (start) {
 
-				for (uint32_t index = 0; index < kNumInstance; ++index) {
+				for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 
 					particles[index].transform.translate += particles[index].Velocity * kDeletaTime;
 
@@ -1349,15 +1356,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
-			//instance用	
-			for (uint32_t index = 0; index < kNumInstance; ++index) {
+			//instance用
+			uint32_t numInstance = 0;	
+			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+				if (particles[index].lifetime <= particles[index].currentTime) {
+					continue;
+				}
 				Matrix4x4 worldMatrix =
 					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjetionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+				particles[index].transform.translate += particles[index].Velocity * kDeletaTime;
+				particles[index].currentTime += kDeletaTime;
+				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifetime);
+
 				instancingData[index].WVP = worldViewProjetionMatrix;
 				instancingData[index].World = worldMatrix;
 				instancingData[index].color = particles[index].color;
-
+				instancingData[index].color.w = alpha;
+				++numInstance;
+				
 			}
 
 			ImGui_ImplDX12_NewFrame();
@@ -1501,7 +1519,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(4, instancingSrvHandleGPU);
 			//描画！
 			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 
