@@ -71,6 +71,9 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
 
+	ID3D12Device *GetDevice() const{ return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
+
 	//CompileShader関数の作成
 	IDxcBlob* CompileShader(
 		//ComilerするSahaderファイルへのパス
@@ -85,7 +88,7 @@ public:
 	//<summary>
 	//テクスチャリソースの生成
 	//</summary>
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
 	//<summary>
 	//テクスチャデータの転送
 	//</summary>
