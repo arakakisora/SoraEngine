@@ -12,6 +12,8 @@
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include<vector>
+#include <chrono>
+#include <thread>  // std::this_thread
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class DirectXCommon
@@ -143,13 +145,19 @@ private:
 	IDxcIncludeHandler* includeHandler = nullptr;
 	//barrier
 	D3D12_RESOURCE_BARRIER barrier{};
+	//記録時間(FPS固定用)
+	std::chrono::steady_clock::time_point reference_;
+
 
 private:
 	//デスクリプタヒープを生成する
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heaptype,
 		UINT numDescriptrs, bool shaderVisible);
 
-	
+	//FPS固定初期化
+	void InitializeFixFPS();
+	//FPS固定更新
+	void UodateFixFPS();
 
 
  

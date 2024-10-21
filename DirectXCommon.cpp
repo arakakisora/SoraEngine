@@ -7,6 +7,7 @@
 #include "StringUtility.h"
 
 
+
 using namespace Microsoft::WRL;
 using namespace Logger;
 using namespace StringUtility;
@@ -316,6 +317,8 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	assert(winApp);//NULL検出
 	winApp_ = winApp;
 
+	InitializeFixFPS();
+
 	DeviceInitialize();
 	CommandInitialize();
 	SwapChainInitialize();
@@ -397,6 +400,7 @@ void DirectXCommon::End()
 		//イベントを待つ
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
+	UodateFixFPS();
 	//次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
@@ -429,6 +433,39 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap
 	//ディスクリプトひーぷが作れなかったので起動できない
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
+}
+
+void DirectXCommon::InitializeFixFPS()
+{
+	//現在時間を記録する
+	reference_ = std::chrono::steady_clock::now();
+}
+
+void DirectXCommon::UodateFixFPS()
+{
+	//1/60秒ピッタリの時間
+	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
+	//1/60秒よりわずかに短い時間
+	const std::chrono::microseconds kMInCheckTime(uint64_t(1000000.0f / 65.0f));
+
+	//現在時間を取得する
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+	//前回記録からの経過時間を取得する
+	std::chrono::microseconds elapsed =
+		std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
+
+	//1/60秒(よりわずかに短い時間)経っていない場合
+	if (elapsed < kMInCheckTime) {
+		//1/60秒経過するまで微小なスリープを繰り返す
+		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
+
+			//1マイクロ秒スリープ
+			std::this_thread::sleep_for(std::chrono::microseconds(1));
+
+		}
+	}
+	//現在の時間を記録をする
+	reference_ = std::chrono::steady_clock::now();
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetCPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index)
