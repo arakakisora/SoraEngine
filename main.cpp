@@ -27,6 +27,8 @@
 #include "DirectXCommon.h"
 #include"D3DResourceLeakChecker.h"
 #include "Logger.h"
+#include "SpriteCommon.h"
+#include"Sprite.h"
 
 
 
@@ -189,11 +191,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	winApp = new WinApp;
 	winApp->Initialize();
 	//DX初期化
-	dxCommon = new DirectXCommon;
+	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 	//入力初期化
 	input = new Input();
 	input->Initialize(winApp);
+
+	SpriteCommon* spriteCommon = nullptr;
+	//スプライト共通部分の初期化
+	spriteCommon = new SpriteCommon();
+	spriteCommon->Initialize();
 
 
 
@@ -684,10 +691,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion 
 
 
-	//ウィンドウのｘボタンが押されるまでループ
+	
+	Sprite* sprite = new Sprite();
+	sprite->Initialize();
 
-
-
+	
 
 
 
@@ -897,6 +905,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete winApp;
 	delete dxCommon;
 	delete input;
+	delete spriteCommon;
+	delete sprite;
 
 	return 0;
 
