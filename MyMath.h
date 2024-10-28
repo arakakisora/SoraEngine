@@ -12,14 +12,6 @@
 #include <string>
 
 
-
-
-struct Transform {
-	Vector3 scale;
-	Vector3 rotate;
-	Vector3 translate;
-};
-
 struct VertexData {
 
 	Vector4 position;
@@ -27,6 +19,14 @@ struct VertexData {
 	Vector3 normal;
 
 };
+
+struct Transform {
+	Vector3 scale;
+	Vector3 rotate;
+	Vector3 translate;
+};
+
+
 struct Material {
 
 	Vector4 color;
