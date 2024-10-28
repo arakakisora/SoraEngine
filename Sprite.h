@@ -51,8 +51,25 @@ public:
 	/// 初期化
 	/// </summary>
 	void Initialize(SpriteCommon* spriteCommon);
+	/// <summary>
+	/// 更新
+	/// </summary>
 	void Update();
+	/// <summary>
+	/// 描画
+	/// </summary>
 	void Draw();
+
+	//Getter
+	const Vector2& GetSize()const { return size; }
+	const Vector2& GetPosition()const { return position; }
+	const float& GetRotation()const { return rotation; }
+	const Vector4& GetColor()const { return materialData->color; }
+	//Setter
+	void SetSize(const Vector2& size) { this->size= size; }
+	void SetPosition(const Vector2& position) { this->position = position; }
+	void SetRotation(const float& rotation) { this->rotation = rotation; }
+	void setColor(const Vector4& color) { materialData->color=color; }
 
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
@@ -77,10 +94,13 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	//IndexBufferSprite頂点バッファーを作成する
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
-
-
+	//Transform
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
+	//設定用SRT
+	Vector2 size = { 640.0f,360.0f };
+	Vector2 position = { 0.0f,0.0f };
+	float rotation = 0.0f;
 
 };
 

@@ -232,7 +232,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region POS
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-	
+
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 #pragma endregion
 
@@ -360,15 +360,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
-	
-	
-
-
-	
 
 
 
-	
+
+
+
+
+
+
 
 
 
@@ -417,10 +417,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	
 
-	
-	
+
+
+
 
 	//平行光源用のResoureceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(sizeof(DirectionalLight));
@@ -439,7 +439,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//Texturを読んで転送する
 	DirectX::ScratchImage mipImages = dxCommon->LoadTexture("Resources/uvChecker.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon-> CreateTextureResource(metadata);
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(metadata);
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResouce = dxCommon->UploadTextureData(textureResource, mipImages);
 
 	//Textur2を読んで転送する
@@ -478,29 +478,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDesc3.Texture2D.MipLevels = UINT(metadata3.mipLevels);
 
 	//SRVを作成するDescriptHeap	の場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU =  dxCommon->GetSRVCPUDescriputorHandole(1);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU =  dxCommon->GetSRVGPUDescriputorHandole(1);
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetSRVCPUDescriputorHandole(1);
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetSRVGPUDescriputorHandole(1);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxCommon->GetSRVCPUDescriputorHandole(2);
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxCommon->GetSRVGPUDescriputorHandole(2);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU3 = dxCommon->GetSRVCPUDescriputorHandole(3);
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU3 = dxCommon->GetSRVGPUDescriputorHandole(3);
-	
+
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 	//dxCommon->GetDevice()->CreateShaderResourceView(textureResource3.Get(), &srvDesc3, textureSrvHandleCPU3);
 
 #pragma endregion 
 
+	std::vector<Sprite*>sprites;
+	for (uint32_t i = 0; i < 5; ++i) {
+		Sprite* sprite = new Sprite();
+		sprite->Initialize(spriteCommon);
+		sprites.push_back(sprite);
 
-	
-	Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon);
-
-	
+	}
 
 
+	/*Sprite* sprite = new Sprite();
+	sprite->Initialize(spriteCommon);*/
+
+
+
+
+	int i = 0;
+	for (Sprite* sprite : sprites) {
+		Vector2 position = sprite->GetPosition();
+		Vector2 size = sprite->GetSize();
+
+		position.x = 200.0f*i;
+		size = Vector2(100, 100);
+
+		sprite->SetPosition(position);
+		sprite->SetSize(size);
+		i++;
+		
+	}
 
 
 
@@ -510,7 +530,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//カメラ用のTransformを作る
 	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 	//sprite用のtransformSpriteを作る
-	
+
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
@@ -546,14 +566,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		transformaitionMatrixDataModel->WVP = worldViewProjectionMatrixModel;
 		transformaitionMatrixDataModel->World = worldMatrixmodel;*/
 
-		
-		sprite->Update();
 
 
-	/*	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-		uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
-		uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-		materialDataSprite->uvTransform = uvTransformMatrix;*/
+
+		for (Sprite* sprite : sprites) {
+
+			sprite->Update();
+
+
+
+		}
+
+
+
+		/*	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+			materialDataSprite->uvTransform = uvTransformMatrix;*/
 
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -586,12 +615,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
 			ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
 		}
-		////SpriteTransform
 		//if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 		//{
-		//	ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x, 0.1f);
-		//	ImGui::DragFloat3("*RotateSprite", &transformSprite.rotate.y, 0.1f);
-		//	ImGui::DragFloat3("*TransrateSprite", &transformSprite.translate.x);
+		//	//SpriteTransform
+		//	Vector2 size = sprite->GetSize();
+		//	Vector2 position = sprite->GetPosition();
+		//	float rotation = sprite->GetRotation();
+		//	Vector4 spritecolor = sprite->GetColor();
+
+		//	ImGui::ColorEdit4("*spriteColor", &spritecolor.x);
+		//	ImGui::DragFloat2("*ScaleSprite", &size.x, 0.1f);
+		//	ImGui::DragFloat("*RotateSprite", &rotation, 0.1f);
+		//	ImGui::DragFloat2("*TransrateSprite", &position.x);
+		//	sprite->setColor(spritecolor);
+		//	sprite->SetPosition(position);
+		//	sprite->SetRotation(rotation);
+		//	sprite->SetSize(size);
 		//}
 		//uvTransformSprite
 		if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
@@ -622,9 +661,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 		spriteCommon->CommonDraw();
 
-		sprite->Draw();
+		/*sprite->Draw();*/
 
-		
+		for (Sprite* sprite : sprites) {
+
+			sprite->Draw();
+
+
+		}
+
+
 
 		//Sphere
 		dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
@@ -638,7 +684,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//dxCommon->GetCommandList()->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
 
 
-		
+
 
 		//model用
 		dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &VertexBufferViewModel);
@@ -652,7 +698,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
 
 
-		
+
 
 
 		dxCommon->End();
@@ -689,7 +735,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete dxCommon;
 	delete input;
 	delete spriteCommon;
-	delete sprite;
+
+	for (Sprite* sprite : sprites) {
+		delete sprite; // 各Spriteオブジェクトの削除
+	}
 
 	return 0;
 
