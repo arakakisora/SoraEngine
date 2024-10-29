@@ -188,7 +188,7 @@ void DirectXCommon::DepthBufferInitialize()
 	depthStenciResource = resource;
 
 }
-
+const uint32_t kMaxSRVCont = 512;
 void DirectXCommon::DescriptorHeepInitialize()
 {
 	//サイズを取得
@@ -198,7 +198,7 @@ void DirectXCommon::DescriptorHeepInitialize()
 
 	//ディスクリプタヒープの生成
 	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);//RTV
-	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);//SRV
+	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCont, true);//SRV
 	dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);//DVS用のヒープでディスクリプタの数は1．DSVはShader内で触るものではない
 
 }

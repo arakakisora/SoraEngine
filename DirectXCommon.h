@@ -147,7 +147,8 @@ private:
 	D3D12_RESOURCE_BARRIER barrier{};
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
-
+	//最大SRV数(最大テクスチャ枚数)
+	static const uint32_t kMaxSRVCont;
 
 private:
 	//デスクリプタヒープを生成する
