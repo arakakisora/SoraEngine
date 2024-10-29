@@ -474,7 +474,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12
 
 
 //Prticle生成関数
-Particle MakeNewParticle(std::mt19937& randomEngine) {
+Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate) {
 
 
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
@@ -482,10 +482,11 @@ Particle MakeNewParticle(std::mt19937& randomEngine) {
 	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 
 	Particle particle;
+	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
 	particle.transform.scale = { 0.5f,0.5f,0.5f };
 	particle.transform.rotate = { 0.0f,3.0f,0.0f };
-	particle.transform.translate = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+	particle.transform.translate = translate + randomTranslate;
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine),1 };
 	particle.lifetime = distTime(randomEngine);
@@ -493,6 +494,17 @@ Particle MakeNewParticle(std::mt19937& randomEngine) {
 
 	return particle;
 }
+
+std::list<Particle>Emit(const Emitter& emitter, std::mt19937& randomEngin) {
+
+	std::list<Particle>particles;
+	for (uint32_t cout = 0; cout < emitter.count; ++cout) {
+		particles.push_back(MakeNewParticle(randomEngin, emitter.transform.translate));
+
+	}
+	return particles;
+}
+
 
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -916,7 +928,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//モデル用のVetexResouceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceModel = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 
-	
+
 
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -1081,7 +1093,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	
+
 
 	//ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -1173,7 +1185,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->intensity = 1.0f;
 
 	//Instancing用のTransformationMatrixリソースを作る
-	const uint32_t kNumMaxInstance = 10;//インスタンス数
+	const uint32_t kNumMaxInstance = 100;//インスタンス数
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce =
 		CreateBufferResource(device, sizeof(ParticleForGPU) * kNumMaxInstance);
 	//書き込むためのアドレスを取得
@@ -1242,6 +1254,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU3 = GetCPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU3 = GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 
+
 	D3D12_SHADER_RESOURCE_VIEW_DESC instancingSrvDesc{};
 	instancingSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	instancingSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -1288,7 +1301,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//wvpData用のTransform変数を作る
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//カメラ用のTransformを作る
-	Transform cameraTransform = { {1.0f,1.0f,1.0f},{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f} ,{ 0.0f,23.0f,10.0f} };
+	Transform cameraTransform = { {1.0f,1.0f,1.0f},{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float>,0.0f} ,{ 0.0f,23.0f,10.0f} };
 	//sprite用のtransformSpriteを作る
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -1300,11 +1313,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
-	
-	Particle particles[kNumMaxInstance];
-	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-		particles[index] = MakeNewParticle(randomEngine);
-	}
+
+	std::list<Particle> particles;
+	/*particles.push_back(MakeNewParticle(randomEngine));
+	particles.push_back(MakeNewParticle(randomEngine));
+	particles.push_back(MakeNewParticle(randomEngine));*/
+
+
+	Emitter emitter{};
+	emitter.count = 100;
+	emitter.frequency = 0.5f;//0.5秒ごとに発生
+	emitter.frequencyTime = 0.0f;//発生頻度用の時刻、0で初期化	
+	emitter.transform.translate = { 0.0f,0.0f,0.0f };
+	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
+	emitter.transform.scale = { 1.0f,1.0f,1.0f };
+
+
+
+
+
 	const float kDeletaTime = 1.0f / 60.f;
 
 	bool useMonsterBall = true;
@@ -1323,15 +1350,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//更新
 			transform.rotate.y += 0.03f;
 
-			if (start) {
 
-				for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-
-					particles[index].transform.translate += particles[index].Velocity * kDeletaTime;
-
-
-				}
-			}
 
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1367,37 +1386,55 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			billboardMatrix.m[3][2] = 0.0f;
 
 			//instance用
-			uint32_t numInstance = 0;	
-			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-				if (particles[index].lifetime <= particles[index].currentTime) {
+			uint32_t numInstance = 0;
+
+			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
+				if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
+					particleIterator = particles.erase(particleIterator);
 					continue;
 				}
-				Matrix4x4 worldMatrix =MakeScaleMatrix( particles[index].transform.scale)*billboardMatrix* MakeTranslateMatrix (particles[index].transform.translate);
-					/*MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
+				Matrix4x4 worldMatrix = MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MakeTranslateMatrix((*particleIterator).transform.translate);
+				/*MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
 				Matrix4x4 worldViewProjetionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-				//particles[index].transform.translate += particles[index].Velocity * kDeletaTime;
-				//particles[index].currentTime += kDeletaTime;
-				float alpha = 1.0f /*- (particles[index].currentTime / particles[index].lifetime)*/;
+				(*particleIterator).transform.translate += (*particleIterator).Velocity * kDeletaTime;
+				(*particleIterator).currentTime += kDeletaTime;
+				float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
+				if (numInstance < kNumMaxInstance) {
+					instancingData[numInstance].WVP = worldViewProjetionMatrix;
+					instancingData[numInstance].World = worldMatrix;
+					instancingData[numInstance].color = (*particleIterator).color;
+					instancingData[numInstance].color.w = alpha;
+					++numInstance;
+				}
+				++particleIterator;
 
-				instancingData[index].WVP = worldViewProjetionMatrix;
-				instancingData[index].World = worldMatrix;
-				instancingData[index].color = particles[index].color;
-				instancingData[index].color.w = alpha;
-				++numInstance;
-				
 			}
+
+			emitter.frequencyTime += kDeletaTime;//時刻を進める
+			if (emitter.frequency <= emitter.frequencyTime) {//頻度より大きいなら発生
+				particles.splice(particles.end(), Emit(emitter, randomEngine));//発生処理
+				emitter.frequencyTime -= emitter.frequency;//余計に過ぎた時間も加味して頻度計算する
+			}
+
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			ImGui::Begin("Setting");
 
-			if (ImGui::Button("start")) {
-				start = true;
 
+			if (ImGui::CollapsingHeader("Prticles", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				if (ImGui::Button("Add Particle")) {
+
+					particles.splice(particles.end(), Emit(emitter, randomEngine));
+
+				}
+
+				ImGui::DragFloat3("*EmitterTranslate", &emitter.transform.translate.x, 0.01f,-100.0f,100.0f);
+				
 			}
-
 			//CameraTransform
 			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 			{

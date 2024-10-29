@@ -83,6 +83,13 @@ struct ParticleForGPU
 
 };
 
+struct Emitter {
+	Transform transform;//エミッタのtransform
+	uint32_t count;//発生数
+	float frequency;//発生頻度
+	float frequencyTime;//頻度用時刻	
+};
+
 
 //回転
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
