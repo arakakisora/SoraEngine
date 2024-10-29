@@ -1288,7 +1288,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//wvpData用のTransform変数を作る
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//カメラ用のTransformを作る
-	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
+	Transform cameraTransform = { {1.0f,1.0f,1.0f},{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f} ,{ 0.0f,23.0f,10.0f} };
 	//sprite用のtransformSpriteを作る
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -1297,6 +1297,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::mt19937 randomEngine(seedGenerator());
 
 	//Instancing用
+
+
+	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
 	
 	Particle particles[kNumMaxInstance];
 	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
@@ -1335,6 +1338,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWindth) / float(kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+
 			wvpData->WVP = worldViewProjectionMatrix;
 			wvpData->World = worldMatrix;
 
@@ -1356,19 +1360,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
+
+			Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+			billboardMatrix.m[3][0] = 0.0f;
+			billboardMatrix.m[3][1] = 0.0f;
+			billboardMatrix.m[3][2] = 0.0f;
+
 			//instance用
 			uint32_t numInstance = 0;	
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 				if (particles[index].lifetime <= particles[index].currentTime) {
 					continue;
 				}
-				Matrix4x4 worldMatrix =
-					MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+				Matrix4x4 worldMatrix =MakeScaleMatrix( particles[index].transform.scale)*billboardMatrix* MakeTranslateMatrix (particles[index].transform.translate);
+					/*MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
 				Matrix4x4 worldViewProjetionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 
-				particles[index].transform.translate += particles[index].Velocity * kDeletaTime;
-				particles[index].currentTime += kDeletaTime;
-				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifetime);
+				//particles[index].transform.translate += particles[index].Velocity * kDeletaTime;
+				//particles[index].currentTime += kDeletaTime;
+				float alpha = 1.0f /*- (particles[index].currentTime / particles[index].lifetime)*/;
 
 				instancingData[index].WVP = worldViewProjetionMatrix;
 				instancingData[index].World = worldMatrix;
