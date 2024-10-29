@@ -450,3 +450,15 @@ Matrix4x4 MakeIdentity4x4() {
 
 	return ans;
 }
+
+bool IsCollision(const AABB& aabb, const Vector3& point)
+{
+	// point が aabb の範囲内にあるかを判定
+	if (point.x >= aabb.min.x && point.x <= aabb.max.x &&
+		point.y >= aabb.min.y && point.y <= aabb.max.y &&
+		point.z >= aabb.min.z && point.z <= aabb.max.z)
+	{
+		return true; // 範囲内にあるので衝突
+	}
+	return false; // 範囲外なので衝突していない
+}

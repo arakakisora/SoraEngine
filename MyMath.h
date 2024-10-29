@@ -12,7 +12,11 @@
 #include <string>
 
 
+struct AABB {
 
+	Vector3 min;
+	Vector3 max;
+};
 
 struct Transform {
 	Vector3 scale;
@@ -90,6 +94,14 @@ struct Emitter {
 	float frequencyTime;//頻度用時刻	
 };
 
+struct AccelerationField{
+
+	Vector3 acceleration;//加速度	
+	AABB area;//範囲
+
+};
+
+
 
 //回転
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
@@ -132,6 +144,8 @@ Matrix4x4 MekeIdentity4x4();
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 Matrix4x4 MakeIdentity4x4();
+
+bool IsCollision(const AABB& aabb, const Vector3& point);
 
 
 

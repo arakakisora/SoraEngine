@@ -1328,8 +1328,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
 	emitter.transform.scale = { 1.0f,1.0f,1.0f };
 
-
-
+	AccelerationField accelerationFienld;
+	accelerationFienld.acceleration = { 15.0f,0.0f,0.0f };
+	accelerationFienld.area.min = { 0.0f,0.0f,0.0f };
+	accelerationFienld.area.max = { 1.0f,1.0f,1.0f };
 
 
 	const float kDeletaTime = 1.0f / 60.f;
@@ -1393,9 +1395,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					particleIterator = particles.erase(particleIterator);
 					continue;
 				}
+
+				
+
 				Matrix4x4 worldMatrix = MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MakeTranslateMatrix((*particleIterator).transform.translate);
 				/*MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
 				Matrix4x4 worldViewProjetionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+				if (IsCollision(accelerationFienld.area, (*particleIterator).transform.translate)) {
+
+					(*particleIterator).Velocity += accelerationFienld.acceleration * kDeletaTime;
+				}
 
 				(*particleIterator).transform.translate += (*particleIterator).Velocity * kDeletaTime;
 				(*particleIterator).currentTime += kDeletaTime;
@@ -1418,12 +1427,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 
+			
+
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			ImGui::Begin("Setting");
 
-
+			
 			if (ImGui::CollapsingHeader("Prticles", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				if (ImGui::Button("Add Particle")) {
