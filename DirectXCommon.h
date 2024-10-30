@@ -42,11 +42,11 @@ public:
 	//<summary>
 	//SRVの指定番号のCPUデスクリプタハンドルを取得
 	//</summary>
-	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriputorHandole(uint32_t index);
+	 D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriputorHandole(uint32_t index);
 	//<summary>
 	//SRVの指定番号のGPUデスクリプタハンドルを取得
 	//</summary>
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriputorHandole(uint32_t index);
+	 D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriputorHandole(uint32_t index);
 
 	//<summary>
 	//SRVの指定番号のCPUデスクリプタハンドルを取得
@@ -73,7 +73,7 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
 
-	ID3D12Device *GetDevice() const{ return device.Get(); }
+	ID3D12Device* GetDevice() const { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 
 	//CompileShader関数の作成
@@ -83,24 +83,20 @@ public:
 		//compilerに使用するProfile
 		const wchar_t* profile);
 
-	//<summary>
+
 	//バッファーリソースの生成
-	//</summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
-	//<summary>
+
 	//テクスチャリソースの生成
-	//</summary>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
-	//<summary>
+
 	//テクスチャデータの転送
-	//</summary>
 	[[nodiscard]]
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource>texture, const DirectX::ScratchImage& mipImages);
-	//<summary>
-	//テクスチャファイルの読み込み
-	//</summary>
-	DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
+
+	//最大SRV数(最大テクスチャ枚数)
+	static const uint32_t kMaxSRVCount;
 private:
 
 	//WindowsAPI
@@ -147,8 +143,7 @@ private:
 	D3D12_RESOURCE_BARRIER barrier{};
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
-	//最大SRV数(最大テクスチャ枚数)
-	static const uint32_t kMaxSRVCont;
+
 
 private:
 	//デスクリプタヒープを生成する
@@ -161,7 +156,7 @@ private:
 	void UodateFixFPS();
 
 
- 
+
 
 };
 

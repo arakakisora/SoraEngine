@@ -50,7 +50,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(SpriteCommon* spriteCommon);
+	void Initialize(SpriteCommon* spriteCommon,std::string textureFilePath);
 	/// <summary>
 	/// 更新
 	/// </summary>
@@ -101,6 +101,8 @@ private:
 	Vector2 size = { 640.0f,360.0f };
 	Vector2 position = { 0.0f,0.0f };
 	float rotation = 0.0f;
+
+	uint32_t textureIndex = 0;
 
 };
 

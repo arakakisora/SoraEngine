@@ -29,6 +29,7 @@
 #include "Logger.h"
 #include "SpriteCommon.h"
 #include"Sprite.h"
+#include "TextureManager.h"
 
 
 
@@ -193,12 +194,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DX初期化
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
+
+	//テクスチャマネージャの初期化
+	TextureManager::GetInstance()->Initialize();
+
 	//入力初期化
 	input = new Input();
 	input->Initialize(winApp);
 
-	SpriteCommon* spriteCommon = nullptr;
 	//スプライト共通部分の初期化
+	SpriteCommon* spriteCommon = nullptr;
 	spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 
@@ -513,13 +518,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector2 position = sprite->GetPosition();
 		Vector2 size = sprite->GetSize();
 
-		position.x = 200.0f*i;
+		position.x = 200.0f * i;
 		size = Vector2(100, 100);
 
 		sprite->SetPosition(position);
 		sprite->SetSize(size);
 		i++;
-		
+
 	}
 
 
@@ -731,6 +736,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//WindowsAPI終了処理
 	winApp->Finalize();
 	//WindowsAPI解放
+	TextureManager::GetInstance()->Finalize();
 	delete winApp;
 	delete dxCommon;
 	delete input;

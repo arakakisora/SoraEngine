@@ -31,11 +31,29 @@ public:
 	//終了
 	void Finalize();
 
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	void Initialize();
+	
+	//テクスチャファイルの読み込み
+	void LoadTexture(const std::string& filePath);
+
+	//SRVインデックスの開始番号
+	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
+
+	//テクスチャ番号からCPUハンドルを取得
+	D3D12_GPU_DESCRIPTOR_HANDLE GeTSrvHandleGPU(uint32_t textureIndex);
+
+
+
+	static uint32_t kSRVIndexTop;
+
 private:
 
 	//テクスチャデータ
 	std::vector<TexturData>textureDatas;
-	
+
 
 
 };
