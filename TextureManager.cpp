@@ -1,5 +1,5 @@
 #include "TextureManager.h"
-#include "DirectXCommon.h"
+
 #include "StringUtility.h"
 
 
@@ -24,9 +24,9 @@ void TextureManager::Finalize()
 
 }
 
-void TextureManager::Initialize()
+void TextureManager::Initialize(DirectXCommon* dxCommon)
 {
-
+	dxCommon_ = dxCommon;
 	textureDatas.reserve(DirectXCommon::kMaxSRVCount);
 
 }
@@ -67,14 +67,14 @@ void TextureManager::LoadTexture(const std::string& filePath)
 
 	textureData.filePath= ConvertString(filePathW);
 	textureData.metadata = image.GetMetadata();
-	textureData.resource = DirectXCommon::CreateTextureResource(textureData.metadata);
+	textureData.resource = dxCommon_->CreateTextureResource(textureData.metadata);
 
 
 	//テクスチャデータの要素番号をSRVのインデックスとする
 	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()-1)+kSRVIndexTop;
 
-	textureData.srvHandleCPU = DirectXCommon::GetSRVCPUDescriputorHandole(srvIndex);
-	textureData.srvHandleGPU = DirectXCommon::GetSRVGPUDescriputorHandole(srvIndex);
+	textureData.srvHandleCPU = dxCommon_->GetSRVCPUDescriputorHandole(srvIndex);
+	textureData.srvHandleGPU = dxCommon_->GetSRVGPUDescriputorHandole(srvIndex);
 
 	//meraDaraを気にSRVの設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{  };
@@ -82,7 +82,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = UINT(textureData.metadata.mipLevels);
 
-	DirectXCommon::GetDevice()->CreateShaderResourceView(textureData.resource, &srvDesc, textureData.srvHandleCPU);
+	dxCommon_->GetDevice()->CreateShaderResourceView(textureData.resource.Get(), &srvDesc, textureData.srvHandleCPU);
 
 
 }

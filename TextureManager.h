@@ -2,6 +2,7 @@
 #include <string>
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
+#include "DirectXCommon.h"
 
 
 
@@ -34,7 +35,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize();
+	void Initialize(DirectXCommon* dxCommon);
 	
 	//テクスチャファイルの読み込み
 	void LoadTexture(const std::string& filePath);
@@ -53,7 +54,7 @@ private:
 
 	//テクスチャデータ
 	std::vector<TexturData>textureDatas;
-
+	DirectXCommon* dxCommon_;
 
 
 };

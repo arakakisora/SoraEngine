@@ -188,7 +188,7 @@ void DirectXCommon::DepthBufferInitialize()
 	depthStenciResource = resource;
 
 }
-const uint32_t kMaxSRVCont = 512;
+const uint32_t DirectXCommon::kMaxSRVCount = 512;
 void DirectXCommon::DescriptorHeepInitialize()
 {
 	//サイズを取得
