@@ -76,25 +76,31 @@ void Sprite::Update()
 
 		top = -top;
 		bottom = -bottom;
+
 	}
+
+	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetaData(textureIndex);
+	float tex_left = textureLeftTop_.x / metadata.width;
+	float tex_right = (textureLeftTop_.x + textureSize_.x) / metadata.width;
+	float tex_top = textureLeftTop_.y / metadata.height;
+	float tex_bottom = (textureLeftTop_.y + textureSize_.y) / metadata.height;
 
 	vetexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	//一個目
-	vertexData[0].position = { left,bottom,0.0f,1.0f };//左した
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-
-	vertexData[1].position = { left,top,0.0f,1.0f };//左上
-	vertexData[1].texcoord = { 0.0f,0.0f };
-	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-
+	vertexData[0].position = { left,bottom,0.0f,1.0f };	//左下
+	vertexData[1].position = { left,top,0.0f,1.0f };	//左上
 	vertexData[2].position = { right,bottom,0.0f,1.0f };//右下
-	vertexData[2].texcoord = { 1.0f,1.0f };
-	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	//二個目
-	vertexData[3].position = { right,top,0.0f,1.0f };//右上
-	vertexData[3].texcoord = { 1.0f,0.0f };
-	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
+	vertexData[3].position = { right,top,0.0f,1.0f };	//右上
+
+	vertexData[0].texcoord = { tex_left,tex_bottom }; //左下
+	vertexData[1].texcoord = { tex_left,tex_top };		  //左上
+	vertexData[2].texcoord = { tex_right,tex_bottom };//右下
+	vertexData[3].texcoord = { tex_right,tex_top };	  //右上
+
+	vertexData[0].normal = { 0.0f,0.0f,-1.0f };//左下	
+	vertexData[1].normal = { 0.0f,0.0f,-1.0f };//左上
+	vertexData[2].normal = { 0.0f,0.0f,-1.0f };//右下
+	vertexData[3].normal = { 0.0f,0.0f,-1.0f };//右上
 
 	//インデックスリソースにデータ書き込む
 	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));

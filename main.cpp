@@ -442,7 +442,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/CIMG1073(1).jpg" };
+	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 5; ++i) {
@@ -470,8 +470,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		sprite->SetPosition(position);
 		sprite->SetSize(size);
-		//sprite->SetAnchorPoint(Vector2{0,0 });
+		sprite->SetAnchorPoint(Vector2{0.5f,0.5f });
 		sprite->SetIsFlipY(0);
+		sprite->SetTextureLeftTop(Vector2{ 0.0f,0.0f });
+		//sprite->SetTextureSize(Vector2{ 64.0f,64.0f });
 		i++;
 
 	}

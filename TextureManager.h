@@ -36,11 +36,12 @@ public:
 	/// 初期化
 	/// </summary>
 	void Initialize(DirectXCommon* dxCommon);
+
+	//メタデータを取得
+	const DirectX::TexMetadata& GetMetaData(uint32_t textureIndex);
 	
 	//テクスチャファイルの読み込み
 	void LoadTexture(const std::string& filePath);
-
-
 
 	//SRVインデックスの開始番号
 	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
@@ -48,8 +49,7 @@ public:
 	//テクスチャ番号からCPUハンドルを取得
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex);
 
-
-
+	//Srvの最初
 	static uint32_t kSRVIndexTop;
 
 private:
