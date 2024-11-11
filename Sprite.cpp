@@ -25,7 +25,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 	//書き込むためのアドレスを取得
-	
+
 
 	//Index
 	//リソース先頭のアドレスから使う
@@ -34,12 +34,12 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
 	//インデックスはuint32_tとする
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	
+
 
 	//Material
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//色
-	materialData->color =  Vector4(1.0f, 1.0f, 1.0f, 1.0f) ;
+	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->enableLighting = false;
 	materialData->uvTransform = MakeIdentity4x4();
 
@@ -57,21 +57,42 @@ void Sprite::Update()
 	transform.translate = { position.x,position.y,0.0f };
 	transform.scale = { size.x,size.y,1.0f, };
 
+	//アンカーポイント
+	float left = 0.0f - anchorPoint_.x;
+	float right = 1.0f - anchorPoint_.x;
+	float top = 0.0f - anchorPoint_.y;
+	float bottom = 1.0f - anchorPoint_.y;
+
+	//フリップ
+	//左右反転
+	if (isFlipX_) {
+
+		left = -left;
+		right = -right;
+
+	}
+	//上下反転
+	if (isFlipY_) {
+
+		top = -top;
+		bottom = -bottom;
+	}
+
 	vetexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	//一個目
-	vertexData[0].position = { 0.0f,1.0f,0.0f,1.0f };//左した
+	vertexData[0].position = { left,bottom,0.0f,1.0f };//左した
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
 
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };//左上
+	vertexData[1].position = { left,top,0.0f,1.0f };//左上
 	vertexData[1].texcoord = { 0.0f,0.0f };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
 
-	vertexData[2].position = { 1.0f,1.0f,0.0f,1.0f };//右下
+	vertexData[2].position = { right,bottom,0.0f,1.0f };//右下
 	vertexData[2].texcoord = { 1.0f,1.0f };
 	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
 	//二個目
-	vertexData[3].position = { 1.0f,0.0f,0.0f,1.0f };//右上
+	vertexData[3].position = { right,top,0.0f,1.0f };//右上
 	vertexData[3].texcoord = { 1.0f,0.0f };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 
@@ -94,16 +115,16 @@ void Sprite::Update()
 void Sprite::Draw()
 {
 	//sprite用の描画
-		spriteCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-		spriteCommon_->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
-		spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		//TransFomationMatrixBufferの場所を設定
-		spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-		spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
-		//spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-		//描画！
-		//commandList->DrawInstanced(6, 1, 0, 0);
-		spriteCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+	spriteCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	spriteCommon_->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
+	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	//TransFomationMatrixBufferの場所を設定
+	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureIndex));
+	//spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	//描画！
+	//commandList->DrawInstanced(6, 1, 0, 0);
+	spriteCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 

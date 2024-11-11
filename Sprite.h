@@ -51,7 +51,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(SpriteCommon* spriteCommon,std::string textureFilePath);
+	void Initialize(SpriteCommon* spriteCommon, std::string textureFilePath);
 	/// <summary>
 	/// 更新
 	/// </summary>
@@ -66,11 +66,17 @@ public:
 	const Vector2& GetPosition()const { return position; }
 	const float& GetRotation()const { return rotation; }
 	const Vector4& GetColor()const { return materialData->color; }
+	const Vector2 &GetAnchorPoint()const { return anchorPoint_; }
+	const bool& GetIsFlipX()const { return isFlipX_; }
+	const bool& GetIsFlipY()const { return isFlipY_; }
 	//Setter
-	void SetSize(const Vector2& size) { this->size= size; }
+	void SetSize(const Vector2& size) { this->size = size; }
 	void SetPosition(const Vector2& position) { this->position = position; }
 	void SetRotation(const float& rotation) { this->rotation = rotation; }
-	void setColor(const Vector4& color) { materialData->color=color; }
+	void setColor(const Vector4& color) { materialData->color = color; }
+	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
+	void SetIsFlipX(const bool& isFlipX) { isFlipX_ = isFlipX; }
+	void SetIsFlipY(const bool& isFlipY) { isFlipY_ = isFlipY; }
 
 private:
 	SpriteCommon* spriteCommon_ = nullptr;
@@ -104,6 +110,13 @@ private:
 	float rotation = 0.0f;
 
 	uint32_t textureIndex = 0;
+
+	//アンカーポイント 中心位置を変えれる
+	Vector2 anchorPoint_ = { 0.0f,0.0f };
+
+	//フリップ
+	bool isFlipX_ = false;//左右フリップ
+	bool isFlipY_ = false;//上下フリップ
 
 };
 

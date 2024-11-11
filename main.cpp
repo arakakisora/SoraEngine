@@ -440,37 +440,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-#pragma region Texturを読む
-
-	
-
-	
-	
-
-	
-	
-
-	//Textur3を読んで転送する
-	//TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
-	
 
 
-
-#pragma endregion 
-
-
+	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/CIMG1073(1).jpg" };
 
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 5; ++i) {
 		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon, "Resources/monsterBall.png");
+		sprite->Initialize(spriteCommon, textureFilePath[1]);
 		sprites.push_back(sprite);
 
 	}
 
 
-	/*Sprite* sprite = new Sprite();
-	sprite->Initialize(spriteCommon);*/
+
+	
 
 
 
@@ -481,15 +465,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector2 size = sprite->GetSize();
 
 		position.x = 200.0f * i;
+		position.y = 200.0f ;
 		size = Vector2(100, 100);
 
 		sprite->SetPosition(position);
 		sprite->SetSize(size);
+		//sprite->SetAnchorPoint(Vector2{0,0 });
+		sprite->SetIsFlipY(0);
 		i++;
 
 	}
 
-
+	Vector2 rotation{0};
 
 
 	//wvpData用のTransform変数を作る
@@ -538,8 +525,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		for (Sprite* sprite : sprites) {
 
+			//rotation.x+=0.03f;
+			//sprite->SetRotation(rotation.x);
 			sprite->Update();
-
 
 
 		}
