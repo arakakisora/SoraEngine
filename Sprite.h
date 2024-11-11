@@ -96,6 +96,10 @@ public:
 	
 
 private:
+
+	//テクスチャサイズをイメージに合わせる
+	void AdjustTextureSize();
+
 	SpriteCommon* spriteCommon_ = nullptr;
 
 	//バッファリソース
@@ -138,7 +142,7 @@ private:
 	//テクスチャ左上座標
 	Vector2 textureLeftTop_ = { 0.0f,0.0f };
 	//テクスチャ切り出しサイズ
-	Vector2 textureSize_ = { 100.0f,100.0f };
+	Vector2 textureSize_ = { 512.0f,512.0f };
 
 };
 

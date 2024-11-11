@@ -49,6 +49,10 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	//単位行列を書き込んでおく
 	transformaitionMatrixData->WVP = MakeIdentity4x4();
 	transformaitionMatrixData->World = MakeIdentity4x4();
+
+	//画像のサイズに合わせる
+	AdjustTextureSize();
+
 }
 
 void Sprite::Update()
@@ -134,4 +138,14 @@ void Sprite::Draw()
 
 
 
+}
+
+void Sprite::AdjustTextureSize()
+{
+	//テクスチャメタデータを取得
+	const DirectX::TexMetadata& metadata = TextureManager::GetInstance()->GetMetaData(textureIndex);
+	//テクスチャ切り出しサイズ
+	textureSize_ = { static_cast<float>(metadata.width),static_cast<float>(metadata.height)};
+	//画像サイズをテクスチャサイズに合わせる
+	size = textureSize_;
 }
