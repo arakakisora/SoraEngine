@@ -44,7 +44,7 @@ public:
 	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
 
 	//テクスチャ番号からCPUハンドルを取得
-	D3D12_GPU_DESCRIPTOR_HANDLE GeTSrvHandleGPU(uint32_t textureIndex);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(uint32_t textureIndex);
 
 
 
@@ -54,7 +54,7 @@ private:
 
 	//テクスチャデータ
 	std::vector<TexturData>textureDatas;
-	DirectXCommon* dxCommon_;
+	DirectXCommon* dxCommon_=nullptr;
 
 
 };
