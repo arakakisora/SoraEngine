@@ -463,7 +463,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 5; ++i) {
 		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon, "Resources/uvChecker.png");
+		sprite->Initialize(spriteCommon, "Resources/monsterBall.png");
 		sprites.push_back(sprite);
 
 	}
