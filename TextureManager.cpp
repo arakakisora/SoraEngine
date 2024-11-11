@@ -66,10 +66,11 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	TexturData& textureData = textureDatas.back();
 
 	textureData.filePath= ConvertString(filePathW);
-	textureData.metadata = image.GetMetadata();
+	textureData.metadata = mipImages.GetMetadata();
 	textureData.resource = dxCommon_->CreateTextureResource(textureData.metadata);
 
 	Microsoft::WRL::ComPtr<ID3D12Resource>  intermediateResource = dxCommon_->UploadTextureData(textureData.resource, mipImages);
+	dxCommon_->CommandKick();
 
 	//テクスチャデータの要素番号をSRVのインデックスとする
 	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()-1)+kSRVIndexTop;

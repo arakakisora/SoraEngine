@@ -6,6 +6,9 @@
 
 void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 {
+	//Texturを読んで転送する
+	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+
 	spriteCommon_ = spriteCommon;
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 

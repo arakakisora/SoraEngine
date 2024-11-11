@@ -441,16 +441,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region Texturを読む
-	//Texturを読んで転送する
-	TextureManager::GetInstance()->LoadTexture("Resources/uvChecker.png");
+
 	
 
-	//Textur2を読んで転送する
-	TextureManager::GetInstance()->LoadTexture("Resources/monsterBall.png");
+	
+	
+
+	
 	
 
 	//Textur3を読んで転送する
-	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
+	//TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
 	
 
 

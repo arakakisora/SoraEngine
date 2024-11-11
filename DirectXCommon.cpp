@@ -629,7 +629,40 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
 	commandList->ResourceBarrier(1, &barrier);
+	
+
 	return intermediateResource;
+}
+
+void DirectXCommon::CommandKick()
+{
+
+	hr = commandList->Close();
+	assert(SUCCEEDED(hr));
+	//GPUにコマンドリストの実行を行わせる
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists);
+	//Fenceの値の更新
+	fenceValue++;
+	//GPUがここまでたどりついた時に、Fenceの値を指定したあたいに代入するようにsignalを送る
+	commandQueue->Signal(fence.Get(), fenceValue);
+	//Femceの値が指定したSignal値にたどり着いているか確認する
+		//GetCompletebValuの初期値はFence作成時に渡した初期値
+	if (fence->GetCompletedValue() < fenceValue) {
+
+		//指定したSignalにたどりついていないので、たどり着くまで待つようにイベントを設定する
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		//イベントを待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+
+	//次のフレーム用のコマンドリストを準備
+	hr = commandAllocator->Reset();
+	assert(SUCCEEDED(hr));
+	hr = commandList->Reset(commandAllocator.Get(), nullptr);
+	assert(SUCCEEDED(hr));
+
+
 }
 
 
