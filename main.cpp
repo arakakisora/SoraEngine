@@ -30,7 +30,8 @@
 #include "SpriteCommon.h"
 #include"Sprite.h"
 #include "TextureManager.h"
-
+#include "Object3DCommon.h"
+#include "Object3D.h"
 
 
 
@@ -182,6 +183,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("HEllo,DIrectX!\n");
 
+
+#pragma region 基盤システム初期化
 	//ポインタ
 	WinApp* winApp = nullptr;
 	DirectXCommon* dxCommon = nullptr;
@@ -198,17 +201,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
 
-	//入力初期化
+	//入力宣言
 	input = new Input();
+	//入力初期化
 	input->Initialize(winApp);
 
-	//スプライト共通部分の初期化
+	//スプライト宣言
 	SpriteCommon* spriteCommon = nullptr;
+	//スプライト共通部分の初期化
 	spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 
+	//3Dオブジェクト共通部宣言
+	Object3DCommon* object3DCommon = nullptr;
+	//3Dオブジェクト共通部の初期化
+	object3DCommon = new Object3DCommon;
+	object3DCommon->Initialize();
 
-
+#pragma endregion 
 
 
 
@@ -441,9 +451,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
+#pragma region 最初のシーン初期化
 
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
+	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
 		Sprite* sprite = new Sprite();
@@ -451,7 +463,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprites.push_back(sprite);
 
 	}
+
+	//3Dオブジェクトの初期化
+	Object3D* object3D = new Object3D();
+	object3D->Initialize();
+
 	
+#pragma endregion
+
+
+
 
 	int i = 0;
 	for (Sprite* sprite : sprites) {
@@ -687,11 +708,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete winApp;
 	delete dxCommon;
 	delete input;
-	delete spriteCommon;
 
+	//スプライト解放
+	delete spriteCommon;
 	for (Sprite* sprite : sprites) {
 		delete sprite; // 各Spriteオブジェクトの削除
 	}
+	//3Dオブジェクト解放
+	delete object3DCommon;
+	delete object3D;
 
 	return 0;
 
