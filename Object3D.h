@@ -4,6 +4,7 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include "RenderingData.h"
+#include "Model.h"
 
 class Object3DCommon;
 class Object3D
@@ -25,27 +26,14 @@ public:
 	void Draw();
 	
 
-	static MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
-	static ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename);
+	void Setmodel(Model* model) { model_ = model; }
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;
 
-	//モデル
-	//objファイルのデータ
-	ModelData modelData;
-	//バッファリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
-	//ばふぁリソース内のデータを指すポインタ
-	VertexData* vertexData = nullptr;
-	//バッファリソースの使い道を補足するバッファビュー
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	Model* model_ = nullptr;
 
-	//マテリアル
-	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
-	//マテリアルにデータを書き込む	
-	Material* materialData = nullptr;
+	
 
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
