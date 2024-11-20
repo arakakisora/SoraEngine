@@ -3,6 +3,7 @@
 #include "MyMath.h"
 #include "TextureManager.h"
 #include "RenderingPipeline.h"
+#include "ModelManager.h"
 
 
 
@@ -68,6 +69,12 @@ void Object3D::Draw()
 		model_->Draw();
 	}
 
+}
+
+void Object3D::SetModel(const std::string& filepath)
+{
+	//もでるを検索してセットする
+	model_ = ModelManager::GetInstans()->FindModel(filepath);
 }
 
 

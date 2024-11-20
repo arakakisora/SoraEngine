@@ -26,7 +26,8 @@ public:
 	void Draw();
 	
 
-	void Setmodel(Model* model) { model_ = model; }
+	void SetModel(Model* model) { model_ = model; }
+	void SetModel(const std::string& filepath);
 
 	//transrat
 	void SetTransform(const Transform& transform) { this->transform = transform; }
