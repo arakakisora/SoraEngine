@@ -87,52 +87,52 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>externals\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Sprite.cpp">
+    <ClCompile Include="engin\2d\Sprite.cpp">
       <Filter>ソース ファイル\engin\2d</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteCommon.cpp">
+    <ClCompile Include="engin\2d\SpriteCommon.cpp">
       <Filter>ソース ファイル\engin\2d</Filter>
     </ClCompile>
-    <ClCompile Include="Object3D.cpp">
+    <ClCompile Include="engin\3d\Object3D.cpp">
       <Filter>ソース ファイル\engin\3d</Filter>
     </ClCompile>
-    <ClCompile Include="Object3DCommon.cpp">
+    <ClCompile Include="engin\3d\Object3DCommon.cpp">
       <Filter>ソース ファイル\engin\3d</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
+    <ClCompile Include="engin\3d\Model.cpp">
       <Filter>ソース ファイル\engin\3d</Filter>
     </ClCompile>
-    <ClCompile Include="ModelCommon.cpp">
+    <ClCompile Include="engin\3d\ModelCommon.cpp">
       <Filter>ソース ファイル\engin\3d</Filter>
     </ClCompile>
-    <ClCompile Include="D3DResourceLeakChecker.cpp">
+    <ClCompile Include="engin\base\D3DResourceLeakChecker.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="DirectXCommon.cpp">
+    <ClCompile Include="engin\base\DirectXCommon.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="Logger.cpp">
+    <ClCompile Include="engin\base\Logger.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="ModelManager.cpp">
+    <ClCompile Include="engin\base\ModelManager.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
+    <ClCompile Include="engin\base\TextureManager.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
+    <ClCompile Include="engin\input\Input.cpp">
       <Filter>ソース ファイル\engin\input</Filter>
     </ClCompile>
-    <ClCompile Include="MyMath.cpp">
+    <ClCompile Include="engin\math\MyMath.cpp">
       <Filter>ソース ファイル\engin\math</Filter>
     </ClCompile>
-    <ClCompile Include="RenderingPipeline.cpp">
+    <ClCompile Include="engin\math\RenderingPipeline.cpp">
       <Filter>ソース ファイル\engin\math</Filter>
     </ClCompile>
-    <ClCompile Include="StringUtility.cpp">
+    <ClCompile Include="engin\base\StringUtility.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="WinApp.cpp">
+    <ClCompile Include="engin\base\WinApp.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
   </ItemGroup>
@@ -169,70 +169,70 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>externals\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Sprite.h">
+    <ClInclude Include="engin\2d\Sprite.h">
       <Filter>ヘッダー ファイル\engin\2d</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteCommon.h">
+    <ClInclude Include="engin\2d\SpriteCommon.h">
       <Filter>ヘッダー ファイル\engin\2d</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
+    <ClInclude Include="engin\3d\Model.h">
       <Filter>ヘッダー ファイル\engin\3d</Filter>
     </ClInclude>
-    <ClInclude Include="ModelCommon.h">
+    <ClInclude Include="engin\3d\ModelCommon.h">
       <Filter>ヘッダー ファイル\engin\3d</Filter>
     </ClInclude>
-    <ClInclude Include="Object3D.h">
+    <ClInclude Include="engin\3d\Object3D.h">
       <Filter>ヘッダー ファイル\engin\3d</Filter>
     </ClInclude>
-    <ClInclude Include="Object3DCommon.h">
+    <ClInclude Include="engin\3d\Object3DCommon.h">
       <Filter>ヘッダー ファイル\engin\3d</Filter>
     </ClInclude>
-    <ClInclude Include="D3DResourceLeakChecker.h">
+    <ClInclude Include="engin\base\D3DResourceLeakChecker.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="DirectXCommon.h">
+    <ClInclude Include="engin\base\DirectXCommon.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="Logger.h">
+    <ClInclude Include="engin\base\Logger.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="ModelManager.h">
+    <ClInclude Include="engin\base\ModelManager.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="StringUtility.h">
+    <ClInclude Include="engin\base\StringUtility.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManager.h">
+    <ClInclude Include="engin\base\TextureManager.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="WinApp.h">
+    <ClInclude Include="engin\base\WinApp.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="Vector2.h">
+    <ClInclude Include="engin\math\Vector2.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="Vector4.h">
+    <ClInclude Include="engin\math\Vector4.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="Vector3.h">
+    <ClInclude Include="engin\math\Vector3.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="RenderingPipeline.h">
+    <ClInclude Include="engin\math\RenderingPipeline.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="MyMath.h">
+    <ClInclude Include="engin\math\MyMath.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="Matrix3x3.h">
+    <ClInclude Include="engin\math\Matrix3x3.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
+    <ClInclude Include="engin\input\Input.h">
       <Filter>ヘッダー ファイル\engin\input</Filter>
     </ClInclude>
-    <ClInclude Include="Matrix4x4.h">
+    <ClInclude Include="engin\math\Matrix4x4.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
-    <ClInclude Include="RenderingData.h">
+    <ClInclude Include="engin\math\RenderingData.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
   </ItemGroup>
