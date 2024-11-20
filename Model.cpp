@@ -6,11 +6,11 @@
 #include "TextureManager.h"
 
 
-void Model::Initialize(ModelCommon* modeleCommon)
+void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
 {
 	modelCommon_ = modeleCommon;
 
-	modelData = LoadObjeFile("Resources", "plane.obj");
+	modelData = LoadObjeFile(directorypath, filename);
 
 	//モデルオブジェクト
 	//モデル用のVetexResouceを作成

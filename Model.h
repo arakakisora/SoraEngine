@@ -7,7 +7,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(ModelCommon *modeleCommon);
+	void Initialize(ModelCommon *modeleCommon,const std::string&directorypath,const std::string& filename);
 
 	/// <summary>
 	/// 描画
