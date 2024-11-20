@@ -33,6 +33,8 @@
 #include "Object3DCommon.h"
 #include "Object3D.h"
 #include "RenderingData.h"
+#include "Model.h"
+#include "ModelCommon.h"
 
 
 
@@ -104,6 +106,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//3Dオブジェクト共通部の初期化
 	object3DCommon = new Object3DCommon;
 	object3DCommon->Initialize(dxCommon);
+	//モデルの共通部初期化
+	ModelCommon* modelCommon = nullptr;
+	modelCommon = new ModelCommon;
+	modelCommon->Initialize(dxCommon);
+
+
 
 #pragma endregion 
 
@@ -310,10 +318,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
+	//モデル初期化
+	Model* model_ = new Model();
+	model_->Initialize(modelCommon);
+
 	//3Dオブジェクトの初期化
 	Object3D* object3D = new Object3D();
 	object3D->Initialize(object3DCommon);
+	object3D->Setmodel(model_);
 
+	//3Dオブジェクトの初期化
+	Object3D* object3D2nd = new Object3D();
+	object3D2nd->Initialize(object3DCommon);
+	object3D2nd->Setmodel(model_);
 	
 #pragma endregion
 
@@ -340,11 +357,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	}
 
-	Vector2 rotation{0};
+	float rotation{0};
 
 
 	//wvpData用のTransform変数を作る
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+
+	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 
 
@@ -378,10 +397,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		wvpData->World = worldMatrix;*/
 
 		
-
-
-
-
 		for (Sprite* sprite : sprites) {
 
 			//rotation.x+=0.03f;
@@ -390,8 +405,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		}
-
+		
+		rotation += 0.03f;
+		object3D->SetRotate(Vector3{ 0,rotation ,0 });
 		object3D->Update();
+
+		object3D2nd->SetRotate(Vector3{ 0,0 ,rotation });
+		object3D2nd->Update();
 
 		/*	Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
@@ -425,9 +445,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ModelTransform
 		if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			/*ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
+			transformModel = object3D->GetTransform();
+
+			ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
 			ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-			ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);*/
+			ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+
+			object3D->SetTransform(transformModel);
 		}
 		//if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 		//{
@@ -477,6 +501,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->CommonDraw();
 		object3D->Draw();
+		object3D2nd->Draw();
 
 #pragma endregion
 
@@ -562,6 +587,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//3Dオブジェクト解放
 	delete object3DCommon;
 	delete object3D;
+	delete object3D2nd;
+	delete modelCommon;
+	delete model_;
 
 	return 0;
 

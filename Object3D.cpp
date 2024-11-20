@@ -30,10 +30,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
 
-	//.objの参照しているテクスチャファイル読み込み
-	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
-	//読み込んだテクスチャ番号を取得
-	modelData.material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
+	
 
 	//カメラとモデルのTrandform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -44,7 +41,6 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 void Object3D::Update()
 {
-
 	
 
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);

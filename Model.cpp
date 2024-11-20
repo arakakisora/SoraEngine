@@ -10,7 +10,7 @@ void Model::Initialize(ModelCommon* modeleCommon)
 {
 	modelCommon_ = modeleCommon;
 
-	modelData = LoadObjeFile("Resources", "axis.obj");
+	modelData = LoadObjeFile("Resources", "plane.obj");
 
 	//モデルオブジェクト
 	//モデル用のVetexResouceを作成
@@ -36,7 +36,10 @@ void Model::Initialize(ModelCommon* modeleCommon)
 	materialData->enableLighting = true;//有効にするか否か
 	materialData->uvTransform = MekeIdentity4x4();
 
-
+	//.objの参照しているテクスチャファイル読み込み
+	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
+	//読み込んだテクスチャ番号を取得
+	modelData.material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
 
 }
 
