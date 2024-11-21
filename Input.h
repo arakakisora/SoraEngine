@@ -24,7 +24,7 @@ private:
 	BYTE key[256] = {};
 	BYTE preKey[256] = {};
 	ComPtr<IDirectInputDevice8>keyboard;
-	WinApp* winApp = nullptr;
+	WinApp* winApp_ = nullptr;
 
 };
 

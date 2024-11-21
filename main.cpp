@@ -1500,16 +1500,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CloseHandle(fenceEvent);
 
-	delete input;
+	
 
 #ifdef _DEBUG
 
 #endif // _DEBUG
 #pragma endregion
 
-	CoUninitialize();
-	CloseWindow(winApp->GetHwnd());
+	//WindowsAPI終了処理
+	winApp->Finalize();
+	//WindowsAPI解放
+	delete winApp;
 
+	delete input;
 
 	return 0;
 
