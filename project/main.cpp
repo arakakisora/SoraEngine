@@ -324,7 +324,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//3Dオブジェクトの初期化
 	Object3D* object3D = new Object3D();
 	object3D->Initialize(object3DCommon);
-	object3D->SetModel("axis.obj");
+	object3D->SetModel("plane.obj");
 
 	//3Dオブジェクトの初期化
 	Object3D* object3D2nd = new Object3D();
