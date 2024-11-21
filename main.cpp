@@ -575,6 +575,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(device != nullptr);
 	Log("Complete create D3D12Device!!!\n");
 
+	//入力初期化
+	Input* input = nullptr;
+	input = new Input();
+	input->Initialize(wc.hInstance, hwnd);
+
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue = nullptr;
 
@@ -1267,10 +1272,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
-	Input* input = nullptr;
-	input = new Input();
-	input->Initialize(wc.hInstance,hwnd);
-	delete input;
+	
 
 
 	//wvpData用のTransform変数を作る
@@ -1294,6 +1296,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		}
 		else {
+
+			input->Update();
 
 			//更新
 			transform.rotate.y += 0.03f;
@@ -1551,6 +1555,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 	
 	CloseHandle(fenceEvent);
+
+	delete input;
 	
 #ifdef _DEBUG
 	
