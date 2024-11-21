@@ -253,7 +253,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
-	ModelData modelData = LoadObjeFile("Resources", "axis.obj");
+	ModelData modelData = LoadObjeFile("Resources", "bunny.obj");
+	ModelData modelDataTeapot = LoadObjeFile("Resources", "teapot.obj");
 
 	//VertexResourceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
@@ -261,8 +262,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+
 	//モデル用のVetexResouceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceModel = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
+
 
 
 	//vetexResourceModel頂点バッファーを作成する
@@ -277,7 +280,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataModel = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceModel->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataModel));
+
 	std::memcpy(vertexDataModel, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
+
+
 
 
 
@@ -437,6 +443,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+
 	//平行光源用のResoureceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(sizeof(DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
@@ -455,6 +462,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
+
 	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
@@ -462,11 +470,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Initialize(spriteCommon, textureFilePath[1]);
 		sprites.push_back(sprite);
 
+
 	}
 
 	//3Dオブジェクトの初期化
 	Object3D* object3D = new Object3D();
 	object3D->Initialize();
+
 
 	
 #pragma endregion
@@ -498,13 +508,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//wvpData用のTransform変数を作る
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,3.0f} };
 	//カメラ用のTransformを作る
 	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 	//sprite用のtransformSpriteを作る
 
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{-2.5f,0.0f,5.0f} };
+	Transform transformTeapotModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{2.5f,0.0f,5.0f} };
 
 	bool useMonsterBall = true;
 
@@ -525,7 +536,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//}
 
+
 		/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
@@ -613,7 +626,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
 			ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);
 
+
 		}
+
 
 		//項目4
 		if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
@@ -623,12 +638,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 
+			
+
+
+
 		ImGui::End();
 		ImGui::Render();
 
 #pragma region CommandList
 
+
 		//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
+
 		dxCommon->Begin();
 
 		//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
@@ -642,6 +663,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		}
+
 
 
 
@@ -669,6 +691,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		////dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+
 
 
 
