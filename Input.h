@@ -13,8 +13,15 @@ public:
 	void Initialize(HINSTANCE hInstance, HWND hwnd);
 	//更新
 	void Update();
-private:
 
+	//キーの状態
+	bool PushKey(BYTE keyNumber);//押してるとき
+	bool TriggerKey(BYTE keyNumber);//押したとき
+
+private:
+	ComPtr<IDirectInput8>directInput = nullptr;
+	BYTE key[256] = {};
+	BYTE preKey[256] = {};
 	ComPtr<IDirectInputDevice8>keyboard;
 
 };
