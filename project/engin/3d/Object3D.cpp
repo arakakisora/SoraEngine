@@ -13,7 +13,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 {
 	//引数で受け取って、メンバ変数に記録する
 	object3DCommon_ = object3DCommon;
-	
+
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	transformationMatrixResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
@@ -31,7 +31,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
 
-	
+
 
 	//カメラとモデルのTrandform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -42,13 +42,11 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 void Object3D::Update()
 {
-	
 
-	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+
+	worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
+	worldViewProjectionMatrix = worldMatrix*viewMatrix* projectionMatrix;
 	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 	transformaitionMatrixData->World = worldMatrix;
 

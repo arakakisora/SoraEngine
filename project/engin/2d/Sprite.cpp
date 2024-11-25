@@ -114,7 +114,7 @@ void Sprite::Update()
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 viewMatrix = MakeIdentity4x4();
 	Matrix4x4 projectionMatrix = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWindth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+	Matrix4x4 worldViewProjectionMatrix = worldMatrix*viewMatrix* projectionMatrix;
 	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 	transformaitionMatrixData->World = worldMatrix;
 
