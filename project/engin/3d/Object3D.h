@@ -48,12 +48,13 @@ private:
 	Model* model_ = nullptr;
 
 
-
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	//データを書き込む
+
 	TransformationMatrix* transformaitionMatrixData = nullptr;
+
 
 	//平行光源
 	//平行光源用のResoureceを作成
@@ -63,6 +64,7 @@ private:
 	//SRT
 	Transform transform;
 
+
 	//カメラ用のTransformを作る
 	Transform cameratransform;
 	Matrix4x4 cameraMatrix;
@@ -71,5 +73,6 @@ private:
 	Matrix4x4 worldMatrix;
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
+
 };
 

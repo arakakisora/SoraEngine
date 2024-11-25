@@ -1,5 +1,7 @@
 #pragma once
+
 #include <corecrt_math.h>
+
 
 /// <summary>
 /// 3次元ベクトル
@@ -8,6 +10,7 @@ struct Vector3 final {
 	float x;
 	float y;
 	float z;
+
 
     Vector3() :x(0), y(0), z(0) {}
     Vector3(float x, float y, float z) {
@@ -65,6 +68,7 @@ struct Vector3 final {
         this->z *= other;
         return *this;
     }
+
 
 };
 

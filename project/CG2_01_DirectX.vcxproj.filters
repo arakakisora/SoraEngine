@@ -135,9 +135,11 @@
     <ClCompile Include="engin\base\WinApp.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
+
     <ClCompile Include="Camera.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\Object3d.VS.hlsl">
@@ -238,9 +240,11 @@
     <ClInclude Include="engin\math\RenderingData.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
+
     <ClInclude Include="Camera.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

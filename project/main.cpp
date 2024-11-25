@@ -143,7 +143,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
-	
+
 
 	//VertexResourceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
@@ -151,9 +151,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-	
 
-	
 
 
 
@@ -273,6 +271,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//色
 	materialDataSphere->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSphere->enableLighting = true;//有効にするか否か
+
 	materialDataSphere->uvTransform = materialDataSphere->uvTransform.MakeIdentity4x4();
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -282,25 +281,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 	//単位行列を書き込む
+
 	wvpData->WVP = wvpData->WVP.MakeIdentity4x4();
 	wvpData->World = wvpData->World. MakeIdentity4x4();
-
-
-	
-
-	
-
-
-
-
-
-
-
-
-	
-
-
-
 
 #pragma endregion
 
@@ -309,6 +292,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
+
+  
 	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
@@ -316,6 +301,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Initialize(spriteCommon, textureFilePath[1]);
 		sprites.push_back(sprite);
 
+
+    
 	}
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("axis.obj");
@@ -326,10 +313,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D->Initialize(object3DCommon);
 	object3D->SetModel("plane.obj");
 
+
 	//3Dオブジェクトの初期化
 	Object3D* object3D2nd = new Object3D();
 	object3D2nd->Initialize(object3DCommon);
 	object3D2nd->SetModel("plane.obj");
+
+  
 	
 #pragma endregion
 
@@ -359,13 +349,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float rotation{0};
 
 
+
+  
 	//wvpData用のTransform変数を作る
+
+  
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 
 
+
+  
 	
 
 	bool useMonsterBall = true;
@@ -387,7 +383,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//}
 
+
+    
 		/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
+
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
@@ -477,8 +477,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
 			ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);*/
 
+
+      
 		}
 
+
+    
 		//項目4
 		if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -488,12 +492,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+    
+
 		ImGui::End();
 		ImGui::Render();
 
 
 
+
+    
 		//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
+
+    
 		dxCommon->Begin();
 
 #pragma region 3Dオブジェクト描画
@@ -523,6 +533,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+
+    
 		////Sphere
 		//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		////現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
@@ -539,6 +551,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+
 
 
 
