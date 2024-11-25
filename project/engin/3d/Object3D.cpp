@@ -20,8 +20,8 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	//書き込むためのアドレスを取得
 	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformaitionMatrixData));
 	//単位行列を書き込む
-	transformaitionMatrixData->WVP = MakeIdentity4x4();
-	transformaitionMatrixData->World = MakeIdentity4x4();
+	transformaitionMatrixData->WVP = transformaitionMatrixData->WVP.MakeIdentity4x4();
+	transformaitionMatrixData->World = transformaitionMatrixData->World.MakeIdentity4x4();
 
 	//平行光源
 	//平行光源用のResoureceを作成
@@ -36,17 +36,19 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	//カメラとモデルのTrandform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//カメラ用のTransformを作る
-	cameraTransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
+	cameratransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 
 }
 
 void Object3D::Update()
 {
 
+	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	cameraMatrix = MyMath::MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
+	viewMatrix = cameraMatrix.Inverse();
 
-	worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-	worldViewProjectionMatrix = worldMatrix*viewMatrix* projectionMatrix;
+	worldViewProjectionMatrix = worldMatrix* viewMatrix * projectionMatrix;
 	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 	transformaitionMatrixData->World = worldMatrix;
 

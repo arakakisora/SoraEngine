@@ -223,7 +223,7 @@ struct Matrix4x4 {
 	}
 
 	//0行列
-	Matrix4x4 MekeIdentity4x4()
+	Matrix4x4 MakeIdentity4x4()
 	{
 
 		Matrix4x4 ans;

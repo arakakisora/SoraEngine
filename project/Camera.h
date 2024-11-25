@@ -10,10 +10,7 @@ public:
 	void Update();
 
 private:
-	//カメラ用のTransformを作る
-	Transform transform;
-	Matrix4x4 worldMatrix;
-	Matrix4x4 viewMatrix;
+	
 
 	
 

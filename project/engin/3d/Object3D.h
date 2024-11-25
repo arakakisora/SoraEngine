@@ -63,7 +63,10 @@ private:
 	//SRT
 	Transform transform;
 
-	
+	//カメラ用のTransformを作る
+	Transform cameratransform;
+	Matrix4x4 cameraMatrix;
+	Matrix4x4 viewMatrix;
 
 	Matrix4x4 worldMatrix;
 	Matrix4x4 projectionMatrix;

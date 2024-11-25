@@ -4,8 +4,6 @@
 void Camera::Update()
 {
 
-	worldMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-	viewMatrix = Inverse(cameraMatrix);
-
+	
 
 }

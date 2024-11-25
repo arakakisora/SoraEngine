@@ -47,7 +47,7 @@ public:
 	const Vector4& GetColor()const { return materialData->color; }
 	void setColor(const Vector4& color) { materialData->color = color; }
 	//アンカー_画像の中心
-	const Vector2 &GetAnchorPoint()const { return anchorPoint_; }
+	const Vector2& GetAnchorPoint()const { return anchorPoint_; }
 	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
 	//左右フリップ
 	const bool& GetIsFlipX()const { return isFlipX_; }
@@ -57,15 +57,15 @@ public:
 	void SetIsFlipY(const bool& isFlipY) { isFlipY_ = isFlipY; }
 	//テクスチャ左上
 	const Vector2& GetTextureLeftTop()const { return textureLeftTop_; }
-	void SetTextureLeftTop(const Vector2& textureLeftTop) {  textureLeftTop_ = textureLeftTop; }
+	void SetTextureLeftTop(const Vector2& textureLeftTop) { textureLeftTop_ = textureLeftTop; }
 	//テクスチャサイズ
 	const Vector2& GetTextureSize()const { return textureSize_; }
 	void SetTextureSize(const Vector2& textureSize) { textureSize_ = textureSize; }
-	
-	
-	
-	
-	
+
+
+
+
+
 
 private:
 
@@ -115,6 +115,13 @@ private:
 	Vector2 textureLeftTop_ = { 0.0f,0.0f };
 	//テクスチャ切り出しサイズ
 	Vector2 textureSize_ = { 512.0f,512.0f };
+
+	Matrix4x4 worldMatrix;
+	Matrix4x4 viewMatrix;
+	Matrix4x4 projectionMatrix;
+	Matrix4x4 worldViewProjectionMatrix;
+
+
 
 };
 

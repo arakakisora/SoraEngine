@@ -1,7 +1,7 @@
 #include "MyMath.h"
-using namespace Matrix;
 
-Matrix4x4 Matrix::MakeTranslateMatrix(const Vector3& translate)
+
+Matrix4x4 MyMath::MakeTranslateMatrix(const Vector3& translate)
 {
 	Matrix4x4 ans;
 
@@ -29,7 +29,7 @@ Matrix4x4 Matrix::MakeTranslateMatrix(const Vector3& translate)
 
 }
 
-Matrix4x4 Matrix::MakeScaleMatrix(const Vector3& scale)
+Matrix4x4 MyMath::MakeScaleMatrix(const Vector3& scale)
 {
 	Matrix4x4 ans;
 
@@ -56,7 +56,7 @@ Matrix4x4 Matrix::MakeScaleMatrix(const Vector3& scale)
 
 }
 
-Vector3 Matrix::Transform(const Vector3& vector, const Matrix4x4& matrix)
+Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 {
 
 	Vector3 ans;
@@ -74,7 +74,7 @@ Vector3 Matrix::Transform(const Vector3& vector, const Matrix4x4& matrix)
 
 }
 
-Matrix4x4 Matrix::MakeRotateXMatrix(float radian)
+Matrix4x4 MyMath::MakeRotateXMatrix(float radian)
 {
 
 	Matrix4x4 ans;
@@ -102,7 +102,7 @@ Matrix4x4 Matrix::MakeRotateXMatrix(float radian)
 
 }
 
-Matrix4x4 Matrix::MakeRotateYMatrix(float radian)
+Matrix4x4 MyMath::MakeRotateYMatrix(float radian)
 {
 
 	Matrix4x4 ans;
@@ -130,7 +130,7 @@ Matrix4x4 Matrix::MakeRotateYMatrix(float radian)
 
 }
 
-Matrix4x4 Matrix::MakeRotateZMatrix(float radian)
+Matrix4x4 MyMath::MakeRotateZMatrix(float radian)
 {
 	Matrix4x4 ans;
 	ans.m[0][0] = std::cos(radian);
@@ -158,7 +158,7 @@ Matrix4x4 Matrix::MakeRotateZMatrix(float radian)
 
 }
 
-Matrix4x4 Matrix::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
 
 	Matrix4x4 rotateXYZ = MakeRotateXMatrix(rotate.x)* MakeRotateYMatrix(rotate.y)* MakeRotateZMatrix(rotate.z);

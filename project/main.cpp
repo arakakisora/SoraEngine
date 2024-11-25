@@ -273,7 +273,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//色
 	materialDataSphere->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSphere->enableLighting = true;//有効にするか否か
-	materialDataSphere->uvTransform = MekeIdentity4x4();
+	materialDataSphere->uvTransform = materialDataSphere->uvTransform.MakeIdentity4x4();
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
@@ -282,8 +282,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 	//単位行列を書き込む
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
+	wvpData->WVP = wvpData->WVP.MakeIdentity4x4();
+	wvpData->World = wvpData->World. MakeIdentity4x4();
 
 
 	
