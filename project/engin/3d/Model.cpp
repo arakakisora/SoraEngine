@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
-#include "RenderingPipeline.h"
 #include "TextureManager.h"
 
 

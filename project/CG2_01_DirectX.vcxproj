@@ -124,7 +124,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engin\math\MyMath.cpp" />
     <ClCompile Include="engin\3d\Object3D.cpp" />
     <ClCompile Include="engin\3d\Object3DCommon.cpp" />
-    <ClCompile Include="engin\math\RenderingPipeline.cpp" />
     <ClCompile Include="engin\2d\Sprite.cpp" />
     <ClCompile Include="engin\2d\SpriteCommon.cpp" />
     <ClCompile Include="engin\base\StringUtility.cpp" />
@@ -166,7 +165,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engin\3d\Object3D.h" />
     <ClInclude Include="engin\3d\Object3DCommon.h" />
     <ClInclude Include="engin\math\RenderingData.h" />
-    <ClInclude Include="engin\math\RenderingPipeline.h" />
     <ClInclude Include="engin\2d\Sprite.h" />
     <ClInclude Include="engin\2d\SpriteCommon.h" />
     <ClInclude Include="engin\base\StringUtility.h" />

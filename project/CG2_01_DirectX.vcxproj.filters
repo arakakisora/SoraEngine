@@ -126,9 +126,6 @@
     <ClCompile Include="engin\math\MyMath.cpp">
       <Filter>ソース ファイル\engin\math</Filter>
     </ClCompile>
-    <ClCompile Include="engin\math\RenderingPipeline.cpp">
-      <Filter>ソース ファイル\engin\math</Filter>
-    </ClCompile>
     <ClCompile Include="engin\base\StringUtility.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
@@ -220,9 +217,6 @@
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
     <ClInclude Include="engin\math\Vector3.h">
-      <Filter>ヘッダー ファイル\engin\math</Filter>
-    </ClInclude>
-    <ClInclude Include="engin\math\RenderingPipeline.h">
       <Filter>ヘッダー ファイル\engin\math</Filter>
     </ClInclude>
     <ClInclude Include="engin\math\MyMath.h">
