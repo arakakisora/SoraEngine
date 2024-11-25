@@ -155,8 +155,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-
-
 	////vertexResource頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
 	//リソースの先頭のアドレスから使う
@@ -273,7 +271,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//色
 	materialDataSphere->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSphere->enableLighting = true;//有効にするか否か
-	materialDataSphere->uvTransform = MekeIdentity4x4();
+
+	materialDataSphere->uvTransform = materialDataSphere->uvTransform.MakeIdentity4x4();
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
@@ -282,24 +281,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 	//単位行列を書き込む
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
 
-
-	
-
-	
-
-
-
-
-
-
-
-
-
-
-
+	wvpData->WVP = wvpData->WVP.MakeIdentity4x4();
+	wvpData->World = wvpData->World. MakeIdentity4x4();
 
 #pragma endregion
 
@@ -309,6 +293,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
 
+  
 	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
@@ -317,6 +302,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprites.push_back(sprite);
 
 
+    
 	}
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("axis.obj");
@@ -331,8 +317,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//3Dオブジェクトの初期化
 	Object3D* object3D2nd = new Object3D();
 	object3D2nd->Initialize(object3DCommon);
-	object3D2nd->SetModel("axis.obj");
+	object3D2nd->SetModel("plane.obj");
 
+  
 	
 #pragma endregion
 
@@ -363,6 +350,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+  
+	//wvpData用のTransform変数を作る
+
+  
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
@@ -370,6 +361,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+  
 	
 
 	bool useMonsterBall = true;
@@ -392,7 +384,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//}
 
 
+    
 		/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
 
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
@@ -484,9 +478,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);*/
 
 
+      
 		}
 
 
+    
 		//項目4
 		if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -495,9 +491,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 
-			
 
-
+    
 
 		ImGui::End();
 		ImGui::Render();
@@ -505,8 +500,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+    
 		//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
 
+    
 		dxCommon->Begin();
 
 #pragma region 3Dオブジェクト描画
@@ -537,6 +534,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+    
 		////Sphere
 		//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		////現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい

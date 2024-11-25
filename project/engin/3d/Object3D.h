@@ -19,12 +19,12 @@ public:
 	/// 更新
 	/// </summary>
 	void Update();
-	
+
 	/// <summary>
 	/// 描画
 	/// </summary>
 	void Draw();
-	
+
 
 	void SetModel(Model* model) { model_ = model; }
 	void SetModel(const std::string& filepath);
@@ -39,7 +39,7 @@ public:
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	//位置
 	void SetTranslate(const Vector3& transrate) { transform.translate = transrate; }
-	
+
 
 
 private:
@@ -47,13 +47,14 @@ private:
 
 	Model* model_ = nullptr;
 
-	
-	
+
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	//データを書き込む
-	TransformationMatrix* transformaitionMatrixData=nullptr;
+
+	TransformationMatrix* transformaitionMatrixData = nullptr;
+
 
 	//平行光源
 	//平行光源用のResoureceを作成
@@ -62,8 +63,16 @@ private:
 
 	//SRT
 	Transform transform;
+
+
 	//カメラ用のTransformを作る
-	Transform cameraTransform;
+	Transform cameratransform;
+	Matrix4x4 cameraMatrix;
+	Matrix4x4 viewMatrix;
+
+	Matrix4x4 worldMatrix;
+	Matrix4x4 projectionMatrix;
+	Matrix4x4 worldViewProjectionMatrix;
 
 };
 
