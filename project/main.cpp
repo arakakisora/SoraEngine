@@ -12,10 +12,6 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include"MyMath.h"
-#include "RenderingPipeline.h"
-
-
-
 
 #include <numbers>
 #include <algorithm>

@@ -2,7 +2,6 @@
 #include "Object3D.h"
 #include "MyMath.h"
 #include "TextureManager.h"
-#include "RenderingPipeline.h"
 #include "ModelManager.h"
 
 
@@ -52,7 +51,7 @@ void Object3D::Update()
 	cameraMatrix = MyMath::MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
 	viewMatrix = cameraMatrix.Inverse();
 
-	projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
+	projectionMatrix = MyMath::MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
 	worldViewProjectionMatrix = worldMatrix* viewMatrix * projectionMatrix;
 
 	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
