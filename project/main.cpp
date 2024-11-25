@@ -108,7 +108,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//3Dモデルマネージャの初期化
 	ModelManager::GetInstans()->Initialize(dxCommon);
 
-
+	
 #pragma endregion 
 
 
@@ -284,12 +284,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
+
+
+
+
+
+
 #pragma region 最初のシーン初期化
 
+	//カメラの生成
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0,0,0, });
+	camera->SetTranslate({ 0,0,-10, });
+	object3DCommon->SetDefaultCamera(camera);
+
+	//テクスチャの初期化
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
-
-
-  
+		 
 	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
@@ -355,14 +366,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 
-
-
-  
-	
-
 	bool useMonsterBall = true;
 
 	while (true) {//ゲームループ
+
+		camera->Update();
 
 		//Windowsのメッセージ処理
 		if (winApp->ProcessMessage()) {
