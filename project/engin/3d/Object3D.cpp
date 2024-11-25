@@ -36,9 +36,10 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 	//カメラとモデルのTrandform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	//カメラ用のTransformを作る
+	
+	this->camera = object3DCommon->GetDefaultCamera();
 
-	cameratransform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
+
 
 
 }
@@ -46,19 +47,19 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 void Object3D::Update()
 {
 
-
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	cameraMatrix = MyMath::MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
-	viewMatrix = cameraMatrix.Inverse();
 
-	projectionMatrix = MyMath::MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
-	worldViewProjectionMatrix = worldMatrix* viewMatrix * projectionMatrix;
+	if (camera) {
+		const Matrix4x4& viewProjectionMatrix = camera->GetViewprojectionMatrix();
+		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+	}
+	else {
+
+		worldViewProjectionMatrix = worldMatrix;
+	}
 
 	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 	transformaitionMatrixData->World = worldMatrix;
-
-
-
 }
 
 void Object3D::Draw()

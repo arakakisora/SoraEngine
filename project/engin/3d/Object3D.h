@@ -5,6 +5,7 @@
 #include "Matrix4x4.h"
 #include "RenderingData.h"
 #include "Model.h"
+#include "Camera.h"
 
 class Object3DCommon;
 class Object3D
@@ -39,8 +40,10 @@ public:
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	//位置
 	void SetTranslate(const Vector3& transrate) { transform.translate = transrate; }
-
-
+	//カメラ
+	void SetCamera(Camera* camera) { this->camera = camera; }
+	//デフォルトカメラ
+	
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;
@@ -63,16 +66,13 @@ private:
 
 	//SRT
 	Transform transform;
-
-
-	//カメラ用のTransformを作る
-	Transform cameratransform;
-	Matrix4x4 cameraMatrix;
-	Matrix4x4 viewMatrix;
-
 	Matrix4x4 worldMatrix;
-	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
+
+	Camera* camera = nullptr;
+	
+
+
 
 };
 
