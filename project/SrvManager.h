@@ -17,14 +17,16 @@ public:
 	uint32_t Allocate();
 
 	//cpu、gpuの計算用関数
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDrscriptorHandlr(uint32_t index);
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDrscriptorHandlr(uint32_t index);
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDrscriptorHandle(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDrscriptorHandle(uint32_t index);
 
 	//SRV生成（テクスチャ用）
 	void CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT foemat, UINT MipLevels);
 	//SRV生成(structured Buffer用)
 	void CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource* pResourece, UINT numElements,
 		UINT structureByteStride);
+	void PreDraw();
+	void SetGraficsRootDescriptorTable(UINT RootprameterIndex, uint32_t srvIndex);
 
 private:
 	DirectXCommon* directXCommon = nullptr;

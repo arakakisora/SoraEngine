@@ -2,6 +2,7 @@
 #include "StringUtility.h"
 
 
+
 using namespace StringUtility;
 
 TextureManager* TextureManager::instance = nullptr;
@@ -23,7 +24,7 @@ void TextureManager::Finalize()
 
 }
 
-void TextureManager::Initialize(DirectXCommon* dxCommon)
+void TextureManager::Initialize(DirectXCommon* dxCommon,SrvManager*srvmanager)
 {
 	dxCommon_ = dxCommon;
 	textureDatas.reserve(DirectXCommon::kMaxSRVCount);
@@ -89,8 +90,6 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = UINT(textureData.metadata.mipLevels);
-
-	
 
 	dxCommon_->GetDevice()->CreateShaderResourceView(textureData.resource.Get(), &srvDesc, textureData.srvHandleCPU);
 

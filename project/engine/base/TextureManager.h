@@ -3,6 +3,8 @@
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include "DirectXCommon.h"
+#include "SrvManager.h"
+#include <unordered_map>
 
 
 
@@ -19,9 +21,9 @@ private:
 	//テクスチャ1枚分のデータ
 	struct TexturData {
 
-		std::string filePath;
 		DirectX::TexMetadata metadata;
 		Microsoft::WRL::ComPtr<ID3D12Resource>resource;
+		uint32_t srvIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU;
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU;
 
@@ -35,7 +37,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize(DirectXCommon* dxCommon, SrvManager* srvmanager);
 
 	//メタデータを取得
 	const DirectX::TexMetadata& GetMetaData(uint32_t textureIndex);
@@ -55,8 +57,9 @@ public:
 private:
 
 	//テクスチャデータ
-	std::vector<TexturData>textureDatas;
+	
 	DirectXCommon* dxCommon_=nullptr;
+	std::unordered_map<std::string, TexturData> textureDatas;
 
 
 };

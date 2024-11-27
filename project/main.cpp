@@ -32,6 +32,7 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
+#include "SrvManager.h"
 
 
 
@@ -85,8 +86,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
+	//srvマネージャの宣言
+	SrvManager* srvManager = nullptr;
+	//srvマネージャの初期化
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
+
 	//テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon);
+	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
 	//入力宣言
 	input = new Input();
@@ -109,6 +116,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelManager::GetInstans()->Initialize(dxCommon);
 
 	
+
+	
+
 #pragma endregion 
 
 
@@ -596,6 +606,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete winApp;
 	delete dxCommon;
 	delete input;
+	delete srvManager;
 
 	//スプライト解放
 	delete spriteCommon;
@@ -606,6 +617,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete object3DCommon;
 	delete object3D;
 	delete object3D2nd;
+	 
 	
 	
 
