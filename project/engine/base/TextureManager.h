@@ -48,8 +48,6 @@ public:
 	//SRVインデックスの開始番号
 	uint32_t GetTextureIndexByFilePath(const std::string& filePath);
 
-	////SRVインデックスの取得
-	//uint32_t GetSrvIndex(const std::string& filePath);
 
 	//テクスチャ番号からCPUハンドルを取得
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filepath);

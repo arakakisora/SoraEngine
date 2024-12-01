@@ -87,8 +87,8 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	Microsoft::WRL::ComPtr<ID3D12Resource>  intermediateResource = dxCommon_->UploadTextureData(textureData.resource, mipImages);
 	dxCommon_->CommandKick();
 
-	//テクスチャデータの要素番号をSRVのインデックスとする
-	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()-1)+kSRVIndexTop;
+	////テクスチャデータの要素番号をSRVのインデックスとする
+	//uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()-1)+kSRVIndexTop;
 
 	textureData.srvIndex = srvmanager->Allocate();
 	textureData.srvHandleCPU = srvmanager->GetCPUDrscriptorHandle(textureData.srvIndex);
@@ -107,14 +107,23 @@ void TextureManager::LoadTexture(const std::string& filePath)
 
 uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filepath)
 {
-
+	
 	if (textureDatas.contains(filepath)) {
 
-		return tex
+		/*return;*/
 
+		
+		return textureDatas.contains(filepath);
 	}
 
-	assert(srvmanager->CheckTexturesNumber());
+	////読み込み済みテクスチャを検索
+	
+
+	//if (it != textureDatas.end()) {
+	//	//読み込み済みなら要素番号を返す
+	//	uint32_t textureIndex = static_cast<uint32_t>(std::distance(textureDatas.begin(), it));
+	//	return textureIndex;
+	//}
 
 	assert(0);
 	return 0;
