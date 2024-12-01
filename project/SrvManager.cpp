@@ -68,3 +68,12 @@ void SrvManager::SetGraficsRootDescriptorTable(UINT RootprameterIndex, uint32_t 
 {
 	directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(RootprameterIndex, GetGPUDrscriptorHandle(srvIndex));
 }
+
+bool SrvManager::CheckTexturesNumber()
+{
+	if (kMaxSRVCount <= useIndex) {
+		return true;
+	};
+	return false;
+
+}

@@ -7,6 +7,8 @@
 
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
 {
+	/*textureFilePath_ = filename;*/
+
 	modelCommon_ = modeleCommon;
 
 	modelData = LoadObjeFile(directorypath, filename);
@@ -51,7 +53,7 @@ void Model::Draw()
 	//マテリアルのCBufferの場所を設定
 	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//SRVのDescriptorTableの先頭を設定
-	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureIndex));
+	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureFilePath));
 	//描画！
 	modelCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 

@@ -28,6 +28,7 @@ public:
 	void PreDraw();
 	void SetGraficsRootDescriptorTable(UINT RootprameterIndex, uint32_t srvIndex);
 
+	bool CheckTexturesNumber();
 private:
 	DirectXCommon* directXCommon = nullptr;
 	//最大SRV数（最大テクスチャ枚数）
