@@ -6,15 +6,15 @@
 #include <array>
 #include <dxcapi.h>
 #pragma comment(lib, "dxcompiler.lib")
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
+//#include "externals/imgui/imgui.h"
+//#include "externals/imgui/imgui_impl_dx12.h"
+//#include "externals/imgui/imgui_impl_win32.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include<vector>
 #include <chrono>
 #include <thread>  // std::this_thread
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+//extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class DirectXCommon
 {
@@ -29,7 +29,7 @@ class DirectXCommon
 	void ViewportInitialize();
 	void ScissorInitialize();
 	void DxcCompilerInitialize();
-	void ImguiInitialize();
+	
 
 public:
 	//初期化
