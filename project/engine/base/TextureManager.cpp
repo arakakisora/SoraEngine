@@ -44,16 +44,7 @@ uint32_t TextureManager::kSRVIndexTop = 1;
 void TextureManager::LoadTexture(const std::string& filePath)
 {
 
-	////読み込み済みテクスチャを検索
-	//auto it = std::find_if(
-	//	textureDatas.begin(),
-	//	textureDatas.end(),
-	//	[&](TexturData& textureData) {return textureData.filePath == filePath; }
-	//);
-	//if (it != textureDatas.end()) {
-	//	return;//酔いこみ済みなら早期return
-
-	//}
+	
 
 	if (textureDatas.contains(filePath)) {
 
@@ -94,14 +85,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	textureData.srvHandleCPU = srvmanager->GetCPUDrscriptorHandle(textureData.srvIndex);
 	textureData.srvHandleGPU = srvmanager->GetGPUDrscriptorHandle(textureData.srvIndex);
 
-	//meraDaraを気にSRVの設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{  };
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = UINT(textureData.metadata.mipLevels);
-
-	dxCommon_->GetDevice()->CreateShaderResourceView(textureData.resource.Get(), &srvDesc, textureData.srvHandleCPU);
-
+	srvmanager->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(),{});
 
 }
 
