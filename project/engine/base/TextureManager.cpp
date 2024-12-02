@@ -110,20 +110,11 @@ uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filepath)
 	
 	if (textureDatas.contains(filepath)) {
 
-		return textureDatas.at(filepath).srvIndex;
+		return textureDatas[filepath].srvIndex;
 
 		
 		
 	}
-
-	////読み込み済みテクスチャを検索
-	
-
-	//if (it != textureDatas.end()) {
-	//	//読み込み済みなら要素番号を返す
-	//	uint32_t textureIndex = static_cast<uint32_t>(std::distance(textureDatas.begin(), it));
-	//	return textureIndex;
-	//}
 
 	assert(0);
 	return 0;
@@ -133,9 +124,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& f
 {
 	assert(textureDatas.size() + kSRVIndexTop < DirectXCommon::kMaxSRVCount);
 
-	TexturData& textureData = textureDatas.at(filepath);
-
-	return textureData.srvHandleGPU;
+	return textureDatas.at(filepath).srvHandleGPU;
 }
 
 

@@ -20,7 +20,7 @@ public:
 /// <summary>
 /// 初期化
 /// </summary>
-	void Initialize(DirectXCommon* dxcommon);
+	void Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager);
 /// <summary>
 /// モデルの読み込み
 /// </summary>
@@ -34,5 +34,6 @@ private:
 	//モデルデータ
 	std::map<std::string, std::unique_ptr < Model>> models;
 	ModelCommon* modelCommon = nullptr;
+	SrvManager* srvmnager_ = nullptr;
 };
 

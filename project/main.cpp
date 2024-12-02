@@ -113,7 +113,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3DCommon->Initialize(dxCommon);
 	
 	//3Dモデルマネージャの初期化
-	ModelManager::GetInstans()->Initialize(dxCommon);
+	ModelManager::GetInstans()->Initialize(dxCommon,srvManager);
 
 	
 
@@ -556,7 +556,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		////wvp用のCBufferの場所を設定
 		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+		//dxCommon->GetCommandList()->SetGraphics
+		// 
+		// 
+		// ConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 		////描画！
 		////dxCommon->GetCommandList()->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
 
