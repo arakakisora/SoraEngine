@@ -3,6 +3,7 @@
 #include <sstream>
 #include <assert.h>
 #include "TextureManager.h"
+#include "SrvManager.h"
 
 
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)

@@ -3,14 +3,20 @@
 const uint32_t SrvManager::kMaxSRVCount = 512;
 void SrvManager::Initialize(DirectXCommon* dxcommon)
 {
+	directXCommon = dxcommon;
 	//デスクリプタヒープの生成
 	descriptorHeap = directXCommon->CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);
 	//デスクリプタ1個分のサイズを取得して記録
 	descriptorSize = directXCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	useIndex = 0;
+
 }
+
 
 uint32_t SrvManager::Allocate()
 {
+	assert(CheckTexturesNumber());
+
 	//reurnする番号をいったん記録しておく
 	int index = useIndex;
 	//次回のために番号を１進める
@@ -72,8 +78,8 @@ void SrvManager::SetGraficsRootDescriptorTable(UINT RootprameterIndex, uint32_t 
 bool SrvManager::CheckTexturesNumber()
 {
 	if (kMaxSRVCount <= useIndex) {
-		return true;
+		return false;
 	};
-	return false;
+	return true;
 
 }

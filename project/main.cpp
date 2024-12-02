@@ -431,85 +431,85 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;*/
 
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-		ImGui::Begin("Setting");
+		//ImGui_ImplDX12_NewFrame();
+		//ImGui_ImplWin32_NewFrame();
+		//ImGui::NewFrame();
+		//ImGui::Begin("Setting");
 
-		//CameraTransform
-		if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
-		{/*
-			ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.01f);
-			ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);*/
-		}
-		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-		// SphereSetColor
-		if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::ColorEdit4("*SetColor", &materialDataSphere->color.x);
-		}
-		// SphereTransform
-		if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
-			ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
-			ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
-		}
-		// ModelTransform
-		if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			transformModel = object3D->GetTransform();
-
-			ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-			ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-			ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
-
-			object3D->SetTransform(transformModel);
-		}
-		//if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
-		//{
-		//	//SpriteTransform
-		//	Vector2 size = sprite->GetSize();
-		//	Vector2 position = sprite->GetPosition();
-		//	float rotation = sprite->GetRotation();
-		//	Vector4 spritecolor = sprite->GetColor();
-
-		//	ImGui::ColorEdit4("*spriteColor", &spritecolor.x);
-		//	ImGui::DragFloat2("*ScaleSprite", &size.x, 0.1f);
-		//	ImGui::DragFloat("*RotateSprite", &rotation, 0.1f);
-		//	ImGui::DragFloat2("*TransrateSprite", &position.x);
-		//	sprite->setColor(spritecolor);
-		//	sprite->SetPosition(position);
-		//	sprite->SetRotation(rotation);
-		//	sprite->SetSize(size);
+		////CameraTransform
+		//if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+		//{/*
+		//	ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.01f);
+		//	ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);*/
 		//}
-		//uvTransformSprite
-		if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
-		{
+		//ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+		//// SphereSetColor
+		//if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
+		//	ImGui::ColorEdit4("*SetColor", &materialDataSphere->color.x);
+		//}
+		//// SphereTransform
+		//if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
+		//	ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
+		//	ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
+		//	ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
+		//}
+		//// ModelTransform
+		//if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
+		//	transformModel = object3D->GetTransform();
 
-			/*ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
-			ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);*/
+		//	ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
+		//	ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
+		//	ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+
+		//	object3D->SetTransform(transformModel);
+		//}
+		////if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+		////{
+		////	//SpriteTransform
+		////	Vector2 size = sprite->GetSize();
+		////	Vector2 position = sprite->GetPosition();
+		////	float rotation = sprite->GetRotation();
+		////	Vector4 spritecolor = sprite->GetColor();
+
+		////	ImGui::ColorEdit4("*spriteColor", &spritecolor.x);
+		////	ImGui::DragFloat2("*ScaleSprite", &size.x, 0.1f);
+		////	ImGui::DragFloat("*RotateSprite", &rotation, 0.1f);
+		////	ImGui::DragFloat2("*TransrateSprite", &position.x);
+		////	sprite->setColor(spritecolor);
+		////	sprite->SetPosition(position);
+		////	sprite->SetRotation(rotation);
+		////	sprite->SetSize(size);
+		////}
+		////uvTransformSprite
+		//if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
+
+		//	/*ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+		//	ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
+		//	ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);*/
 
 
-      
-		}
+  //    
+		//}
 
 
-    
-		//項目4
-		if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			/*ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
-			ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);*/
-		}
+  //  
+		////項目4
+		//if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
+		//	/*ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
+		//	ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);*/
+		//}
 
 
 
-    
+  //  
 
-		ImGui::End();
-		ImGui::Render();
+		//ImGui::End();
+		//ImGui::Render();
 
 
 
@@ -564,7 +564,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+		/*ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());*/
 
 
 
@@ -585,9 +585,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Release
 
-	ImGui_ImplDX12_Shutdown();
+	/*ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+	ImGui::DestroyContext();*/
 
 	/*CloseHandle(fenceEvent);*/
 
