@@ -76,7 +76,7 @@ public:
 	ID3D12Device* GetDevice() const { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 
-	size_t GetBackBufferCount()const { return swapChain->GetCurrentBackBufferIndex(); }
+	size_t GetBackBufferCount()const { return swapChainResources.size(); }
 
 	//CompileShader関数の作成
 	IDxcBlob* CompileShader(
