@@ -12,10 +12,6 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include"MyMath.h"
-#include "RenderingPipeline.h"
-
-
-
 
 #include <numbers>
 #include <algorithm>
@@ -92,13 +88,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
-	//imguiMnagerの初期化
-	ImGuiManager* imGuiMnager = nullptr;
-	imGuiMnager = new ImGuiManager();
-	imGuiMnager->Initialize(dxCommon, winApp);
+	//srvマネージャの宣言
+	SrvManager* srvManager = nullptr;
+	//srvマネージャの初期化
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
 
 	//テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon);
+	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
 	//入力宣言
 	input = new Input();
@@ -116,10 +113,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//3Dオブジェクト共通部の初期化
 	object3DCommon = new Object3DCommon;
 	object3DCommon->Initialize(dxCommon);
-
+	
 	//3Dモデルマネージャの初期化
-	ModelManager::GetInstans()->Initialize(dxCommon);
+	ModelManager::GetInstans()->Initialize(dxCommon,srvManager);
 
+	
+
+	
 
 #pragma endregion 
 
@@ -156,8 +156,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//VertexResourceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * kSubdbivision * kSubdbivision * 6);
 	//DepthStencilTextureをウィンドウサイズで作成
-
-
 
 
 
@@ -281,7 +279,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//色
 	materialDataSphere->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSphere->enableLighting = true;//有効にするか否か
-	materialDataSphere->uvTransform = MekeIdentity4x4();
+
+	materialDataSphere->uvTransform = materialDataSphere->uvTransform.MakeIdentity4x4();
 
 	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource = dxCommon->CreateBufferResource(sizeof(TransformationMatrix));
@@ -290,33 +289,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 	//単位行列を書き込む
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	wvpData->WVP = wvpData->WVP.MakeIdentity4x4();
+	wvpData->World = wvpData->World. MakeIdentity4x4();
 
 #pragma endregion
 
 
+
+
+
+
+
+
 #pragma region 最初のシーン初期化
 
-	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
+	//カメラの生成
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0,0,0, });
+	camera->SetTranslate({ 0,0,-10, });
+	object3DCommon->SetDefaultCamera(camera);
 
+	//テクスチャの初期化
+	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
+		 
 	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
@@ -324,21 +320,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Initialize(spriteCommon, textureFilePath[1]);
 		sprites.push_back(sprite);
 
+
+    
 	}
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("axis.obj");
-
+	
 
 	//3Dオブジェクトの初期化
 	Object3D* object3D = new Object3D();
 	object3D->Initialize(object3DCommon);
 	object3D->SetModel("plane.obj");
 
+
 	//3Dオブジェクトの初期化
 	Object3D* object3D2nd = new Object3D();
 	object3D2nd->Initialize(object3DCommon);
 	object3D2nd->SetModel("plane.obj");
 
+  
+	
 #pragma endregion
 
 
@@ -350,42 +351,45 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector2 size = sprite->GetSize();
 
 		position.x = 100.0f * i;
-		position.y = 200.0f;
+		position.y = 200.0f ;
 		size = Vector2(100, 100);
 
 		sprite->SetPosition(position);
 		sprite->SetSize(size);
-		sprite->SetAnchorPoint(Vector2{ 0.0f,0.0f });
+		sprite->SetAnchorPoint(Vector2{0.0f,0.0f });
 		sprite->SetIsFlipY(0);
-		sprite->SetTextureLeftTop(Vector2{ i * 64.0f,0.0f });
+		sprite->SetTextureLeftTop(Vector2{ i*64.0f,0.0f });
 		sprite->SetTextureSize(Vector2{ 64.0f,64.0f });
-
+		
 		i++;
 
 	}
 
-	float rotation{ 0 };
+	float rotation{0};
 
 
+
+  
 	//wvpData用のTransform変数を作る
+
+  
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-
-
-
 
 
 	bool useMonsterBall = true;
 
 	while (true) {//ゲームループ
 
+		camera->Update();
+
 		//Windowsのメッセージ処理
 		if (winApp->ProcessMessage()) {
 			//ゲームループを抜ける
 			break;
 		}
-		imGuiMnager->Begin();
+
 		input->Update();
 
 		////更新
@@ -395,7 +399,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//}
 
+
+    
 		/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
+
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWindth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
@@ -403,7 +411,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		wvpData->WVP = worldViewProjectionMatrix;
 		wvpData->World = worldMatrix;*/
 
-
+		
 		for (Sprite* sprite : sprites) {
 
 			//rotation.x+=0.03f;
@@ -412,7 +420,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		}
-
+		
 		rotation += 0.03f;
 		object3D->SetRotate(Vector3{ 0,rotation ,0 });
 		object3D->Update();
@@ -425,7 +433,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;*/
 
-
+		//ImGui_ImplDX12_NewFrame();
+		//ImGui_ImplWin32_NewFrame();
+		//ImGui::NewFrame();
+		//ImGui::Begin("Setting");
 
 			////CameraTransform
 			//if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
@@ -465,38 +476,52 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			////	float rotation = sprite->GetRotation();
 			////	Vector4 spritecolor = sprite->GetColor();
 
-			////	ImGui::ColorEdit4("*spriteColor", &spritecolor.x);
-			////	ImGui::DragFloat2("*ScaleSprite", &size.x, 0.1f);
-			////	ImGui::DragFloat("*RotateSprite", &rotation, 0.1f);
-			////	ImGui::DragFloat2("*TransrateSprite", &position.x);
-			////	sprite->setColor(spritecolor);
-			////	sprite->SetPosition(position);
-			////	sprite->SetRotation(rotation);
-			////	sprite->SetSize(size);
-			////}
-			////uvTransformSprite
-			//if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
-			//{
+		////	ImGui::ColorEdit4("*spriteColor", &spritecolor.x);
+		////	ImGui::DragFloat2("*ScaleSprite", &size.x, 0.1f);
+		////	ImGui::DragFloat("*RotateSprite", &rotation, 0.1f);
+		////	ImGui::DragFloat2("*TransrateSprite", &position.x);
+		////	sprite->setColor(spritecolor);
+		////	sprite->SetPosition(position);
+		////	sprite->SetRotation(rotation);
+		////	sprite->SetSize(size);
+		////}
+		////uvTransformSprite
+		//if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
 
-			//	/*ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			//	ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
-			//	ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);*/
-
-			//}
-
-			////項目4
-			//if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
-			//{
-			//	/*ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
-			//	ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);*/
-			//}
+		//	/*ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+		//	ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
+		//	ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);*/
 
 
+  //    
+		//}
 
-		imGuiMnager->End();
 
+  //  
+		////項目4
+		//if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
+		//{
+		//	/*ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
+		//	ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);*/
+		//}
+
+
+
+  //  
+
+		//ImGui::End();
+		//ImGui::Render();
+
+
+
+
+    
 		//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
+
+    
 		dxCommon->Begin();
+		srvManager->PreDraw();
 
 #pragma region 3Dオブジェクト描画
 
@@ -525,6 +550,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+
+    
 		////Sphere
 		//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		////現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
@@ -532,7 +559,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		////wvp用のCBufferの場所を設定
 		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 		//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+		//dxCommon->GetCommandList()->SetGraphics
+		// 
+		// 
+		// ConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 		////描画！
 		////dxCommon->GetCommandList()->DrawInstanced(kSubdbivision * kSubdbivision * 6, 1, 0, 0);
 
@@ -540,13 +570,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-		//ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+		/*ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());*/
 
 
 
-		imGuiMnager->Draw();
+
+
 
 		dxCommon->End();
+
+
+
+
+
+
 
 
 	}
@@ -554,17 +591,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Release
 
+	/*ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();*/
 
+	/*CloseHandle(fenceEvent);*/
 
-
-	imGuiMnager->Finalize();
 
 
 #ifdef _DEBUG
 
 #endif // _DEBUG
 #pragma endregion
-
 
 	//WindowsAPI終了処理
 	winApp->Finalize();
@@ -573,8 +611,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelManager::GetInstans()->Finalize();
 	delete winApp;
 	delete dxCommon;
-	delete imGuiMnager;
 	delete input;
+	delete srvManager;
 
 	//スプライト解放
 	delete spriteCommon;
@@ -585,8 +623,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete object3DCommon;
 	delete object3D;
 	delete object3D2nd;
-
-
+	 
+	
+	
 
 	return 0;
 
