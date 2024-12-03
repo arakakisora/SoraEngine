@@ -82,6 +82,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	DirectXCommon* dxCommon = nullptr;
 	Input* input = nullptr;
 
+
 	//初期化
 	//WindousAPI初期化
 	winApp = new WinApp;
