@@ -12,10 +12,6 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include"MyMath.h"
-#include "RenderingPipeline.h"
-
-
-
 
 #include <numbers>
 #include <algorithm>
@@ -38,6 +34,7 @@
 #include "TextureManager.h"
 #include"ImGuiManager.h"
 #include <imgui.h>
+#include "SrvManager.h"
 
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -70,8 +67,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	imGuiMnager->Initialize(dxCommon, winApp);
 #endif
 
+	//srvマネージャの宣言
+	SrvManager* srvManager = nullptr;
+	//srvマネージャの初期化
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
+
 	//テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon);
+	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
 	//入力宣言
 	input = new Input();
@@ -91,7 +94,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3DCommon->Initialize(dxCommon);
 
 	//3Dモデルマネージャの初期化
-	ModelManager::GetInstans()->Initialize(dxCommon);
+	ModelManager::GetInstans()->Initialize(dxCommon,srvManager);
 
 
 #pragma endregion 
@@ -99,8 +102,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 最初のシーン初期化
 
-	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
+	//カメラの生成
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0,0,0, });
+	camera->SetTranslate({ 0,0,-10, });
+	object3DCommon->SetDefaultCamera(camera);
 
+	//テクスチャの初期化
+	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
+		 
 	//スプライトの初期化
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 12; ++i) {
@@ -108,6 +118,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		sprite->Initialize(spriteCommon, textureFilePath[1]);
 		sprites.push_back(sprite);
 
+
+    
 	}
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("axis.obj");
@@ -117,6 +129,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Object3D* object3D = new Object3D();
 	object3D->Initialize(object3DCommon);
 	object3D->SetModel("plane.obj");
+
 
 	//3Dオブジェクトの初期化
 	Object3D* object3D2nd = new Object3D();
@@ -151,10 +164,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float rotation{ 0 };
 
 
-	//wvpData用のTransform変数を作る
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+  
+	//wvpData用のTransform変数を作る
 
 
 
@@ -163,6 +175,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useMonsterBall = true;
 
 	while (true) {//ゲームループ
+
+		camera->Update();
 
 		//Windowsのメッセージ処理
 		if (winApp->ProcessMessage()) {
@@ -214,9 +228,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			transformModel = object3D->GetTransform();
 
-			ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-			ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-			ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+		//	object3D->SetTransform(transformModel);
+		//}
+		////if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+		////{
+		////	//SpriteTransform
+		////	Vector2 size = sprite->GetSize();
+		////	Vector2 position = sprite->GetPosition();
+		////	float rotation = sprite->GetRotation();
+		////	Vector4 spritecolor = sprite->GetColor();
 
 			object3D->SetTransform(transformModel);
 		}
@@ -237,7 +257,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif // DEBUG
 
 		//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
+
+    
 		dxCommon->Begin();
+		srvManager->PreDraw();
 
 #pragma region 3Dオブジェクト描画
 
@@ -296,6 +319,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif // DEBUG
 
 	delete input;
+	delete srvManager;
+
 	//スプライト解放
 	delete spriteCommon;
 	for (Sprite* sprite : sprites) {
