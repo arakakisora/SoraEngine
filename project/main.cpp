@@ -519,6 +519,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     
 		dxCommon->Begin();
+		srvManager->PreDraw();
 
 #pragma region 3Dオブジェクト描画
 
