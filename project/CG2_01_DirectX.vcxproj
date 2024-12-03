@@ -47,12 +47,13 @@
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;$(SolutionDir)DirectXTex;$(SolutionDir)imgui</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)imgui;$(SolutionDir)DirectXTex;$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);$(SolutionDir)DirectXTex;$(SolutionDir)imgui</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -105,17 +106,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="engine\base\Camera.cpp" />
-    <ClCompile Include="engine\base\D3DResourceLeakChecker.cpp" />
-    <ClCompile Include="engine\base\DirectXCommon.cpp" />
-    <ClCompile Include="externals\imgui\imgui.cpp" />
-    <ClCompile Include="externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="externals\imgui\imgui_tables.cpp" />
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
+    
+    
     <ClCompile Include="engine\input\Input.cpp" />
     <ClCompile Include="engine\base\Logger.cpp" />
+    <ClCompile Include="engin\base\D3DResourceLeakChecker.cpp" />
+    <ClCompile Include="engin\base\DirectXCommon.cpp" />
+    <ClCompile Include="engin\input\Input.cpp" />
+    <ClCompile Include="engin\base\Logger.cpp" />
+    <ClCompile Include="ImGuiManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -141,6 +140,29 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engin\base\D3DResourceLeakChecker.h" />
+    <ClInclude Include="engin\base\DirectXCommon.h" />
+    <ClInclude Include="engin\input\Input.h" />
+    <ClInclude Include="engin\base\Logger.h" />
+    <ClInclude Include="engin\math\Matrix3x3.h" />
+    <ClInclude Include="engin\math\Matrix4x4.h" />
+    <ClInclude Include="engin\3d\Model.h" />
+    <ClInclude Include="engin\3d\ModelCommon.h" />
+    <ClInclude Include="engin\base\ModelManager.h" />
+    <ClInclude Include="engin\math\MyMath.h" />
+    <ClInclude Include="engin\3d\Object3D.h" />
+    <ClInclude Include="engin\3d\Object3DCommon.h" />
+    <ClInclude Include="engin\math\RenderingData.h" />
+    <ClInclude Include="engin\math\RenderingPipeline.h" />
+    <ClInclude Include="engin\2d\Sprite.h" />
+    <ClInclude Include="engin\2d\SpriteCommon.h" />
+    <ClInclude Include="engin\base\StringUtility.h" />
+    <ClInclude Include="engin\base\TextureManager.h" />
+    <ClInclude Include="engin\math\Vector2.h" />
+    <ClInclude Include="engin\math\Vector3.h" />
+    <ClInclude Include="engin\math\Vector4.h" />
+    <ClInclude Include="engin\base\WinApp.h" />
+    <ClInclude Include="ImGuiManager.h" />
     <ClInclude Include="engine\base\Camera.h" />
     <ClInclude Include="engine\base\D3DResourceLeakChecker.h" />
     <ClInclude Include="engine\base\DirectXCommon.h" />
