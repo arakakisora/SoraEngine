@@ -32,7 +32,8 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
-#include "SrvManager.h"
+#include"ImGuiManager.h"
+#include <imgui.h>
 
 
 
@@ -437,43 +438,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//ImGui::NewFrame();
 		//ImGui::Begin("Setting");
 
-		////CameraTransform
-		//if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
-		//{/*
-		//	ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.01f);
-		//	ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);*/
-		//}
-		//ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-		//// SphereSetColor
-		//if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
-		//{
-		//	ImGui::ColorEdit4("*SetColor", &materialDataSphere->color.x);
-		//}
-		//// SphereTransform
-		//if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
-		//{
-		//	ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
-		//	ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
-		//	ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
-		//}
-		//// ModelTransform
-		//if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
-		//{
-		//	transformModel = object3D->GetTransform();
+			////CameraTransform
+			//if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
+			//{/*
+			//	ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.01f);
+			//	ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);*/
+			//}
+			//ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+			//// SphereSetColor
+			//if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
+			//{
+			//	ImGui::ColorEdit4("*SetColor", &materialDataSphere->color.x);
+			//}
+			//// SphereTransform
+			//if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
+			//{
+			//	ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
+			//	ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
+			//	ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
+			//}
+			//// ModelTransform
+			if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				transformModel = object3D->GetTransform();
 
-		//	ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-		//	ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-		//	ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+				ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
+				ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
+				ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
 
-		//	object3D->SetTransform(transformModel);
-		//}
-		////if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
-		////{
-		////	//SpriteTransform
-		////	Vector2 size = sprite->GetSize();
-		////	Vector2 position = sprite->GetPosition();
-		////	float rotation = sprite->GetRotation();
-		////	Vector4 spritecolor = sprite->GetColor();
+				object3D->SetTransform(transformModel);
+			}
+			////if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+			////{
+			////	//SpriteTransform
+			////	Vector2 size = sprite->GetSize();
+			////	Vector2 position = sprite->GetPosition();
+			////	float rotation = sprite->GetRotation();
+			////	Vector4 spritecolor = sprite->GetColor();
 
 		////	ImGui::ColorEdit4("*spriteColor", &spritecolor.x);
 		////	ImGui::DragFloat2("*ScaleSprite", &size.x, 0.1f);
