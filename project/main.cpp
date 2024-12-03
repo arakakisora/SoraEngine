@@ -39,34 +39,6 @@
 #include"ImGuiManager.h"
 #include <imgui.h>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
@@ -90,10 +62,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
+#ifdef _DEBUG
+
 	//imguiMnagerの初期化
 	ImGuiManager* imGuiMnager = nullptr;
 	imGuiMnager = new ImGuiManager();
 	imGuiMnager->Initialize(dxCommon, winApp);
+#endif
 
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon);
@@ -120,69 +95,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma endregion 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#pragma endregion
 
 
 #pragma region 最初のシーン初期化
@@ -257,7 +169,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ゲームループを抜ける
 			break;
 		}
+
+#ifdef _DEBUG
+
 		imGuiMnager->Begin();
+#endif
+
 		input->Update();
 
 
@@ -283,6 +200,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+#ifdef _DEBUG
+		
 		//CameraTransform
 		if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 		{/*
@@ -290,7 +209,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);*/
 		}
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			// ModelTransform
+		// ModelTransform
 		if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			transformModel = object3D->GetTransform();
@@ -301,7 +220,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			object3D->SetTransform(transformModel);
 		}
-		
+
 
 		//項目4
 		if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
@@ -309,10 +228,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			/*ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
 			ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);*/
 		}
+#endif
 
 
+#ifdef _DEBUG
 
 		imGuiMnager->End();
+#endif // DEBUG
+
 		//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
 		dxCommon->Begin();
 
@@ -339,16 +262,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-
+#ifdef _DEBUG
 		//imgui描画処理
 		imGuiMnager->Draw();
+#endif // DEBUG
+
 		//dx共通部PostDraw
 		dxCommon->End();
 
 	}
 #pragma region Finalize処理
+#ifdef _DEBUG
+
 	//imgui終了処理
 	imGuiMnager->Finalize();
+
+#endif // DEBUG
+
 	//WindowsAPI終了処理
 	winApp->Finalize();
 	//WindowsAPI解放
@@ -360,9 +290,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Release
 	delete winApp;
 	delete dxCommon;
-	delete imGuiMnager;
-	delete input;
 
+#ifdef _DEBUG
+	delete imGuiMnager;
+#endif // DEBUG
+
+	delete input;
 	//スプライト解放
 	delete spriteCommon;
 	for (Sprite* sprite : sprites) {
