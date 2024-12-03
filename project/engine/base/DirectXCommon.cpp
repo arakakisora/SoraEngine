@@ -296,7 +296,21 @@ void DirectXCommon::DxcCompilerInitialize()
 #pragma endregion
 }
 
+void DirectXCommon::ImguiInitialize()
+{
+	////ImGui初期化
+	//IMGUI_CHECKVERSION();
+	//ImGui::CreateContext();
+	//ImGui::StyleColorsDark();
+	//ImGui_ImplWin32_Init(winApp_->GetHwnd());
+	//ImGui_ImplDX12_Init(device.Get(),
+	//	swapChainDesc.BufferCount,
+	//	rtvDesc.Format,
+	//	srvDescriptorHeap.Get(),
+	//	srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+	//	srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+}
 //初期化
 void DirectXCommon::Initialize(WinApp* winApp)
 {
@@ -316,7 +330,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	ViewportInitialize();
 	ScissorInitialize();
 	DxcCompilerInitialize();
-	
+	ImguiInitialize();
 
 }
 
