@@ -5,6 +5,8 @@
 
 void ImGuiManager::Initialize(DirectXCommon* dxCommon, WinApp* winapp)
 {
+#ifdef _DEBUG
+
 	dxCommon_ = dxCommon;
 	winapp_ = winapp;
 
@@ -30,36 +32,54 @@ void ImGuiManager::Initialize(DirectXCommon* dxCommon, WinApp* winapp)
 		srvHeap_->GetCPUDescriptorHandleForHeapStart(),
 		srvHeap_->GetGPUDescriptorHandleForHeapStart()
 	);
+#endif // _DEBUG
+
 
 }
 
 void ImGuiManager::Finalize()
 {
+#ifdef _DEBUG
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
 	srvHeap_.Reset();
+#endif // _DEBUG
+
 
 }
 
 void ImGuiManager::Begin()
 {
+#ifdef _DEBUG
+
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+#endif // _DEBUG
+
 
 
 }
 
 void ImGuiManager::End()
 {
+#ifdef _DEBUG
+
 	ImGui::Render();
+
+#endif // _DEBUG
+
 
 }
 
 void ImGuiManager::Draw()
 {
+#ifdef _DEBUG
+
 	ID3D12GraphicsCommandList* commansList = dxCommon_->GetCommandList();
 
 	//デスクリプタヒープの配列をセットする
@@ -67,5 +87,7 @@ void ImGuiManager::Draw()
 	commansList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	//描画コマンドを発行
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commansList);
+#endif // _DEBUG
+
 
 }
