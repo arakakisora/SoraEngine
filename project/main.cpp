@@ -37,6 +37,7 @@
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include"ImGuiManager.h"
+#include <imgui.h>
 
 
 
@@ -445,16 +446,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//	ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
 			//}
 			//// ModelTransform
-			//if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
-			//{
-			//	transformModel = object3D->GetTransform();
+			if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				transformModel = object3D->GetTransform();
 
-			//	ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-			//	ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-			//	ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+				ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
+				ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
+				ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
 
-			//	object3D->SetTransform(transformModel);
-			//}
+				object3D->SetTransform(transformModel);
+			}
 			////if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 			////{
 			////	//SpriteTransform
