@@ -59,3 +59,35 @@ struct ModelData {
 	MaterialData material;
 
 }; 
+
+struct ChunkHeader {
+
+	char id[4];
+	int32_t size;
+
+};
+
+struct RiffHeader {
+
+	ChunkHeader chunk;
+	char type[4];
+
+};
+
+struct FormatChunk {
+
+	ChunkHeader chunk;
+	WAVEFORMATEX fmt;
+
+};
+
+struct SoundData {
+	
+	//波長フォーマット
+	WAVEFORMATEX wfex;
+	//バッファの先頭アドレス
+	BYTE* PBuffer;
+	//バッファのサイズ
+	unsigned int defferSize;
+
+};

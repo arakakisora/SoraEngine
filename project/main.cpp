@@ -39,6 +39,49 @@
 #include"ImGuiManager.h"
 #include <imgui.h>
 
+#include <xaudio2.h>
+#pragma calloc(lib,"xaudio2.lib")
+#include <fstream>
+
+
+SoundData SoundLoadWave(const char* filename) {
+
+	HRESULT hr;
+
+	//ファイルの読み込み
+	//ファイル入力ストリームのインスタンス
+	std::ifstream file;
+	//.wavファイルをバイナリモードで開く
+	file.open(filename, std::ios_base::binary);
+	//ファイルオープン失敗を検出する
+	assert(file.is_open());
+
+	//wavデータの読み込み
+	//RIFFヘッダーの読み込み
+	RiffHeader riff;
+	file.read((char*)&riff, sizeof(riff));
+	//ファイルがRIFFかチェック
+	if (strncmp(riff.chunk.id, "RIFF", 4) != 0) {
+		assert(0);
+	}
+	//対ぷふぁwaveかチェック
+	if (strncmp(riff.type, "WAVE", 4) != 0) {
+		assert(0);
+	}
+	//フォーマットチャンクの読み込み
+	FormatChunk format = {};
+	//チャンクヘッダーの確認
+	file.read((char*)&format, sizeof(ChunkHeader));
+	if (strncmp(format.chunk.id, "fmt", 4) != 0) {
+		assert(0);
+	}
+	//チャンク本体の読み込み
+	assert(format.chunk.size <= sizeof(format.fmt));
+	file.read((char*)&format.fmt, format.chunk.size);
+
+
+}
+
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
@@ -124,6 +167,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D2nd->Initialize(object3DCommon);
 	object3D2nd->SetModel("plane.obj");
 
+
+
+	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
+	IXAudio2MasteringVoice* masterVoice;
+
+	HRESULT hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+	hr = xAudio2->CreateMasteringVoice(&masterVoice);
 #pragma endregion
 
 
@@ -220,7 +270,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 #endif // _DEBUG
 
-		
+
 
 
 #ifdef _DEBUG
