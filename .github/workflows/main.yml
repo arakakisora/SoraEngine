@@ -2,7 +2,7 @@ name: DebugBuid
 on:
   push:
     branches:
-      -master
+      - master
       
 env:
   SOLUTION_FILE_PATH: CG2_01_DirectX.sln
