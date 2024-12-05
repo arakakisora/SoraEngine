@@ -105,7 +105,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="engin\audio\Audio.cpp" />
     <ClCompile Include="engin\base\D3DResourceLeakChecker.cpp" />
     <ClCompile Include="engin\base\DirectXCommon.cpp" />
     <ClCompile Include="engin\input\Input.cpp" />
@@ -136,7 +136,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio.h" />
+    <ClInclude Include="engin\audio\Audio.h" />
     <ClInclude Include="engin\base\D3DResourceLeakChecker.h" />
     <ClInclude Include="engin\base\DirectXCommon.h" />
     <ClInclude Include="engin\input\Input.h" />
