@@ -152,6 +152,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		position.y = 200.0f;
 		size = Vector2(100, 100);
 
+
+
 		sprite->SetPosition(position);
 		sprite->SetSize(size);
 		sprite->SetAnchorPoint(Vector2{ 0.0f,0.0f });
