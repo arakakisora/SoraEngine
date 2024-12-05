@@ -38,6 +38,16 @@
 #include "TextureManager.h"
 #include"ImGuiManager.h"
 #include <imgui.h>
+#include "Audio.h"
+
+
+
+
+
+
+
+
+
 
 // windowアプリでのエントリ―ポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -124,9 +134,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D2nd->Initialize(object3DCommon);
 	object3D2nd->SetModel("plane.obj");
 
+	Audio* audio_ = nullptr;
+	audio_->GetInstance()->Initialize();
+
+
 #pragma endregion
 
-
+	SoundData sounddata1 = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");
 
 
 	int i = 0;
@@ -159,6 +173,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	bool useMonsterBall = true;
 
+	bool bgm = false;
 	while (true) {//ゲームループ
 
 		//Windowsのメッセージ処理
@@ -173,6 +188,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif // _DEBUG
 
 		input->Update();
+
+		if (!bgm) {
+
+			Audio::GetInstance()->SoundPlayWave( sounddata1);
+			bgm = true;
+		}
+
+		if (input->TriggerKey(DIK_SPACE)) {
+
+			Audio::GetInstance()->SoundUnload(&sounddata1);
+			
+		}
+
+		
+
 
 		////更新
 		//if (input->TriggerKey(DIK_0)) {
@@ -220,7 +250,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 #endif // _DEBUG
 
-		
+
 
 
 #ifdef _DEBUG
@@ -273,6 +303,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	imGuiMnager->Finalize();
 #endif // DEBUG
 
+	//aoudio解放
+	Audio::GetInstance()->Finalize();
 	//WindowsAPI終了処理
 	winApp->Finalize();
 	//WindowsAPI解放
