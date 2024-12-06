@@ -5,6 +5,7 @@
 #include "Matrix4x4.h"
 #include "RenderingData.h"
 #include "Model.h"
+#include "Camera.h"
 
 class Object3DCommon;
 class Object3D
@@ -19,12 +20,12 @@ public:
 	/// 更新
 	/// </summary>
 	void Update();
-	
+
 	/// <summary>
 	/// 描画
 	/// </summary>
 	void Draw();
-	
+
 
 	void SetModel(Model* model) { model_ = model; }
 	void SetModel(const std::string& filepath);
@@ -39,21 +40,24 @@ public:
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	//位置
 	void SetTranslate(const Vector3& transrate) { transform.translate = transrate; }
+	//カメラ
+	void SetCamera(Camera* camera) { this->camera = camera; }
+	//デフォルトカメラ
 	
-
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;
 
 	Model* model_ = nullptr;
 
-	
-	
+
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	//データを書き込む
-	TransformationMatrix* transformaitionMatrixData=nullptr;
+
+	TransformationMatrix* transformaitionMatrixData = nullptr;
+
 
 	//平行光源
 	//平行光源用のResoureceを作成
@@ -62,8 +66,13 @@ private:
 
 	//SRT
 	Transform transform;
-	//カメラ用のTransformを作る
-	Transform cameraTransform;
+	Matrix4x4 worldMatrix;
+	Matrix4x4 worldViewProjectionMatrix;
+
+	Camera* camera = nullptr;
+	
+
+
 
 };
 
