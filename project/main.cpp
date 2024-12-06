@@ -12,7 +12,7 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include"MyMath.h"
-#include "RenderingPipeline.h"
+//#include "RenderingPipeline.h"
 
 
 
@@ -39,6 +39,7 @@
 #include"ImGuiManager.h"
 #include <imgui.h>
 #include "Audio.h"
+#include "SrvManager.h"
 
 
 
@@ -72,6 +73,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
 
+	//srvマネージャの宣言	
+	SrvManager* srvManager = nullptr;	
+	//srvマネージャの初期化	
+	srvManager = new SrvManager();
+	srvManager->Initialize(dxCommon);
+
 #ifdef _DEBUG
 
 	//imguiMnagerの初期化
@@ -83,7 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	//テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon);
+	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
 	//入力宣言
 	input = new Input();
@@ -103,13 +110,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3DCommon->Initialize(dxCommon);
 
 	//3Dモデルマネージャの初期化
-	ModelManager::GetInstans()->Initialize(dxCommon);
+	ModelManager::GetInstans()->Initialize(dxCommon, srvManager);
 
 
 #pragma endregion 
 
 #pragma region 最初のシーン初期化
 
+
+	//カメラの生成	
+	Camera* camera = new Camera();
+	camera->SetRotate({ 0,0,0, });
+	camera->SetTranslate({ 0,0,-10, });
+	object3DCommon->SetDefaultCamera(camera);
+
+	//テクスチャの初期化
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
 	//スプライトの初期化
@@ -178,6 +193,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool bgm = false;
 	while (true) {//ゲームループ
 
+		camera->Update();
+
 		//Windowsのメッセージ処理
 		if (winApp->ProcessMessage()) {
 			//ゲームループを抜ける
@@ -186,6 +203,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #ifdef _DEBUG
 
 		imGuiMnager->Begin();
+		srvManager->PreDraw();
 
 #endif // _DEBUG
 
