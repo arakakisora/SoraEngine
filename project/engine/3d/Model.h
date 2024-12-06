@@ -35,6 +35,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	//マテリアルにデータを書き込む	
 	Material* materialData = nullptr;
+	//std::string textureFilePath_;
 
 };
 

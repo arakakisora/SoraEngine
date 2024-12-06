@@ -296,7 +296,21 @@ void DirectXCommon::DxcCompilerInitialize()
 #pragma endregion
 }
 
+void DirectXCommon::ImguiInitialize()
+{
+	////ImGui初期化
+	//IMGUI_CHECKVERSION();
+	//ImGui::CreateContext();
+	//ImGui::StyleColorsDark();
+	//ImGui_ImplWin32_Init(winApp_->GetHwnd());
+	//ImGui_ImplDX12_Init(device.Get(),
+	//	swapChainDesc.BufferCount,
+	//	rtvDesc.Format,
+	//	srvDescriptorHeap.Get(),
+	//	srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+	//	srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+}
 //初期化
 void DirectXCommon::Initialize(WinApp* winApp)
 {
@@ -316,7 +330,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	ViewportInitialize();
 	ScissorInitialize();
 	DxcCompilerInitialize();
-	
+	ImguiInitialize();
 
 }
 
@@ -346,9 +360,9 @@ void DirectXCommon::Begin()
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-	//描画用のDescript
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHepes[] = { srvDescriptorHeap };
-	commandList->SetDescriptorHeaps(1, descriptorHepes->GetAddressOf());
+
+
+
 	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからCliseすること
 	commandList->RSSetViewports(1, &viewport);
 	commandList->RSSetScissorRects(1, &scissorRect);
@@ -563,7 +577,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 
 }
 
- Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
 {
 	//metadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resouceDesc{ };
@@ -615,7 +629,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
 	commandList->ResourceBarrier(1, &barrier);
-	
+
 
 	return intermediateResource;
 }

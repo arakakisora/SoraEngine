@@ -6,15 +6,11 @@
 #include <array>
 #include <dxcapi.h>
 #pragma comment(lib, "dxcompiler.lib")
-//#include "externals/imgui/imgui.h"
-//#include "externals/imgui/imgui_impl_dx12.h"
-//#include "externals/imgui/imgui_impl_win32.h"
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/DirectXTex/d3dx12.h"
 #include<vector>
 #include <chrono>
 #include <thread>  // std::this_thread
-//extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class DirectXCommon
 {
@@ -29,7 +25,7 @@ class DirectXCommon
 	void ViewportInitialize();
 	void ScissorInitialize();
 	void DxcCompilerInitialize();
-	
+	void ImguiInitialize();
 
 public:
 	//初期化
@@ -42,11 +38,11 @@ public:
 	//<summary>
 	//SRVの指定番号のCPUデスクリプタハンドルを取得
 	//</summary>
-	 D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriputorHandole(uint32_t index);
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriputorHandole(uint32_t index);
 	//<summary>
 	//SRVの指定番号のGPUデスクリプタハンドルを取得
 	//</summary>
-	 D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriputorHandole(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriputorHandole(uint32_t index);
 
 	//<summary>
 	//SRVの指定番号のCPUデスクリプタハンドルを取得
@@ -76,8 +72,6 @@ public:
 	ID3D12Device* GetDevice() const { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 
-	size_t GetBackBufferCount()const { return swapChainResources.size(); }
-
 	//CompileShader関数の作成
 	IDxcBlob* CompileShader(
 		//ComilerするSahaderファイルへのパス
@@ -85,6 +79,9 @@ public:
 		//compilerに使用するProfile
 		const wchar_t* profile);
 
+	//デスクリプタヒープを生成する
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heaptype,
+		UINT numDescriptrs, bool shaderVisible);
 
 	//バッファーリソースの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
@@ -96,7 +93,11 @@ public:
 	[[nodiscard]]
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource>texture, const DirectX::ScratchImage& mipImages);
 
+	//バックバッファの数を取得
+	size_t GetBackBufferCount()const { return swapChainResources.size(); }
+
 	void CommandKick();
+
 
 	//最大SRV数(最大テクスチャ枚数)
 	static const uint32_t kMaxSRVCount;
@@ -149,9 +150,7 @@ private:
 
 
 private:
-	//デスクリプタヒープを生成する
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heaptype,
-		UINT numDescriptrs, bool shaderVisible);
+
 
 	//FPS固定初期化
 	void InitializeFixFPS();
