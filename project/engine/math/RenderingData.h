@@ -59,5 +59,3 @@ struct ModelData {
 	MaterialData material;
 
 }; 
-
-
