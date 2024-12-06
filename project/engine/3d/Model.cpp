@@ -2,12 +2,14 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
-#include "RenderingPipeline.h"
 #include "TextureManager.h"
+#include "SrvManager.h"
 
 
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
 {
+	/*textureFilePath_ = filename;*/
+
 	modelCommon_ = modeleCommon;
 
 	modelData = LoadObjeFile(directorypath, filename);
@@ -33,8 +35,10 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//色
 	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-	materialData->enableLighting = true;//有効にするか否か
-	materialData->uvTransform = MekeIdentity4x4();
+
+	materialData->enableLighting = false;//有効にするか否か
+	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
+
 
 	//.objの参照しているテクスチャファイル読み込み
 	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
@@ -50,7 +54,7 @@ void Model::Draw()
 	//マテリアルのCBufferの場所を設定
 	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//SRVのDescriptorTableの先頭を設定
-	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(modelData.material.textureIndex));
+	modelCommon_->GetSRVManager()->SetGraficsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath));
 	//描画！
 	modelCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
