@@ -31,6 +31,7 @@ void Audio::Finalize()
 
 	//XAudio2の解放
 	xAudio2.Reset();
+	delete instance_;
 
 }
 

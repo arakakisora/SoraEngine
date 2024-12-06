@@ -347,6 +347,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete object3DCommon;
 	delete object3D;
 	delete object3D2nd;
+	delete camera;
+	delete srvManager;
 
 	return 0;
 
