@@ -149,8 +149,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D2nd->Initialize(object3DCommon);
 	object3D2nd->SetModel("plane.obj");
 
-	Audio* audio_ = nullptr;
-	audio_->GetInstance()->Initialize();
+	
+	Audio::GetInstance()->Initialize();
 
 
 #pragma endregion
