@@ -126,6 +126,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\StringUtility.cpp" />
     <ClCompile Include="engine\base\TextureManager.cpp" />
     <ClCompile Include="engine\base\WinApp.cpp" />
+    <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="SrvManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +166,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\WinApp.h" />
     <ClInclude Include="engine\base\ImGuiManager.h" />
     <ClInclude Include="GraphicsPipeline.h" />
+    <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="SrvManager.h" />
   </ItemGroup>
   <ItemGroup>
