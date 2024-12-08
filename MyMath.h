@@ -77,6 +77,9 @@ struct Particle {
 	float lifetime;
 	float currentTime;
 
+	bool alive; // 追加
+	float alpha; // 追加
+
 };
 
 struct ParticleForGPU
@@ -109,6 +112,10 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 //同時座標変換
 Vector3 TransformVector3(const Vector3& vector, const Matrix4x4& matrix);
+
+Vector3 Normalize(const Vector3& v);
+float Length(const Vector3& v);
+
 
 //回転X
 Matrix4x4 MakeRotateXMatrix(float radian);

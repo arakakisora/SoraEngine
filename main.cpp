@@ -484,7 +484,7 @@ Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate) {
 	Particle particle;
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
-	particle.transform.scale = { 0.5f,0.5f,0.5f };
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
 	particle.transform.rotate = { 0.0f,3.0f,0.0f };
 	particle.transform.translate = translate + randomTranslate;
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
@@ -494,6 +494,33 @@ Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate) {
 
 	return particle;
 }
+
+void UpdateParticlesTowardsCenter(std::list<Particle>& particles, float deltaTime, const Vector3& center) {
+	const float attractionStrength = 5.0f; // 中心への引力の強さ
+
+	for (auto it = particles.begin(); it != particles.end(); ) {
+		it->currentTime += deltaTime;
+		if (it->currentTime > it->lifetime) {
+			it = particles.erase(it); // 寿命を超えたパーティクルを削除
+		}
+		else {
+			// 中心への引力を計算
+			Vector3 directionToCenter = center - it->transform.translate;
+			directionToCenter = Normalize(directionToCenter); // 正規化
+			it->Velocity += directionToCenter * attractionStrength * deltaTime;
+
+			// パーティクルの移動
+			it->transform.translate += it->Velocity * deltaTime;
+
+			// スケールや透明度の変化
+			it->transform.scale *= 0.98f; // 徐々に縮小
+			it->color.w = 1.0f - (it->currentTime / it->lifetime); // 透明化
+
+			++it;
+		}
+	}
+}
+
 
 std::list<Particle>Emit(const Emitter& emitter, std::mt19937& randomEngin) {
 
@@ -915,6 +942,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Resource
 	const uint32_t kSubdbivision = 512;
 	ModelData modelData = LoadObjeFile("Resources", "plane.obj");
+	modelData.material.textureFilePath = "Resources/circle.png";
 
 
 	//VertexResourceを作成
@@ -1205,7 +1233,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region Texturを読む
 	//Texturを読んで転送する
-	DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
+	DirectX::ScratchImage mipImages = LoadTexture("Resources/circle.png");
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResouce = UploadTextureData(textureResource, mipImages, device, commandList);
@@ -1301,11 +1329,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//wvpData用のTransform変数を作る
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//カメラ用のTransformを作る
-	Transform cameraTransform = { {1.0f,1.0f,1.0f},{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float>,0.0f} ,{ 0.0f,23.0f,10.0f} };
+	Transform cameraTransform = { {1.0f,1.0f,1.0f},{0,0,0.0f} ,{ 0.0f,0.0f,-30.0f} };
 	//sprite用のtransformSpriteを作る
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	Transform uvTransformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,3.0f,0.0f} ,{0.0f,0.0f,3.0f} };
+	Transform transformModel = { {3.0f,3.0f,3.0f},{0.0f,3.0f,0.0f} ,{0.0f,0.0f,3.0f} };
 	std::random_device seedGenerator;
 	std::mt19937 randomEngine(seedGenerator());
 
@@ -1329,15 +1357,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	emitter.transform.scale = { 1.0f,1.0f,1.0f };
 
 	AccelerationField accelerationFienld;
-	accelerationFienld.acceleration = { 15.0f,0.0f,0.0f };
+	accelerationFienld.acceleration = { 0.0f,15.0f, };
 	accelerationFienld.area.min = { 0.0f,0.0f,0.0f };
-	accelerationFienld.area.max = { 1.0f,1.0f,1.0f };
+	accelerationFienld.area.max = { 20.5f,20.5f,20.5f };
 
 
 	const float kDeletaTime = 1.0f / 60.f;
 
+	// 風向きのデータ構造
+	Vector3 windDirection = { 1.0f, 0.0f, 0.0f }; // 初期値
+	bool createparticle = false;
+	int winddirection = 0;
+
 	bool useMonsterBall = true;
 	bool start = false;
+
+	bool kaze = true;
+	bool charge = false;
+
 	while (msg.message != WM_QUIT) {
 
 
@@ -1368,18 +1405,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			transformaitionMatrixDataModel->WVP = worldViewProjectionMatrixModel;
 			transformaitionMatrixDataModel->World = worldMatrixmodel;
 
-			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			/*Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWindth), float(kClientHeight), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			transformaitionMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
-			transformaitionMatrixDataSprite->World = worldMatrix;
+			transformaitionMatrixDataSprite->World = worldMatrix;*/
 
 
-			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+			/*Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-			materialDataSprite->uvTransform = uvTransformMatrix;
+			materialDataSprite->uvTransform = uvTransformMatrix;*/
 
 
 			Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
@@ -1387,8 +1424,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			billboardMatrix.m[3][1] = 0.0f;
 			billboardMatrix.m[3][2] = 0.0f;
 
+
+
 			//instance用
 			uint32_t numInstance = 0;
+
+
+
+			if (charge) { UpdateParticlesTowardsCenter(particles, kDeletaTime, emitter.transform.translate); }
 
 			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
 				if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
@@ -1396,15 +1439,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					continue;
 				}
 
-				
+
 
 				Matrix4x4 worldMatrix = MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MakeTranslateMatrix((*particleIterator).transform.translate);
 				/*MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);*/
 				Matrix4x4 worldViewProjetionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 				if (IsCollision(accelerationFienld.area, (*particleIterator).transform.translate)) {
 
-					(*particleIterator).Velocity += accelerationFienld.acceleration * kDeletaTime;
+					if (kaze) { (*particleIterator).Velocity += accelerationFienld.acceleration * kDeletaTime; }
+
 				}
+
+
 
 				(*particleIterator).transform.translate += (*particleIterator).Velocity * kDeletaTime;
 				(*particleIterator).currentTime += kDeletaTime;
@@ -1422,29 +1468,107 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			emitter.frequencyTime += kDeletaTime;//時刻を進める
 			if (emitter.frequency <= emitter.frequencyTime) {//頻度より大きいなら発生
-				particles.splice(particles.end(), Emit(emitter, randomEngine));//発生処理
-				emitter.frequencyTime -= emitter.frequency;//余計に過ぎた時間も加味して頻度計算する
+				if (createparticle) {
+
+					particles.splice(particles.end(), Emit(emitter, randomEngine));//発生処理
+					emitter.frequencyTime -= emitter.frequency;//余計に過ぎた時間も加味して頻度計算する
+
+				}
+			}
+			if (winddirection == 0) {
+
+				accelerationFienld.acceleration = { 0.0f,15.0f,0.0f };
+
+			}
+			else if (winddirection == 1) {
+
+				accelerationFienld.acceleration = { 0.0f,-15.0f,0.0f };
+
+			}
+			else if (winddirection == 2) {
+				accelerationFienld.acceleration = { 15.0f,0.0f,0.0f };
+			}
+			else if (winddirection == 3) {
+				accelerationFienld.acceleration = { -15.0f,0.0f,0.0f };
 			}
 
 
-			
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			ImGui::Begin("Setting");
 
-			
+
+
 			if (ImGui::CollapsingHeader("Prticles", ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				if (ImGui::Button("Add Particle")) {
+				if (ImGui::CollapsingHeader("KAZE", ImGuiTreeNodeFlags_DefaultOpen)) {
 
-					particles.splice(particles.end(), Emit(emitter, randomEngine));
+					// Kaze のトグル
+					if (ImGui::Checkbox("Kaze", &kaze)) {
+						if (kaze) {
+							charge = false; // Kaze がオンになったら Charge をオフにする
+						}
+					}
+
+					// 向きを制御するラジオボタンを作成
+					if (ImGui::RadioButton("North", winddirection == 0)) {
+						winddirection = 0;
+					}
+					if (ImGui::RadioButton("South", winddirection == 1)) {
+						winddirection = 1;
+					}
+					if (ImGui::RadioButton("East", winddirection == 2)) {
+						winddirection = 2;
+					}
+					if (ImGui::RadioButton("West", winddirection == 3)) {
+						winddirection = 3;
+					}
+
+					// 現在の風向きを表示
+					ImGui::Text("Current Wind Direction: %s",
+						winddirection == 0 ? "North" :
+						winddirection == 1 ? "South" :
+						winddirection == 2 ? "East" : "West");
+
 
 				}
 
-				ImGui::DragFloat3("*EmitterTranslate", &emitter.transform.translate.x, 0.01f,-100.0f,100.0f);
-				
+
+				if (ImGui::CollapsingHeader("FAIRY", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+
+					// Charge のトグル
+					if (ImGui::Checkbox("fairy", &charge)) {
+						if (charge) {
+							kaze = false; // Charge がオンになったら Kaze をオフにする
+						}
+					}
+
+				}
+
+				if (ImGui::CollapsingHeader("Prticlesparameter", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+
+					ImGui::DragFloat3("*EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+					// チェックボックスでcreateparticleを制御
+					ImGui::Checkbox("Create Particles", &createparticle);
+
+					// 現在の状態を表示
+					ImGui::Text("Particle Creation: %s", createparticle ? "Enabled" : "Disabled");
+
+					if (ImGui::Button("Add Particle")) {
+
+						particles.splice(particles.end(), Emit(emitter, randomEngine));
+
+					}
+
+				}
+
+
+
+
 			}
 			//CameraTransform
 			if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
@@ -1452,49 +1576,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::DragFloat3("CameraTranslate", &cameraTransform.translate.x, 0.01f);
 				ImGui::DragFloat3("CameraRotate", &cameraTransform.rotate.x, 0.01f);
 			}
-			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			// SphereSetColor
-			if (ImGui::CollapsingHeader("SetcolorSphere", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::ColorEdit4("*SetColor", &materialDataSphere->color.x);
-			}
-			// SphereTransform
-			if (ImGui::CollapsingHeader("Sphere", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::DragFloat3("*Scale", &transform.scale.x, 0.01f);
-				ImGui::DragFloat3("*Rotate", &transform.rotate.x, 0.01f);
-				ImGui::DragFloat3("*Transrate", &transform.translate.x, 0.01f);
-			}
-			// ModelTransform
-			if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-				ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-				ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
-			}
-			//SpriteTransform
-			if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::DragFloat3("*ScaleSprite", &transformSprite.scale.x, 0.1f);
-				ImGui::DragFloat3("*RotateSprite", &transformSprite.rotate.y, 0.1f);
-				ImGui::DragFloat3("*TransrateSprite", &transformSprite.translate.x);
-			}
-			//uvTransformSprite
-			if (ImGui::CollapsingHeader("uvTransformSprite", ImGuiTreeNodeFlags_DefaultOpen))
-			{
 
-				ImGui::DragFloat2("*UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-				ImGui::DragFloat2("*UVScale", &uvTransformSprite.scale.x, 0.01f, -1.0f, 1.0f);
-				ImGui::SliderAngle("*UVRotate", &uvTransformSprite.rotate.z);
+			
 
-			}
-
-			//項目4
-			if (ImGui::CollapsingHeader("directionalLight", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::ColorEdit4("*LightSetColor", &directionalLightData->color.x);
-				ImGui::DragFloat3("*Lightdirection", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-			}
 
 
 			ImGui::End();
