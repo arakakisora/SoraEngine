@@ -4,10 +4,11 @@
 #include <random>
 #include "GraphicsPipeline.h"
 #include <RenderingData.h>
+#include "Camera.h"
 
 struct ParticleGroup {
 
-	Material* materialData;
+	MaterialData* materialData;
 	std::list<Particle> particles;
 	uint32_t srvIndex;
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce;
@@ -18,12 +19,12 @@ struct ParticleGroup {
 
 class ParticleManager
 {
+	//シングルトン
 	static ParticleManager* instance;
-
-	ParticleManager() = default;
-	~ParticleManager() = default;
-	ParticleManager(ParticleManager&) = default;
-	ParticleManager& operator=(ParticleManager&) = delete;
+	ParticleManager() = default;//コンストラクタ
+	~ParticleManager() = default;//デストラクタ
+	ParticleManager(ParticleManager&) = default;//コピーコンストラクタ
+	ParticleManager& operator=(ParticleManager&) = delete;//代入演算子
 
 public:
 	//シングルトンインスタンスの取得
@@ -32,17 +33,26 @@ public:
 	void Finalize();
 
 	/// <summary>
-/// 初期化
-/// </summary>
-	void Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager);
+    /// 初期化
+	/// </summary>
+	void Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager,Camera*camera);
+	/// <summary>
+	/// 更新
+	/// </summary>
+	void Update();
+
 	//パーティクルの作成
 	void CreateParticleGroup(const std::string& name, const std::string& textureFilePath, uint32_t maxInstance);
+
+
 private:
 
 	//DirectXCommon
 	DirectXCommon* dxcommon_ = nullptr;
 	//SRVマネージャ
 	SrvManager* srvmnager_ = nullptr;
+	//カメラ
+	Camera* camera_ = nullptr;
 	//乱数エンジン
 	std::mt19937 randomEngine;
 	//グラフィックスパイプライン
@@ -56,5 +66,6 @@ private:
 
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
 
+	Matrix4x4 backToFrontMatrix;
 };
 
