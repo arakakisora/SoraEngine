@@ -140,6 +140,8 @@
     <FxCompile Include="Resources\Shaders\Object3d.PS.hlsl">
       <Filter>shader</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\Particle.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Particle.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -231,5 +233,6 @@
     <None Include="Resources\Shaders\Object3d.hlsli">
       <Filter>shader</Filter>
     </None>
+    <None Include="Resources\Shaders\Particle.hlsli" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,5 @@
 #pragma once
-#include "Matrix4x4.h"
-#include "Matrix3x3.h"
-#include "Vector3.h"
-#include "Vector4.h"
-#include "Vector2.h"
+#include "RenderingData.h"
 #pragma once
 #include <assert.h>
 #include <cmath>
@@ -39,6 +35,22 @@ namespace MyMath {
 	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottm, float nearCip, float farCip);
 	//ビューポート変換行列
 	Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+	//線形補間
+	Vector3 Lerp(const Vector3& a, const Vector3& b, float t);
+
+
+	bool IsCollision(const Sphere& s1, const Sphere& s2);
+	
+
+	bool IsCollision(const Sphere& s1, const Plane& plane);
+	
+
+	bool IsCollision(const Segment& segment, const Plane& plane);
+	
+	bool IsCollision(const AABB& aabb, const Vector3& point);
+	
+	
+
 }
 
 

@@ -9,6 +9,8 @@ public:
 	//ルートシグネチャの作成
 	void RootSignatureCreate();
 
+	void RootSignatureParticleCreate();
+
 	//ゲッター
 	ID3D12RootSignature* GetRootSignature()const { return rootSignature.Get(); }
 	ID3D12PipelineState* GetGraphicsPipelineState()const { return graphicsPipelineState.Get(); }

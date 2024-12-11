@@ -174,9 +174,9 @@ Matrix4x4 MyMath::MakeRotateZMatrix(float radian)
 Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
 
-	Matrix4x4 rotateXYZ = MakeRotateXMatrix(rotate.x)* MakeRotateYMatrix(rotate.y)* MakeRotateZMatrix(rotate.z);
-	return MakeScaleMatrix(scale)* rotateXYZ* MakeTranslateMatrix(translate);
-	
+	Matrix4x4 rotateXYZ = MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z);
+	return MakeScaleMatrix(scale) * rotateXYZ * MakeTranslateMatrix(translate);
+
 }
 
 float MyMath::Cot(float theta)
@@ -274,6 +274,62 @@ Matrix4x4 MyMath::MakeViewportMatrix(float left, float top, float width, float h
 
 }
 
+Vector3 MyMath::Lerp(const Vector3& a, const Vector3& b, float t)
+{
+
+	Vector3 ans;
+
+	ans.x = t * a.x + (1.0f - t) * b.x;
+	ans.y = t * a.y + (1.0f - t) * b.y;
+	ans.z = t * a.z + (1.0f - t) * b.z;
+
+	return ans;
+}
+
+bool MyMath::IsCollision(const Sphere& s1, const Sphere& s2)
+{
+	Vector3 Length = s2.center - s1.center;
+	float distance = Length.Length();
+
+	if (distance <= s1.radius + s2.radius) { return true; };
+
+	return false;
+}
+
+bool MyMath::IsCollision(const Sphere& s1, const Plane& plane)
+{
+	float d = plane.normal.Dot(plane.distance);
+	float k = fabs(plane.normal.Dot(s1.center) - d);
+	if (k <= s1.radius) {
+		return true;
+	}
+	return false;
+}
+
+bool MyMath::IsCollision(const Segment& segment, const Plane& plane)
+{
+	float dot = plane.normal.Dot(segment.diff);
+	if (dot == 0.0f) {
+		return false;
+	}
+	float t = (plane.distance - segment.origin.Dot(plane.normal) )/ dot;
+
+	if (0 <= t && t <= 1) { return true; }
+	return false;
+
+}
+
+bool MyMath::IsCollision(const AABB& aabb, const Vector3& point)
+{
+	// point が aabb の範囲内にあるかを判定
+	if (point.x >= aabb.min.x && point.x <= aabb.max.x &&
+		point.y >= aabb.min.y && point.y <= aabb.max.y &&
+		point.z >= aabb.min.z && point.z <= aabb.max.z)
+	{
+		return true; // 範囲内にあるので衝突
+	}
+	return false; // 範囲外なので衝突していない
+}
 
 
 

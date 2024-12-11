@@ -61,22 +61,67 @@ struct ModelData {
 
 }; 
 
-//パーティクル
-struct Particle {
 
-	Transform transform;
-	Vector3 Velocity;
-	Vector4 color;
-	float lifetime;
-	float currentTime;
+
+struct Spring {
+	// アンカー。固定された端の位置
+	Vector3 anchor;
+	// 自然長
+	float naturalLength;
+	// 剛性。バネ定数k
+	float stiffness;
+	//減衰力
+	float dampingCoefficent;
+};
+
+struct Ball {
+	Vector3 position; // ボールの位置
+	Vector3 velocity; // ボールの速度
+	Vector3 acceleration; // ボールの加速度
+	float mass; // ボールの質量
+	float radius; // ボールの半径
+	unsigned int color; // ボールの色
+};
+
+
+struct Sphere {
+	Vector3 center;
+	float radius;
+};
+
+struct Line {
+	Vector3 origin;
+	Vector3 diff;
+};
+
+struct Ray {
+
+	Vector3 origin;
+	Vector3 diff;
+};
+
+struct Segment {
+
+	Vector3 origin;
+	Vector3 diff;
+};
+
+struct Plane {
+
+	Vector3 normal;
+	float distance;
 
 };
-//パーティクルGPU
-struct ParticleForGPU
-{
-	Matrix4x4 WVP;
-	Matrix4x4 World;
-	Vector4 color;
 
+struct Triangle {
+
+	Vector3 vertices[3];
 };
+
+struct AABB {
+
+	Vector3 min;
+	Vector3 max;
+};
+
 

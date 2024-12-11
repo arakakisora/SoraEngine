@@ -47,6 +47,11 @@ struct Vector3 final {
     float Dot(const Vector3& v) const {
         return x * v.x + y * v.y + z * v.z;
     }
+
+	float Dot(const float& v) const {
+		return x * v + y * v + z * v;
+	}
+
     Vector3 Cross(const Vector3& v) const {
         return { y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x };
     }
