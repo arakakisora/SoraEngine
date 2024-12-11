@@ -64,7 +64,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ポインタ
 	WinApp* winApp = nullptr;
 	DirectXCommon* dxCommon = nullptr;
-	Input* input = nullptr;
+	
 
 	//初期化
 	//WindousAPI初期化
@@ -93,10 +93,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
-	//入力宣言
-	input = new Input();
-	//入力初期化
-	input->Initialize(winApp);
+	Input::GetInstans()->Initialize(winApp);
+	
+	
 
 	//スプライト宣言
 	SpriteCommon* spriteCommon = nullptr;
@@ -189,7 +188,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #endif // _DEBUG
 
-		input->Update();
+		Input::GetInstans()->Update();
 
 		if (!bgm) {
 
@@ -197,7 +196,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			bgm = true;
 		}
 
-		if (input->TriggerKey(DIK_SPACE)) {
+		if (Input::GetInstans()->TriggerKey(DIK_SPACE)) {
 
 			Audio::GetInstance()->SoundUnload(&sounddata1);
 			
@@ -293,7 +292,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete imGuiMnager;
 #endif // _DEBUG
 
-	delete input;
+	Input::GetInstans()->Finalize();
 
 	//スプライト解放
 	delete spriteCommon;

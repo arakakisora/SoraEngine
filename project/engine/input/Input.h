@@ -5,11 +5,23 @@
 #define DIRECTINPUT_VERSION 0x0800 // DirectInputのバージョン指定
 #include <dinput.h>
 #include "WinApp.h"
+template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 class Input
 {
+	static Input* instance;
+	Input() = default;
+	~Input() = default;
+	Input(Input&) = default;
+	Input& operator=(Input&) = delete;
+	
 public:
-	template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
-public:
+	//シングルトンインスタンスの取得
+	static Input* GetInstans();
+	//終了
+	void Finalize();
+
+
+
 	//初期化
 	void Initialize(WinApp*winApp);
 	//更新
