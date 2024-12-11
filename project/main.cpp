@@ -40,6 +40,7 @@
 #include <imgui.h>
 #include "Audio.h"
 #include "SrvManager.h"
+#include "Player.h"
 
 
 
@@ -121,16 +122,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//カメラの生成	
 	Camera* camera = new Camera();
 	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 0,0,-10, });
+	camera->SetTranslate({ 0,0,-30, });
 	object3DCommon->SetDefaultCamera(camera);
 
 	//テクスチャの初期化
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
 
-	
+
+
+	//modelの読み込み
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("axis.obj");
-
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
 
 	//3Dオブジェクトの初期化
 	Object3D* object3D = new Object3D();
@@ -142,28 +145,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	object3D2nd->Initialize(object3DCommon);
 	object3D2nd->SetModel("plane.obj");
 
+	//PlayerObjectの初期化
+	Object3D* playerObject = new Object3D();
+	playerObject->Initialize(object3DCommon);
+	playerObject->SetModel("sphere.obj");
+
 	Audio* audio_ = nullptr;
 	audio_->GetInstance()->Initialize();
 
 
 #pragma endregion
-
+	//サウンドデータの読み込み
 	SoundData sounddata1 = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");
-
-
-	int i = 0;
-	
-
-
 
 	//wvpData用のTransform変数を作る
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	
+	//playerの初期化
+	Player* player = new Player();
+	player->Initialize(playerObject);
+
+
 
 	bool useMonsterBall = true;
-
 	bool bgm = false;
+	//================================================================================================
+	//ゲームループ
+	//================================================================================================
 	while (true) {//ゲームループ
 
 		camera->Update();
@@ -201,25 +210,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		
-
 		
+		//playerの更新
+		player->Update();
 		
-		object3D->Update();
-
-		
+		object3D->Update();	
 		object3D2nd->Update();
 
 #ifdef _DEBUG
 
-		if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::CollapsingHeader("defaultCamera", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			transformModel = object3D->GetTransform();
-
-			ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-			ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-			ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
-
-			object3D->SetTransform(transformModel);
+			Transform transformCamera = camera->GetTransform();
+			ImGui::DragFloat3("*cameraTransrate", &transformCamera.translate.x, 0.01f);
+			ImGui::DragFloat3("*cameraRotate", &transformCamera.rotate.x, 0.01f);
+			ImGui::DragFloat3("*cameraScale", &transformCamera.scale.x, 0.01f);
+			camera->SetTransform(transformCamera);
 		}
 #endif // _DEBUG
 
@@ -238,8 +244,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->CommonDraw();
-		object3D->Draw();
-		object3D2nd->Draw();
+		//object3D->Draw();
+		//object3D2nd->Draw();
+		//playerの描画
+		playerObject->Draw();
+		
 
 #pragma endregion
 
@@ -293,8 +302,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete object3DCommon;
 	delete object3D;
 	delete object3D2nd;
+	delete playerObject;
 	delete camera;
 	delete srvManager;
+
+	//player解放
+	delete player;
 
 	return 0;
 

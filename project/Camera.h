@@ -18,6 +18,7 @@ public:
 	void SetAspectRatio(const float& aspectRation) { this->aspectRatio = aspectRation; }
 	void SetNearClip(const float& nearClip) { this->nearCilp = nearClip; }
 	void SetFarClip(const float& farClip) { this->farClip = farClip; }
+	void SetTransform(const Transform& transform) { this->transform = transform; }
 
 	const Matrix4x4& GetWorldMatrix()const { return worldMatrix; }
 	const Matrix4x4& GetViewMatrix()const { return viewMatrix; }
