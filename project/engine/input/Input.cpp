@@ -3,6 +3,23 @@
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 
+Input* Input::instance = nullptr;
+
+Input* Input::GetInstans()
+{
+	if (instance == nullptr) {
+		instance = new Input;
+	}
+	return instance;
+}
+
+void Input::Finalize()
+{
+	delete instance;	
+	instance = nullptr;
+
+}
+
 void Input::Initialize(WinApp *winApp)
 {
 	winApp_ = winApp;

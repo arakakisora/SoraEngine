@@ -63,7 +63,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ポインタ
 	WinApp* winApp = nullptr;
 	DirectXCommon* dxCommon = nullptr;
-	Input* input = nullptr;
+	
 
 	//初期化
 	//WindousAPI初期化
@@ -92,10 +92,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
-	//入力宣言
-	input = new Input();
-	//入力初期化
-	input->Initialize(winApp);
+	Input::GetInstans()->Initialize(winApp);
+	
+	
 
 	//スプライト宣言
 	SpriteCommon* spriteCommon = nullptr;
@@ -207,7 +206,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #endif // _DEBUG
 
-		input->Update();
+		Input::GetInstans()->Update();
 
 		if (!bgm) {
 
@@ -215,7 +214,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			bgm = true;
 		}
 
-		if (input->TriggerKey(DIK_SPACE)) {
+		if (Input::GetInstans()->TriggerKey(DIK_SPACE)) {
 
 			Audio::GetInstance()->SoundUnload(&sounddata1);
 			
@@ -224,12 +223,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 
 
-		////更新
-		//if (input->TriggerKey(DIK_0)) {
+		//更新
+		if (Input::GetInstans()->PushKey(DIK_D)) {
 
-		//	transform.rotate.y += 0.3f;
+			rotation += 0.03f;
 
-		//}
+		}
 
 		/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -249,7 +248,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		}
 
-		rotation += 0.03f;
+		//rotation += 0.03f;
 		object3D->SetRotate(Vector3{ 0,rotation ,0 });
 		object3D->Update();
 
@@ -336,7 +335,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete imGuiMnager;
 #endif // _DEBUG
 
-	delete input;
+	Input::GetInstans()->Finalize();
 
 	//スプライト解放
 	delete spriteCommon;
