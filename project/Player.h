@@ -3,6 +3,7 @@
 #include "MyMath.h"
 #include "Vector3.h"
 #include "Object3D.h"
+#include "Input.h"
 
 
 struct PayerData{
@@ -36,13 +37,15 @@ public:
 	/// </summary>
 	void Draw();
 
+	void MoveRight();
+	void MoveLeft();
 private:
 	//playerobject
 	Object3D* object3D_=nullptr;
 	//playerのデータ
 	PayerData playerData;
 	//
-	Input* input_;
+	Input* input_=nullptr;
 
 
 

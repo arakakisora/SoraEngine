@@ -29,6 +29,10 @@ void Player::Initialize(Object3D* Object3D)
 void Player::Update()
 {
 	//playerの位置を更新
+
+	
+
+
 	object3D_->SetTransform({ playerData.scale,playerData.rotation,playerData.position });
 	object3D_->Update();
 
@@ -49,4 +53,14 @@ void Player::Draw()
 {
 	//playerの描画
 	object3D_->Draw();
+}
+
+void Player::MoveRight()
+{
+	playerData.position.x += playerData.Velocity.x;
+}
+
+void Player::MoveLeft()
+{
+	playerData.position.x -= playerData.Velocity.x;
 }
