@@ -17,7 +17,7 @@ void Player::Initialize(Object3D* Object3D)
 	object3D_ = Object3D;
 	//playerのデータ初期化
 	playerData.position = { 0,0,0 };//プレイヤーの位置
-	playerData.Velocity = { 1.0f,1.0f,0 };//playerの速度
+	playerData.Velocity = { 0.03f,1.0f,0 };//playerの速度
 	playerData.rotation = { 0,0,0 };//playerの回転
 	playerData.scale = { 1.0f,1.0f,1.0f };//playerのスケール
 	playerData.acceleration = { 0.5f,0.5f,0.5f };//playerの加速度

@@ -14,10 +14,17 @@ void MoveLeftCommand::Exec(Player& player)
 
 Icommand* InputHandler::HandleInput()
 {
-	if (Input::GetInstance()->TriggerKey(DIK_A))
+	if (Input::GetInstans()->PushKey(DIK_D))
+	{
+		return PressKeyD_;
+	}
+
+	if (Input::GetInstans()->PushKey(DIK_A))
 	{
 		return PressKeyA_;
 	}
+
+	
 
 	return nullptr;
 }
@@ -32,4 +39,8 @@ void InputHandler::AssignMoveRightCommand2PresskeyD()
 {
 	Icommand* command = new MoveRightCommand();
 	PressKeyD_ = command;
+}
+
+Icommand::~Icommand()
+{
 }

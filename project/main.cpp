@@ -41,11 +41,37 @@
 #include "Audio.h"
 #include "SrvManager.h"
 #include "Player.h"
+#include "command.h"
 
 
 
 
+class StageScene {
 
+	InputHandler* inputHandler_ = nullptr;
+	Icommand* icommand_ = nullptr;
+	Player* player_ = nullptr;
+public:
+	void Initialize(Object3D*object3d_) {
+		inputHandler_ = new InputHandler();
+		inputHandler_->AssignMoveLeftCommand2PresskeyA();
+		inputHandler_->AssignMoveRightCommand2PresskeyD();
+		player_ = new Player();
+		player_->Initialize(object3d_);
+		
+	}
+	void Update() {
+		icommand_ = inputHandler_->HandleInput();
+		if (icommand_ != nullptr) {
+			icommand_->Exec(*player_);
+		}
+		player_->Update();
+	}
+	void Draw() {
+		player_->Draw();
+	}
+
+};
 
 
 
@@ -161,9 +187,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	
-	//playerの初期化
-	Player* player = new Player();
-	player->Initialize(playerObject);
+	////playerの初期化
+	//Player* player = new Player();
+	//player->Initialize(playerObject);
+
+	StageScene* stage = new StageScene();
+	stage->Initialize(playerObject);
 
 
 
@@ -209,9 +238,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		
-		
+		//stageの更新
+		stage->Update();
 		//playerの更新
-		player->Update();
+		//player->Update();
 		
 		object3D->Update();	
 		object3D2nd->Update();
@@ -246,8 +276,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//object3D->Draw();
 		//object3D2nd->Draw();
 		//playerの描画
-		playerObject->Draw();
-		
+		//playerObject->Draw();
+		stage->Draw();
 
 #pragma endregion
 
@@ -306,7 +336,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete srvManager;
 
 	//player解放
-	delete player;
+	//delete player;
 
 	return 0;
 
