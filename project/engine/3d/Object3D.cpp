@@ -61,6 +61,7 @@ void Object3D::Update()
 	transformaitionMatrixData->World = worldMatrix;
 }
 
+
 void Object3D::Draw()
 {
 

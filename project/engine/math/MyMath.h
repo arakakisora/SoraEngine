@@ -26,6 +26,8 @@ namespace MyMath {
 
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
+	Matrix4x4 MekeIdentity4x4();
+	
 	float Cot(float theta);
 
 	//透視投影行列

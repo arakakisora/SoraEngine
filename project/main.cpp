@@ -40,6 +40,9 @@
 #include <imgui.h>
 #include "Audio.h"
 #include "SrvManager.h"
+#include "ParticleManager.h"
+#include"ParticleEmitter.h"
+
 
 
 
@@ -88,9 +91,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #endif // _DEBUG
 
-
-	//テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
+	
 
 	//入力宣言
 	input = new Input();
@@ -117,12 +118,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 最初のシーン初期化
 
+	//テクスチャマネージャの初期化
+	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 
 	//カメラの生成	
 	Camera* camera = new Camera();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
 	object3DCommon->SetDefaultCamera(camera);
+
+	ParticleManager::GetInstans()->Initialize(dxCommon, srvManager, camera);
+	ParticleManager::GetInstans()->CreateParticleGroup("particle1", "Resources/uvChecker.png", 100);
+	
 
 	//テクスチャの初期化
 	std::string textureFilePath[2]{ "Resources/monsterBall.png" ,"Resources/uvChecker.png" };
@@ -151,6 +158,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	
 	Audio::GetInstance()->Initialize();
+
 
 
 #pragma endregion
@@ -191,6 +199,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	bool useMonsterBall = true;
 
 	bool bgm = false;
+
+	ParticleEmitter::GetInstans()->Initialize({ {1,1,1},{0,0,0},{0,0,0} }, 100, 1.0f);
+	
+	
 	while (true) {//ゲームループ
 
 		camera->Update();
@@ -221,8 +233,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 		}
 
-		
+		if (input->TriggerKey(DIK_1)) {
 
+			ParticleEmitter::GetInstans()->Emit("particle1");
+		}
+			
+		
+		
+		
+		
 
 		////更新
 		//if (input->TriggerKey(DIK_0)) {
@@ -256,6 +275,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		object3D2nd->SetRotate(Vector3{ 0,0 ,rotation });
 		object3D2nd->Update();
 
+		ParticleManager::GetInstans()->Update();
+
 #ifdef _DEBUG
 
 		if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
@@ -287,6 +308,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		object3DCommon->CommonDraw();
 		object3D->Draw();
 		object3D2nd->Draw();
+		ParticleManager::GetInstans()->Draw("particle1", "axis.obj");
+
 
 #pragma endregion
 
@@ -328,8 +351,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//WindowsAPI終了処理
 	winApp->Finalize();
 	//WindowsAPI解放
+	ParticleEmitter::GetInstans()->Finalize();
+	ParticleManager::GetInstans()->Finalize();
 	TextureManager::GetInstance()->Finalize();
 	ModelManager::GetInstans()->Finalize();
+
 	delete winApp;
 	delete dxCommon;
 #ifdef _DEBUG

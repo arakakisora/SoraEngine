@@ -25,13 +25,6 @@ struct ParticleForGPU
 	Vector4 color;
 
 };
-//エミッタ
-struct Emitter {
-	Transform transform;//エミッタのtransform
-	uint32_t count;//発生数
-	float frequency;//発生頻度
-	float frequencyTime;//頻度用時刻	
-};
 //加速度フィールド
 struct AccelerationField {
 
@@ -43,12 +36,12 @@ struct AccelerationField {
 
 struct ParticleGroup {
 
-	MaterialData* materialData;
+	MaterialData materialData;
 	std::list<Particle> particles;
-	uint32_t srvIndex;
+	uint32_t instanceingsrvIndex;
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResouce;
-	uint32_t kNumMaxInstance;
-	ParticleForGPU* instancingData;
+	uint32_t kNumInstance;
+	ParticleForGPU* instancingData=nullptr;
 
 };
 
@@ -72,9 +65,9 @@ public:
 	void Finalize();
 
 	/// <summary>
-    /// 初期化
+	/// 初期化
 	/// </summary>
-	void Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager,Camera*camera);
+	void Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager, Camera* camera);
 	/// <summary>
 	/// 更新
 	/// </summary>
@@ -82,12 +75,12 @@ public:
 	/// <summary>
 	/// 描画
 	///	</summary>
-	void Draw(const std::string& name);
+	void Draw(const std::string& name, const std::string& modelfilepath);
 
 	//パーティクルの作成
-	void CreateParticleGroup(const std::string& name, const std::string& textureFilePath, uint32_t maxInstance, const std::string& modelfilepath);
+	void CreateParticleGroup(const std::string& name, const std::string& textureFilePath, uint32_t maxInstance);
 
-	void Emit(const std::string& name, const Vector3&position,uint32_t count);
+	void Emit(const std::string& name, const Vector3& position, uint32_t count);
 
 
 private:
@@ -113,10 +106,14 @@ private:
 	AccelerationField accelerationFienld;
 	//デルタタイム
 	const float kDeletaTime = 1.0f / 60.f;
-	
+
 	Model* model_ = nullptr;
 
 	void SetModel(const std::string& filepath);
+
+	uint32_t kNumMaxInstance;//インスタンス数
+	//
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource = nullptr;
 
 };
 

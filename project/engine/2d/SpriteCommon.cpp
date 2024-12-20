@@ -14,8 +14,10 @@ SpriteCommon::~SpriteCommon()
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
 	dxCommon_ = dxCommon;
+	
 	graphicsPipeline_ = new GraphicsPipeline();
-	graphicsPipeline_->Create(dxCommon_);
+	graphicsPipeline_->Initialize(dxCommon);
+	graphicsPipeline_->Create();
 }
 
 void SpriteCommon::CommonDraw()

@@ -18,7 +18,8 @@ void Object3DCommon::Initialize(DirectXCommon* dxCommon)
 {
 	dxCommon_ = dxCommon;
 	graphicsPipeline_ = new GraphicsPipeline();
-	graphicsPipeline_->Create(dxCommon_);
+	graphicsPipeline_->Initialize(dxCommon);
+	graphicsPipeline_->Create();
 
 }
 
