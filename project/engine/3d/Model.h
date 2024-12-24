@@ -18,6 +18,10 @@ public:
 	static MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
 	static ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename);
 
+	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }
+	ModelData GetModelData()const { return modelData; }
+	VertexData GetVertexData()const { return *vertexData; }
+
 private:
 	//モデル共通部のポインタ
 	ModelCommon* modelCommon_ = nullptr;
