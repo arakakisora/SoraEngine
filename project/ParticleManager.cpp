@@ -184,7 +184,7 @@ void ParticleManager::Draw()
 		srvManager_->SetGraficsRootDescriptorTable(2, particleGroup.material.textureIndex);
 
 		//インスタンシング描画
-		dxCommon_->GetCommandList()->DrawInstanced(6, particleGroup.instanceCount, 0, 0);
+		dxCommon_->GetCommandList()->DrawInstanced(UINT(model_->GetModelData().vertices.size()), particleGroup.instanceCount, 0, 0);
 	}
 
 
@@ -196,6 +196,14 @@ void ParticleManager::Emit(const std::string& groupName, const Transform& transf
 	if (!particleGroups.contains(groupName)) {
 		assert(false);
 	}
+
+	ParticleGroup& group = particleGroups[groupName];
+
+	//// 既存のインスタンス数が上限を超える場合、生成数を調整
+	//if (group.particles.size() + count > kNumMaxInstance) {
+	//	count = kNumMaxInstance - group.particles.size();
+	//	OutputDebugStringA("Warning: Particle count adjusted to avoid exceeding maximum instances.\n");
+	//}
 
 	//新たなパーティクルを作成し、指定されたパーティクルグループに登録
 	for (uint32_t i = 0; i < count; ++i) {

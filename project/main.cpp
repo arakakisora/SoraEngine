@@ -292,8 +292,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 		object3DCommon->CommonDraw();
-		object3D->Draw();
-		object3D2nd->Draw();
+		/*object3D->Draw();
+		object3D2nd->Draw();*/
 
 		ParticleManager::GetInstance()->Draw();
 
@@ -305,12 +305,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		spriteCommon->CommonDraw();
 		/*sprite->Draw();*/
 
-		for (Sprite* sprite : sprites) {
+		/*for (Sprite* sprite : sprites) {
 
 			sprite->Draw();
 
 
-		}
+		}*/
 
 #pragma endregion
 
