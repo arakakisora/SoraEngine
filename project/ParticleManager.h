@@ -78,6 +78,14 @@ public:
 	/// 更新
 	/// </summary>
 	void Update(Camera* camera);
+
+	/// <summary>
+	/// 描画
+	/// </summary>
+	void Draw();
+
+	//パーティクルの発生
+	void Emit(const std::string& groupName, const Transform& transform,uint32_t count );
 	
 	void SetModel(const std::string& filepath);
 	
@@ -102,5 +110,10 @@ private:
 	//デルタタイム
 	const float kDeletaTime = 1.0f / 60.f;
 
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+	//マテリアルにデータを書き込む	
+	Material* materialData = nullptr;
+	uint32_t kNumMaxInstance = 100;//インスタンス数
 };
 

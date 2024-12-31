@@ -40,6 +40,9 @@
 #include <imgui.h>
 #include "Audio.h"
 #include "SrvManager.h"
+#include "Camera.h"
+#include "ParticleManager.h"
+#include "ParticleEmitter.h"
 
 
 
@@ -151,6 +154,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Audio* audio_ = nullptr;
 	audio_->GetInstance()->Initialize();
 
+	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager, "plane.obj");
+	ParticleManager::GetInstance()->CreateParticleGroup("particleGroup1", "Resources/uvChecker.png");
+
 
 #pragma endregion
 
@@ -220,6 +226,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 		}
 
+		ParticleManager::GetInstance()->Update(camera);
+
 		
 
 
@@ -286,6 +294,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		object3DCommon->CommonDraw();
 		object3D->Draw();
 		object3D2nd->Draw();
+
+		ParticleManager::GetInstance()->Draw();
 
 #pragma endregion
 

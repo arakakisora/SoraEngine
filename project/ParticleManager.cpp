@@ -37,12 +37,26 @@ void ParticleManager::Initialize(DirectXCommon* dxcmmon, SrvManager* srvmnager, 
 	vertexBufferView = model_->GetVertexBufferView();
 	//graphicsPipelineの初期化
 	//グラフィックスパイプライン
-	GraphicsPipeline* graphicsPipeline = nullptr;
+	
+	graphicsPipeline = new GraphicsPipeline();
 	graphicsPipeline->Initialize(dxCommon_);
+	graphicsPipeline->CreateParticle();
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * model_->GetModelData().vertices.size());
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&model_->GetVertexData()));
-	std::memcpy(&model_->GetVertexData(), model_->GetModelData().vertices.data(), model_->GetModelData().vertices.size());
+	//Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * model_->GetModelData().vertices.size());
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&model_->GetVertexData()));
+	//std::memcpy(&model_->GetVertexData(), model_->GetModelData().vertices.data(), model_->GetModelData().vertices.size());
+
+	//マテリアル
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	materialResource = dxCommon_->CreateBufferResource(sizeof(Material));
+	//マテリアルにデータを書き込む	
+	materialData = nullptr;
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	//色
+	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+
+	materialData->enableLighting = false;//有効にするか否か
+	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 
 }
 
@@ -65,15 +79,21 @@ void ParticleManager::CreateParticleGroup(const std::string& groupName, const st
 	//テクスチャファイルパスからテクスチャ番号を取得
 	particleGroups[groupName].material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 	//インスタンスデータのリソースを作成
-	particleGroups[groupName].instanceResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * particleGroups[groupName].instanceCount);
+	particleGroups[groupName].instanceResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance);
 	//インスタンスデータのリソースをマップ
 	particleGroups[groupName].instanceResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups[groupName].instanceData));
-	//インスタンスデータのリソースにデータを書き込む
-	std::memset(particleGroups[groupName].instanceData, 0, sizeof(ParticleForGPU) * particleGroups[groupName].instanceCount);
+
+	//単位行列を書き込んでおく
+	for (uint32_t i = 0; i < kNumMaxInstance; i++) {
+		particleGroups[groupName].instanceData[i].WVP = MyMath::MekeIdentity4x4();
+		particleGroups[groupName].instanceData[i].World = MyMath::MekeIdentity4x4();
+
+	}
+
 	//インスタンシング用のSRVインデックスを取得してSRVインデックスを記録
 	particleGroups[groupName].instanceIndex = srvManager_->Allocate();
 	//インスタンシング用のSRVを作成
-	srvManager_->CreateSRVforStructuredBuffer(particleGroups[groupName].instanceIndex, particleGroups[groupName].instanceResource.Get(), particleGroups[groupName].instanceCount, sizeof(ParticleForGPU));
+	srvManager_->CreateSRVforStructuredBuffer(particleGroups[groupName].instanceIndex, particleGroups[groupName].instanceResource.Get(), kNumMaxInstance, sizeof(ParticleForGPU));
 
 
 
@@ -117,8 +137,14 @@ void ParticleManager::Update(Camera* camera)
 			//ワールドビュープロジェクション行列を計算
 			Matrix4x4 wvpMatrix = worldMatrix * viewMatrix * projectionMatrix;
 			//インスタンシング用のデータ１個分の書き込み
-			particleGroup.instanceData->WVP = wvpMatrix;
-			particleGroup.instanceData->World = worldMatrix;
+			if (particleGroup.instanceCount < kNumMaxInstance) {
+
+
+				particleGroup.instanceData[particleGroup.instanceCount].World = worldMatrix;
+				particleGroup.instanceData[particleGroup.instanceCount].World = worldMatrix;
+				particleGroup.instanceData[particleGroup.instanceCount].color = (*particleIterator).color;
+				++particleGroup.instanceCount;
+			}
 
 
 			++particleIterator;
@@ -126,6 +152,65 @@ void ParticleManager::Update(Camera* camera)
 	}
 }
 
+
+void ParticleManager::Draw()
+{
+	
+
+
+	//ルートシグネチャを設定
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline->GetRootSignatureParticle());
+	//psoを設定
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline->GetGraphicsPipelineStateParticle());
+	//purimitetopologyを設定
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//頂点バッファビューを設定
+	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+
+	//すべてのパーティクルグループに対して描画処理を行う
+	for (auto& [groupName, particleGroup] : particleGroups) {
+		// インスタンス数がゼロの場合はスキップ
+		if (particleGroup.instanceCount == 0) {
+			continue;
+		}
+
+		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		//テクスチャを設定
+		//dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDrscriptorHandle(particleGroup.material.textureIndex));
+		////インスタンシング用のSRVを設定
+		//dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDrscriptorHandle(particleGroup.instanceIndex));
+
+		srvManager_->SetGraficsRootDescriptorTable(1, particleGroup.instanceIndex);
+		srvManager_->SetGraficsRootDescriptorTable(2, particleGroup.material.textureIndex);
+
+		//インスタンシング描画
+		dxCommon_->GetCommandList()->DrawInstanced(6, particleGroup.instanceCount, 0, 0);
+	}
+
+
+}
+
+void ParticleManager::Emit(const std::string& groupName, const Transform& transform, uint32_t count)
+{
+	//パーティクルグループが存在しない場合はアサート
+	if (!particleGroups.contains(groupName)) {
+		assert(false);
+	}
+
+	//新たなパーティクルを作成し、指定されたパーティクルグループに登録
+	for (uint32_t i = 0; i < count; ++i) {
+		Particle particle;
+		particle.transform = transform;
+		particle.Velocity = { 0.0f,0.0f,0.0f };
+		particle.color = { Vector4(1.0f,1.0f,1.0f,1.0f) };
+		particle.lifetime = 1.0f;
+		particle.currentTime = 0.0f;
+
+		particleGroups[groupName].particles.push_back(particle);
+	};
+	
+
+}
 
 void ParticleManager::SetModel(const std::string& filepath)
 {

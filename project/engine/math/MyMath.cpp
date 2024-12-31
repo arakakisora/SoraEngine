@@ -326,15 +326,15 @@ bool MyMath::IsCollision(const Sphere& s1, const Sphere& s2)
 	return false;
 }
 
-bool MyMath::IsCollision(const Sphere& s1, const Plane& plane)
-{
-	float d = plane.normal.Dot(plane.distance);
-	float k = fabs(plane.normal.Dot(s1.center) - d);
-	if (k <= s1.radius) {
-		return true;
-	}
-	return false;
-}
+//bool MyMath::IsCollision(const Sphere& s1, const Plane& plane)
+//{
+//	float d = plane.normal.Dot(plane.distance);
+//	float k = fabs(plane.normal.Dot(s1.center) - d);
+//	if (k <= s1.radius) {
+//		return true;
+//	}
+//	return false;
+//}
 
 bool MyMath::IsCollision(const Segment& segment, const Plane& plane)
 {
