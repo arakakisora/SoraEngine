@@ -1,5 +1,6 @@
 #include "Framework.h"
 
+
 void Framework::Initialize()
 {
 	//初期化
@@ -22,19 +23,18 @@ void Framework::Initialize()
 	Input::GetInstans()->Initialize(winApp);
 	//Audio初期化
 	audio_->GetInstance()->Initialize();
-	//カメラの生成	
-	camera = new Camera();
 	//スプライト共通部分の初期化
-	spriteCommon = new SpriteCommon();
-	spriteCommon->Initialize(dxCommon);
+	SpriteCommon::GetInstance()->Initialize(dxCommon);
+
+
 	//3Dモデルマネージャの初期化
 	ModelManager::GetInstans()->Initialize(dxCommon, srvManager);
-	//カメラの生成	
-	camera = new Camera();
+
 	//3Dオブジェクト共通部の初期化
-	object3DCommon = new Object3DCommon;
-	object3DCommon->Initialize(dxCommon);
-	object3DCommon->SetDefaultCamera(camera);
+
+	Object3DCommon::GetInstance()->Initialize(dxCommon);
+	//object3DCommon->SetDefaultCamera(camera);
+
 
 
 
@@ -46,26 +46,54 @@ void Framework::Initialize()
 
 #endif // _DEBUG
 
-
+	//sceneManager = new SceneManager();
 
 }
 
 void Framework::Finalize()
 {
+	delete sceneFactory;
+
+#ifdef _DEBUG
+	imGuiMnager->Finalize();
+#endif // DEBUG
+
+	//aoudio解放
+	Audio::GetInstance()->Finalize();
+	//WindowsAPI終了処理
+	winApp->Finalize();
+	//WindowsAPI解放
+	TextureManager::GetInstance()->Finalize();
+	ModelManager::GetInstans()->Finalize();
+	delete winApp;
+	delete dxCommon;
+	delete srvManager;
+#ifdef _DEBUG
+	delete imGuiMnager;
+#endif // _DEBUG
+
+	Input::GetInstans()->Finalize();
+
+	SpriteCommon::GetInstance()->Finalize();
+	Object3DCommon::GetInstance()->Finalize();
+	//SceneManagerの解放
+	SceneManager::GetInstance()->Finalize();
+
 }
 
 void Framework::Update()
 {
-
 
 	//Windowsのメッセージ処理
 	if (winApp->ProcessMessage()) {
 		//ゲームループを抜ける
 		endRequst_ = true;
 	}
-	
-	camera->Update();
+
+
 	Input::GetInstans()->Update();
+	SceneManager::GetInstance()->Update();
+
 
 
 }

@@ -10,13 +10,12 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include"MyMath.h"
-//#include "RenderingPipeline.h"
-
-
-
-
 
 #include "Framework.h"
+
+#include "BaseScene.h"
+
+
 
 class Game :public Framework
 {
@@ -35,28 +34,8 @@ public:
 
 private:
 
-	
-
-	
 
 
-
-	//スプライトの初期化
-	std::vector<Sprite*>sprites;
-	Object3D* object3D = nullptr;
-	Object3D* object3D2nd = nullptr;
-	SoundData sounddata1 = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");
-
-	//wvpData用のTransform変数を作る
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-
-	bool useMonsterBall = true;
-
-	bool bgm = false;
-
-	float rotation{ 0 };
 
 
 

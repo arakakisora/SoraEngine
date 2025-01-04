@@ -5,11 +5,18 @@
 class Object3DCommon
 {
 public:
+
+	static Object3DCommon* GetInstance();
+
+
 	
 	/// <summary>
 	/// 初期化
 	/// </summary>
 	void Initialize(DirectXCommon* dxCommon);
+
+	//終了
+	void Finalize();
 
 	//共通描画設定
 	void CommonDraw();
@@ -26,6 +33,16 @@ public:
 	Camera* GetDefaultCamera()const { return defaultCamera; }
 
 private:
+
+	Object3DCommon() = default;
+	~Object3DCommon() = default;
+	Object3DCommon(const Object3DCommon&) = delete;
+	Object3DCommon& operator=(const Object3DCommon&) = delete;
+
+private:
+
+	//インスタンス
+	static Object3DCommon* instance_;
 
 	DirectXCommon* dxCommon_;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;

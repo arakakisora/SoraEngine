@@ -1,12 +1,28 @@
 #include "Object3DCommon.h"
 #include "Logger.h"
 
+Object3DCommon* Object3DCommon::instance_ = nullptr;
+Object3DCommon* Object3DCommon::GetInstance()
+{
+	if (instance_ == nullptr) {
+		instance_ = new Object3DCommon();
+	}
+	return instance_;
+
+}
+
 void Object3DCommon::Initialize(DirectXCommon* dxCommon)
 {
 
 	dxCommon_ = dxCommon;
 	GraphicsPipelineInitialize();
 
+}
+
+void Object3DCommon::Finalize()
+{
+	delete instance_;
+	instance_ = nullptr;
 }
 
 void Object3DCommon::CommonDraw()
