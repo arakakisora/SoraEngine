@@ -3,7 +3,7 @@
 #include "SpriteCommon.h"
 #include "Input.h"
 #include "SceneManager.h"
-#include "GamePlayScene.h"
+
 
 void TitleScene::Initialize()
 {
@@ -20,9 +20,9 @@ void TitleScene::Update()
 {
 	if (Input::GetInstans()->TriggerKey(DIK_SPACE)) {
 
-		BaseScene* scene = new GamePlayScene();
 		
-		SceneManager::GetInstance()->SetNextScene(scene);
+		
+		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
 
 

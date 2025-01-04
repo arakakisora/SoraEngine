@@ -52,7 +52,7 @@ void Framework::Initialize()
 
 void Framework::Finalize()
 {
-
+	delete sceneFactory;
 
 #ifdef _DEBUG
 	imGuiMnager->Finalize();

@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "SceneFactory.h"
 
 
 
@@ -8,9 +9,10 @@ void Game::Initialize()
 	//初期化
 	Framework::Initialize();
 	
-	BaseScene* scene = new TitleScene();
+	sceneFactory = new SceneFactory();
+	SceneManager::GetInstance()->SetSceneFactory(sceneFactory);
 
-	SceneManager::GetInstance()->SetNextScene(scene);
+	SceneManager::GetInstance()->ChangeScene("TITELE");
 
 }
 

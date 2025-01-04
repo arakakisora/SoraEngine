@@ -23,6 +23,8 @@
 #include "Audio.h"
 #include "SrvManager.h"
 #include "SceneManager.h"
+#include <SceneFactory.h>
+
 
 class Framework
 {
@@ -58,7 +60,7 @@ public:
 
 	//SceneManager* sceneManager = nullptr;
 	
-	
+	AbstractSceneFactory* sceneFactory = nullptr;
 
 };
 

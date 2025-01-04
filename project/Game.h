@@ -10,10 +10,11 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include"MyMath.h"
-#include "GamePlayScene.h"
+
 #include "Framework.h"
-#include "TitleScene.h"
+
 #include "BaseScene.h"
+
 
 
 class Game :public Framework
