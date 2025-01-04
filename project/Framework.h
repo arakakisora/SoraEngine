@@ -10,19 +10,20 @@
 #include"D3DResourceLeakChecker.h"
 #include "Logger.h"
 #include "SpriteCommon.h"
-#include"Sprite.h"
+
 
 #include "Object3DCommon.h"
-#include "Object3D.h"
+
 #include "RenderingData.h"
-#include "Model.h"
+
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include"ImGuiManager.h"
 #include <imgui.h>
 #include "Audio.h"
 #include "SrvManager.h"
-#include "Camera.h"	
+#include "SceneManager.h"
+
 class Framework
 {
 public:
@@ -54,12 +55,10 @@ public:
 	ImGuiManager* imGuiMnager = nullptr;
 	//Audioのポインタ
 	Audio* audio_ = nullptr;
-	//カメラのポインタ
-	Camera* camera = nullptr;
-	//スプライト宣言
-	SpriteCommon* spriteCommon = nullptr;
-	//3Dオブジェクト共通部宣言
-	Object3DCommon* object3DCommon = nullptr;
+
+	//SceneManager* sceneManager = nullptr;
+	
+	
 
 };
 
