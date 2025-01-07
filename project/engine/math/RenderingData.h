@@ -59,3 +59,9 @@ struct ModelData {
 	MaterialData material;
 
 }; 
+
+struct AABB {
+
+	Vector3 min;
+	Vector3 max;
+};

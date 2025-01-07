@@ -16,7 +16,7 @@ class Input
 	
 public:
 	//シングルトンインスタンスの取得
-	static Input* GetInstans();
+	static Input* GetInstance();
 	//終了
 	void Finalize();
 

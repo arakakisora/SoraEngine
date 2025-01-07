@@ -80,6 +80,15 @@ Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 
 }
 
+Vector3 MyMath::TransformNormal(const Vector3& v, const Matrix4x4& m)
+{
+	Vector3 result{
+		{v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0]},
+		{v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1]},
+		{v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]},
+	};
+	return result;
+}
 
 Matrix4x4 MyMath::MakeRotateXMatrix(float radian)
 
@@ -273,6 +282,37 @@ Matrix4x4 MyMath::MakeViewportMatrix(float left, float top, float width, float h
 	return ans;
 
 }
+
+float MyMath::fLerp(float a, float b, float t)
+{
+	float  ans;
+
+	ans = t * a + (1.0f - t) * b;
+	return ans;
+}
+
+Vector3 MyMath::Lerp(const Vector3& a, const Vector3& b, float t)
+{
+	Vector3 ans;
+
+	ans.x = t * a.x + (1.0f - t) * b.x;
+	ans.y = t * a.y + (1.0f - t) * b.y;
+	ans.z = t * a.z + (1.0f - t) * b.z;
+
+	return ans;
+}
+
+bool MyMath::IsCollision(const AABB& aabb1, const AABB& aabb2)
+{
+	if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) && (aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) && (aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z)) {
+
+		return true;
+	}
+
+	return false;
+}
+
+
 
 
 
