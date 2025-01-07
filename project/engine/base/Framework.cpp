@@ -20,7 +20,7 @@ void Framework::Initialize()
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
 	//Input初期化
-	Input::GetInstans()->Initialize(winApp);
+	Input::GetInstance()->Initialize(winApp);
 	//Audio初期化
 	audio_->GetInstance()->Initialize();
 	//スプライト共通部分の初期化
@@ -72,7 +72,7 @@ void Framework::Finalize()
 	delete imGuiMnager;
 #endif // _DEBUG
 
-	Input::GetInstans()->Finalize();
+	Input::GetInstance()->Finalize();
 
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
@@ -91,7 +91,7 @@ void Framework::Update()
 	}
 
 
-	Input::GetInstans()->Update();
+	Input::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 
 

@@ -5,7 +5,7 @@
 
 Input* Input::instance = nullptr;
 
-Input* Input::GetInstans()
+Input* Input::GetInstance()
 {
 	if (instance == nullptr) {
 		instance = new Input;
