@@ -1,8 +1,9 @@
 #pragma once
 #include "BaseScene.h"
+#include "Sprite.h"
 
 
-class GameclearScene:public BaseScene
+class GameclearScene :public BaseScene
 {
 
 public:
@@ -25,7 +26,10 @@ public:
 
 
 
+public:
 
+	//taitorusprite
+	Sprite* sprite = nullptr;
 
 
 

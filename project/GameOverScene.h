@@ -1,5 +1,6 @@
 #pragma once
 #include "BaseScene.h"
+#include "Sprite.h"
 class GameOverScene:public BaseScene
 {
 
@@ -24,7 +25,8 @@ public:
 
 public:
 
-
+	//taitorusprite
+	Sprite* sprite = nullptr;
 
 };
 

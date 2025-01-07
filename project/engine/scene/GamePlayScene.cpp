@@ -140,14 +140,14 @@ void GamePlayScene::Update()
 	GoolObject3D->Update();
 
 
-
+	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
 
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 
 	}
 
-
+	//敵の更新
 	for (Enemy* enemy : enemies_) {
 
 		if (!nullptr) {
@@ -155,7 +155,7 @@ void GamePlayScene::Update()
 		}
 	}
 
-
+	//死んだ敵を削除
 	enemies_.remove_if([](Enemy* enemy) {
 		if (enemy->IsDead()) {
 			delete enemy;
