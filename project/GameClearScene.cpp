@@ -1,28 +1,22 @@
-#include "GamePlayScene.h"
-#include <ModelManager.h>
+#include "GameClearScene.h"
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
 #include <imgui.h>
 #include "Input.h"
-#include "TitleScene.h"
+#include "SceneManager.h"
 
-void GamePlayScene::Initialize()
+void GameClearScene::Initialize()
 {
-
-
 }
 
-void GamePlayScene::Finalize()
+void GameClearScene::Finalize()
 {
-
-
-
-
 }
 
-void GamePlayScene::Update()
+void GameClearScene::Update()
 {
+
 
 
 
@@ -33,22 +27,23 @@ void GamePlayScene::Update()
 
 	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Text("gamePlayScene %d");
-		if (ImGui::Button("GameClearScene"))
+		ImGui::Text("gameClearScene");
+		if (ImGui::Button("TitleScene"))
 		{
-			SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+			SceneManager::GetInstance()->ChangeScene("TITELE");
 		}
-		if (ImGui::Button("GameOverScene"))
-		{
-			SceneManager::GetInstance()->ChangeScene("GAMEOVER");
-		}
+		
+
 
 
 	}
+
 #endif // _DEBUG
+
+
 }
 
-void GamePlayScene::Draw()
+void GameClearScene::Draw()
 {
 #pragma region 3Dオブジェクト描画
 
@@ -64,8 +59,5 @@ void GamePlayScene::Draw()
 	SpriteCommon::GetInstance()->CommonDraw();
 
 #pragma endregion
-
-
-
 
 }
