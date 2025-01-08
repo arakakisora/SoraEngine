@@ -194,14 +194,6 @@ void GamePlayScene::Update()
 		object3D->SetTransform(transformModel);*/
 	}
 #endif // _DEBUG
-
-
-
-
-
-
-
-
 }
 
 void GamePlayScene::Draw()
@@ -244,8 +236,8 @@ void GamePlayScene::Draw()
 
 #pragma endregion
 
-#pragma region スプライト描画
 
+#pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
 	/*sprite->Draw();*/
@@ -328,6 +320,10 @@ void GamePlayScene::CheckAllCollisions()
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 		
 	}
+
+#pragma endregion
+
+
 
 
 }
