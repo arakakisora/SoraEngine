@@ -1,18 +1,9 @@
 #pragma once
-
-#include "Camera.h"	
-#include "Model.h"
-#include"Sprite.h"
-#include "Object3D.h"
-#include "Audio.h"
 #include "BaseScene.h"
-
-#include "SceneManager.h"
-
-class GamePlayScene :public BaseScene
+class GameClearScene:public BaseScene
 {
-public:
 
+public:
 	/// <summary>
 	/// シーンの初期化
 	/// </summary>
@@ -30,9 +21,7 @@ public:
 	/// </summary>
 	void Draw()override;
 
-private:	
-
-
+private:
 
 };
 
