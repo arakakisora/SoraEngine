@@ -12,7 +12,10 @@ void Game::Initialize()
 	sceneFactory = new SceneFactory();
 	SceneManager::GetInstance()->SetSceneFactory(sceneFactory);
 
-	SceneManager::GetInstance()->ChangeScene("TITELE");
+	//シーンの変更
+	//"TITELE"
+	//"GAMEPLAY"
+	SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 
 }
 
