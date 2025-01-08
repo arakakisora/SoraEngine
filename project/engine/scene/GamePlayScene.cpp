@@ -179,6 +179,10 @@ void GamePlayScene::Update()
 		ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
 
 		object3D->SetTransform(transformModel);
+
+		int i = 3+3;
+		
+		ImGui::Text("Hello, world %d", i);
 	}
 #endif // _DEBUG
 
