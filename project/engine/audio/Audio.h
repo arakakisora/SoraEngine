@@ -66,15 +66,33 @@ public:
 	//再生関数
 	void SoundPlayWave(const SoundData& soundData);
 
+	//停止関数
 	void StopAudio();
+
+	//一時停止
+	void PauseAudio();
+	//再開
+	void ResumeAudio();
+
+
 	//getter
 	IXAudio2* GetXAudio2() const { return xAudio2.Get(); }
 
+	bool IsSoundPlaying() const;
+
+
+
 private:
 	//aoudio
-	ComPtr<IXAudio2> xAudio2=nullptr;
-	IXAudio2MasteringVoice* masterVoice=nullptr;
+	ComPtr<IXAudio2> xAudio2 = nullptr;
+	IXAudio2MasteringVoice* masterVoice = nullptr;
 	//波形フォーマット元にSourcwvoiceの生成
 	IXAudio2SourceVoice* pSourceVoice = nullptr;
+
+private:
+	UINT64 playCursor = 0; // 再生位置（バイト単位）を保持
+	bool isPaused = false; // 一時停止状態を管理
+	SoundData currentSoundData; // 現在再生中のサウンドデータ
+
 };
 

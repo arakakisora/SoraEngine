@@ -13,9 +13,9 @@ Audio* Audio::GetInstance()
 
 void Audio::Initialize()
 {
-	
 
-	
+
+
 	//XAudioの生成
 	HRESULT hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 	assert(SUCCEEDED(hr));
@@ -111,7 +111,7 @@ SoundData Audio::SoundLoadWave(const char* filename)
 
 void Audio::SoundUnload(SoundData* soundData)
 {
-	
+
 	if (pSourceVoice) {
 		pSourceVoice->Stop();
 		pSourceVoice->DestroyVoice();
@@ -130,10 +130,19 @@ void Audio::SoundPlayWave(const SoundData& soundData)
 {
 	HRESULT hr;
 
+	// 再生中のソースボイスがある場合は停止
+	if (pSourceVoice) {
+		pSourceVoice->Stop();
+		pSourceVoice->DestroyVoice();
+	}
+
 	//波形フォーマット元にSourcwvoiceの生成
 	pSourceVoice = nullptr;
 	hr = xAudio2->CreateSourceVoice(&pSourceVoice, &soundData.wfex);
 	assert(SUCCEEDED(hr));
+
+	// 再生するサウンドデータを保存
+	currentSoundData = soundData;
 
 	//再生する波形データの設定
 	XAUDIO2_BUFFER buf{};
@@ -145,6 +154,57 @@ void Audio::SoundPlayWave(const SoundData& soundData)
 	hr = pSourceVoice->SubmitSourceBuffer(&buf);
 	hr = pSourceVoice->Start();
 
+}
+
+void Audio::StopAudio()
+{
+	if (pSourceVoice) {
+		pSourceVoice->Stop();
+		pSourceVoice->FlushSourceBuffers();
+	}
+
+}
+
+void Audio::PauseAudio()
+{
+	if (pSourceVoice && !isPaused) {
+		XAUDIO2_VOICE_STATE state;
+		pSourceVoice->GetState(&state);
+		playCursor = state.SamplesPlayed; // 再生位置を保存
+		pSourceVoice->Stop();
+		isPaused = true;
+	}
+
+}
+
+void Audio::ResumeAudio()
+{
+	if (pSourceVoice && isPaused) {
+		//HRESULT hr;
+
+		// 再生するバッファを設定
+		XAUDIO2_BUFFER buf{};
+		buf.pAudioData = currentSoundData.PBuffer;
+		buf.AudioBytes = currentSoundData.bufferSize;
+		buf.Flags = XAUDIO2_END_OF_STREAM;
+		buf.PlayBegin = static_cast<UINT32>(playCursor); // 保存した再生位置から再生
+
+		pSourceVoice->Stop(); // 再設定前に停止
+		pSourceVoice->SubmitSourceBuffer(&buf);
+		pSourceVoice->Start();
+		isPaused = false;
+	}
+
+}
+
+bool Audio::IsSoundPlaying() const
+{
+	if (pSourceVoice) {
+		XAUDIO2_VOICE_STATE state;
+		pSourceVoice->GetState(&state);
+		return state.BuffersQueued > 0;
+	}
+	return false;
 }
 
 
