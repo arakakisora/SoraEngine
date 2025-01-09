@@ -157,9 +157,10 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
+    <ClCompile Include="engine\scene\GameClearScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GameOverScene.cpp">
+    <ClCompile Include="engine\scene\GameOverScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="PlayerBullet.cpp">
@@ -287,9 +288,10 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
+    <ClInclude Include="engine\scene\GameClearScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameOverScene.h">
+    <ClInclude Include="engine\scene\GameOverScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="PlayerBullet.h">
