@@ -32,7 +32,7 @@ void TitleScene::Update()
 		ImGui::Text("titleScene %d");
 		if (ImGui::Button("gamePlayScene"))
 		{
-			SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
 		
 
