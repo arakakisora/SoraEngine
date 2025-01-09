@@ -1,12 +1,11 @@
 #pragma once
-
 #include <corecrt_math.h>
-
 
 /// <summary>
 /// 3次元ベクトル
 /// </summary>
 struct Vector3 final {
+
 	float x;
 	float y;
 	float z;

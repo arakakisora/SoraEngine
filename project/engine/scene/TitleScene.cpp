@@ -3,6 +3,8 @@
 #include "SpriteCommon.h"
 #include "Input.h"
 #include "SceneManager.h"
+#include "ImGuiManager.h"
+#include <imgui.h>
 
 
 void TitleScene::Initialize()
@@ -21,11 +23,21 @@ void TitleScene::Update()
 	if (Input::GetInstans()->TriggerKey(DIK_SPACE)) {
 
 		
-		
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		
 	}
 
+	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Text("titleScene %d");
+		if (ImGui::Button("gamePlayScene"))
+		{
+			SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+		}
+		
 
+
+	}
 
 }
 
