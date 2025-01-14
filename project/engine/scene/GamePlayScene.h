@@ -8,7 +8,7 @@
 #include "BaseScene.h"
 
 #include "SceneManager.h"
-#include "Player.h"
+
 
 class GamePlayScene :public BaseScene
 {
