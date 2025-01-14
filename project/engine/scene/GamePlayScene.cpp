@@ -6,10 +6,22 @@
 #include <imgui.h>
 #include "Input.h"
 #include "TitleScene.h"
+#include "CameraManager.h"
 
 void GamePlayScene::Initialize()
 {
+	//カメラの生成
+	camera1 = new Camera();
+	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
+	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
+	//カメラの生成
+	camera2 = new Camera();
+	camera2->SetTranslate({ 0,0,-5, });//カメラの位置
+	CameraManager::GetInstans()->AddCamera("subcam", camera2);
+	
+	// デフォルトカメラを設定
+	CameraManager::GetInstans()->SetActiveCamera("maincam");
 
 	//カメラの生成	
 	camera = new Camera();
@@ -193,6 +205,8 @@ void GamePlayScene::Update()
 
 		object3D->SetTransform(transformModel);*/
 	}
+
+	
 #endif // _DEBUG
 }
 
