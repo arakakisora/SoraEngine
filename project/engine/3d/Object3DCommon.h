@@ -29,8 +29,8 @@ public:
 	//DXCommon
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
 
-	void SetDefaultCamera(Camera* camera) { this->defaultCamera = camera; }
-	Camera* GetDefaultCamera()const { return defaultCamera; }
+	//void SetDefaultCamera(Camera* camera) { this->defaultCamera = camera; }
+	//Camera* GetDefaultCamera()const { return defaultCamera; }
 
 private:
 
