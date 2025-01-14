@@ -61,6 +61,15 @@ void Model::Draw()
 
 }
 
+void Model::ParticleDraw(uint32_t instanceCount)
+{
+
+
+
+
+
+}
+
 MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename)
 {
 

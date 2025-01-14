@@ -14,7 +14,10 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	std::random_device seedGenerator;
 	std::mt19937 random(seedGenerator());
 	randomEngine = random;
-
+	//パイプラインの生成
+	graphicsPipeline_ = new GraphicsPipeline();
+	graphicsPipeline_->Initialize(dxCommon_);
+	graphicsPipeline_->CreateParticle();
 
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -44,7 +47,7 @@ void ParticleMnager::Update()
 	//ビルボード行列を使ってビルボード行列を計算
 	Matrix4x4 viewMatrix = CameraManager::GetInstans()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstans()->GetActiveCamera()->GetProjextionMatrix();
-	//全パーティクル内の全パーティクルについて二重処理する
+	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
@@ -59,26 +62,49 @@ void ParticleMnager::Update()
 			//パーティクルの位置を更新
 			particleIterator->transform.translate += particleIterator->Velocity;
 
-			//パーティクルのデータを更新
-			ParticleForGPU particleForGPU;
-			//ビルボード行列を使ってビルボード行列を計算
-			particleForGPU.World = MyMath::MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, particleIterator->transform.translate);
-
 			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
+			//パーティクルのデータを更新
+			particleGroup.instanceData->WVP = worldViewProjetionMatrix;
+			particleGroup.instanceData->World = worldMatrix;
 
-
-
-
-
+			
+			//次のパーティクルに進む
+			++particleIterator;
+			
 		}
 	}
 
 
 
 
+
+}
+
+void ParticleMnager::Draw()
+{
+	//ルートシグネチャを設定
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureParticle());
+	//psoを設定
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateParticle());
+	//purimitetopologyを設定
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// パーティクルグループごとに描画
+	for (const auto& [name, particleGroup] : particleGroups) {
+		// テクスチャの SRV を設定
+		commandList->SetGraphicsRootDescriptorTable(2,
+			TextureManager::GetInstance()->GetTextureDescriptorHandle(particleGroup.materialdata.textureIndex));
+
+		// インスタンシングデータの SRV を設定
+		commandList->SetGraphicsRootShaderResourceView(1,
+			particleGroup.instanceResource->GetGPUVirtualAddress());
+
+		// DrawCall の発行
+		commandList->DrawInstanced(particleGroup.instanceCount, 1, 0, 0);
+	}
 
 }
 

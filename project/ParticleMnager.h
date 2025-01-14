@@ -4,6 +4,7 @@
 #include "SrvManager.h"
 #include <random>
 #include "Model.h"
+#include "GraphicsPipeline.h"
 
 struct Particle {
 
@@ -48,6 +49,7 @@ public:
 	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
 
 	void Update();
+	void Draw();
 
 	void CreateParticleGroup(const std::string name,const std::string textureFilePath);
 
@@ -58,6 +60,7 @@ private:
 
 	DirectXCommon* dxCommon_=nullptr;
 	SrvManager* srvManager_ = nullptr;
+	GraphicsPipeline* graphicsPipeline_ = nullptr;
 
 	Model* model_ = nullptr;
 
