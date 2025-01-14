@@ -41,8 +41,8 @@ public:
 	//位置
 	void SetTranslate(const Vector3& transrate) { transform.translate = transrate; }
 	//カメラ
-	void SetCamera(Camera* camera) { this->camera = camera; }
-	//デフォルトカメラ
+	//void SetCamera(Camera* camera) { this->camera = camera; }
+	////デフォルトカメラ
 	
 
 private:

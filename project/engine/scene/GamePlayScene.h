@@ -8,6 +8,7 @@
 #include "BaseScene.h"
 
 #include "SceneManager.h"
+#include "Player.h"
 
 class GamePlayScene :public BaseScene
 {
@@ -30,9 +31,12 @@ public:
 	/// </summary>
 	void Draw()override;
 
-private:	
+private:
+	Camera* camera1 = nullptr;
+	Camera* camera2 = nullptr;
+	Object3D* object3D=nullptr;
 
-
+	
 
 };
 
