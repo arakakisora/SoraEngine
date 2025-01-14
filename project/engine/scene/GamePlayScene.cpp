@@ -207,6 +207,14 @@ void GamePlayScene::Update()
 	}
 
 	
+	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::Button("Switch to Main Camera")) {
+			CameraManager::GetInstans()->SetActiveCamera("maincam");
+		}
+		if (ImGui::Button("Switch to Sub Camera")) {
+			CameraManager::GetInstans()->SetActiveCamera("subcam");
+		}
+	}
 #endif // _DEBUG
 }
 
