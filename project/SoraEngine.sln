@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CG2_01_DirectX", "CG2_01_DirectX.vcxproj", "{EF98AFF0-4209-4567-86B0-8169A3FB1938}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoraEngine", "SoraEngine.vcxproj", "{EF98AFF0-4209-4567-86B0-8169A3FB1938}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ソリューション項目", "ソリューション項目", "{1E8CA32F-87F8-4248-BD33-B51A13508B72}"
 	ProjectSection(SolutionItems) = preProject
