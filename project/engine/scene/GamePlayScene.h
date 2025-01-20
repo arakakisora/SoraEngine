@@ -33,8 +33,7 @@ public:
 
 private:
 	Camera* camera1 = nullptr;
-	Camera* camera2 = nullptr;
-	Object3D* object3D=nullptr;
+	
 
 	
 
