@@ -1,4 +1,5 @@
 #include "Framework.h"
+#include "ParticleMnager.h"
 
 
 void Framework::Initialize()
@@ -35,6 +36,9 @@ void Framework::Initialize()
 	Object3DCommon::GetInstance()->Initialize(dxCommon);
 	//object3DCommon->SetDefaultCamera(camera);
 
+	//particleの初期化
+	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
+
 
 
 
@@ -65,6 +69,7 @@ void Framework::Finalize()
 	//WindowsAPI解放
 	TextureManager::GetInstance()->Finalize();
 	ModelManager::GetInstans()->Finalize();
+	//ParticleMnager::
 	delete winApp;
 	delete dxCommon;
 	delete srvManager;
@@ -78,6 +83,7 @@ void Framework::Finalize()
 	Object3DCommon::GetInstance()->Finalize();
 	//SceneManagerの解放
 	SceneManager::GetInstance()->Finalize();
+	
 
 }
 
@@ -89,8 +95,8 @@ void Framework::Update()
 		//ゲームループを抜ける
 		endRequst_ = true;
 	}
-
-
+	
+	
 	Input::GetInstans()->Update();
 	SceneManager::GetInstance()->Update();
 

@@ -40,7 +40,18 @@ class ParticleMnager
 		ParticleForGPU* instanceData = nullptr;
 
 	};
-
+public:
+	static ParticleMnager* GetInstance()
+	{
+		static ParticleMnager instance;
+		return &instance;
+	}
+private:
+	// コンストラクタをプライベートにする
+	ParticleMnager() = default;
+	// コピーコンストラクタと代入演算子を削除する
+	ParticleMnager(const ParticleMnager&) = delete;
+	ParticleMnager& operator=(const ParticleMnager&) = delete;
 
 
 public:
@@ -48,10 +59,14 @@ public:
 	//初期化
 	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
 
+	//void Finalize();
+
 	void Update();
 	void Draw();
 
 	void CreateParticleGroup(const std::string name,const std::string textureFilePath);
+
+	void Emit(const std::string& name, const Vector3 position, uint32_t count);
 
 	void SetModel(const std::string& filepath);
 	
@@ -69,6 +84,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	TransformationMatrix* transformaitionMatrixData = nullptr;
 
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
+	//VBV
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	
 	//SRT
 	Transform transform;
 	Matrix4x4 worldMatrix;
@@ -78,6 +97,12 @@ private:
 
 	//ビルボード行列
 	Matrix4x4 backToFrontMatrix;
+
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+	//マテリアルにデータを書き込む	
+	Material* materialData = nullptr;
+	//std::string textureFilePath_;
 };
 
 

@@ -8,6 +8,9 @@
 #include "BaseScene.h"
 
 #include "SceneManager.h"
+#include "ParticleEmitter.h"
+#include "ParticleMnager.h"
+
 
 
 class GamePlayScene :public BaseScene
@@ -35,6 +38,11 @@ private:
 	Camera* camera1 = nullptr;
 	Camera* camera2 = nullptr;
 	Object3D* object3D=nullptr;
+
+	//particle
+	ParticleEmitter* particleEmitter = nullptr;
+
+
 
 	
 

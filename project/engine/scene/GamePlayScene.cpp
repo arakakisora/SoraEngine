@@ -12,7 +12,7 @@ void GamePlayScene::Initialize()
 {
 	//カメラの生成
 	camera1 = new Camera();
-	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
+	camera1->SetTranslate({ 0,0,-30, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
 	//カメラの生成
@@ -26,11 +26,16 @@ void GamePlayScene::Initialize()
 
 	//モデルの読み込み
 	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("plane.obj");
 
 	object3D = new Object3D();
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("axis.obj");
 
+	
+	ParticleMnager::GetInstance()->CreateParticleGroup("particle1", "Resources/uvChecker.png");
+	//エミッタ―の初期化
+	particleEmitter = new ParticleEmitter({ 0,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle1");
 	
 	
 
@@ -54,9 +59,10 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
+	ParticleMnager::GetInstance()->Update();
 
-	
-
+	//パーティクルの更新
+	particleEmitter->Update();
 
 
 
@@ -95,8 +101,8 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
-
+	/*object3D->Draw();*/
+	ParticleMnager::GetInstance()->Draw();
 
 #pragma endregion
 
