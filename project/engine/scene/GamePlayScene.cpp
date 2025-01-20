@@ -7,6 +7,7 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
+#include "MyMath.h"
 
 void GamePlayScene::Initialize()
 {
@@ -32,7 +33,6 @@ void GamePlayScene::Initialize()
 	object3D->SetModel("axis.obj");
 
 	
-	
 
 }
 
@@ -56,7 +56,15 @@ void GamePlayScene::Update()
 	object3D->Update();
 
 	
+	Quaternion q1 = { 2.0f, 3.0f, 4.0f, 1.0f };
+	Quaternion q2 = { 1.0f, 3.0f, 5.0f, 2.0f };
 
+	Quaternion identity = IdentityQuaternion();
+	Quaternion conj = Conjugate(q1);
+	Quaternion inv = Inverse(q1);
+	Quaternion normal = Normalize(q1);
+	Quaternion mul1 = Multiply(q1, q2);
+	Quaternion mul2 = Multiply(q2, q1);
 
 
 
@@ -65,27 +73,36 @@ void GamePlayScene::Update()
 	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("gamePlayScene %d");
-		if (ImGui::Button("GameClearScene"))
+		/*if (ImGui::Button("GameClearScene"))
 		{
 			SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 		}
 		if (ImGui::Button("GameOverScene"))
 		{
 			SceneManager::GetInstance()->ChangeScene("GAMEOVER");
-		}
+		}*/
+		QuaternionImGuiText(q1, "q1");
+		QuaternionImGuiText(q2, "q2");
+		QuaternionImGuiText(identity, "identity");
+		QuaternionImGuiText(conj, "conj");
+		QuaternionImGuiText(inv, "inv");
+		QuaternionImGuiText(normal, "normal");
+		QuaternionImGuiText(mul1, "mul1");
+		QuaternionImGuiText(mul2, "mul2");
 
 
 	}
 
+
 	
-	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+	/*if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
 			CameraManager::GetInstans()->SetActiveCamera("maincam");
 		}
 		if (ImGui::Button("Switch to Sub Camera")) {
 			CameraManager::GetInstans()->SetActiveCamera("subcam");
 		}
-	}
+	}*/
 #endif // _DEBUG
 }
 
