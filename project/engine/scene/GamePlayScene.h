@@ -41,6 +41,8 @@ private:
 
 	//particle
 	ParticleEmitter* particleEmitter = nullptr;
+	ParticleEmitter* particleEmitter2 = nullptr;
+	
 
 
 
