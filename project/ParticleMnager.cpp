@@ -18,9 +18,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	graphicsPipeline_ = new GraphicsPipeline();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateParticle();
-	ModelManager::GetInstans()->LoadModel("plane.obj");
-	//モデルのセット
-	SetModel("plane.obj");
+
 
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -73,8 +71,7 @@ void ParticleMnager::Update()
 	for (auto& [name, particleGroup] : particleGroups) {
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
-			//パーティクルの寿命を減らす
-			particleIterator->currentTime -= 1.0f / 60.0f;
+
 			//パーティクルの寿命が尽きたらグループから外す
 			//寿命に達していたらグループから外す
 			if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
@@ -82,15 +79,14 @@ void ParticleMnager::Update()
 				continue;
 			}
 			//パーティクルの位置を更新
-			particleIterator->transform.translate += particleIterator->Velocity;
+			(*particleIterator).transform.translate += (*particleIterator).Velocity * 1.0f / 60.0f;
+			//パーティクルの寿命を減らす
+			(*particleIterator).currentTime += 1.0f / 60.0f;
 
 			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
-			//パーティクルのデータを更新
-			particleGroup.instanceData->WVP = worldViewProjetionMatrix;
-			particleGroup.instanceData->World = worldMatrix;
 
 			if (counter < particleGroup.instanceCount) {
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
@@ -122,12 +118,12 @@ void ParticleMnager::Draw()
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateParticle());
 	//purimitetopologyを設定
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//VertexBufferViewを設定
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = model_->GetVertexBufferView();
-	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 
 	// パーティクルグループごとに描画
 	for (const auto& [name, particleGroup] : particleGroups) {
+		//VertexBufferViewを設定
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = model_->GetVertexBufferView();
+		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		//マテリアルのCBufferの場所を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 		// インスタンシングデータの SRV を設定
@@ -141,8 +137,12 @@ void ParticleMnager::Draw()
 
 }
 
-void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath)
+void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, std::string modelFilePath)
 {
+	ModelManager::GetInstans()->LoadModel(modelFilePath);
+	//モデルのセット
+	SetModel(modelFilePath);
+
 	//登録済みの名前かチェックしてassert
 	assert(!particleGroups.contains(name));
 	//パーティクルグループを作成コンテナに登録
@@ -194,19 +194,10 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 	assert(particleGroups.contains(name));
 	//パーティクルグループのパーティクルリストにパーティクルを追加
 	for (uint32_t i = 0; i < count; ++i) {
-		Particle particle;
-		//パーティクルの初期位置を設定
-		particle.transform.translate = position;
-		particle.transform.scale = { 1.0f,1.0f,1.0f };
-		//パーティクルの初速度を設定
-		std::uniform_real_distribution<float> randomVelocity(-0.1f, 0.1f);
-		particle.Velocity = { randomVelocity(randomEngine),randomVelocity(randomEngine),randomVelocity(randomEngine) };
-		//パーティクルの寿命を設定
-		particle.lifetime = 0.5f;
-		//パーティクルの現在の寿命を設定
-		particle.currentTime = 0.0f;
+
+
 		//パーティクルを追加
-		particleGroups.at(name).particles.push_back(particle);
+		particleGroups.at(name).particles.push_back(MakeNewParticle(randomEngine, position));
 	}
 	//パーティクルグループのインスタンス数を更新
 	particleGroups.at(name).instanceCount = count;
@@ -223,4 +214,26 @@ void ParticleMnager::SetModel(const std::string& filepath)
 {
 	//もでるを検索してセットする
 	model_ = ModelManager::GetInstans()->FindModel(filepath);
+}
+
+Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate)
+{
+
+
+	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
+	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+
+	Particle particle;
+	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.rotate = { 0.0f,3.0f,0.0f };
+	particle.transform.translate = translate + randomTranslate;
+	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+	particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine),1 };
+	particle.lifetime = distTime(randomEngine);
+	particle.currentTime = 0;
+
+	return particle;
 }

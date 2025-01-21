@@ -12,6 +12,8 @@ struct Particle {
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
+	Vector4 color;
+
 
 };
 
@@ -64,11 +66,13 @@ public:
 	void Update();
 	void Draw();
 
-	void CreateParticleGroup(const std::string name,const std::string textureFilePath);
+	void CreateParticleGroup(const std::string name,const std::string textureFilePath, std::string modelFilePath);
 
 	void Emit(const std::string& name, const Vector3 position, uint32_t count);
 
 	void SetModel(const std::string& filepath);
+
+	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
 	
 
 private:
