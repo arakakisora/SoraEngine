@@ -12,12 +12,12 @@ void GamePlayScene::Initialize()
 {
 	//カメラの生成
 	camera1 = new Camera();
-	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
+	camera1->SetTranslate({ 0,0,-5, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
 	//カメラの生成
 	camera2 = new Camera();
-	camera2->SetTranslate({ 0,0,-5, });//カメラの位置
+	camera2->SetTranslate({ 0,0,-10, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("subcam", camera2);
 	
 	// デフォルトカメラを設定

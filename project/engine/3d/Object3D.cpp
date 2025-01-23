@@ -51,6 +51,8 @@ void Object3D::Update()
 
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Camera* activeCamera = CameraManager::GetInstans()->GetActiveCamera();
+	//ライトのオンオフ
+	model_->SetEnableLighting(enableLighting);
 	
 	if (activeCamera) {
 		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
