@@ -2,6 +2,11 @@
 #include <Camera.h>
 #include <unordered_map>
 #include <string>
+
+struct CameraForGPU {
+	Vector3 WorldPosition;
+};
+
 class CameraManager
 {
 	static CameraManager* instance;
