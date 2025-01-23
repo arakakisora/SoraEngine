@@ -12,12 +12,12 @@ void GamePlayScene::Initialize()
 {
 	//カメラの生成
 	camera1 = new Camera();
-	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
+	camera1->SetTranslate({ 0,0,-5, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
 	//カメラの生成
 	camera2 = new Camera();
-	camera2->SetTranslate({ 0,0,-5, });//カメラの位置
+	camera2->SetTranslate({ 0,0,-10, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("subcam", camera2);
 	
 	// デフォルトカメラを設定
@@ -25,14 +25,14 @@ void GamePlayScene::Initialize()
 
 
 	//モデルの読み込み
-	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
 
 	object3D = new Object3D();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("axis.obj");
-
+	object3D->SetModel("sphere.obj");
+	object3D->SetLighting(true);
 	
-	
+	light = true;
 
 }
 
@@ -72,6 +72,31 @@ void GamePlayScene::Update()
 		if (ImGui::Button("GameOverScene"))
 		{
 			SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+		}
+
+		//ライト
+		if (ImGui::CollapsingHeader("Directional Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+			Vector4 color = object3D->GetDirectionalLight().color;
+			Vector3 direction = object3D->GetDirectionalLight().direction;
+			float intensity = object3D->GetDirectionalLight().intensity;
+			if (ImGui::ColorEdit4("Color", &color.x)) {
+				object3D->SetDirectionalLightColor(color);
+			}
+			if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
+				object3D->SetDirectionalLightDirection(direction);
+			}
+			if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
+				object3D->SetDirectionalLightIntensity(intensity);
+			}
+			//ライトのオンオフ
+		
+			if (ImGui::Checkbox("Enable Lighting", &light)) {
+				object3D->SetLighting(light);
+			}
+
+
+
+
 		}
 
 

@@ -44,6 +44,24 @@ public:
 	//void SetCamera(Camera* camera) { this->camera = camera; }
 	////デフォルトカメラ
 	
+	//ライト
+	void SetDirectionalLight(const DirectionalLight& directionalLight) { *directionalLightData = directionalLight; }
+	DirectionalLight GetDirectionalLight() { return *directionalLightData; }
+	//ライトの向き
+	void SetDirectionalLightDirection(const Vector3& direction) { directionalLightData->direction = direction; }
+	//ライトの色
+	void SetDirectionalLightColor(const Vector4& color) { directionalLightData->color = color; }
+	//ライトの強さ
+	void SetDirectionalLightIntensity(float intensity) { directionalLightData->intensity = intensity; }
+
+	//ライトのオンオフ
+	void SetLighting(bool enable) { enableLighting = enable; }
+	
+
+
+	
+
+	
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;
@@ -70,6 +88,9 @@ private:
 	Matrix4x4 worldViewProjectionMatrix;
 
 	Camera* camera = nullptr;
+
+	//ライトのオンオフ
+	bool enableLighting = true;
 	
 
 
