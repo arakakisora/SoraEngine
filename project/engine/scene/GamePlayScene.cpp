@@ -35,11 +35,11 @@ void GamePlayScene::Initialize()
 	
 	ParticleMnager::GetInstance()->CreateParticleGroup("particle1", "Resources/uvChecker.png", "plane.obj");
 
-	ParticleMnager::GetInstance()->CreateParticleGroup("particle2", "Resources/uvChecker.png", "axis.obj");
+	//ParticleMnager::GetInstance()->CreateParticleGroup("particle2", "Resources/uvChecker.png", "axis.obj");
 	//エミッタ―の初期化
 	particleEmitter = new ParticleEmitter({ 0,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle1");
 
-	particleEmitter2 = new ParticleEmitter({ 10,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle2");
+	//particleEmitter2 = new ParticleEmitter({ 10,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle2");
 	
 
 }
@@ -66,7 +66,7 @@ void GamePlayScene::Update()
 
 	//パーティクルの更新
 	particleEmitter->Update();
-	particleEmitter2->Update();
+	//particleEmitter2->Update();
 
 
 
