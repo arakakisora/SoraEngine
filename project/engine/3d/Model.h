@@ -13,6 +13,11 @@ public:
 	/// 描画
 	/// </summary>
 	void Draw();
+	//void ParticleDraw(uint32_t instanceCount);
+
+	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }
+	ModelData GetModelData() { return modelData; }
+
 	
 
 	static MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
