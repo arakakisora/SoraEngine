@@ -4,6 +4,7 @@
 #include "CameraManager.h"
 #include <MyMath.h>
 #include <numbers>
+#include <imgui.h>
 
 void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
@@ -66,9 +67,10 @@ void ParticleMnager::Update()
 	//ビルボード行列を使ってビルボード行列を計算
 	Matrix4x4 viewMatrix = CameraManager::GetInstans()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstans()->GetActiveCamera()->GetProjextionMatrix();
-	uint32_t counter = 0;
+
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
+		uint32_t counter = 0;
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
 
@@ -83,6 +85,11 @@ void ParticleMnager::Update()
 			//パーティクルの寿命を減らす
 			(*particleIterator).currentTime += 1.0f / 60.0f;
 
+			//// アルファ値を計算（寿命に基づく線形補間）
+			//float lifeRatio = (*particleIterator).currentTime / (*particleIterator).lifetime;
+			//float alpha = 1.0f - lifeRatio; // 寿命の終わりでアルファが0になる
+
+
 			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
@@ -91,11 +98,13 @@ void ParticleMnager::Update()
 			if (counter < particleGroup.instanceCount) {
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
 				particleGroup.instanceData[counter].World = worldMatrix;
-				/*particleGroup.instanceData[counter].color = (*particleIterator).color;
-				particleGroup.instanceData[counter].color.w = alpha;*/
+				particleGroup.instanceData[counter].color = materialData->color;
+				//particleGroup.instanceData[counter].color.w = alpha;
 
 				++counter;
 			}
+
+
 
 
 			//次のパーティクルに進む
@@ -103,7 +112,6 @@ void ParticleMnager::Update()
 
 		}
 	}
-
 
 
 
@@ -198,7 +206,9 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 
 		//パーティクルを追加
 		particleGroups.at(name).particles.push_back(MakeNewParticle(randomEngine, position));
+		//particleGroups.at(name).instanceData[i].color = { 1.0f,1.0f,1.0f,1.0f };
 	}
+	
 	//パーティクルグループのインスタンス数を更新
 	particleGroups.at(name).instanceCount = count;
 	////インスタンス用のリソースを作成
@@ -228,11 +238,11 @@ Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vecto
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
 	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	particle.transform.rotate = { 0.0f,3.0f,0.0f };
+	//particle.transform.rotate = { 0.0f,3.0f,0.0f };
 	particle.transform.translate = translate + randomTranslate;
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine),1 };
-	particle.lifetime = distTime(randomEngine);
+	//particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine),1 };
+	particle.lifetime = 1.0f;
 	particle.currentTime = 0;
 
 	return particle;

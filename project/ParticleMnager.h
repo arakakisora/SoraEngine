@@ -12,7 +12,7 @@ struct Particle {
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
-	Vector4 color;
+	
 
 
 };
@@ -107,6 +107,7 @@ private:
 	//マテリアルにデータを書き込む	
 	Material* materialData = nullptr;
 	//std::string textureFilePath_;
+	
 };
 
 
