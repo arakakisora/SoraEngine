@@ -58,9 +58,14 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	transformaitionMatrixData->WVP = transformaitionMatrixData->WVP.MakeIdentity4x4();
 	transformaitionMatrixData->World = transformaitionMatrixData->World.MakeIdentity4x4();
 
+	//カメラforGPU
+	cameraResource = SpriteCommon::GetInstance()->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
+	cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };
 
 	//画像のサイズに合わせる
 	AdjustTextureSize();
+
 
 }
 
@@ -140,6 +145,8 @@ void Sprite::Draw()
 	//TransFomationMatrixBufferの場所を設定
 	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
+
+	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 	//spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 	//描画！
 	//commandList->DrawInstanced(6, 1, 0, 0);
