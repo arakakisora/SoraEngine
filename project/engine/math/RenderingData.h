@@ -60,6 +60,10 @@ struct ModelData {
 
 }; 
 
+struct CaMeraForGpu {
+	Vector3 worldPosition;
+};
+
 struct AABB {
 
 	Vector3 min;
