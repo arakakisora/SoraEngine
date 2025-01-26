@@ -42,13 +42,14 @@ PixelShaderOutput main(VertexShaderOutput input)
     PixelShaderOutput output;
     if (gMaterial.enableLighting != 0)
     {
-        //if (textureColor.a <= 0.5)
-        //{
-        //    discard;
-        //}
+        if (textureColor.a <= 0.5)
+        {
+            discard;
+        }
         
         float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        
         float RdotE = dot(reflectLight, toEye);
         float specularPOW = pow(saturate(RdotE), gMaterial.shininess);
         
