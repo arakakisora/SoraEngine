@@ -6,6 +6,7 @@
 
 #include "Matrix4x4.h"
 #include <MyMath.h>
+#include <CameraManager.h>
 
 void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 {
@@ -71,6 +72,11 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 void Sprite::Update()
 {
+
+	Camera* activeCamera = CameraManager::GetInstans()->GetActiveCamera();
+	Vector3 cameraPosition = activeCamera->GetTransform().translate;
+	cameraForGpu->worldPosition = cameraPosition;
+
 	transform.rotate = { 0.0f,0.0f,rotation };
 	transform.translate = { position.x,position.y,0.0f };
 	transform.scale = { size.x,size.y,1.0f, };
