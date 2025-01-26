@@ -42,7 +42,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	//カメラforGPU
 	cameraResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
-	cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };
+	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
 
 
 
