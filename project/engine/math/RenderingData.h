@@ -59,3 +59,7 @@ struct ModelData {
 	MaterialData material;
 
 }; 
+
+struct CaMeraForGpu {
+	Vector3 worldPosition;
+};

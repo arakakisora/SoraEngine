@@ -91,7 +91,10 @@ private:
 
 	//ライトのオンオフ
 	bool enableLighting = true;
-	
+
+	//カメラforGPU
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
+	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
 
 
 

@@ -39,8 +39,10 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	
 	 
+	//カメラforGPU
+	cameraResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
 	
-
 
 
 
@@ -65,6 +67,7 @@ void Object3D::Update()
 
 	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 	transformaitionMatrixData->World = worldMatrix;
+	cameraForGpu->worldPosition = activeCamera->GetTransform().translate;
 }
 
 void Object3D::Draw()
