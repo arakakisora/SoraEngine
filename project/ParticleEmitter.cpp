@@ -6,8 +6,10 @@ ParticleEmitter::ParticleEmitter(const Vector3& position, const Vector3& velocit
 {
 	position_ = position;
 	velocity_ = velocity;
+
 	frequency = lifetime;
 	frequencyTime = currentTime;
+
 	this->count = count;
 	name_ = name;
 }
@@ -16,6 +18,7 @@ void ParticleEmitter::Update()
 {
 
 	//時を進める
+
 	frequencyTime += 1.0f / 60.0f;
 	//発生頻度より大きいなら発生
 	if (frequencyTime > frequency) {
@@ -23,6 +26,7 @@ void ParticleEmitter::Update()
 		ParticleMnager::GetInstance()->Emit(name_, position_, count);
 		//時間をリセット
 		frequencyTime = 0.0f;
+
 	}
 
 

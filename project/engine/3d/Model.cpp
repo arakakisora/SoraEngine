@@ -36,7 +36,7 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	//色
 	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 
-	materialData->enableLighting = false;//有効にするか否か
+	materialData->enableLighting = true;//有効にするか否か
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 
 

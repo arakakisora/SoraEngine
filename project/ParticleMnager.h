@@ -13,6 +13,7 @@ struct Particle {
 	float lifetime;
 	float currentTime;
 	Vector4 color;
+
 	
 
 
@@ -86,8 +87,7 @@ private:
 
 	std::mt19937 randomEngine;
 
-	/*Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
-	TransformationMatrix* transformaitionMatrixData = nullptr;*/
+
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 	//VBV
