@@ -33,11 +33,11 @@ void GamePlayScene::Initialize()
 	object3D->SetModel("axis.obj");
 
 	
-	ParticleMnager::GetInstance()->CreateParticleGroup("particle1", "Resources/uvChecker.png", "plane.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("particle1", "Resources/circle.png", "plane.obj");
 
 	//ParticleMnager::GetInstance()->CreateParticleGroup("particle2", "Resources/uvChecker.png", "axis.obj");
 	//エミッタ―の初期化
-	particleEmitter = new ParticleEmitter({ 0,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle1");
+	particleEmitter = new ParticleEmitter({ 0,0,0 }, { 0,0,0 }, 0.5f, 0.0f, 100, "particle1");
 
 	//particleEmitter2 = new ParticleEmitter({ 10,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle2");
 	
@@ -51,7 +51,7 @@ void GamePlayScene::Finalize()
 	delete camera2;
 	delete object3D;
 
-	CameraManager::GetInstans()->Finalize();
+	
 
 		
 
@@ -62,7 +62,7 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
-	ParticleMnager::GetInstance()->Update();
+	
 
 	//パーティクルの更新
 	particleEmitter->Update();
@@ -85,6 +85,16 @@ void GamePlayScene::Update()
 		}
 
 
+	}
+	//particleのエミッタ-
+	if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Text("ParticleEmitter");
+		
+		if (ImGui::Button("Emit"))
+		{
+			particleEmitter->Emit();
+		}
 	}
 
 	
