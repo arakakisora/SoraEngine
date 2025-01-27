@@ -27,9 +27,11 @@ private:
 	//速度
 	Vector3 velocity_;
 	//寿命
-	float lifetime_;
+
+	float frequency;
 	//現在の寿命
-	float currentTime_;
+	float frequencyTime;
+
 	//count
 	uint32_t count;
 

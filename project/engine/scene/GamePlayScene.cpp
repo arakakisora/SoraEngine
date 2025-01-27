@@ -12,7 +12,9 @@ void GamePlayScene::Initialize()
 {
 	//カメラの生成
 	camera1 = new Camera();
+
 	camera1->SetTranslate({ 0,0,-5, });//カメラの位置
+
 	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
 	//カメラの生成
@@ -25,12 +27,26 @@ void GamePlayScene::Initialize()
 
 
 	//モデルの読み込み
+
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+
+	
+	ParticleMnager::GetInstance()->CreateParticleGroup("particle1", "Resources/circle.png", "plane.obj");
+
+	//ParticleMnager::GetInstance()->CreateParticleGroup("particle2", "Resources/uvChecker.png", "axis.obj");
+	//エミッタ―の初期化
+	particleEmitter = new ParticleEmitter({ 0,0,0 }, { 0,0,0 }, 0.5f, 0.0f, 100, "particle1");
+
+	//particleEmitter2 = new ParticleEmitter({ 10,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle2");
+
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 
 	object3D = new Object3D();
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
+
 	
 	light = true;
 
@@ -43,7 +59,7 @@ void GamePlayScene::Finalize()
 	delete camera2;
 	delete object3D;
 
-	CameraManager::GetInstans()->Finalize();
+	
 
 		
 
@@ -54,9 +70,11 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
-
 	
 
+	//パーティクルの更新
+	particleEmitter->Update();
+	//particleEmitter2->Update();
 
 
 
@@ -101,6 +119,16 @@ void GamePlayScene::Update()
 
 
 	}
+	//particleのエミッタ-
+	if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Text("ParticleEmitter");
+		
+		if (ImGui::Button("Emit"))
+		{
+			particleEmitter->Emit();
+		}
+	}
 
 	
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -120,8 +148,8 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
-
+	/*object3D->Draw();*/
+	ParticleMnager::GetInstance()->Draw();
 
 #pragma endregion
 
