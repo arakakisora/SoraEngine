@@ -2,7 +2,7 @@
 #include "ParticleMnager.h"
 
 
-ParticleEmitter::ParticleEmitter(const Vector3& position, const Vector3& velocity, const float lifetime, const float currentTime, const uint32_t count, const std::string& name)
+ParticleEmitter::ParticleEmitter(const Vector3& position, const float lifetime, const float currentTime, const uint32_t count, const std::string& name)
 {
 	position_ = position;
 	velocity_ = velocity;

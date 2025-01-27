@@ -7,6 +7,8 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
+#include "ParticleMnager.h"
+
 
 void GamePlayScene::Initialize()
 {
@@ -49,6 +51,10 @@ void GamePlayScene::Initialize()
 
 	
 	light = true;
+
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "plane.obj");
+	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
 

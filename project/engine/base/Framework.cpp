@@ -1,6 +1,6 @@
 #include "Framework.h"
-#include "ParticleMnager.h"
 #include <CameraManager.h>
+#include "ParticleMnager.h"
 
 
 void Framework::Initialize()
@@ -25,6 +25,11 @@ void Framework::Initialize()
 	Input::GetInstans()->Initialize(winApp);
 	//Audio初期化
 	audio_->GetInstance()->Initialize();
+	//パーティクル
+	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
+	//camera初期化
+	CameraManager::GetInstans()->Initialize();
+
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);
 
@@ -87,6 +92,7 @@ void Framework::Finalize()
 
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
+	CameraManager::GetInstans()->Finalize();
 	//SceneManagerの解放
 	SceneManager::GetInstance()->Finalize();
 	
