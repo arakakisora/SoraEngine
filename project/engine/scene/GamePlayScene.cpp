@@ -106,7 +106,7 @@ void GamePlayScene::Initialize()
 	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
 
 	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "plane.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "axis.obj");
 	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }

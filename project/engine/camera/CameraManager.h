@@ -18,8 +18,6 @@ public:
 	//初期化
 	void initialize();
 
-	//初期化
-	void Initialize();
 
 	//カメラの追加
 	void AddCamera(const std::string& name, const Camera* camera);
@@ -53,8 +51,7 @@ private:
 	//デフォルトカメラ
 	Camera* defaultCamera = nullptr;
 
-	//default camera
-	Camera *defaultCamera=nullptr;
+	
 
 };
 
