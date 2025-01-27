@@ -14,8 +14,21 @@ CameraManager* CameraManager::GetInstans()
 
 void CameraManager::Finalize()
 {
+	delete defaultCamera;
+	defaultCamera = nullptr;
 	delete instance;
 	instance = nullptr;
+}
+
+void CameraManager::initialize()
+{
+    // デフォルトカメラの作成
+    defaultCamera = new Camera();
+    defaultCamera->SetTranslate({ 0, 0, -5 });
+    AddCamera("default", defaultCamera);
+    SetActiveCamera("default"); // デフォルトカメラをアクティブカメラとして設定
+
+
 }
 
 void CameraManager::AddCamera(const std::string& name, const Camera* camera)
@@ -46,6 +59,14 @@ Camera* CameraManager::GetCamera(const std::string& name) {
         return &(it->second);
     }
     return nullptr;
+}
+
+Camera* CameraManager::GetActiveCamera() {
+    if (activeCameraName.empty()) {
+        // アクティブカメラが設定されていない場合、デフォルトカメラを返す
+        return defaultCamera;
+    }
+    return GetCamera(activeCameraName);
 }
 
 

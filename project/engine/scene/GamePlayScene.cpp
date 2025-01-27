@@ -144,7 +144,9 @@ void GamePlayScene::Update()
 	skydome_->Update();
 
 	//カメラの更新
-	camera->Update();
+	CameraManager::GetInstans()->GetActiveCamera()->Update();
+	object3D->Update();
+	
 
 	//プレイヤーの更新
 	player->Update();
