@@ -125,7 +125,7 @@ void ParticleMnager::Draw()
 	if (particleGroups.empty()) {
 		return;
 	}
-r
+
 	//ルートシグネチャを設定
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureParticle());
 	//psoを設定

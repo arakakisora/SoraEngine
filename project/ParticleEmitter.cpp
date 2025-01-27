@@ -5,7 +5,7 @@
 ParticleEmitter::ParticleEmitter(const Vector3& position, const float lifetime, const float currentTime, const uint32_t count, const std::string& name)
 {
 	position_ = position;
-	velocity_ = velocity;
+	
 
 	frequency = lifetime;
 	frequencyTime = currentTime;

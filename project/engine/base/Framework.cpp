@@ -28,7 +28,7 @@ void Framework::Initialize()
 	//パーティクル
 	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
 	//camera初期化
-	CameraManager::GetInstans()->Initialize();
+	CameraManager::GetInstans()->initialize();
 
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);

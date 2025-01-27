@@ -15,7 +15,7 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera1 = new Camera();
 
-	camera1->SetTranslate({ 0,0,-5, });//カメラの位置
+	camera1->SetTranslate({ 0,0,-20, });//カメラの位置
 
 	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
@@ -32,17 +32,10 @@ void GamePlayScene::Initialize()
 
 	ModelManager::GetInstans()->LoadModel("axis.obj");
 	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
 
 	
-	ParticleMnager::GetInstance()->CreateParticleGroup("particle1", "Resources/circle.png", "plane.obj");
-
-	//ParticleMnager::GetInstance()->CreateParticleGroup("particle2", "Resources/uvChecker.png", "axis.obj");
-	//エミッタ―の初期化
-	particleEmitter = new ParticleEmitter({ 0,0,0 }, { 0,0,0 }, 0.5f, 0.0f, 100, "particle1");
-
-	//particleEmitter2 = new ParticleEmitter({ 10,0,0 }, { 0,0,0 }, 1.0f, 0.0f, 100, "particle2");
-
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	
 
 	object3D = new Object3D();
 	object3D->Initialize(Object3DCommon::GetInstance());
@@ -53,7 +46,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "plane.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "axis.obj");
 	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
