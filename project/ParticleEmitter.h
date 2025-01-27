@@ -7,7 +7,6 @@ public:
 	//ほとんどのメンバ変数をコンストラクタの引数として受け取り、メンバ変数に代入する
 	ParticleEmitter(
 		const Vector3& position,
-		const Vector3& velocity,
 		const float lifetime,
 		const float currentTime,
 		const uint32_t count,

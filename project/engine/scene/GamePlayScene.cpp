@@ -7,6 +7,8 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
+#include "ParticleMnager.h"
+
 
 void GamePlayScene::Initialize()
 {
@@ -102,6 +104,10 @@ void GamePlayScene::Initialize()
 	skydome_->Initialize(Object3DCommon::GetInstance());
 	skydome_->SetModel("skyplane.obj");
 	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
+
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "plane.obj");
+	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
 
