@@ -22,6 +22,7 @@ void CameraManager::Finalize()
 
 void CameraManager::initialize()
 {
+
     // デフォルトカメラの作成
     defaultCamera = new Camera();
     defaultCamera->SetTranslate({ 0, 0, -5 });
