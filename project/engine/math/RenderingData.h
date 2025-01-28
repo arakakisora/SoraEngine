@@ -31,6 +31,12 @@ struct Material {
 	Matrix4x4 uvTransform;
 };
 
+struct MaterialSprite
+{
+	Vector4 color;
+	Matrix4x4 uvTransform;
+};
+
 
 struct TransformationMatrix
 {

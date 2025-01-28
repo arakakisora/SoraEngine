@@ -87,7 +87,7 @@ private:
 	//バッファー内のデータを示すポインタ
 	VertexData* vertexData = nullptr;
 	uint32_t* indexData = nullptr;
-	Material* materialData = nullptr;
+	MaterialSprite* materialData = nullptr;
 	TransformationMatrix* transformaitionMatrixData = nullptr;
 
 	////vetexResourceSprite頂点バッファーを作成する
