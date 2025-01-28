@@ -32,6 +32,12 @@ struct Material {
 	float shiniess;
 };
 
+struct MaterialSprite
+{
+	Vector4 color;
+	Matrix4x4 uvTransform;
+};
+
 
 struct TransformationMatrix
 {
