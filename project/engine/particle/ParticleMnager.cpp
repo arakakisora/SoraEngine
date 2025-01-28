@@ -27,7 +27,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	//書き込むためのアドレスを取得
 	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformaitionMatrixData));
 	//単位行列を書き込む
-
+	
 	transformaitionMatrixData->WVP = transformaitionMatrixData->WVP.MakeIdentity4x4();
 	transformaitionMatrixData->World = transformaitionMatrixData->World.MakeIdentity4x4();
 
@@ -80,16 +80,16 @@ void ParticleMnager::Update()
 				particleIterator = particleGroup.particles.erase(particleIterator);
 				continue;
 			}
+
 			//パーティクルの位置を更新
 			(*particleIterator).transform.translate += (*particleIterator).Velocity * 1.0f / 60.0f;
 			//パーティクルの寿命を減らす
 			(*particleIterator).currentTime += 1.0f / 60.0f;
 
-			//// アルファ値を計算（寿命に基づく線形補間）
-			//float lifeRatio = (*particleIterator).currentTime / (*particleIterator).lifetime;
-			//float alpha = 1.0f - lifeRatio; // 寿命の終わりでアルファが0になる
+			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
 
 
+			//ワールド行列を計算
 			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
@@ -98,8 +98,8 @@ void ParticleMnager::Update()
 			if (counter < particleGroup.instanceCount) {
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
 				particleGroup.instanceData[counter].World = worldMatrix;
-				particleGroup.instanceData[counter].color = materialData->color;
-				//particleGroup.instanceData[counter].color.w = alpha;
+				particleGroup.instanceData[counter].color = particleIterator->color;
+				particleGroup.instanceData[counter].color.w = alpha;
 
 				++counter;
 			}
@@ -111,6 +111,11 @@ void ParticleMnager::Update()
 			++particleIterator;
 
 		}
+
+		// ここでインスタンス数を更新
+		particleGroup.instanceCount = counter;
+
+
 	}
 
 
@@ -120,6 +125,10 @@ void ParticleMnager::Update()
 
 void ParticleMnager::Draw()
 {
+	// パーティクルグループが設定されていない場合は描画しない
+	if (particleGroups.empty()) {
+		return;
+	}
 	//ルートシグネチャを設定
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureParticle());
 	//psoを設定
@@ -129,6 +138,10 @@ void ParticleMnager::Draw()
 
 	// パーティクルグループごとに描画
 	for (const auto& [name, particleGroup] : particleGroups) {
+		// インスタンス数が 0 の場合は描画しない
+		if (particleGroup.instanceCount == 0) {
+			continue;
+		}
 		//VertexBufferViewを設定
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = model_->GetVertexBufferView();
 		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
@@ -151,8 +164,12 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//モデルのセット
 	SetModel(modelFilePath);
 
-	//登録済みの名前かチェックしてassert
-	assert(!particleGroups.contains(name));
+	
+	//登録済みなら早期リターン
+	if (particleGroups.contains(name)) {
+		return;
+	}
+
 	//パーティクルグループを作成コンテナに登録
 	ParticleGroup particleGroup;
 	particleGroups.insert(std::make_pair(name, std::move(particleGroup)));//名前をキーにして登録
@@ -163,7 +180,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//SRVのインデックスを取得
 	particleGroups.at(name).materialdata.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);	//テクスチャ番号の取得
 	//最大インスタンスカウント
-	uint32_t MaxInstanceCount = 100;
+	uint32_t MaxInstanceCount = 1000;
 	//インスタンス数を初期化
 	particleGroups.at(name).instanceCount = 0;
 	//インスタンス用のリソースを作成
@@ -172,9 +189,9 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	particleGroups.at(name).instanceResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups.at(name).instanceData));
 	//インスタンスのデータを初期化
 	ParticleForGPU particleForGPU;
-	particleForGPU.WVP = transformaitionMatrixData->WVP;
-	particleForGPU.World = transformaitionMatrixData->World;
-	particleForGPU.color = { 1.0f,1.0f,1.0f,1.0f };
+	particleForGPU.WVP = particleForGPU.WVP.MakeIdentity4x4();
+	particleForGPU.World = particleForGPU.World.MakeIdentity4x4();
+	particleForGPU.color = { 1.0f,1.0f,1.0f,0.0f };
 	//インスタンスのデータを登録
 	for (uint32_t index = 0; index < MaxInstanceCount; ++index) {
 		particleGroups.at(name).instanceData[index] = particleForGPU;
@@ -197,7 +214,7 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 	// ランダム分布の定義（位置オフセット用）
 	std::uniform_real_distribution<float> randomPositionOffset(-1.0f, 1.0f); // 位置のランダムオフセット
 
-
+	
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
 	//パーティクルグループのパーティクルリストにパーティクルを追加
@@ -206,7 +223,7 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 
 		//パーティクルを追加
 		particleGroups.at(name).particles.push_back(MakeNewParticle(randomEngine, position));
-		//particleGroups.at(name).instanceData[i].color = { 1.0f,1.0f,1.0f,1.0f };
+		
 	}
 	
 	//パーティクルグループのインスタンス数を更新
@@ -241,8 +258,8 @@ Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vecto
 	//particle.transform.rotate = { 0.0f,3.0f,0.0f };
 	particle.transform.translate = translate + randomTranslate;
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	//particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine),1 };
-	particle.lifetime = 1.0f;
+	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
+	particle.lifetime = distTime(randomEngine);
 	particle.currentTime = 0;
 
 	return particle;

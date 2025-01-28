@@ -183,10 +183,11 @@
     <ClCompile Include="ParticleMnager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+
     <ClCompile Include="GraphicsPipeline.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleEmitter.cpp">
+    <ClCompile Include="engine\particle\ParticleEmitter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -315,10 +316,9 @@
     </ClInclude>
     <ClInclude Include="engine\scene\GameOverScene.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="PlayerBullet.h">
+    <ClInclude Include="CameraManager.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
    
    
     <ClInclude Include="engine\camera\CameraManager.h">
@@ -328,26 +328,23 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="engine\particle\ParticleEmitter.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="engine\particle\ParticleMnager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleMnager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GraphicsPipeline.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
+    <ClInclude Include="engine\particle\ParticleMnager.h">
     <ClInclude Include="ParticleEmitter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+
+    <ClInclude Include="ParticleMnager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Object3d.hlsli">
       <Filter>shader</Filter>
-    </None>
     <None Include="Resources\blocks.csv" />
+
     <None Include="Resources\Shaders\Particle.hlsli" />
   </ItemGroup>
 </Project>
