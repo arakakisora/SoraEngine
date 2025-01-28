@@ -163,8 +163,12 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//モデルのセット
 	SetModel(modelFilePath);
 
-	//登録済みの名前かチェックしてassert
-	assert(!particleGroups.contains(name));
+	
+	//登録済みなら早期リターン
+	if (particleGroups.contains(name)) {
+		return;
+	}
+
 	//パーティクルグループを作成コンテナに登録
 	ParticleGroup particleGroup;
 	particleGroups.insert(std::make_pair(name, std::move(particleGroup)));//名前をキーにして登録
