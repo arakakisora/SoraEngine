@@ -6,6 +6,19 @@
 #include <numbers>
 #include <imgui.h>
 
+//シングルトンインスタンスの取得
+
+ParticleMnager* ParticleMnager::instance_ = nullptr;
+ParticleMnager* ParticleMnager::GetInstance()
+{
+	if (instance_ == nullptr) {
+		instance_ = new ParticleMnager();
+	}
+	return instance_;
+	
+
+}
+
 void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
 	//引数で受け取ったポインタをメンバ変数に代入
@@ -51,6 +64,9 @@ void ParticleMnager::Finalize()
 {
 	delete graphicsPipeline_;
 	graphicsPipeline_ = nullptr;
+	delete instance_;
+	instance_ = nullptr;
+
 
 }
 
