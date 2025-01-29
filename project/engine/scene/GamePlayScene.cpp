@@ -43,6 +43,12 @@ void GamePlayScene::Initialize()
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
 
+
+	//スプライトの生成
+	sprite = new Sprite();
+	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/uvChecker.png");
+	
+
 	
 	light = true;
 
@@ -58,8 +64,12 @@ void GamePlayScene::Finalize()
 	delete camera1;
 	delete camera2;
 	delete object3D;
+
+	delete sprite;
+
 	delete particleEmitter;
 	
+
 
 	
 
@@ -76,7 +86,7 @@ void GamePlayScene::Update()
 
 	//パーティクルの更新
 	particleEmitter->Update();
-	//particleEmitter2->Update();
+	sprite->Update();
 
 
 
@@ -159,6 +169,7 @@ void GamePlayScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	sprite->Draw();
 
 #pragma endregion
 

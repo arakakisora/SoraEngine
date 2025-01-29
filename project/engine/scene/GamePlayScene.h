@@ -42,7 +42,7 @@ private:
 	ParticleEmitter* particleEmitter = nullptr;
 	ParticleEmitter* particleEmitter2 = nullptr;
 	bool light = true;
-
+	Sprite* sprite = nullptr;
 	
 
 };
