@@ -5,6 +5,7 @@
 
 void Framework::Initialize()
 {
+
 	//初期化
 	//WindousAPI初期化
 	//ポインタ
@@ -77,7 +78,7 @@ void Framework::Finalize()
 	////カメラの解放
 	//CameraManager::GetInstans()->Finalize();
 	
-	//ParticleMnager::
+
 	delete winApp;
 	delete dxCommon;
 	delete srvManager;
@@ -86,7 +87,6 @@ void Framework::Finalize()
 #endif // _DEBUG
 
 	Input::GetInstans()->Finalize();
-	ParticleMnager::GetInstance()->Finalize();
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
 	SceneManager::GetInstance()->Finalize();
