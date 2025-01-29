@@ -5,6 +5,7 @@
 
 void Framework::Initialize()
 {
+
 	//初期化
 	//WindousAPI初期化
 	//ポインタ
@@ -33,8 +34,6 @@ void Framework::Initialize()
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);
 
-	//カメラの初期化
-	CameraManager::GetInstans()->initialize();
 
 	//3Dモデルマネージャの初期化
 	ModelManager::GetInstans()->Initialize(dxCommon, srvManager);
@@ -44,8 +43,7 @@ void Framework::Initialize()
 	Object3DCommon::GetInstance()->Initialize(dxCommon);
 	//object3DCommon->SetDefaultCamera(camera);
 
-	//particleの初期化
-	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
+	
 
 
 
@@ -79,8 +77,10 @@ void Framework::Finalize()
 	ModelManager::GetInstans()->Finalize();
 	//カメラの解放
 	CameraManager::GetInstans()->Finalize();
+	//パーティクルの解放
+	ParticleMnager::GetInstance()->Finalize();
 	
-	//ParticleMnager::
+
 	delete winApp;
 	delete dxCommon;
 	delete srvManager;
@@ -89,11 +89,8 @@ void Framework::Finalize()
 #endif // _DEBUG
 
 	Input::GetInstans()->Finalize();
-
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
-	CameraManager::GetInstans()->Finalize();
-	//SceneManagerの解放
 	SceneManager::GetInstance()->Finalize();
 	
 

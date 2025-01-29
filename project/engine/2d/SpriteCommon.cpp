@@ -23,6 +23,7 @@ void SpriteCommon::Finalize()
 {
 	delete instance_;
 	instance_ = nullptr;
+
 }
 
 void SpriteCommon::CommonDraw()

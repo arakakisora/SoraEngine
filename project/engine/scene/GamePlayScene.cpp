@@ -33,6 +33,7 @@ void GamePlayScene::Initialize()
 	ModelManager::GetInstans()->LoadModel("axis.obj");
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	//ModelManager::GetInstans()->LoadModel("bunny.obj");
 
 	
 	
@@ -52,7 +53,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "axis.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
 	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
@@ -63,7 +64,12 @@ void GamePlayScene::Finalize()
 	delete camera1;
 	delete camera2;
 	delete object3D;
+
 	delete sprite;
+
+	delete particleEmitter;
+	
+
 
 	
 
@@ -75,7 +81,7 @@ void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-	object3D->Update();
+	/*object3D->Update();*/
 	
 
 	//パーティクルの更新

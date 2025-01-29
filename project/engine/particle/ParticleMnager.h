@@ -45,14 +45,12 @@ class ParticleMnager
 
 	};
 public:
-	static ParticleMnager* GetInstance()
-	{
-		static ParticleMnager instance;
-		return &instance;
-	}
+	static ParticleMnager* GetInstance();
+	
 private:
 	// コンストラクタをプライベートにする
 	ParticleMnager() = default;
+	~ParticleMnager() = default;
 	// コピーコンストラクタと代入演算子を削除する
 	ParticleMnager(const ParticleMnager&) = delete;
 	ParticleMnager& operator=(const ParticleMnager&) = delete;
@@ -63,7 +61,12 @@ public:
 	//初期化
 	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
 
-	//void Finalize();
+	/// <summary>
+	/// 終了処理
+	///< / summary>
+	void Finalize();
+
+
 
 	void Update();
 	void Draw();
@@ -78,6 +81,9 @@ public:
 	
 
 private:
+
+	//インスタンス
+	static ParticleMnager* instance_;
 
 	DirectXCommon* dxCommon_=nullptr;
 	SrvManager* srvManager_ = nullptr;
