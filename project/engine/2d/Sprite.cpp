@@ -70,6 +70,8 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 }
 
+
+
 void Sprite::Update()
 {
 

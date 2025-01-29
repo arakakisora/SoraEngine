@@ -12,24 +12,23 @@
 
 void GamePlayScene::Initialize()
 {
-	//カメラの生成
-	camera1 = new Camera();
-	camera1->SetTranslate({ 0,0,-5, });//カメラの位置
-	CameraManager::GetInstans()->AddCamera("maincam",camera1);
+	////カメラの生成
+	//camera1 = new Camera();
 
-	//カメラの生成
-	camera2 = new Camera();
-	camera2->SetTranslate({ 0,0,-10, });//カメラの位置
-	CameraManager::GetInstans()->AddCamera("subcam", camera2);
-	
-	// デフォルトカメラを設定
-	CameraManager::GetInstans()->SetActiveCamera("maincam");
+	//camera1->SetTranslate({ 0,0,-20, });//カメラの位置
 
-	//カメラの生成	
-	camera = new Camera();
-	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 0,0,-30, });
-	Object3DCommon::GetInstance()->SetDefaultCamera(camera);
+	//CameraManager::GetInstans()->AddCamera("maincam",camera1);
+
+	////カメラの生成
+	//camera2 = new Camera();
+	//camera2->SetTranslate({ 0,0,-10, });//カメラの位置
+	//CameraManager::GetInstans()->AddCamera("subcam", camera2);
+	//
+	//// デフォルトカメラを設定
+	//CameraManager::GetInstans()->SetActiveCamera("maincam");
+
+
+	////モデルの読み込み
 
 
 
@@ -151,7 +150,7 @@ void GamePlayScene::Update()
 
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-	object3D->Update();
+	/*object3D->Update();*/
 	
 
 	//プレイヤーの更新
@@ -186,6 +185,25 @@ void GamePlayScene::Update()
 	});
 
 
+	//	//ライト
+	//	if (ImGui::CollapsingHeader("Directional Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+	//		Vector4 color = object3D->GetDirectionalLight().color;
+	//		Vector3 direction = object3D->GetDirectionalLight().direction;
+	//		float intensity = object3D->GetDirectionalLight().intensity;
+	//		if (ImGui::ColorEdit4("Color", &color.x)) {
+	//			object3D->SetDirectionalLightColor(color);
+	//		}
+	//		if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
+	//			object3D->SetDirectionalLightDirection(direction);
+	//		}
+	//		if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
+	//			object3D->SetDirectionalLightIntensity(intensity);
+	//		}
+	//		//ライトのオンオフ
+	//	
+	//		if (ImGui::Checkbox("Enable Lighting", &light)) {
+	//			object3D->SetLighting(light);
+	//		}
 
 
 	//3Dオブジェクトの更新
@@ -214,15 +232,27 @@ void GamePlayScene::Update()
 		object3D->SetTransform(transformModel);*/
 	}
 
-	
-	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (ImGui::Button("Switch to Main Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("maincam");
-		}
-		if (ImGui::Button("Switch to Sub Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("subcam");
-		}
-	}
+	//}
+	////particleのエミッタ-
+	//if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
+	//{
+	//	ImGui::Text("ParticleEmitter");
+	//	
+	//	if (ImGui::Button("Emit"))
+	//	{
+	//		particleEmitter->Emit();
+	//	}
+	//}
+
+	//
+	//if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+	//	if (ImGui::Button("Switch to Main Camera")) {
+	//		CameraManager::GetInstans()->SetActiveCamera("maincam");
+	//	}
+	//	if (ImGui::Button("Switch to Sub Camera")) {
+	//		CameraManager::GetInstans()->SetActiveCamera("subcam");
+	//	}
+	//}
 #endif // _DEBUG
 }
 
