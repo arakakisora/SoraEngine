@@ -104,7 +104,7 @@ void GamePlayScene::Initialize()
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
+	particleEmitter = new ParticleEmitter(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
 
@@ -148,7 +148,7 @@ void GamePlayScene::Update()
 
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-	/*object3D->Update();*/
+	object3D->Update();
 	
 
 	//プレイヤーの更新
