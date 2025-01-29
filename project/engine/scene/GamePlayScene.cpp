@@ -151,7 +151,7 @@ void GamePlayScene::Update()
 	for (Enemy* enemy : enemies_) {
 
 		if (!nullptr) {
-			enemy->Update();
+			enemy->Update(mapChipField_);
 		}
 	}
 

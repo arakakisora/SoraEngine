@@ -41,6 +41,17 @@ public:
 	//当たり判定のまとまり
 	void CheckAllCollisions();
 
+
+
+	//敵発生データの読み込む
+	void LoadEnemyPopData();
+
+	//敵発生コマンドの更新
+	void UpdateEnemyPopCommands();
+
+	//エネミーの出現
+	void GenerateEnemy(Vector3 position);
+
 public:
 
 	Object3D* GoolObject3D = nullptr;
@@ -69,6 +80,10 @@ public:
 	std::list<Enemy*> enemies_;
 	//Object3D* object3DEnemy = nullptr;
 	int32_t enemynumber = 3;
+	//敵発生コマンド
+	std::stringstream enemyPopCommands;
+	bool wait = true;
+	int waitTimer = 0;
 
 	// SkyDome
 	Object3D* skydome_ = nullptr;

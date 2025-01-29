@@ -6,6 +6,7 @@
 #include <numbers>
 #include "MyMath.h"
 #include"Object3D.h"
+#include <MapChipField.h>
 
  
 class Player;
@@ -20,7 +21,7 @@ public:
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
-	void Update();
+	void Update(MapChipField* mapChipField);
 
 	/// <summary>
 	/// 描画
@@ -30,6 +31,9 @@ public:
 	Vector3 GetWorldPosition();
 	AABB GetAABB();
 	void OnCollision(const Player* player);
+	Vector3 GetRayEndPosition();
+	int GetRayMapChipNumber( MapChipField* mapChipField);
+
 
 
 	// Object3D解放用のメソッド
@@ -60,4 +64,7 @@ private:
 	//death
 	bool isDead_ = false;
 	
+	float rotateY = 0.0f;
 };
+
+
