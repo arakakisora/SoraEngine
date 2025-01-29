@@ -25,10 +25,10 @@ void Framework::Initialize()
 	Input::GetInstans()->Initialize(winApp);
 	//Audio初期化
 	audio_->GetInstance()->Initialize();
-	//パーティクル
-	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
-	//camera初期化
-	CameraManager::GetInstans()->initialize();
+	////パーティクル
+	//ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
+	////camera初期化
+	//CameraManager::GetInstans()->initialize();
 
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);
@@ -74,8 +74,8 @@ void Framework::Finalize()
 	//WindowsAPI解放
 	TextureManager::GetInstance()->Finalize();
 	ModelManager::GetInstans()->Finalize();
-	//カメラの解放
-	CameraManager::GetInstans()->Finalize();
+	////カメラの解放
+	//CameraManager::GetInstans()->Finalize();
 	
 	//ParticleMnager::
 	delete winApp;
@@ -105,7 +105,7 @@ void Framework::Update()
 	
 	
 	Input::GetInstans()->Update();
-	ParticleMnager::GetInstance()->Update();
+	//ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 
 

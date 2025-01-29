@@ -70,7 +70,7 @@ void GamePlayScene::Finalize()
 void GamePlayScene::Update()
 {
 	//カメラの更新
-	CameraManager::GetInstans()->GetActiveCamera()->Update();
+	//CameraManager::GetInstans()->GetActiveCamera()->Update();
 	/*object3D->Update();*/
 	
 
