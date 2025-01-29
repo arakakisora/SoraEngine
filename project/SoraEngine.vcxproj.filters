@@ -93,7 +93,7 @@
     <ClCompile Include="engine\base\Logger.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
-    <ClCompile Include="engine\base\ModelManager.cpp">
+    <ClCompile Include="engine\3d\ModelManager.cpp">
       <Filter>ソース ファイル\engin\base</Filter>
     </ClCompile>
     <ClCompile Include="engine\base\TextureManager.cpp">
@@ -156,16 +156,16 @@
     <ClCompile Include="engine\scene\GameOverScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="CameraManager.cpp">
+    <ClCompile Include="engine\camera\CameraManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsPipeline.cpp">
+    <ClCompile Include="engine\base\GraphicsPipeline.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleEmitter.cpp">
+    <ClCompile Include="engine\particle\ParticleEmitter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleMnager.cpp">
+    <ClCompile Include="engine\particle\ParticleMnager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -205,7 +205,7 @@
     <ClInclude Include="engine\base\Logger.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
-    <ClInclude Include="engine\base\ModelManager.h">
+    <ClInclude Include="engine\3d\ModelManager.h">
       <Filter>ヘッダー ファイル\engin\base</Filter>
     </ClInclude>
     <ClInclude Include="engine\base\StringUtility.h">
@@ -286,16 +286,16 @@
     <ClInclude Include="engine\scene\GameOverScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="CameraManager.h">
+    <ClInclude Include="engine\camera\CameraManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsPipeline.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleEmitter.h">
+    <ClInclude Include="engine\particle\ParticleEmitter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleMnager.h">
+    <ClInclude Include="engine\particle\ParticleMnager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
