@@ -43,6 +43,15 @@ struct TransformationMatrix
 {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
+	Matrix4x4 worldInberseTranspose;
+
+};
+
+struct TransformationMatrixsprite
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	
 
 };
 
