@@ -5,15 +5,11 @@
 
 ParticleEmitter::ParticleEmitter(const Vector3& position, const float lifetime, const float currentTime, const uint32_t count, const std::string& name)
 {
-	position_ = position;
-	
-
-	frequency = lifetime;
-	frequencyTime = currentTime;
-
-
-	this->count = count;
-	name_ = name;
+	position_ = position;//位置
+	frequency = lifetime;//寿命
+	frequencyTime = currentTime;//現在の寿命
+	this->count = count;//count
+	name_ = name;//名前
 }
 
 void ParticleEmitter::Update()

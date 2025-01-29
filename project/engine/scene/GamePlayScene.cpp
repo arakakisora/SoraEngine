@@ -54,7 +54,7 @@ void GamePlayScene::Initialize()
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
+	particleEmitter = new ParticleEmitter(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
 
@@ -81,7 +81,7 @@ void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-	/*object3D->Update();*/
+	object3D->Update();
 	
 
 	//パーティクルの更新
@@ -140,6 +140,13 @@ void GamePlayScene::Update()
 		{
 			particleEmitter->Emit();
 		}
+		//エミット位置
+		Vector3 position = particleEmitter->GetPosition();
+		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
+			particleEmitter->SetPosition(position);
+		}
+		
+
 	}
 
 	
@@ -160,7 +167,7 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	/*object3D->Draw();*/
+	object3D->Draw();
 	ParticleMnager::GetInstance()->Draw();
 
 #pragma endregion

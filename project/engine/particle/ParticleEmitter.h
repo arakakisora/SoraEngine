@@ -19,13 +19,28 @@ public:
 	void Update();
 
 	void Emit();
+
+	//getter
+	const Vector3& GetPosition() const { return position_; }
+	const float GetFrequency() const { return frequency; }
+	const float GetFrequencyTime() const { return frequencyTime; }
+	const uint32_t GetCount() const { return count; }
+	const std::string& GetName() const { return name_; }
+
+	//setter
+	void SetPosition(const Vector3& position) { position_ = position; }
+	void SetFrequency(const float frequency) { this->frequency = frequency; }
+	void SetFrequencyTime(const float frequencyTime) { this->frequencyTime = frequencyTime; }
+	void SetCount(const uint32_t count) { this->count = count; }
+	void SetName(const std::string& name) { name_ = name; }
+
+	
 	
 	
 private:
 	//位置
 	Vector3 position_;
-	//速度
-	Vector3 velocity_;
+	
 	//寿命
 
 	float frequency;
