@@ -89,7 +89,7 @@ private:
 	VertexData* vertexData = nullptr;
 	uint32_t* indexData = nullptr;
 	MaterialSprite* materialData = nullptr;
-	TransformationMatrix* transformaitionMatrixData = nullptr;
+	TransformationMatrixsprite* transformaitionMatrixData = nullptr;
 
 	////vetexResourceSprite頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;

@@ -23,6 +23,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 	transformaitionMatrixData->WVP = transformaitionMatrixData->WVP.MakeIdentity4x4();
 	transformaitionMatrixData->World = transformaitionMatrixData->World.MakeIdentity4x4();
+	transformaitionMatrixData->worldInberseTranspose = transformaitionMatrixData->worldInberseTranspose.MakeIdentity4x4();
 
 
 	//平行光源

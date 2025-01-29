@@ -15,15 +15,15 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera1 = new Camera();
 
-	camera1->SetTranslate({ 0,0,-20, });//カメラの位置
+	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
 
-	CameraManager::GetInstans()->AddCamera("maincam",camera1);
+	CameraManager::GetInstans()->AddCamera("maincam", camera1);
 
 	//カメラの生成
 	camera2 = new Camera();
-	camera2->SetTranslate({ 0,0,-10, });//カメラの位置
+	camera2->SetTranslate({ 0,0,-20, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("subcam", camera2);
-	
+
 	// デフォルトカメラを設定
 	CameraManager::GetInstans()->SetActiveCamera("maincam");
 
@@ -149,7 +149,7 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
-	
+
 
 	//プレイヤーの更新
 	player->Update();
@@ -200,7 +200,7 @@ void GamePlayScene::Update()
 
 #ifdef _DEBUG
 
-	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		/*transformModel = object3D->GetTransform();
 
