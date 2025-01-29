@@ -15,15 +15,15 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera1 = new Camera();
 
-	camera1->SetTranslate({ 0,0,-20, });//カメラの位置
+	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
 
-	CameraManager::GetInstans()->AddCamera("maincam",camera1);
+	CameraManager::GetInstans()->AddCamera("maincam", camera1);
 
 	//カメラの生成
 	camera2 = new Camera();
-	camera2->SetTranslate({ 0,0,-10, });//カメラの位置
+	camera2->SetTranslate({ 0,0,-20, });//カメラの位置
 	CameraManager::GetInstans()->AddCamera("subcam", camera2);
-	
+
 	// デフォルトカメラを設定
 	CameraManager::GetInstans()->SetActiveCamera("maincam");
 
@@ -35,8 +35,8 @@ void GamePlayScene::Initialize()
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 	//ModelManager::GetInstans()->LoadModel("bunny.obj");
 
-	
-	
+
+
 
 	object3D = new Object3D();
 	object3D->Initialize(Object3DCommon::GetInstance());
@@ -47,9 +47,9 @@ void GamePlayScene::Initialize()
 	//スプライトの生成
 	sprite = new Sprite();
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/uvChecker.png");
-	
 
-	
+
+
 	light = true;
 
 	//パーティクルの初期化
@@ -68,12 +68,12 @@ void GamePlayScene::Finalize()
 	delete sprite;
 
 	delete particleEmitter;
-	
 
 
-	
 
-		
+
+
+
 
 }
 
@@ -82,7 +82,7 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
-	
+
 
 	//パーティクルの更新
 	particleEmitter->Update();
@@ -92,50 +92,64 @@ void GamePlayScene::Update()
 
 #ifdef _DEBUG
 
-	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Text("gamePlayScene %d");
-		if (ImGui::Button("GameClearScene"))
-		{
-			SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+		//potision
+		Transform transform= object3D->GetTransform();
+		if (ImGui::DragFloat3("obj3Position", &transform.translate.x, 0.01f)) {
+			object3D->SetTransform(transform);
 		}
-		if (ImGui::Button("GameOverScene"))
-		{
-			SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+		//rotation
+		if (ImGui::DragFloat3("obj3Rotation", &transform.rotate.x, 0.01f)) {
+			object3D->SetTransform(transform);
+		}
+		//scale
+		if (ImGui::DragFloat3("obj3Scale", &transform.scale.x, 0.01f)) {
+			object3D->SetTransform(transform);
 		}
 
-		//ライト
-		if (ImGui::CollapsingHeader("Directional Light", ImGuiTreeNodeFlags_DefaultOpen)) {
-			Vector4 color = object3D->GetDirectionalLight().color;
-			Vector3 direction = object3D->GetDirectionalLight().direction;
-			float intensity = object3D->GetDirectionalLight().intensity;
-			if (ImGui::ColorEdit4("Color", &color.x)) {
-				object3D->SetDirectionalLightColor(color);
-			}
-			if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
-				object3D->SetDirectionalLightDirection(direction);
-			}
-			if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
-				object3D->SetDirectionalLightIntensity(intensity);
-			}
-			//ライトのオンオフ
-		
-			if (ImGui::Checkbox("Enable Lighting", &light)) {
-				object3D->SetLighting(light);
-			}
+	}
+	ImGui::Text("gamePlayScene %d");
+	if (ImGui::Button("GameClearScene"))
+	{
+		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+	}
+	if (ImGui::Button("GameOverScene"))
+	{
+		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+	}
 
-
-
-
+	//ライト
+	if (ImGui::CollapsingHeader("Directional Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+		Vector4 color = object3D->GetDirectionalLight().color;
+		Vector3 direction = object3D->GetDirectionalLight().direction;
+		float intensity = object3D->GetDirectionalLight().intensity;
+		if (ImGui::ColorEdit4("Color", &color.x)) {
+			object3D->SetDirectionalLightColor(color);
 		}
+		if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
+			object3D->SetDirectionalLightDirection(direction);
+		}
+		if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
+			object3D->SetDirectionalLightIntensity(intensity);
+		}
+		//ライトのオンオフ
+
+		if (ImGui::Checkbox("Enable Lighting", &light)) {
+			object3D->SetLighting(light);
+		}
+
+
 
 
 	}
+
+
 	//particleのエミッタ-
 	if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("ParticleEmitter");
-		
+
 		if (ImGui::Button("Emit"))
 		{
 			particleEmitter->Emit();
@@ -145,11 +159,11 @@ void GamePlayScene::Update()
 		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
 			particleEmitter->SetPosition(position);
 		}
-		
+
 
 	}
 
-	
+
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
 			CameraManager::GetInstans()->SetActiveCamera("maincam");
