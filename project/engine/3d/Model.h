@@ -18,6 +18,7 @@ public:
 	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }
 	ModelData GetModelData() { return modelData; }
 
+
 	//ライトのオンオフ
 	void SetEnableLighting(bool enable) { materialData->enableLighting = enable; }
 	

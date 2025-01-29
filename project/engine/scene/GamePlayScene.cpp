@@ -7,12 +7,16 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
+#include "ParticleMnager.h"
+
 
 void GamePlayScene::Initialize()
 {
 	//カメラの生成
 	camera1 = new Camera();
-	camera1->SetTranslate({ 0,0,-5, });//カメラの位置
+
+	camera1->SetTranslate({ 0,0,-20, });//カメラの位置
+
 	CameraManager::GetInstans()->AddCamera("maincam",camera1);
 
 	//カメラの生成
@@ -25,14 +29,32 @@ void GamePlayScene::Initialize()
 
 
 	//モデルの読み込み
+
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	//ModelManager::GetInstans()->LoadModel("bunny.obj");
+
+	
+	
 
 	object3D = new Object3D();
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
+
+
+	//スプライトの生成
+	sprite = new Sprite();
+	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/uvChecker.png");
+	
+
 	
 	light = true;
+
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
+	particleEmitter = new ParticleEmitter(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 }
 
@@ -43,7 +65,13 @@ void GamePlayScene::Finalize()
 	delete camera2;
 	delete object3D;
 
-	CameraManager::GetInstans()->Finalize();
+	delete sprite;
+
+	delete particleEmitter;
+	
+
+
+	
 
 		
 
@@ -53,10 +81,12 @@ void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-	object3D->Update();
-
+	/*object3D->Update();*/
 	
 
+	//パーティクルの更新
+	particleEmitter->Update();
+	sprite->Update();
 
 
 
@@ -101,6 +131,16 @@ void GamePlayScene::Update()
 
 
 	}
+	//particleのエミッタ-
+	if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Text("ParticleEmitter");
+		
+		if (ImGui::Button("Emit"))
+		{
+			particleEmitter->Emit();
+		}
+	}
 
 	
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -120,8 +160,8 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
-
+	/*object3D->Draw();*/
+	ParticleMnager::GetInstance()->Draw();
 
 #pragma endregion
 
@@ -129,6 +169,7 @@ void GamePlayScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	sprite->Draw();
 
 #pragma endregion
 

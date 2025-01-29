@@ -1,8 +1,11 @@
 #include "Framework.h"
+#include <CameraManager.h>
+#include "ParticleMnager.h"
 
 
 void Framework::Initialize()
 {
+
 	//初期化
 	//WindousAPI初期化
 	//ポインタ
@@ -23,6 +26,11 @@ void Framework::Initialize()
 	Input::GetInstans()->Initialize(winApp);
 	//Audio初期化
 	audio_->GetInstance()->Initialize();
+	//パーティクル
+	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
+	//camera初期化
+	CameraManager::GetInstans()->initialize();
+
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon);
 
@@ -34,6 +42,8 @@ void Framework::Initialize()
 
 	Object3DCommon::GetInstance()->Initialize(dxCommon);
 	//object3DCommon->SetDefaultCamera(camera);
+
+	
 
 
 
@@ -65,6 +75,12 @@ void Framework::Finalize()
 	//WindowsAPI解放
 	TextureManager::GetInstance()->Finalize();
 	ModelManager::GetInstans()->Finalize();
+	//カメラの解放
+	CameraManager::GetInstans()->Finalize();
+	//パーティクルの解放
+	ParticleMnager::GetInstance()->Finalize();
+	
+
 	delete winApp;
 	delete dxCommon;
 	delete srvManager;
@@ -73,11 +89,10 @@ void Framework::Finalize()
 #endif // _DEBUG
 
 	Input::GetInstans()->Finalize();
-
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
-	//SceneManagerの解放
 	SceneManager::GetInstance()->Finalize();
+	
 
 }
 
@@ -89,9 +104,10 @@ void Framework::Update()
 		//ゲームループを抜ける
 		endRequst_ = true;
 	}
-
-
+	
+	
 	Input::GetInstans()->Update();
+	ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 
 

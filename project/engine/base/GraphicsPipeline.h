@@ -8,13 +8,17 @@ public:
 	/// </summary>
 	void Initialize(DirectXCommon* dxCommon);
 
-	void Create();
-	void CreateParticle();
+
+	void Create();//3dオブジェクト用
+	void CreateParticle();//パーティクル用
+	void CreateSprite();//スプライト用
+
 
 	//ルートシグネチャの作成
-	void RootSignatureCreate();
+	void RootSignatureCreate();//3dオブジェクト用
+	void RootSignatureParticleCreate();//パーティクル用
+	void RootSignatureSpriteCreate();//スプライト用
 
-	void RootSignatureParticleCreate();
 
 	//ゲッター
 	ID3D12RootSignature* GetRootSignature()const { return rootSignature.Get(); }
@@ -22,6 +26,11 @@ public:
 	//パーティクル用のPSO
 	ID3D12RootSignature* GetRootSignatureParticle()const { return rootSignatureParticle.Get(); }
 	ID3D12PipelineState* GetGraphicsPipelineStateParticle()const { return graphicsPipelineStateParticle.Get(); }
+
+	//スプライト用のPSO
+	ID3D12RootSignature* GetRootSignatureSprite()const { return rootSignatureSprite.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateSprite()const { return graphicsPipelineStateSprite.Get(); }
+
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;
@@ -32,6 +41,12 @@ private:
 	//パーティクル用のルートシグネチャ
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureParticle = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateParticle = nullptr;
+
+
+	//スプライト用
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSprite = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSprite = nullptr;
+
 
 };
 
