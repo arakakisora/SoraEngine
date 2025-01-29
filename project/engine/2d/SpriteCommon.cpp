@@ -21,6 +21,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 
 void SpriteCommon::Finalize()
 {
+	delete graphicsPipeline_;
 	delete instance_;
 	instance_ = nullptr;
 
