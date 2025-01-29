@@ -63,7 +63,12 @@ public:
 	//初期化
 	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
 
-	//void Finalize();
+	/// <summary>
+	/// 終了処理
+	///< / summary>
+	void Finalize();
+
+
 
 	void Update();
 	void Draw();

@@ -47,6 +47,13 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 
 
 
+void ParticleMnager::Finalize()
+{
+	delete graphicsPipeline_;
+	graphicsPipeline_ = nullptr;
+
+}
+
 void ParticleMnager::Update()
 {
 	//カメラからビュープロジェクション行列を取得

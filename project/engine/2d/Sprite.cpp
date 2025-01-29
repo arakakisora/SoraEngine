@@ -64,6 +64,8 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 }
 
+
+
 void Sprite::Update()
 {
 	transform.rotate = { 0.0f,0.0f,rotation };
