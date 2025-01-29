@@ -2,6 +2,7 @@
 #include "ParticleMnager.h"
 
 
+
 ParticleEmitter::ParticleEmitter(const Vector3& position, const float lifetime, const float currentTime, const uint32_t count, const std::string& name)
 {
 	position_ = position;
@@ -9,6 +10,7 @@ ParticleEmitter::ParticleEmitter(const Vector3& position, const float lifetime, 
 
 	frequency = lifetime;
 	frequencyTime = currentTime;
+
 
 	this->count = count;
 	name_ = name;
@@ -26,6 +28,7 @@ void ParticleEmitter::Update()
 		ParticleMnager::GetInstance()->Emit(name_, position_, count);
 		//時間をリセット
 		frequencyTime = 0.0f;
+
 
 	}
 

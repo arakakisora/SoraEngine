@@ -29,6 +29,7 @@ struct Material {
 	int32_t enableLighting;
 	float padding[3];
 	Matrix4x4 uvTransform;
+	float shiniess;
 };
 
 struct MaterialSprite
@@ -65,3 +66,7 @@ struct ModelData {
 	MaterialData material;
 
 }; 
+
+struct CaMeraForGpu {
+	Vector3 worldPosition;
+};

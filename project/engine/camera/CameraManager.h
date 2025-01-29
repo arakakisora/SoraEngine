@@ -15,8 +15,10 @@ public:
 	static CameraManager* GetInstans();
 	//終了
 	void Finalize();
+
 	//初期化
 	void initialize();
+
 
 
 	//カメラの追加
@@ -30,6 +32,7 @@ public:
 
 	// アクティブカメラの取得
 	Camera* GetActiveCamera();
+
 
 	// アクティブカメラの設定
 	void SetActiveCamera(const std::string& name) {
@@ -48,10 +51,10 @@ private:
 
 	// アクティブカメラ名
 	std::string activeCameraName;
+
 	//デフォルトカメラ
 	Camera* defaultCamera = nullptr;
 
-	
 
 };
 

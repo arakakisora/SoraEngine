@@ -12,7 +12,9 @@ struct Particle {
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
+
 	Vector4 color;
+
 
 	
 
@@ -45,6 +47,7 @@ class ParticleMnager
 
 	};
 public:
+
 	static ParticleMnager* GetInstance();
 	
 private:
@@ -61,13 +64,12 @@ public:
 	//初期化
 	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
 
+
+
 	/// <summary>
 	/// 終了処理
 	///< / summary>
 	void Finalize();
-
-
-
 	void Update();
 	void Draw();
 
@@ -82,9 +84,9 @@ public:
 
 private:
 
+
 	//インスタンス
 	static ParticleMnager* instance_;
-
 	DirectXCommon* dxCommon_=nullptr;
 	SrvManager* srvManager_ = nullptr;
 	GraphicsPipeline* graphicsPipeline_ = nullptr;
@@ -92,7 +94,6 @@ private:
 	Model* model_ = nullptr;
 
 	std::mt19937 randomEngine;
-
 
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;

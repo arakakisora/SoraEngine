@@ -12,6 +12,7 @@
 //#include <Windows.h>
 #include <wrl/client.h>
 #include <d3d12.h>
+#include <Camera.h>
 
 
 
@@ -122,6 +123,11 @@ private:
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 
+
+	Camera* camera = nullptr;
+	//カメラforGPU
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
+	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
 
 
 

@@ -39,8 +39,10 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	
 	 
-	
-
+	//カメラforGPU
+	cameraResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
+	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
 
 
 
@@ -48,23 +50,23 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 void Object3D::Update()
 {
+    worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+    Camera* activeCamera = CameraManager::GetInstans()->GetActiveCamera();
+    //ライトのオンオフ
+    model_->SetEnableLighting(enableLighting);
 
-	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Camera* activeCamera = CameraManager::GetInstans()->GetActiveCamera();
-	//ライトのオンオフ
-	model_->SetEnableLighting(enableLighting);
-	
-	if (activeCamera) {
-		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
-		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-	}
-	else {
-
-		worldViewProjectionMatrix = worldMatrix;
-	}
-
-	transformaitionMatrixData->WVP = worldViewProjectionMatrix;
-	transformaitionMatrixData->World = worldMatrix;
+    if (activeCamera) {
+        const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
+        worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+        transformaitionMatrixData->WVP = worldViewProjectionMatrix;
+        transformaitionMatrixData->World = worldMatrix;
+		Vector3 cameraPosition = activeCamera->GetTransform().translate;
+        cameraForGpu->worldPosition = cameraPosition;
+    } else {
+        worldViewProjectionMatrix = worldMatrix;
+        transformaitionMatrixData->WVP = worldViewProjectionMatrix;
+        transformaitionMatrixData->World = worldMatrix;
+    }
 }
 
 void Object3D::Draw()
@@ -74,6 +76,8 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	//平行光源Cbufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	//カメラのデータをセット
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {

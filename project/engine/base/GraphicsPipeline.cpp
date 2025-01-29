@@ -31,7 +31,18 @@ void GraphicsPipeline::Create()
 	//BlendStateの設定
 	D3D12_BLEND_DESC blendDesc{};
 	//すべての色素要素を書き込む
+
+	//ノーマルブレンド
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+
 
 	//RasiterzerStateの設定
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
@@ -88,6 +99,7 @@ void GraphicsPipeline::Create()
 
 }
 
+
 void GraphicsPipeline::RootSignatureCreate()
 {
 	//RootSignature作成
@@ -103,7 +115,9 @@ void GraphicsPipeline::RootSignatureCreate()
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
+
+	D3D12_ROOT_PARAMETER rootParameters[5] = {};
+
 	//rootParameters[0]設定
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
@@ -117,12 +131,16 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-	////rootParameters[3]設定
+	//ディレクショナルライト
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[3].Descriptor.ShaderRegister = 1;
+	//camera
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[4].Descriptor.ShaderRegister = 2;
 
-	descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
+　descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
 
 	//staticSamplers
@@ -160,18 +178,6 @@ void GraphicsPipeline::RootSignatureCreate()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 void GraphicsPipeline::CreateParticle()
 {
 
@@ -204,10 +210,8 @@ void GraphicsPipeline::CreateParticle()
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = true;
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;	
-
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+　blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -234,7 +238,6 @@ void GraphicsPipeline::CreateParticle()
 	//Deothの機能を有効化する
 	depthStencilDesc.DepthEnable = true;
 	//書き込みします
-
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
 	//比較関数はLessEqual
@@ -271,10 +274,6 @@ void GraphicsPipeline::CreateParticle()
 
 
 }
-
-
-
-
 
 void GraphicsPipeline::RootSignatureParticleCreate()
 {
@@ -342,6 +341,7 @@ void GraphicsPipeline::RootSignatureParticleCreate()
 
 
 }
+
 
 
 
@@ -495,7 +495,6 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 
 
 }
-
 
 void GraphicsPipeline::Initialize(DirectXCommon* dxCommon)
 {

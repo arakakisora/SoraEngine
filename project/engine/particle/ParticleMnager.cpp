@@ -6,6 +6,7 @@
 #include <numbers>
 #include <imgui.h>
 
+
 //シングルトンインスタンスの取得
 
 ParticleMnager* ParticleMnager::instance_ = nullptr;
@@ -18,6 +19,7 @@ ParticleMnager* ParticleMnager::GetInstance()
 	
 
 }
+
 
 void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
@@ -32,8 +34,6 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	graphicsPipeline_ = new GraphicsPipeline();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateParticle();
-
-
 
 
 	//カメラとモデルのTrandform変数
@@ -60,6 +60,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 
 
 
+
 void ParticleMnager::Finalize()
 {
 	delete graphicsPipeline_;
@@ -69,6 +70,7 @@ void ParticleMnager::Finalize()
 
 
 }
+
 
 void ParticleMnager::Update()
 {
@@ -99,13 +101,10 @@ void ParticleMnager::Update()
 			(*particleIterator).transform.translate += (*particleIterator).Velocity * 1.0f / 60.0f;
 			//パーティクルの寿命を減らす
 			(*particleIterator).currentTime += 1.0f / 60.0f;
-
-
 			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
 
 
 			//ワールド行列を計算
-
 			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
@@ -114,11 +113,8 @@ void ParticleMnager::Update()
 			if (counter < particleGroup.instanceCount) {
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
 				particleGroup.instanceData[counter].World = worldMatrix;
-
 				particleGroup.instanceData[counter].color = particleIterator->color;
 				particleGroup.instanceData[counter].color.w = alpha;
-
-
 				++counter;
 			}
 
@@ -129,7 +125,6 @@ void ParticleMnager::Update()
 			++particleIterator;
 
 		}
-
 
 		// ここでインスタンス数を更新
 		particleGroup.instanceCount = counter;
@@ -143,6 +138,7 @@ void ParticleMnager::Update()
 
 void ParticleMnager::Draw()
 {
+
 
 	// パーティクルグループが設定されていない場合は描画しない
 	if (particleGroups.empty()) {
@@ -158,6 +154,7 @@ void ParticleMnager::Draw()
 
 	// パーティクルグループごとに描画
 	for (const auto& [name, particleGroup] : particleGroups) {
+
 
 		// インスタンス数が 0 の場合は描画しない
 		if (particleGroup.instanceCount == 0) {
@@ -186,6 +183,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//モデルのセット
 	SetModel(modelFilePath);
 
+
 	
 	//登録済みなら早期リターン
 	if (particleGroups.contains(name)) {
@@ -211,11 +209,9 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	particleGroups.at(name).instanceResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups.at(name).instanceData));
 	//インスタンスのデータを初期化
 	ParticleForGPU particleForGPU;
-
 	particleForGPU.WVP = particleForGPU.WVP.MakeIdentity4x4();
 	particleForGPU.World = particleForGPU.World.MakeIdentity4x4();
 	particleForGPU.color = { 1.0f,1.0f,1.0f,0.0f };
-
 	//インスタンスのデータを登録
 	for (uint32_t index = 0; index < MaxInstanceCount; ++index) {
 		particleGroups.at(name).instanceData[index] = particleForGPU;
@@ -235,6 +231,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count)
 {
+
 
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
@@ -279,11 +276,8 @@ Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vecto
 	//particle.transform.rotate = { 0.0f,3.0f,0.0f };
 	particle.transform.translate = translate + randomTranslate;
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-
 	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
 	particle.lifetime = distTime(randomEngine);
-
 	particle.currentTime = 0;
-
 	return particle;
 }
