@@ -15,7 +15,7 @@ ParticleMnager* ParticleMnager::GetInstance()
 		instance_ = new ParticleMnager();
 	}
 	return instance_;
-	
+
 
 }
 
@@ -29,7 +29,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	std::mt19937 random(seedGenerator());
 	randomEngine = random;
 	//パイプラインの生成
-	graphicsPipeline_ = new GraphicsPipeline();
+	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateParticle();
 
@@ -71,8 +71,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 
 void ParticleMnager::Finalize()
 {
-	delete graphicsPipeline_;
-	graphicsPipeline_ = nullptr;
+
 	delete instance_;
 	instance_ = nullptr;
 
@@ -248,7 +247,7 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 		particleGroups.at(name).particles.push_back(MakeNewParticle(randomEngine, position));
 		
 	}
-	
+
 	//パーティクルグループのインスタンス数を更新
 	particleGroups.at(name).instanceCount = count;
 	////インスタンス用のリソースを作成

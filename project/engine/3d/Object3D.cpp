@@ -56,6 +56,11 @@ void Object3D::Update()
     //ライトのオンオフ
     model_->SetEnableLighting(enableLighting);
 
+	// **ここでモデルの色を設定**
+	if (model_) {
+		model_->SetColor(color_);
+	}
+
     if (activeCamera) {
         const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
         worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;

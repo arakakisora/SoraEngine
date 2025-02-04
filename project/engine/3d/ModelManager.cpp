@@ -21,7 +21,7 @@ void ModelManager::Finalize()
 void ModelManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager)
 {
 	srvmnager_ = srvmnager;
-	modelCommon = new ModelCommon;
+	modelCommon = new ModelCommon();
 	modelCommon->Initialize(dxcommon, srvmnager_);
 
 

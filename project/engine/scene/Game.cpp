@@ -9,8 +9,8 @@ void Game::Initialize()
 	//初期化
 	Framework::Initialize();
 	
-	sceneFactory = new SceneFactory();
-	SceneManager::GetInstance()->SetSceneFactory(sceneFactory);
+	sceneFactory = std::make_unique<SceneFactory>();
+	SceneManager::GetInstance()->SetSceneFactory(sceneFactory.get());
 
 	//シーンの変更
 	//"TITELE"

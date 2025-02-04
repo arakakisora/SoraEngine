@@ -86,7 +86,10 @@ private:
 
 	DirectXCommon* dxCommon_=nullptr;
 	SrvManager* srvManager_ = nullptr;
-	GraphicsPipeline* graphicsPipeline_ = nullptr;
+
+
+
+	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
 	Model* model_ = nullptr;
 

@@ -9,20 +9,17 @@
 #include "CameraManager.h"
 #include "ParticleMnager.h"
 
-
 void GamePlayScene::Initialize()
 {
 	//カメラの生成
-	camera1 = new Camera();
-
+	camera1 = std::make_unique<Camera>();
 	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
-
-	CameraManager::GetInstans()->AddCamera("maincam", camera1);
+	CameraManager::GetInstans()->AddCamera("maincam", camera1.get());
 
 	//カメラの生成
-	camera2 = new Camera();
+	camera2 = std::make_unique<Camera>();
 	camera2->SetTranslate({ 0,0,-20, });//カメラの位置
-	CameraManager::GetInstans()->AddCamera("subcam", camera2);
+	CameraManager::GetInstans()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstans()->SetActiveCamera("maincam");
@@ -104,8 +101,7 @@ void GamePlayScene::Initialize()
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	particleEmitter = new ParticleEmitter(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
-
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 }
 
 void GamePlayScene::Finalize()
@@ -361,8 +357,5 @@ void GamePlayScene::CheckAllCollisions()
 	}
 
 #pragma endregion
-
-
-
-
 }
+
