@@ -85,6 +85,32 @@ void GamePlayScene::Update()
 			object3D->SetColor(color);
 		}
 	}
+
+	//sprite
+	if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		//position
+		Vector2 position = sprite->GetPosition();
+		if (ImGui::DragFloat2("spritePosition", &position.x, 0.01f)) {
+			sprite->SetPosition(position);
+		}
+		//rotation
+		float rotation = sprite->GetRotation();
+		if (ImGui::DragFloat("spriteRotation", &rotation, 0.01f)) {
+			sprite->SetRotation(rotation);
+		}
+		//scale
+		Vector2 scale = sprite->GetSize();
+		if (ImGui::DragFloat2("spriteScale", &scale.x, 0.01f)) {
+			sprite->SetSize(scale);
+		}
+		//color
+		Vector4 color = sprite->GetColor();
+		if (ImGui::ColorEdit4("spriteColor", &color.x)) {
+			sprite->setColor(color);
+		}
+	}
+
 	ImGui::Text("gamePlayScene %d");
 	if (ImGui::Button("GameClearScene"))
 	{
