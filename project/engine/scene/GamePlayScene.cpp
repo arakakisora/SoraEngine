@@ -9,72 +9,48 @@
 #include "CameraManager.h"
 #include "ParticleMnager.h"
 
-
 void GamePlayScene::Initialize()
 {
 	//カメラの生成
-	camera1 = new Camera();
-
+	camera1 = std::make_unique<Camera>();
 	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
-
-	CameraManager::GetInstans()->AddCamera("maincam", camera1);
+	CameraManager::GetInstans()->AddCamera("maincam", camera1.get());
 
 	//カメラの生成
-	camera2 = new Camera();
+	camera2 = std::make_unique<Camera>();
 	camera2->SetTranslate({ 0,0,-20, });//カメラの位置
-	CameraManager::GetInstans()->AddCamera("subcam", camera2);
+	CameraManager::GetInstans()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstans()->SetActiveCamera("maincam");
 
-
 	//モデルの読み込み
-
 	ModelManager::GetInstans()->LoadModel("axis.obj");
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
-	//ModelManager::GetInstans()->LoadModel("bunny.obj");
 
-
-
-
-	object3D = new Object3D();
+	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
 
-
 	//スプライトの生成
-	sprite = new Sprite();
+	sprite = std::make_unique<Sprite>();
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/uvChecker.png");
-
-
 
 	light = true;
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	particleEmitter = new ParticleEmitter(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
-
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 }
 
 void GamePlayScene::Finalize()
 {
+	CameraManager::GetInstans()->RemoveCamera("maincam");
+	CameraManager::GetInstans()->RemoveCamera("subcam");
 
-	delete camera1;
-	delete camera2;
-	delete object3D;
-
-	delete sprite;
-
-	delete particleEmitter;
-
-
-
-
-
-
-
+	CameraManager::GetInstans()->Finalize();
 }
 
 void GamePlayScene::Update()
@@ -83,19 +59,15 @@ void GamePlayScene::Update()
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
 
-
 	//パーティクルの更新
 	particleEmitter->Update();
 	sprite->Update();
 
-
-
 #ifdef _DEBUG
-
 	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		//potision
-		Transform transform= object3D->GetTransform();
+		Transform transform = object3D->GetTransform();
 		if (ImGui::DragFloat3("obj3Position", &transform.translate.x, 0.01f)) {
 			object3D->SetTransform(transform);
 		}
@@ -107,7 +79,11 @@ void GamePlayScene::Update()
 		if (ImGui::DragFloat3("obj3Scale", &transform.scale.x, 0.01f)) {
 			object3D->SetTransform(transform);
 		}
-
+		//color
+		Vector4 color = object3D->GetColor();
+		if (ImGui::ColorEdit4("obj3Color", &color.x)) {
+			object3D->SetColor(color);
+		}
 	}
 	ImGui::Text("gamePlayScene %d");
 	if (ImGui::Button("GameClearScene"))
@@ -134,16 +110,10 @@ void GamePlayScene::Update()
 			object3D->SetDirectionalLightIntensity(intensity);
 		}
 		//ライトのオンオフ
-
 		if (ImGui::Checkbox("Enable Lighting", &light)) {
 			object3D->SetLighting(light);
 		}
-
-
-
-
 	}
-
 
 	//particleのエミッタ-
 	if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
@@ -159,10 +129,7 @@ void GamePlayScene::Update()
 		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
 			particleEmitter->SetPosition(position);
 		}
-
-
 	}
-
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
@@ -186,15 +153,11 @@ void GamePlayScene::Draw()
 
 #pragma endregion
 
-
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
 	sprite->Draw();
 
 #pragma endregion
-
-
-
-
 }
+

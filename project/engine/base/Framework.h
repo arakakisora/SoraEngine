@@ -44,23 +44,20 @@ public:
 	virtual bool IsEndRequest()const { return endRequst_; }
 
 public:
+
 	//ゲーム終了フラグ	
 	bool endRequst_ = false;
 
 	//WinAppのポインタ
-	WinApp* winApp = nullptr;
+	std::unique_ptr<WinApp> winApp;
 	//DirectXCommonのポインタ
-	DirectXCommon* dxCommon = nullptr;
+	std::unique_ptr<DirectXCommon> dxCommon;
 	//SrvManagerのポインタ
-	SrvManager* srvManager = nullptr;
+	std::unique_ptr<SrvManager> srvManager;
 	//ImGuiManagerのポインタ
-	ImGuiManager* imGuiMnager = nullptr;
-	//Audioのポインタ
-	Audio* audio_ = nullptr;
-
-	//SceneManager* sceneManager = nullptr;
-	
-	AbstractSceneFactory* sceneFactory = nullptr;
+	std::unique_ptr<ImGuiManager> imGuiMnager;
+	//SceneManagerのポインタ
+	std::unique_ptr<AbstractSceneFactory> sceneFactory;
 
 };
 

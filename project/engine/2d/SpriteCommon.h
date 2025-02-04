@@ -28,7 +28,7 @@ private:
 	DirectXCommon* dxCommon_;//dxcommnをポインタ参照
 	
 	//グラフィックスパイプライン
-	GraphicsPipeline *graphicsPipeline_;
+	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
 
 };

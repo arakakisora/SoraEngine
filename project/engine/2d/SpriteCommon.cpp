@@ -13,7 +13,8 @@ SpriteCommon* SpriteCommon::GetInstance()
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
 	dxCommon_ = dxCommon;
-	graphicsPipeline_ = new GraphicsPipeline();
+	//パイプラインの生成
+	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateSprite();
 
@@ -21,7 +22,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 
 void SpriteCommon::Finalize()
 {
-	delete graphicsPipeline_;
+
 	delete instance_;
 	instance_ = nullptr;
 

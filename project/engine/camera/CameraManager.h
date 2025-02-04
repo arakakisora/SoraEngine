@@ -2,6 +2,7 @@
 #include <Camera.h>
 #include <unordered_map>
 #include <string>
+#include <memory>
 class CameraManager
 {
 	static CameraManager* instance;
@@ -17,7 +18,7 @@ public:
 	void Finalize();
 
 	//初期化
-	void initialize();
+	void Initialize();
 
 
 
@@ -53,7 +54,9 @@ private:
 	std::string activeCameraName;
 
 	//デフォルトカメラ
-	Camera* defaultCamera = nullptr;
+	
+	//デフォルトカメラ
+	std::unique_ptr<Camera> defaultCamera;
 
 
 };
