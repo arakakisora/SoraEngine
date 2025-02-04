@@ -9,6 +9,7 @@
 
 		kBlank, // 空白
 		kBlock, // ブロック
+		kEnemy, // 敵
 
 	};
 	struct MapChipData {
@@ -42,6 +43,8 @@ public:
 	uint32_t GetNumBlockHorizontal() { return kNumBlockHorizontal; }
 	IndexSet GetMapChipIndexSetByPosition(const Vector3& posotopn);
 	Rect GetRectByIndex(uint32_t xindex, uint32_t yIndex);
+	std::vector<Vector3> GetEnemyPositions();
+
 
 private:
 	// 1ブロックのサイズ

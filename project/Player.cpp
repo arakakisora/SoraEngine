@@ -584,7 +584,7 @@ void Player::Attack()
 
 		//弾生成、初期化
 		PlayerBullet* newbBullet = new PlayerBullet();
-		newbBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity);
+		newbBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity,mapChipFild_);
 
 
 		//弾を登録

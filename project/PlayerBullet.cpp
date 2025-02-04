@@ -1,8 +1,11 @@
 #include "PlayerBullet.h"
 #include "TextureManager.h"
 
-void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vector3& velocity) {
+void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField) {
 
+	// マップチップフィールドのポインタを保持
+
+	mapChipField_ = mapChipField;
 	// ポインタ参照
 	object3D_ = obj;
 
@@ -23,7 +26,10 @@ void PlayerBullet::Update() {
 	position += velocity_;
 	object3D_->SetTranslate(position);
 
-	
+	// ★ レイキャストを実行し、マップチップ番号を取得
+	if (GetRayMapChipNumber(mapChipField_) == 1) {
+		OnCollison();  // 壁 (1) に当たったら削除
+	}
 
 	if (--deathTimer_ <= 0) {
 
@@ -54,3 +60,37 @@ AABB PlayerBullet::GetAABB()
 	aabb.max = { worldPos.x + 0.1f, worldPos.y + 0.1f, worldPos.z + 0.1f };
 	return aabb;
 }
+
+Vector3 PlayerBullet::GetRayEndPosition() {
+	// 弾の現在位置
+	Vector3 currentPosition = GetWorldPosition();
+
+	// レイの長さ
+	float rayLength = 0.5f; // 弾が進む小さい距離でチェック
+
+	// 移動方向を正規化
+	Vector3 normalizedVelocity = velocity_;
+	if (normalizedVelocity.Length() > 0) {
+		normalizedVelocity.Normalize();
+	}
+
+	// レイの終点を計算
+	Vector3 rayEnd = currentPosition + normalizedVelocity* rayLength;
+	return rayEnd;
+}
+
+int PlayerBullet::GetRayMapChipNumber(MapChipField* mapChipField) {
+	// レイの終点座標を取得
+	Vector3 rayEndPosition = GetRayEndPosition();
+
+	// マップチップのインデックスを取得
+	IndexSet index = mapChipField->GetMapChipIndexSetByPosition(rayEndPosition);
+
+	// マップチップの種類を取得
+	MapChipType chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+
+	// マップチップ番号を返す
+	return static_cast<int>(chipType);
+}
+
+

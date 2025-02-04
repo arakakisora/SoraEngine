@@ -1,6 +1,7 @@
 #pragma once
 #include "Model.h"
 #include "Object3D.h"
+#include <MapChipField.h>
 
 
 class PlayerBullet {
@@ -10,7 +11,7 @@ public:
 
 
 	/// 初期化
-	void Initialize(Object3D*obj, const Vector3& potition, const Vector3& velocity);
+	void Initialize(Object3D*obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField);
 
 	/// 更新
 	void Update();
@@ -27,6 +28,10 @@ public:
 	// ワールド座標取得
 	AABB GetAABB();
 
+	// ★ レイを出してマップチップ番号を取得
+	Vector3 GetRayEndPosition();
+	int GetRayMapChipNumber(MapChipField* mapChipField);
+
 
 private:
 
@@ -39,4 +44,5 @@ private:
 	static const int32_t kLifeTime = 60 * 5;
 	int32_t deathTimer_ = kLifeTime;//デスタイマー
 	bool isDead_ = false;			//デスフラグ
+	MapChipField* mapChipField_ = nullptr;
 };

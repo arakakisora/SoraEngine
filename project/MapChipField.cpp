@@ -7,7 +7,8 @@ namespace {
 
 std::map<std::string, MapChipType> mapChipTable = {
     {"0", MapChipType::kBlank},
-    {"1", MapChipType::kBlock},
+	{"1", MapChipType::kBlock},
+	{"2", MapChipType::kEnemy},
 };
 
 }
@@ -90,4 +91,17 @@ Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex) {
 	return rect;
 
 
+}
+
+std::vector<Vector3> MapChipField::GetEnemyPositions()
+{
+	std::vector<Vector3> enemyPositions;
+	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+			if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy) {
+				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
+			}
+		}
+	}
+	return enemyPositions;
 }
