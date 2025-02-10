@@ -44,15 +44,26 @@ public:
 	//void SetCamera(Camera* camera) { this->camera = camera; }
 	////デフォルトカメラ
 	
-	//ライト
+	//ディレクションライト
 	void SetDirectionalLight(const DirectionalLight& directionalLight) { *directionalLightData = directionalLight; }
 	DirectionalLight GetDirectionalLight() { return *directionalLightData; }
-	//ライトの向き
+	//ディレクションライトの向き
 	void SetDirectionalLightDirection(const Vector3& direction) { directionalLightData->direction = direction; }
-	//ライトの色
+	//ディレクションライトの色
 	void SetDirectionalLightColor(const Vector4& color) { directionalLightData->color = color; }
-	//ライトの強さ
+	//ディレクションライトの強さ
 	void SetDirectionalLightIntensity(float intensity) { directionalLightData->intensity = intensity; }
+
+	//ポイントライト
+	void SetPointLight(const PointLight& pointLight) { *pointLightData = pointLight; }
+	PointLight GetPointLight() { return *pointLightData; }
+	//ポイントライトの位置
+	void SetPointLightPosition(const Vector3& position) { pointLightData->position = position; }
+	//ポイントライトの色
+	void SetPointLightColor(const Vector4& color) { pointLightData->color = color; }
+	//ポイントライトの強さ
+	void SetPointLightIntensity(float intensity) { pointLightData->intensity = intensity; }
+
 
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
@@ -83,6 +94,11 @@ private:
 	//平行光源用のResoureceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource;
 	DirectionalLight* directionalLightData = nullptr;
+
+	//ポイントライト
+	//ポイントライト用のリソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource;
+	PointLight* pointLightData = nullptr;
 
 	//SRT
 	Transform transform;
