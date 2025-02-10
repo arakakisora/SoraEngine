@@ -21,7 +21,7 @@ void ModelManager::Finalize()
 void ModelManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager)
 {
 	srvmnager_ = srvmnager;
-	modelCommon = new ModelCommon();
+	modelCommon = std::make_unique<ModelCommon>();
 	modelCommon->Initialize(dxcommon, srvmnager_);
 
 
@@ -36,7 +36,7 @@ void ModelManager::LoadModel(const std::string& filePath)
 	}
 	//モデルの生成とファイル読み込み、初期化
 	std::unique_ptr<Model>model = std::make_unique<Model>();
-	model->Initialize(modelCommon, "Resources", filePath);
+	model->Initialize(modelCommon.get(), "Resources", filePath);
 
 	//モデルをmapコンテナに格納する
 	models.insert(std::make_pair(filePath, std::move(model)));

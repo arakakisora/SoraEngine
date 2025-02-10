@@ -1,5 +1,6 @@
 #include "CameraManager.h"
 #include <cassert>
+#include <Logger.h>
 
 CameraManager* CameraManager::instance = nullptr;
 
@@ -25,9 +26,9 @@ void CameraManager::Initialize()
 {
 
     // デフォルトカメラの作成
-    defaultCamera = std::make_unique<Camera>();
+    defaultCamera = new Camera();
     defaultCamera->SetTranslate({ 0, 0, -5 });
-    AddCamera("default", defaultCamera.get());
+    AddCamera("default", defaultCamera);
     SetActiveCamera("default"); // デフォルトカメラをアクティブカメラとして設定
 
 
@@ -68,10 +69,20 @@ Camera* CameraManager::GetCamera(const std::string& name) {
 
 
 Camera* CameraManager::GetActiveCamera() {
-    if (activeCameraName.empty()) {
-        // アクティブカメラが設定されていない場合、デフォルトカメラを返す
-        return defaultCamera.get();
+    if (activeCameraName.empty() || cameras.find(activeCameraName) == cameras.end()) {
+        // アクティブカメラが無効な場合、デフォルトカメラを使用
+        SetActiveCamera("default"); // デフォルトカメラをアクティブカメラとして設定
+        return defaultCamera;
     }
-    return GetCamera(activeCameraName);
+    return &cameras[activeCameraName];
+}
+
+void CameraManager::SetActiveCamera(const std::string& name) {
+    if (cameras.find(name) != cameras.end()) {
+        activeCameraName = name;
+    } else {
+        Logger::Log("Warning: Attempted to set an invalid active camera. Using default camera.");
+        activeCameraName.clear(); // 無効なカメラを選択した場合、リセット
+    }
 }
 

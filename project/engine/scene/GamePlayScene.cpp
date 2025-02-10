@@ -49,8 +49,10 @@ void GamePlayScene::Finalize()
 {
 	CameraManager::GetInstans()->RemoveCamera("maincam");
 	CameraManager::GetInstans()->RemoveCamera("subcam");
-
+	CameraManager::GetInstans()->RemoveCamera("maincam");
+	CameraManager::GetInstans()->RemoveCamera("subcam");
 	CameraManager::GetInstans()->Finalize();
+
 }
 
 void GamePlayScene::Update()
