@@ -5,9 +5,11 @@
 #include <imgui.h>
 #include "Input.h"
 #include "SceneManager.h"
+#include "CameraManager.h"
 
 void GameClearScene::Initialize()
 {
+	CameraManager::GetInstans()->Initialize();
 }
 
 void GameClearScene::Finalize()
@@ -16,7 +18,7 @@ void GameClearScene::Finalize()
 
 void GameClearScene::Update()
 {
-
+	CameraManager::GetInstans()->GetActiveCamera()->Update();
 
 
 

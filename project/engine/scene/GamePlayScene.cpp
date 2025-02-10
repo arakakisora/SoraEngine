@@ -106,7 +106,11 @@ void GamePlayScene::Initialize()
 
 void GamePlayScene::Finalize()
 {
-	//object3Dの解放
+	CameraManager::GetInstans()->RemoveCamera("maincam");
+	CameraManager::GetInstans()->RemoveCamera("subcam");
+	CameraManager::GetInstans()->RemoveCamera("maincam");
+	CameraManager::GetInstans()->RemoveCamera("subcam");
+	CameraManager::GetInstans()->Finalize();
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{

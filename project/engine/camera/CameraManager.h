@@ -33,13 +33,7 @@ public:
 	Camera* GetActiveCamera();
 
 	// アクティブカメラの設定
-	void SetActiveCamera(const std::string& name) {
-
-		if (cameras.find(name) != cameras.end()) {
-			activeCameraName = name;
-		}
-
-	};
+	void SetActiveCamera(const std::string& name);
 
 
 
@@ -52,7 +46,7 @@ private:
 	//デフォルトカメラ
 	
 	//デフォルトカメラ
-	std::unique_ptr<Camera> defaultCamera;
+	Camera* defaultCamera=nullptr;
 
 	
 

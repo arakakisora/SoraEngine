@@ -88,6 +88,7 @@ void Framework::Update()
 	Input::GetInstans()->Update();
 	ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
+	
 }
 
 void Framework::Run()

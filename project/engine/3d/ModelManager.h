@@ -33,7 +33,8 @@ public:
 private:
 	//モデルデータ
 	std::map<std::string, std::unique_ptr < Model>> models;
-	ModelCommon* modelCommon = nullptr;
+
+	std::unique_ptr< ModelCommon> modelCommon = nullptr;
 	SrvManager* srvmnager_ = nullptr;
 };
 
