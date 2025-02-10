@@ -57,8 +57,10 @@ public:
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
 	
+	
 
-
+	void SetColor(const Vector4& color) { color_ = color; }
+	Vector4 GetColor() const { return color_; }
 	
 
 	
@@ -95,6 +97,10 @@ private:
 	//カメラforGPU
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
 	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
+
+private:
+	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトは白
+
 
 
 

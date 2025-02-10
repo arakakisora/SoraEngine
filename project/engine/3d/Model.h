@@ -21,7 +21,8 @@ public:
 
 	//ライトのオンオフ
 	void SetEnableLighting(bool enable) { materialData->enableLighting = enable; }
-	
+	//色の設定
+	void SetColor(const Vector4& color) { materialData->color = color; }
 
 	static MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
 	static ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename);

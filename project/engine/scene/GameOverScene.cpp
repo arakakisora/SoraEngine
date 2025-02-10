@@ -6,9 +6,13 @@
 #include <imgui.h>
 #include "Input.h"
 #include "SceneManager.h"
+#include "CameraManager.h"
 
 void GameOverScene::Initialize()
 {
+
+	CameraManager::GetInstans()->Initialize();
+
 }
 
 void GameOverScene::Finalize()

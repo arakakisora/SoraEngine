@@ -43,6 +43,6 @@ private:
 
 	Camera* defaultCamera = nullptr;
 
-	GraphicsPipeline* graphicsPipelineState_ = nullptr;
+	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 };
 

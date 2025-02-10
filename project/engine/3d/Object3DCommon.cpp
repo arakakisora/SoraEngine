@@ -15,16 +15,17 @@ void Object3DCommon::Initialize(DirectXCommon* dxCommon)
 {
 
 	dxCommon_ = dxCommon;
-	graphicsPipelineState_ = new GraphicsPipeline();
-	graphicsPipelineState_->Initialize(dxCommon_);
-	graphicsPipelineState_->Create();
+	//パイプラインの生成
+	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
+	graphicsPipeline_->Initialize(dxCommon_);
+	graphicsPipeline_->Create();
 	
 
 }
 
 void Object3DCommon::Finalize()
 {
-	delete graphicsPipelineState_;
+	
 	delete instance_;
 	instance_ = nullptr;
 }
@@ -33,8 +34,8 @@ void Object3DCommon::CommonDraw()
 {
 
 	//RootSignatureを設定。POSに設定しているけどベット設定が必要
-	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipelineState_->GetRootSignature());
-	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState_->GetGraphicsPipelineState());
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignature());
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineState());
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 }

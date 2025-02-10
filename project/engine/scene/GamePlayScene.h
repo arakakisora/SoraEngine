@@ -35,14 +35,14 @@ public:
 	void Draw()override;
 
 private:
-	Camera* camera1 = nullptr;
-	Camera* camera2 = nullptr;
-	Object3D* object3D=nullptr;
+	std::unique_ptr<Camera> camera1;
+	std::unique_ptr<Camera> camera2;
+	std::unique_ptr<Object3D> object3D;
 	//particle
-	ParticleEmitter* particleEmitter = nullptr;
-	ParticleEmitter* particleEmitter2 = nullptr;
+	std::unique_ptr<ParticleEmitter> particleEmitter;
+	std::unique_ptr<ParticleEmitter> particleEmitter2;
 	bool light = true;
-	Sprite* sprite = nullptr;
+	std::unique_ptr<Sprite> sprite;
 	
 
 };

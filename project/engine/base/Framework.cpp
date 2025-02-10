@@ -2,68 +2,53 @@
 #include <CameraManager.h>
 #include "ParticleMnager.h"
 
-
 void Framework::Initialize()
 {
-
 	//初期化
 	//WindousAPI初期化
 	//ポインタ
 	endRequst_ = false;
 
-	winApp = new WinApp;
+	winApp = std::make_unique<WinApp>();
 	winApp->Initialize();
 	//DX初期化
 
-	dxCommon = new DirectXCommon();
-	dxCommon->Initialize(winApp);
+	dxCommon = std::make_unique<DirectXCommon>();
+	dxCommon->Initialize(winApp.get());
 	//srvマネージャの初期化	
-	srvManager = new SrvManager();
-	srvManager->Initialize(dxCommon);
+	srvManager = std::make_unique<SrvManager>();
+	srvManager->Initialize(dxCommon.get());
 	//テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon, srvManager);
+	TextureManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 	//Input初期化
-	Input::GetInstans()->Initialize(winApp);
+	Input::GetInstans()->Initialize(winApp.get());
 	//Audio初期化
-	audio_->GetInstance()->Initialize();
+	Audio::GetInstance()->Initialize();
 	//パーティクル
-	ParticleMnager::GetInstance()->Initialize(dxCommon, srvManager);
+	ParticleMnager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 	//camera初期化
-	CameraManager::GetInstans()->initialize();
+	CameraManager::GetInstans()->Initialize();
 
 	//スプライト共通部分の初期化
-	SpriteCommon::GetInstance()->Initialize(dxCommon);
-
+	SpriteCommon::GetInstance()->Initialize(dxCommon.get());
 
 	//3Dモデルマネージャの初期化
-	ModelManager::GetInstans()->Initialize(dxCommon, srvManager);
+	ModelManager::GetInstans()->Initialize(dxCommon.get(), srvManager.get());
 
 	//3Dオブジェクト共通部の初期化
-
-	Object3DCommon::GetInstance()->Initialize(dxCommon);
-	//object3DCommon->SetDefaultCamera(camera);
-
-	
-
-
-
+	Object3DCommon::GetInstance()->Initialize(dxCommon.get());
 
 #ifdef _DEBUG
 	//imguiMnagerの初期化
-
-	imGuiMnager = new ImGuiManager();
-	imGuiMnager->Initialize(dxCommon, winApp);
-
+	imGuiMnager = std::make_unique<ImGuiManager>();
+	imGuiMnager->Initialize(dxCommon.get(), winApp.get());
 #endif // _DEBUG
 
-	//sceneManager = new SceneManager();
-
+	//sceneManager = std::make_unique<SceneManager>();
 }
 
 void Framework::Finalize()
 {
-	delete sceneFactory;
-
 #ifdef _DEBUG
 	imGuiMnager->Finalize();
 #endif // DEBUG
@@ -74,63 +59,50 @@ void Framework::Finalize()
 	winApp->Finalize();
 	//WindowsAPI解放
 	TextureManager::GetInstance()->Finalize();
+	//DirectXCommon解放
 	ModelManager::GetInstans()->Finalize();
 	//カメラの解放
 	CameraManager::GetInstans()->Finalize();
 	//パーティクルの解放
 	ParticleMnager::GetInstance()->Finalize();
-	
 
-	delete winApp;
-	delete dxCommon;
-	delete srvManager;
+	// ユニークポインタは自動的に解放されるため、deleteは不要
 #ifdef _DEBUG
-	delete imGuiMnager;
+	imGuiMnager.reset();
 #endif // _DEBUG
 
 	Input::GetInstans()->Finalize();
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
 	SceneManager::GetInstance()->Finalize();
-	
-
 }
 
 void Framework::Update()
 {
-
 	//Windowsのメッセージ処理
 	if (winApp->ProcessMessage()) {
 		//ゲームループを抜ける
 		endRequst_ = true;
 	}
-	
-	
+
 	Input::GetInstans()->Update();
 	ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
-
-
-
+	
 }
 
 void Framework::Run()
 {
-
 	Initialize();
 	while (true)
 	{
 		Update();
 
 		if (IsEndRequest()) {
-
 			break;
 		}
 		//描画
 		Draw();
-
-
 	}
 	Finalize();
-
 }
