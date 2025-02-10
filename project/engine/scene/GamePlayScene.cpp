@@ -108,8 +108,6 @@ void GamePlayScene::Finalize()
 {
 	CameraManager::GetInstans()->RemoveCamera("maincam");
 	CameraManager::GetInstans()->RemoveCamera("subcam");
-	CameraManager::GetInstans()->RemoveCamera("maincam");
-	CameraManager::GetInstans()->RemoveCamera("subcam");
 	CameraManager::GetInstans()->Finalize();
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
@@ -149,6 +147,7 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
+	terrain->Update();
 
 
 	//プレイヤーの更新

@@ -38,7 +38,7 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 
 	materialData->enableLighting = true;//有効にするか否か
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
-	materialData->shiniess = 60.0f;
+	materialData->shiniess = 100.0f;
 
 
 	//.objの参照しているテクスチャファイル読み込み
