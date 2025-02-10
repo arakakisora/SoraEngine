@@ -34,7 +34,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 
 	// レイの先のマップチップを取得
 	int rayChipNumber = GetRayMapChipNumber(mapChipField);
-	ImGui::Text("rayChipNumber:%d", rayChipNumber);
+	
 
 	// レイの先にブロックがある場合、反転
 	if (rayChipNumber == 1)
@@ -52,6 +52,9 @@ void Enemy::Update(MapChipField* mapChipField) {
 		}
 	}
 
+#ifdef _DEBUG
+	ImGui::Text("rayChipNumber:%d", rayChipNumber);
+
 	if (ImGui::CollapsingHeader("enemyModel", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		Transform transform = object3D_->GetTransform();
@@ -60,6 +63,8 @@ void Enemy::Update(MapChipField* mapChipField) {
 		ImGui::DragFloat3("*ModelTransrate", &transform.translate.x, 0.01f);
 		object3D_->SetTransform(transform);
 	}
+#endif // DEBUG
+
 
 	object3D_->Update();
 }
