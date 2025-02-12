@@ -8,6 +8,7 @@
 #include "TitleScene.h"
 #include "CameraManager.h"
 #include "ParticleMnager.h"
+#include <Logger.h>
 
 void GamePlayScene::Initialize()
 {
@@ -361,5 +362,33 @@ void GamePlayScene::CheckAllCollisions()
 	}
 
 #pragma endregion
+}
+
+void GamePlayScene::LoadModel()
+{
+
+	//モデルの読み込み
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	
+
+}
+
+void GamePlayScene::Loadparticle()
+{
+
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/uvChecker.png", "plane.obj");
+
+}
+
+void GamePlayScene::LoadAudio()
+{
+	//サウンドの読み込み
+	sampleSoundData = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");//今のところwavのみ対応
+	
+
 }
 
