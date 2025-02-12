@@ -8,6 +8,7 @@
 #include "TitleScene.h"
 #include "CameraManager.h"
 #include "ParticleMnager.h"
+#include <Logger.h>
 
 void GamePlayScene::Initialize()
 {
@@ -24,10 +25,33 @@ void GamePlayScene::Initialize()
 	// デフォルトカメラを設定
 	CameraManager::GetInstans()->SetActiveCamera("maincam");
 
-	//モデルの読み込み
-	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("plane.obj");
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
+
+	// ロード処理全体の時間を計測
+	auto start = std::chrono::high_resolution_clock::now();
+
+
+	// ロード処理用スレッドを作成
+	std::thread modelThread([&]() {
+		LoadModel();
+		});
+
+	std::thread particleThread([&]() {
+		Loadparticle();
+		});
+
+	std::thread audioThread([&]() {
+		LoadAudio();
+		});
+
+	// スレッドの終了を待機
+	modelThread.join();
+	particleThread.join();
+	audioThread.join();
+
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> duration = end - start;
+	Logger::Log("Total loading time: " + std::to_string(duration.count()) + " milliseconds");
+
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
@@ -40,8 +64,7 @@ void GamePlayScene::Initialize()
 
 	light = true;
 
-	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
+	
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 }
 
@@ -187,5 +210,33 @@ void GamePlayScene::Draw()
 	sprite->Draw();
 
 #pragma endregion
+}
+
+void GamePlayScene::LoadModel()
+{
+
+	//モデルの読み込み
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	
+
+}
+
+void GamePlayScene::Loadparticle()
+{
+
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/uvChecker.png", "plane.obj");
+
+}
+
+void GamePlayScene::LoadAudio()
+{
+	//サウンドの読み込み
+	sampleSoundData = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");//今のところwavのみ対応
+	
+
 }
 
