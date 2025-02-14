@@ -18,7 +18,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate({ 0,0,-20, });//カメラの位置
+	camera2->SetTranslate({ 0,6,-20, });//カメラの位置
+	camera2->SetRotate({ 0.3f,0,0 });//カメラの向き
 	CameraManager::GetInstans()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -34,12 +35,14 @@ void GamePlayScene::Initialize()
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
+	object3D->SetDirectionalLightIntensity(0.0f);
 
 	terrain = std::make_unique<Object3D>();
 	terrain->Initialize(Object3DCommon::GetInstance());
 	terrain->SetModel("terrain.obj");
 	terrain->SetTransform({ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,-1.0f,0.0f} });
 	terrain->SetLighting(true);
+	terrain->SetDirectionalLightIntensity(0.0f);
 
 	//スプライトの生成
 	sprite = std::make_unique<Sprite>();
@@ -136,16 +139,19 @@ void GamePlayScene::Update()
 		float intensity = object3D->GetDirectionalLight().intensity;
 		if (ImGui::ColorEdit4("Color", &color.x)) {
 			object3D->SetDirectionalLightColor(color);
+
 		}
 		if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
 			object3D->SetDirectionalLightDirection(direction);
 		}
 		if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
 			object3D->SetDirectionalLightIntensity(intensity);
+
 		}
 		//ライトのオンオフ
 		if (ImGui::Checkbox("Enable Lighting", &light)) {
 			object3D->SetLighting(light);
+
 		}
 	}
 	//ポイントライト
@@ -153,14 +159,30 @@ void GamePlayScene::Update()
 		Vector4 color = object3D->GetPointLight().color;
 		Vector3 position = object3D->GetPointLight().position;
 		float intensity = object3D->GetPointLight().intensity;
+		float decay = object3D->GetPointLightDecay();
+		float radius = object3D->GetPointLightRadius();
 		if (ImGui::ColorEdit4("pointColor", &color.x)) {
 			object3D->SetPointLightColor(color);
+
 		}
 		if (ImGui::DragFloat3("pointPosition", &position.x, 0.01f)) {
 			object3D->SetPointLightPosition(position);
+			terrain->SetPointLightPosition(position);
+
 		}
 		if (ImGui::DragFloat("pointIntensity", &intensity, 0.01f)) {
 			object3D->SetPointLightIntensity(intensity);
+			terrain->SetPointLightIntensity(intensity);
+		}
+		//distance
+		
+		if (ImGui::DragFloat("pointRadius", &radius, 0.01f)) {
+			object3D->SetPointLightRadius(radius);
+			terrain->SetPointLightRadius(radius);
+		}
+		if (ImGui::DragFloat("pointDecay", &decay, 0.01f)) {
+			object3D->SetPointLightDecay(decay);
+			terrain->SetPointLightDecay(decay);
 		}
 	}
 
@@ -221,7 +243,7 @@ void GamePlayScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	sprite->Draw();
+	//sprite->Draw();
 
 #pragma endregion
 }

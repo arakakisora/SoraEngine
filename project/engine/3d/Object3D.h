@@ -63,6 +63,12 @@ public:
 	void SetPointLightColor(const Vector4& color) { pointLightData->color = color; }
 	//ポイントライトの強さ
 	void SetPointLightIntensity(float intensity) { pointLightData->intensity = intensity; }
+	//ポイントライトの半径
+	void SetPointLightRadius(float radius) { pointLightData->radius = radius; }
+	float GetPointLightRadius() { return pointLightData->radius; }
+	//ポイントライトの減衰率
+	void SetPointLightDecay(float decay) { pointLightData->decay = decay; }
+	float GetPointLightDecay() { return pointLightData->decay; }
 
 
 	//ライトのオンオフ

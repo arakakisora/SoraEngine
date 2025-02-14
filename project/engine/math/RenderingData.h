@@ -66,6 +66,9 @@ struct PointLight {
 	Vector4 color;//ライトの色
 	Vector3 position;//ライトの位置
 	float intensity;//ライトの強さ
+	float radius; //ライトの半径
+	float decay; //減衰率
+	float padding[2];
 };
 
 struct MaterialData {
