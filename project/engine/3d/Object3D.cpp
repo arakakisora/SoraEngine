@@ -41,6 +41,8 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	pointLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	pointLightData->position = { 0.0f,0.0f,0.0f };
 	pointLightData->intensity = 1.0f;
+	pointLightData->radius = 10.0f;
+	pointLightData->decay = 1.0f;
 
 
 	//カメラとモデルのTrandform変数
