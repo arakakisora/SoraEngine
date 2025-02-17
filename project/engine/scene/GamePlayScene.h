@@ -34,6 +34,10 @@ public:
 	/// </summary>
 	void Draw()override;
 
+	void LoadModel();
+	void Loadparticle();
+	void LoadAudio();
+
 private:
 	std::unique_ptr<Camera> camera1;
 	std::unique_ptr<Camera> camera2;
@@ -47,6 +51,8 @@ private:
 	bool directionLight = true;
 	bool pointLight = true;
 	std::unique_ptr<Sprite> sprite;
+	SoundData sampleSoundData;//サウンドデータ
+
 	
 
 };
