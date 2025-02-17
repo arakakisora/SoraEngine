@@ -42,10 +42,14 @@ private:
 	std::unique_ptr<Camera> camera1;
 	std::unique_ptr<Camera> camera2;
 	std::unique_ptr<Object3D> object3D;
+	std::unique_ptr<Object3D> terrain;
+
 	//particle
 	std::unique_ptr<ParticleEmitter> particleEmitter;
 	std::unique_ptr<ParticleEmitter> particleEmitter2;
 	bool light = true;
+	bool directionLight = true;
+	bool pointLight = true;
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
 

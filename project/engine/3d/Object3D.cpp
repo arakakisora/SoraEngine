@@ -33,7 +33,18 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
+	directionalLightData->enable = 0;
 
+	//ポイントライト
+	//ポイントライト用のリソースを作成
+	pointLightResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(PointLight));
+	pointLightResource->Map(0, nullptr, reinterpret_cast<void**>(&pointLightData));
+	pointLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+	pointLightData->position = { 0.0f,0.0f,0.0f };
+	pointLightData->intensity = 1.0f;
+	pointLightData->radius = 10.0f;
+	pointLightData->decay = 1.0f;
+	pointLightData->enable = 1;
 
 
 	//カメラとモデルのTrandform変数
@@ -84,6 +95,8 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 	//カメラのデータをセット
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+	//ポイントライトのCBufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(5, pointLightResource->GetGPUVirtualAddress());
 
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {

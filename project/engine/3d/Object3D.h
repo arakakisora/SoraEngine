@@ -44,15 +44,36 @@ public:
 	//void SetCamera(Camera* camera) { this->camera = camera; }
 	////デフォルトカメラ
 	
-	//ライト
+	//ディレクションライト
 	void SetDirectionalLight(const DirectionalLight& directionalLight) { *directionalLightData = directionalLight; }
 	DirectionalLight GetDirectionalLight() { return *directionalLightData; }
-	//ライトの向き
+	//ディレクションライトの向き
 	void SetDirectionalLightDirection(const Vector3& direction) { directionalLightData->direction = direction; }
-	//ライトの色
+	//ディレクションライトの色
 	void SetDirectionalLightColor(const Vector4& color) { directionalLightData->color = color; }
-	//ライトの強さ
+	//ディレクションライトの強さ
 	void SetDirectionalLightIntensity(float intensity) { directionalLightData->intensity = intensity; }
+	//ライトオンオフ
+	void SetDirectionalLightEnable(bool enable) { directionalLightData->enable = enable; }
+
+	//ポイントライト
+	void SetPointLight(const PointLight& pointLight) { *pointLightData = pointLight; }
+	PointLight GetPointLight() { return *pointLightData; }
+	//ポイントライトの位置
+	void SetPointLightPosition(const Vector3& position) { pointLightData->position = position; }
+	//ポイントライトの色
+	void SetPointLightColor(const Vector4& color) { pointLightData->color = color; }
+	//ポイントライトの強さ
+	void SetPointLightIntensity(float intensity) { pointLightData->intensity = intensity; }
+	//ポイントライトの半径
+	void SetPointLightRadius(float radius) { pointLightData->radius = radius; }
+	float GetPointLightRadius() { return pointLightData->radius; }
+	//ポイントライトの減衰率
+	void SetPointLightDecay(float decay) { pointLightData->decay = decay; }
+	float GetPointLightDecay() { return pointLightData->decay; }
+	//ポイントライトのオンオフ
+	void SetPointLightEnable(bool enable) { pointLightData->enable = enable; }
+
 
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
@@ -83,6 +104,11 @@ private:
 	//平行光源用のResoureceを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource;
 	DirectionalLight* directionalLightData = nullptr;
+
+	//ポイントライト
+	//ポイントライト用のリソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource;
+	PointLight* pointLightData = nullptr;
 
 	//SRT
 	Transform transform;

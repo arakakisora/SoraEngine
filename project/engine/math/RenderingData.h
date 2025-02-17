@@ -60,6 +60,18 @@ struct DirectionalLight {
 	Vector4 color;//ライトの色
 	Vector3 direction;//ライトの向き
 	float intensity;
+	int enable;
+};
+
+struct PointLight {
+	
+	Vector4 color;//ライトの色
+	Vector3 position;//ライトの位置
+	float intensity;//ライトの強さ
+	float radius; //ライトの半径
+	float decay; //減衰率
+	int enable;
+	float padding[2];
 };
 
 struct MaterialData {

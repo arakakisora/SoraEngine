@@ -19,7 +19,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate({ 0,0,-20, });//カメラの位置
+	camera2->SetTranslate({ 0,6,-20, });//カメラの位置
+	camera2->SetRotate({ 0.3f,0,0 });//カメラの向き
 	CameraManager::GetInstans()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -53,10 +54,19 @@ void GamePlayScene::Initialize()
 	Logger::Log("Total loading time: " + std::to_string(duration.count()) + " milliseconds");
 
 
+
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
+	object3D->SetDirectionalLightIntensity(1.0f);
+
+	terrain = std::make_unique<Object3D>();
+	terrain->Initialize(Object3DCommon::GetInstance());
+	terrain->SetModel("terrain.obj");
+	terrain->SetTransform({ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,-1.0f,0.0f} });
+	terrain->SetLighting(true);
+	terrain->SetDirectionalLightIntensity(1.0f);
 
 	//スプライトの生成
 	sprite = std::make_unique<Sprite>();
@@ -72,8 +82,6 @@ void GamePlayScene::Finalize()
 {
 	CameraManager::GetInstans()->RemoveCamera("maincam");
 	CameraManager::GetInstans()->RemoveCamera("subcam");
-	CameraManager::GetInstans()->RemoveCamera("maincam");
-	CameraManager::GetInstans()->RemoveCamera("subcam");
 	CameraManager::GetInstans()->Finalize();
 
 }
@@ -83,12 +91,35 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 	object3D->Update();
+	terrain->Update();
 
 	//パーティクルの更新
 	particleEmitter->Update();
 	sprite->Update();
 
 #ifdef _DEBUG
+
+	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::Button("Switch to Main Camera")) {
+			CameraManager::GetInstans()->SetActiveCamera("maincam");
+		}
+		if (ImGui::Button("Switch to Sub Camera")) {
+			CameraManager::GetInstans()->SetActiveCamera("subcam");
+		}
+
+		//カメラの位置
+		Transform cameraTransform = CameraManager::GetInstans()->GetActiveCamera()->GetTransform();
+		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
+			CameraManager::GetInstans()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
+		}
+		//カメラの向き
+		if (ImGui::DragFloat3("Camera Rotation", &cameraTransform.rotate.x, 0.01f)) {
+			CameraManager::GetInstans()->GetActiveCamera()->SetRotate(cameraTransform.rotate);
+		}
+
+
+	}
+
 	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		//potision
@@ -108,6 +139,11 @@ void GamePlayScene::Update()
 		Vector4 color = object3D->GetColor();
 		if (ImGui::ColorEdit4("obj3Color", &color.x)) {
 			object3D->SetColor(color);
+		}
+		//ライトのオンオフ
+		if (ImGui::Checkbox("Enable Lighting", &light)) {
+			object3D->SetLighting(light);
+
 		}
 	}
 
@@ -153,16 +189,54 @@ void GamePlayScene::Update()
 		float intensity = object3D->GetDirectionalLight().intensity;
 		if (ImGui::ColorEdit4("Color", &color.x)) {
 			object3D->SetDirectionalLightColor(color);
+
 		}
 		if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
 			object3D->SetDirectionalLightDirection(direction);
 		}
 		if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
 			object3D->SetDirectionalLightIntensity(intensity);
+
 		}
 		//ライトのオンオフ
-		if (ImGui::Checkbox("Enable Lighting", &light)) {
-			object3D->SetLighting(light);
+		if (ImGui::Checkbox("Enable DirectionalLight", &directionLight)) {
+			object3D->SetDirectionalLightEnable(directionLight);
+		}
+		
+	}
+	//ポイントライト
+	if (ImGui::CollapsingHeader("Point Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+		Vector4 color = object3D->GetPointLight().color;
+		Vector3 position = object3D->GetPointLight().position;
+		float intensity = object3D->GetPointLight().intensity;
+		float decay = object3D->GetPointLightDecay();
+		float radius = object3D->GetPointLightRadius();
+		//ライトのオンオフ
+		if (ImGui::Checkbox("Enable PointLight", &pointLight)) {
+			object3D->SetPointLightEnable(pointLight);
+			terrain->SetPointLightEnable(pointLight);
+		}
+		
+		if (ImGui::ColorEdit4("pointColor", &color.x)) {
+			object3D->SetPointLightColor(color);
+
+		}
+		if (ImGui::DragFloat3("pointPosition", &position.x, 0.01f)) {
+			object3D->SetPointLightPosition(position);
+			terrain->SetPointLightPosition(position);
+
+		}
+		if (ImGui::DragFloat("pointIntensity", &intensity, 0.01f)) {
+			object3D->SetPointLightIntensity(intensity);
+			terrain->SetPointLightIntensity(intensity);
+		}
+		if (ImGui::DragFloat("pointRadius", &radius, 0.01f)) {
+			object3D->SetPointLightRadius(radius);
+			terrain->SetPointLightRadius(radius);
+		}
+		if (ImGui::DragFloat("pointDecay", &decay, 0.01f)) {
+			object3D->SetPointLightDecay(decay);
+			terrain->SetPointLightDecay(decay);
 		}
 	}
 
@@ -180,16 +254,10 @@ void GamePlayScene::Update()
 		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
 			particleEmitter->SetPosition(position);
 		}
+
 	}
 
-	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (ImGui::Button("Switch to Main Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("maincam");
-		}
-		if (ImGui::Button("Switch to Sub Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("subcam");
-		}
-	}
+	
 #endif // _DEBUG
 }
 
@@ -200,6 +268,10 @@ void GamePlayScene::Draw()
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
 	object3D->Draw();
+	terrain->Draw();
+
+
+
 	ParticleMnager::GetInstance()->Draw();
 
 #pragma endregion
@@ -207,7 +279,7 @@ void GamePlayScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	sprite->Draw();
+	//sprite->Draw();
 
 #pragma endregion
 }
