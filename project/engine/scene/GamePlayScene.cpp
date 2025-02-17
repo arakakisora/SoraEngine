@@ -35,14 +35,14 @@ void GamePlayScene::Initialize()
 	object3D->Initialize(Object3DCommon::GetInstance());
 	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
-	object3D->SetDirectionalLightIntensity(0.0f);
+	object3D->SetDirectionalLightIntensity(1.0f);
 
 	terrain = std::make_unique<Object3D>();
 	terrain->Initialize(Object3DCommon::GetInstance());
 	terrain->SetModel("terrain.obj");
 	terrain->SetTransform({ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,-1.0f,0.0f} });
 	terrain->SetLighting(true);
-	terrain->SetDirectionalLightIntensity(0.0f);
+	terrain->SetDirectionalLightIntensity(1.0f);
 
 	//スプライトの生成
 	sprite = std::make_unique<Sprite>();
@@ -75,6 +75,28 @@ void GamePlayScene::Update()
 	sprite->Update();
 
 #ifdef _DEBUG
+
+	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::Button("Switch to Main Camera")) {
+			CameraManager::GetInstans()->SetActiveCamera("maincam");
+		}
+		if (ImGui::Button("Switch to Sub Camera")) {
+			CameraManager::GetInstans()->SetActiveCamera("subcam");
+		}
+
+		//カメラの位置
+		Transform cameraTransform = CameraManager::GetInstans()->GetActiveCamera()->GetTransform();
+		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
+			CameraManager::GetInstans()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
+		}
+		//カメラの向き
+		if (ImGui::DragFloat3("Camera Rotation", &cameraTransform.rotate.x, 0.01f)) {
+			CameraManager::GetInstans()->GetActiveCamera()->SetRotate(cameraTransform.rotate);
+		}
+
+
+	}
+
 	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		//potision
@@ -94,6 +116,11 @@ void GamePlayScene::Update()
 		Vector4 color = object3D->GetColor();
 		if (ImGui::ColorEdit4("obj3Color", &color.x)) {
 			object3D->SetColor(color);
+		}
+		//ライトのオンオフ
+		if (ImGui::Checkbox("Enable Lighting", &light)) {
+			object3D->SetLighting(light);
+
 		}
 	}
 
@@ -149,10 +176,10 @@ void GamePlayScene::Update()
 
 		}
 		//ライトのオンオフ
-		if (ImGui::Checkbox("Enable Lighting", &light)) {
-			object3D->SetLighting(light);
-
+		if (ImGui::Checkbox("Enable DirectionalLight", &directionLight)) {
+			object3D->SetDirectionalLightEnable(directionLight);
 		}
+		
 	}
 	//ポイントライト
 	if (ImGui::CollapsingHeader("Point Light", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -161,6 +188,12 @@ void GamePlayScene::Update()
 		float intensity = object3D->GetPointLight().intensity;
 		float decay = object3D->GetPointLightDecay();
 		float radius = object3D->GetPointLightRadius();
+		//ライトのオンオフ
+		if (ImGui::Checkbox("Enable PointLight", &pointLight)) {
+			object3D->SetPointLightEnable(pointLight);
+			terrain->SetPointLightEnable(pointLight);
+		}
+		
 		if (ImGui::ColorEdit4("pointColor", &color.x)) {
 			object3D->SetPointLightColor(color);
 
@@ -174,8 +207,6 @@ void GamePlayScene::Update()
 			object3D->SetPointLightIntensity(intensity);
 			terrain->SetPointLightIntensity(intensity);
 		}
-		//distance
-		
 		if (ImGui::DragFloat("pointRadius", &radius, 0.01f)) {
 			object3D->SetPointLightRadius(radius);
 			terrain->SetPointLightRadius(radius);
@@ -200,28 +231,10 @@ void GamePlayScene::Update()
 		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
 			particleEmitter->SetPosition(position);
 		}
-	}
-
-	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (ImGui::Button("Switch to Main Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("maincam");
-		}
-		if (ImGui::Button("Switch to Sub Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("subcam");
-		}
-
-		//カメラの位置
-		Transform cameraTransform = CameraManager::GetInstans()->GetActiveCamera()->GetTransform();
-		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
-			CameraManager::GetInstans()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
-		}
-		//カメラの向き
-		if (ImGui::DragFloat3("Camera Rotation", &cameraTransform.rotate.x, 0.01f)) {
-			CameraManager::GetInstans()->GetActiveCamera()->SetRotate(cameraTransform.rotate);
-		}
-
 
 	}
+
+	
 #endif // _DEBUG
 }
 

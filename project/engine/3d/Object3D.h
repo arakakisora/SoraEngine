@@ -53,6 +53,8 @@ public:
 	void SetDirectionalLightColor(const Vector4& color) { directionalLightData->color = color; }
 	//ディレクションライトの強さ
 	void SetDirectionalLightIntensity(float intensity) { directionalLightData->intensity = intensity; }
+	//ライトオンオフ
+	void SetDirectionalLightEnable(bool enable) { directionalLightData->enable = enable; }
 
 	//ポイントライト
 	void SetPointLight(const PointLight& pointLight) { *pointLightData = pointLight; }
@@ -69,6 +71,8 @@ public:
 	//ポイントライトの減衰率
 	void SetPointLightDecay(float decay) { pointLightData->decay = decay; }
 	float GetPointLightDecay() { return pointLightData->decay; }
+	//ポイントライトのオンオフ
+	void SetPointLightEnable(bool enable) { pointLightData->enable = enable; }
 
 
 	//ライトのオンオフ

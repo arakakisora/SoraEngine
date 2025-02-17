@@ -44,6 +44,8 @@ private:
 	std::unique_ptr<ParticleEmitter> particleEmitter;
 	std::unique_ptr<ParticleEmitter> particleEmitter2;
 	bool light = true;
+	bool directionLight = true;
+	bool pointLight = true;
 	std::unique_ptr<Sprite> sprite;
 	
 
