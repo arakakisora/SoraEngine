@@ -291,6 +291,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("axis.obj");
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	ModelManager::GetInstans()->LoadModel("terrain.obj");
 	
 
 }
