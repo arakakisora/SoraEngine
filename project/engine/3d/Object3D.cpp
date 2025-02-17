@@ -33,6 +33,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
+	directionalLightData->enable = 0;
 
 	//ポイントライト
 	//ポイントライト用のリソースを作成
@@ -43,6 +44,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	pointLightData->intensity = 1.0f;
 	pointLightData->radius = 10.0f;
 	pointLightData->decay = 1.0f;
+	pointLightData->enable = 1;
 
 
 	//カメラとモデルのTrandform変数

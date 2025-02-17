@@ -10,18 +10,23 @@ struct Material
 
 struct DirectionalLight
 {
+    //ライトのオンオフ
     float4 color; // ライトの色
     float3 direction; // ライトの向き
     float intensity;
+    int enable;
+    
 };
 
 struct pointLight
 {
+   
     float4 color; //ライトの色
     float3 position; //ライトの位置
     float intensity; //ライトの強さ
     float radius; //ライトの半径
     float decay; //減衰率
+    int enable;
        
     
 };
@@ -64,9 +69,11 @@ PixelShaderOutput main(VertexShaderOutput input)
     if (gMaterial.enableLighting != 0)
     {
         
+        
+        
        //ディレクショナルライト
         // Diffuse
-        float NdotL = dot(normalize(input.normal), normalize(-gDirectionalLight.direction)); //ライトの方向と法線ベクトルの内積
+            float NdotL = dot(normalize(input.normal), normalize(-gDirectionalLight.direction)); //ライトの方向と法線ベクトルの内積
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f); //ライトの方向と法線ベクトルの内積を0~1に変換
         // Specular
         float3 toEye = normalize(gCamera.worldPosition - input.worldPosition); //カメラの位置から頂点の位置へのベクトル
@@ -106,8 +113,25 @@ PixelShaderOutput main(VertexShaderOutput input)
         float3 pointLightspecular = gPointLight.color.rgb * gPointLight.intensity * specularPOW_point * float3(1.0f, 1.0f, 1.0f)*factor;
        
         
-        output.color.rgb = directionLightdiffuse + directionLightspecular + pointLightdiffuse + pointLightspecular;
+        float3 lighting = float3(0, 0, 0);
+
+        if (gDirectionalLight.enable != 0)
+        {
+            lighting += directionLightdiffuse + directionLightspecular;
+        }
+
+        if (gPointLight.enable != 0)
+        {
+            lighting += pointLightdiffuse + pointLightspecular;
+        }
+
+        output.color.rgb = lighting;
         output.color.a = gMaterial.color.a * textureColor.a;
+
+        
+       
+        
+        
     }
     else
     {
