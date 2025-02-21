@@ -4,6 +4,7 @@
 #include "TextureManager.h"
 #include "ModelManager.h"
 #include "CameraManager.h"
+#include <numbers>
 
 
 
@@ -45,6 +46,21 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	pointLightData->radius = 10.0f;
 	pointLightData->decay = 1.0f;
 	pointLightData->enable = 1;
+
+	//スポットライト
+	//スポットライト用のリソースを作成
+	spotLightResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(SpotLight));//
+	spotLightResource->Map(0, nullptr, reinterpret_cast<void**>(&spotLightData));
+	spotLightData->color = { 1.0f,1.0f,1.0f,1.0f };//色
+	spotLightData->position = { 0.0f,2.0f,0.0f };//ライトの位置
+	spotLightData->intensity = 4.0f;//明るさ
+	spotLightData->direction = MyMath::Normlize({ 0.0f,-1.0f,0.0f });//ライトの方向
+	spotLightData->distance = 7.0f;//ライトの届く最大距離
+	spotLightData->decay = 2.0f;//減衰率
+	spotLightData->consAngle = std::cos(std::numbers::pi_v<float> / 3.0f);//スポットライトの余弦
+	spotLightData->cosFalloffstrt = 1.0f;
+	spotLightData->enable = 1;
+
 
 
 	//カメラとモデルのTrandform変数
@@ -97,6 +113,8 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 	//ポイントライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(5, pointLightResource->GetGPUVirtualAddress());
+	//スポットライトのCBufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
 
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {

@@ -80,6 +80,13 @@ Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 
 }
 
+Vector3 MyMath::Normlize(const Vector3& vector)
+{
+	
+	float length = std::sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+	return Vector3(vector.x / length, vector.y / length, vector.z / length);
+}
+
 
 Matrix4x4 MyMath::MakeRotateXMatrix(float radian)
 

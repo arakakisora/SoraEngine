@@ -74,7 +74,7 @@ struct PointLight {
 	float padding[2];
 };
 
-struct SpotLght
+struct SpotLight
 {
 	Vector4 color; //ライトの色
 	Vector3 position; //ライトの位置
@@ -83,6 +83,7 @@ struct SpotLght
 	float distance; //ライトの距離
 	float decay; //減衰率
 	float consAngle; //スポットライトの余弦
+	float cosFalloffstrt;
 	int enable;
 	float padding[2];
 

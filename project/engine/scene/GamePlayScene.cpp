@@ -238,6 +238,56 @@ void GamePlayScene::Update()
 			object3D->SetPointLightDecay(decay);
 			terrain->SetPointLightDecay(decay);
 		}
+		
+	}
+	//スポットライト
+	if (ImGui::CollapsingHeader("Spot Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+		Vector4 color = object3D->GetSpotLight().color;
+		Vector3 position = object3D->GetSpotLight().position;
+		Vector3 direction = object3D->GetSpotLight().direction;
+		float intensity = object3D->GetSpotLight().intensity;
+		float distance = object3D->GetSpotLight().distance;
+		float decay = object3D->GetSpotLight().decay;
+		float consAngle = object3D->GetSpotLight().consAngle;
+		float cosFalloffstrt = object3D->GetSpotLight().cosFalloffstrt;
+		//ライトのオンオフ
+		if (ImGui::Checkbox("Enable SpotLight", &spotLight)) {
+			object3D->SetSpotLightEnable(spotLight);
+			terrain->SetSpotLightEnable(spotLight);
+		}
+		if (ImGui::ColorEdit4("spotColor", &color.x)) {
+			object3D->SetSpotLightColor(color);
+			terrain->SetSpotLightColor(color);
+		}
+		if (ImGui::DragFloat3("spotPosition", &position.x, 0.01f)) {
+			object3D->SetSpotLightPosition(position);
+			terrain->SetSpotLightPosition(position);
+		}
+		if (ImGui::DragFloat3("spotDirection", &direction.x, 0.01f)) {
+			object3D->SetSpotLightDirection(direction);
+			terrain->SetSpotLightDirection(direction);
+		}
+		if (ImGui::DragFloat("spotIntensity", &intensity, 0.01f)) {
+			object3D->SetSpotLightIntensity(intensity);
+			terrain->SetSpotLightIntensity(intensity);
+		}
+		if (ImGui::DragFloat("spotDistance", &distance, 0.01f)) {
+			object3D->SetSpotLightDistance(distance);
+			terrain->SetSpotLightDistance(distance);
+		}
+		if (ImGui::DragFloat("spotDecay", &decay, 0.01f)) {
+			object3D->SetSpotLightDecay(decay);
+			terrain->SetSpotLightDecay(decay);
+		}
+		if (ImGui::DragFloat("spotConsAngle", &consAngle, 0.01f)) {
+			object3D->SetSpotLightConsAngle(consAngle);
+			terrain->SetSpotLightConsAngle(consAngle);
+		}
+		if (ImGui::DragFloat("spotCosFalloffstrt", &cosFalloffstrt, 0.01f)) {
+			object3D->SetSpotLightCosFalloffstrt(cosFalloffstrt);
+			terrain->SetSpotLightCosFalloffstrt(cosFalloffstrt);
+		}
+		
 	}
 
 	//particleのエミッタ-
