@@ -28,6 +28,11 @@ void GamePlayScene::Initialize()
 
 
 
+	//モデルの読み込み
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	ModelManager::GetInstans()->LoadModel("terrain.obj");
 
 	//3Dオブジェクト読み込み
 	ModelManager::GetInstans()->LoadModel("plane.obj");
@@ -148,8 +153,6 @@ void GamePlayScene::Update()
 
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-	object3D->Update();
-	terrain->Update();
 
 
 	//プレイヤーの更新
@@ -364,32 +367,8 @@ void GamePlayScene::CheckAllCollisions()
 #pragma endregion
 }
 
-void GamePlayScene::LoadModel()
-{
-
-	//モデルの読み込み
-	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("plane.obj");
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
-	ModelManager::GetInstans()->LoadModel("terrain.obj");
-	
-
+#pragma endregion
 }
 
-void GamePlayScene::Loadparticle()
-{
 
-	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/uvChecker.png", "plane.obj");
-
-}
-
-void GamePlayScene::LoadAudio()
-{
-	//サウンドの読み込み
-	sampleSoundData = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");//今のところwavのみ対応
-	
-
-}
 
