@@ -40,6 +40,7 @@ struct SpotLght
     float distance; //ライトの距離
     float decay; //減衰率
     float consAngle; //スポットライトの余弦
+    float cosFalloffstrt;
     int enable;
     
 };
@@ -136,16 +137,23 @@ PixelShaderOutput main(VertexShaderOutput input)
         // ライトからの距離を計算
         float spotlightdistance = length(gSpotLight.position - input.worldPosition);
         float factor_spot = pow(saturate(-spotlightdistance / gSpotLight.distance + 1.0), gSpotLight.decay);
+        
         float cosAngle = dot(spotLightDirectionOnSuface,gSpotLight.direction);
-        float falloffFactor = saturate((cosAngle - gSpotLight.consAngle) / (1.0f - gSpotLight.consAngle));
-        float3 spotLightdiffuse = gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * spotCos * gSpotLight.intensity * factor_spot;
-        float3 spotLightspecular = gSpotLight.color.rgb * gSpotLight.intensity * specularPOW_spot * float3(1.0f, 1.0f, 1.0f) * factor_spot;
+        float falloffFactor = saturate((cosAngle - gSpotLight.consAngle) / (gSpotLight.cosFalloffstrt - gSpotLight.consAngle));
+        
+        float3 spotLightdiffuse = gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * spotCos * gSpotLight.intensity * factor_spot*falloffFactor;
+        float3 spotLightspecular = gSpotLight.color.rgb * gSpotLight.intensity * specularPOW_spot * float3(1.0f, 1.0f, 1.0f) * factor_spot*falloffFactor;
         
         
         
        
         
         float3 lighting = float3(0, 0, 0);
+        
+        if (gSpotLight.enable != 0)
+        {
+            lighting += spotLightdiffuse + spotLightspecular;
+        }
 
         if (gDirectionalLight.enable != 0)
         {
