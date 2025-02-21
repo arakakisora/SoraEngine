@@ -75,14 +75,38 @@ public:
 	void SetPointLightEnable(bool enable) { pointLightData->enable = enable; }
 
 
+	//スポットライト
+	void SetSpotLight(const SpotLight& spotLight) { *spotLightData = spotLight; }
+	SpotLight GetSpotLight() { return *spotLightData; }
+	//スポットライトの位置
+	void SetSpotLightPosition(const Vector3& position) { spotLightData->position = position; }
+	//スポットライトの向き
+	void SetSpotLightDirection(const Vector3& direction) { spotLightData->direction = direction; }
+	//スポットライトの色
+	void SetSpotLightColor(const Vector4& color) { spotLightData->color = color; }
+	//スポットライトの強さ
+	void SetSpotLightIntensity(float intensity) { spotLightData->intensity = intensity; }
+	//スポットライトの距離
+	void SetSpotLightDistance(float distance) { spotLightData->distance = distance; }
+	//スポットライトの減衰率
+	void SetSpotLightDecay(float decay) { spotLightData->decay = decay; }
+	//スポットライトのコーンの角度
+	void SetSpotLightConsAngle(float consAngle) { spotLightData->consAngle = consAngle; }
+	
+	void SetSpotLightCosFalloffstrt(float cosFalloffstrt) { spotLightData->cosFalloffstrt = cosFalloffstrt; }
+	//スポットライトのオンオフ
+	void SetSpotLightEnable(bool enable) { spotLightData->enable = enable; }
+	
+
+
+
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
 	
-	
-
 	void SetColor(const Vector4& color) { color_ = color; }
 	Vector4 GetColor() const { return color_; }
 	
+
 
 	
 
@@ -110,11 +134,15 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource;
 	PointLight* pointLightData = nullptr;
 
+	//スポットライト
+	//スポットライト用のリソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource;
+	SpotLight* spotLightData = nullptr;
+
 	//SRT
 	Transform transform;
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
-
 
 	//ライトのオンオフ
 	bool enableLighting = true;

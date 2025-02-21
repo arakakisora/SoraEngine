@@ -50,6 +50,7 @@ private:
 	bool light = true;
 	bool directionLight = true;
 	bool pointLight = true;
+	bool spotLight = true;
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
 

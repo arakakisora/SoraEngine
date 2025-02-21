@@ -74,6 +74,21 @@ struct PointLight {
 	float padding[2];
 };
 
+struct SpotLight
+{
+	Vector4 color; //ライトの色
+	Vector3 position; //ライトの位置
+	float intensity; //ライトの強さ
+	Vector3 direction; //ライトの向き
+	float distance; //ライトの距離
+	float decay; //減衰率
+	float consAngle; //スポットライトの余弦
+	float cosFalloffstrt;
+	int enable;
+	float padding[2];
+
+};
+
 struct MaterialData {
 
 	std::string textureFilePath;
