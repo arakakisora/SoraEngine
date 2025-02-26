@@ -3,7 +3,7 @@
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
-#include "imgui.h"
+#include <imgui.h>
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
@@ -27,12 +27,9 @@ void GamePlayScene::Initialize()
 	CameraManager::GetInstans()->SetActiveCamera("maincam");
 
 
+	// ロード処理全体の時間を計測
+	auto start = std::chrono::high_resolution_clock::now();
 
-	//モデルの読み込み
-	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("plane.obj");
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
-	ModelManager::GetInstans()->LoadModel("terrain.obj");
 
 	//3Dオブジェクト読み込み
 	ModelManager::GetInstans()->LoadModel("plane.obj");
@@ -153,9 +150,8 @@ void GamePlayScene::Update()
 
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
-
-	//3Dオブジェクトの更新
 	object3D->Update();
+	terrain->Update();
 
 	//プレイヤーの更新
 	player->Update();
@@ -200,6 +196,7 @@ void GamePlayScene::Update()
 				continue;
 			obj->Update();
 		}
+		
 	}
 	CheckAllCollisions();
 
@@ -369,8 +366,13 @@ void GamePlayScene::CheckAllCollisions()
 #pragma endregion
 }
 
-#pragma endregion
 }
 
+void GamePlayScene::LoadAudio()
+{
+	//サウンドの読み込み
+	sampleSoundData = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");//今のところwavのみ対応
+	
 
+}
 

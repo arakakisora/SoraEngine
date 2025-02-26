@@ -42,7 +42,17 @@ public:
 	//当たり判定のまとまり
 	void CheckAllCollisions();
 
-	std::unique_ptr<Object3D> object3D;
+	//particle
+	std::unique_ptr<ParticleEmitter> particleEmitter;
+	std::unique_ptr<ParticleEmitter> particleEmitter2;
+	bool light = true;
+	bool directionLight = true;
+	bool pointLight = true;
+	bool spotLight = true;
+	std::unique_ptr<Sprite> sprite;
+	SoundData sampleSoundData;//サウンドデータ
+
+	
 
 
 	//敵発生データの読み込む
