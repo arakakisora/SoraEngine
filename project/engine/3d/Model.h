@@ -1,19 +1,25 @@
 #pragma once
 #include "ModelCommon.h"
 #include "RenderingData.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 class Model
 {
 public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(ModelCommon *modeleCommon,const std::string&directorypath,const std::string& filename);
+	void Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename);
 
 	/// <summary>
 	/// 描画
 	/// </summary>
 	void Draw();
-	//void ParticleDraw(uint32_t instanceCount);
+
+
+	Node ReadNode(aiNode* node);
 
 	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }
 	ModelData GetModelData() { return modelData; }
@@ -24,8 +30,8 @@ public:
 	//色の設定
 	void SetColor(const Vector4& color) { materialData->color = color; }
 
-	static MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
-	static ModelData LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename);
+	MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
+	ModelData LoadModelFile(const std::string& ditrectoryPath, const std::string& filename);
 
 private:
 	//モデル共通部のポインタ
