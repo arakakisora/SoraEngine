@@ -154,6 +154,8 @@ void GamePlayScene::Update()
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
 
+	//3Dオブジェクトの更新
+	object3D->Update();
 
 	//プレイヤーの更新
 	player->Update();

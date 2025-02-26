@@ -42,6 +42,7 @@ public:
 	//当たり判定のまとまり
 	void CheckAllCollisions();
 
+	std::unique_ptr<Object3D> object3D;
 
 
 	//敵発生データの読み込む
