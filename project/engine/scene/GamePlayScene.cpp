@@ -363,7 +363,6 @@ void GamePlayScene::CheckAllCollisions()
 		
 	}
 
-#pragma endregion
 }
 
 }
