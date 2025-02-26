@@ -91,8 +91,8 @@ void Object3D::Update()
     if (activeCamera) {
         const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
         worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-        transformaitionMatrixData->WVP = worldViewProjectionMatrix;
-        transformaitionMatrixData->World = worldMatrix;
+        transformaitionMatrixData->WVP = model_->GetModelData().rootNode.localMatrix* worldViewProjectionMatrix;
+        transformaitionMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
         cameraForGpu->worldPosition = cameraPosition;
     } else {

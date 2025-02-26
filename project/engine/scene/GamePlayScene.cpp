@@ -57,7 +57,7 @@ void GamePlayScene::Initialize()
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("sphere.obj");
+	object3D->SetModel("plane.gltf");
 	object3D->SetLighting(true);
 	object3D->SetDirectionalLightIntensity(1.0f);
 
@@ -339,7 +339,7 @@ void GamePlayScene::LoadModel()
 
 	//モデルの読み込み
 	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("plane.gltf");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 	ModelManager::GetInstans()->LoadModel("terrain.obj");
 

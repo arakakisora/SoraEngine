@@ -4,9 +4,7 @@
 #include <assert.h>
 #include "TextureManager.h"
 #include "SrvManager.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+
 
 
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
@@ -15,7 +13,7 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 
 	modelCommon_ = modeleCommon;
 
-	modelData = LoadObjeFile(directorypath, filename);
+	modelData = LoadModelFile(directorypath, filename);
 
 	//モデルオブジェクト
 	//モデル用のVetexResouceを作成
@@ -65,6 +63,30 @@ void Model::Draw()
 
 }
 
+Node Model::ReadNode(aiNode* node)
+{
+	Node result;
+	aiMatrix4x4 aiLocalMatrix = node->mTransformation;//nodeののlocalMatrixを取得
+	aiLocalMatrix.Transpose();//転置
+
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.localMatrix.m[i][j] = aiLocalMatrix[i][j];
+		}
+	}
+	result.name = node->mName.C_Str();//名前を取得
+	result.children.resize(node->mNumChildren);//子ノードの数だけリサイズ
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
+		result.children[childIndex] = ReadNode(node->mChildren[childIndex]);//子ノードを読み込む
+	}
+	return result;
+}
+
+
+
+
+
+
 
 
 MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename)
@@ -96,7 +118,7 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, c
 
 }
 
-ModelData Model::LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename)
+ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::string& filename)
 {
 	ModelData modelData;//構築するModekData
 	Assimp::Importer importer;
@@ -127,6 +149,7 @@ ModelData Model::LoadObjeFile(const std::string& ditrectoryPath, const std::stri
 				vertex.position.x *= -1.0f;
 				vertex.normal.x *= -1.0f;
 				modelData.vertices.push_back(vertex);
+				
 
 			}
 
@@ -140,9 +163,10 @@ ModelData Model::LoadObjeFile(const std::string& ditrectoryPath, const std::stri
 			aiString texturePath;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
 			modelData.material.textureFilePath = ditrectoryPath + "/" + texturePath.C_Str();
-		} 
+		}
 	}
 
-	
+    modelData.rootNode =ReadNode(scene->mRootNode);
+
 	return modelData;
 }
