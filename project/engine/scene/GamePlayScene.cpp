@@ -34,6 +34,11 @@ void GamePlayScene::Initialize()
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 	ModelManager::GetInstans()->LoadModel("terrain.obj");
 
+	object3D = std::make_unique<Object3D>();
+	object3D->Initialize(Object3DCommon::GetInstance());
+	object3D->SetModel("sphere.obj");
+	object3D->SetTranslate({ 0,0,0 });
+
 	
 
 }
@@ -50,6 +55,9 @@ void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstans()->GetActiveCamera()->Update();
+
+	//3Dオブジェクトの更新
+	object3D->Update();
 
 
 #ifdef _DEBUG
@@ -74,6 +82,21 @@ void GamePlayScene::Update()
 
 
 	}
+	//3Dオブジェクトの位置
+	if (ImGui::CollapsingHeader("3D Object Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+		Transform objectTransform = object3D->GetTransform();
+		if (ImGui::DragFloat3("Object Position", &objectTransform.translate.x, 0.01f)) {
+			object3D->SetTranslate(objectTransform.translate);
+		}
+		//3Dオブジェクトの向き
+		if (ImGui::DragFloat3("Object Rotation", &objectTransform.rotate.x, 0.01f)) {
+			object3D->SetRotate(objectTransform.rotate);
+		}
+		//3Dオブジェクトの拡大率
+		if (ImGui::DragFloat3("Object Scale", &objectTransform.scale.x, 0.01f)) {
+			object3D->SetScale(objectTransform.scale);
+		}
+	}
 
 	
 
@@ -87,7 +110,7 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-
+	object3D->Draw();
 
 
 

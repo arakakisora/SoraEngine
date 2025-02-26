@@ -39,6 +39,7 @@ private:
 	std::unique_ptr<Camera> camera1;
 	std::unique_ptr<Camera> camera2;
 
+	std::unique_ptr<Object3D> object3D;
 
 };
 
