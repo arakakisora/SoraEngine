@@ -8,6 +8,10 @@
 #include <Vector2.h>
 #include <array>
 template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+#include <Xinput.h>
+#pragma comment(lib, "Xinput.lib")
+
 class Input
 {
 	static Input* instance;
@@ -59,6 +63,17 @@ public:
 	//	return mouse.lZ;
 	//};
 
+	//ボタンの入力状態
+	bool PushGamePadButton(WORD button);
+	bool TriggerGamePadButton(WORD button);
+	//スティックとトリガーの値取得
+	SHORT GetGamePadStickX(bool righ=false);
+	SHORT GetGamePadStickY(bool righ = false);
+	BYTE GetGamePadTrigger(bool righ = false);
+
+	// バイブレーション制御
+	void SetVibration(float leftMotor, float rightMotor);
+
 
 
 private:
@@ -72,6 +87,11 @@ private:
 	DIMOUSESTATE2 mouse;
 	DIMOUSESTATE2 preMouse;
 	Vector2 mousePos;
+
+	//ゲームパッド
+	XINPUT_STATE state_; // 現在のゲームパッド状態
+	XINPUT_STATE prevState_; // 前回のゲームパッド状態
+	bool gamepadConnected_ = false;
 
 
 };
