@@ -73,6 +73,16 @@ void Input::Update()
 	ScreenToClient(winApp_->GetHwnd(), &point);
 	mousePos.x = (float)point.x;
 	mousePos.y = (float)point.y;
+
+
+	// XInputの状態を取得
+	ZeroMemory(&state_, sizeof(XINPUT_STATE));
+	if (XInputGetState(0, &state_) == ERROR_SUCCESS) {
+		gamepadConnected_ = true;
+	} else {
+		gamepadConnected_ = false;
+	}
+
 }
 
 bool Input::PushKey(BYTE keyNumber)
@@ -112,4 +122,42 @@ bool Input::TriggerMouse(int buttonNumber)
 		return true;
 	}
 	return false;
+}
+
+bool Input::PushGamePadButton(WORD button)
+{
+	return (gamepadConnected_ && (state_.Gamepad.wButtons & button));
+}
+
+bool Input::TriggerGamePadButton(WORD button)
+{
+	return (gamepadConnected_ && (state_.Gamepad.wButtons & button) && !(prevState_.Gamepad.wButtons & button));
+}
+
+SHORT Input::GetGamePadStickX(bool right)
+{
+	return gamepadConnected_ ? (right ? state_.Gamepad.sThumbRX : state_.Gamepad.sThumbLX) : 0;
+}
+
+SHORT Input::GetGamePadStickY(bool right)
+{
+	return gamepadConnected_ ? (right ? state_.Gamepad.sThumbRY : state_.Gamepad.sThumbLY) : 0;
+}
+
+BYTE Input::GetGamePadTrigger(bool right)
+{
+	return gamepadConnected_ ? (right ? state_.Gamepad.bRightTrigger : state_.Gamepad.bLeftTrigger) : 0;
+}
+
+void Input::SetVibration(float leftMotor, float rightMotor)
+{
+
+	if (!gamepadConnected_) return;
+
+	XINPUT_VIBRATION vibration;
+	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+	vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotor * 65535);
+	vibration.wRightMotorSpeed = static_cast<WORD>(rightMotor * 65535);
+	XInputSetState(0, &vibration);
+
 }
