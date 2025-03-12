@@ -21,13 +21,13 @@ void Framework::Initialize()
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 	//Input初期化
-	Input::GetInstans()->Initialize(winApp.get());
+	Input::GetInstance()->Initialize(winApp.get());
 	//Audio初期化
 	Audio::GetInstance()->Initialize();
 	//パーティクル
 	ParticleMnager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 	//camera初期化
-	CameraManager::GetInstans()->Initialize();
+	CameraManager::GetInstance()->Initialize();
 
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon.get());
@@ -62,7 +62,7 @@ void Framework::Finalize()
 	//DirectXCommon解放
 	ModelManager::GetInstans()->Finalize();
 	//カメラの解放
-	CameraManager::GetInstans()->Finalize();
+	CameraManager::GetInstance()->Finalize();
 	//パーティクルの解放
 	ParticleMnager::GetInstance()->Finalize();
 
@@ -71,7 +71,7 @@ void Framework::Finalize()
 	imGuiMnager.reset();
 #endif // _DEBUG
 
-	Input::GetInstans()->Finalize();
+	Input::GetInstance()->Finalize();
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
 	SceneManager::GetInstance()->Finalize();
@@ -85,7 +85,7 @@ void Framework::Update()
 		endRequst_ = true;
 	}
 
-	Input::GetInstans()->Update();
+	Input::GetInstance()->Update();
 	ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 	

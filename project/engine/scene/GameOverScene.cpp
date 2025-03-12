@@ -33,6 +33,9 @@ void GameOverScene::Update()
 		SceneManager::GetInstance()->ChangeScene("TITELE");
 	}
 
+#endif // _DEBUG
+
+
 }
 
 void GameOverScene::Draw()

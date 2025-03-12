@@ -75,7 +75,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 void Sprite::Update()
 {
 
-	Camera* activeCamera = CameraManager::GetInstans()->GetActiveCamera();
+	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
 	Vector3 cameraPosition = activeCamera->GetTransform().translate;
 	cameraForGpu->worldPosition = cameraPosition;
 

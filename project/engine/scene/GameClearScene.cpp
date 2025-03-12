@@ -2,6 +2,7 @@
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
+
 #include <imgui.h>
 #include "Input.h"
 #include "SceneManager.h"
@@ -9,7 +10,7 @@
 
 void GameClearScene::Initialize()
 {
-	CameraManager::GetInstans()->Initialize();
+	CameraManager::GetInstance()->Initialize();
 }
 
 void GameClearScene::Finalize()
@@ -18,7 +19,7 @@ void GameClearScene::Finalize()
 
 void GameClearScene::Update()
 {
-	CameraManager::GetInstans()->GetActiveCamera()->Update();
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 
 

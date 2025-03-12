@@ -15,16 +15,16 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera1 = std::make_unique<Camera>();
 	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
-	CameraManager::GetInstans()->AddCamera("maincam", camera1.get());
+	CameraManager::GetInstance()->AddCamera("maincam", camera1.get());
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
 	camera2->SetTranslate({ 0,6,-20, });//カメラの位置
 	camera2->SetRotate({ 0.3f,0,0 });//カメラの向き
-	CameraManager::GetInstans()->AddCamera("subcam", camera2.get());
+	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
-	CameraManager::GetInstans()->SetActiveCamera("maincam");
+	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 
 	// ロード処理全体の時間を計測
@@ -106,13 +106,17 @@ void GamePlayScene::Initialize()
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
+
+	
+
+	
 }
 
 void GamePlayScene::Finalize()
 {
-	CameraManager::GetInstans()->RemoveCamera("maincam");
-	CameraManager::GetInstans()->RemoveCamera("subcam");
-	CameraManager::GetInstans()->Finalize();
+	CameraManager::GetInstance()->RemoveCamera("maincam");
+	CameraManager::GetInstance()->RemoveCamera("subcam");
+	CameraManager::GetInstance()->Finalize();
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{
@@ -149,7 +153,7 @@ void GamePlayScene::Update()
 	skydome_->Update();
 
 	//カメラの更新
-	CameraManager::GetInstans()->GetActiveCamera()->Update();
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	object3D->Update();
 	terrain->Update();
 
