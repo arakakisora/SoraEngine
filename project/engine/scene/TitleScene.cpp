@@ -20,7 +20,7 @@ void TitleScene::Finalize()
 
 void TitleScene::Update()
 {
-	if (Input::GetInstans()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 
 		
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");

@@ -79,7 +79,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 void Object3D::Update()
 {
     worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-    Camera* activeCamera = CameraManager::GetInstans()->GetActiveCamera();
+    Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
     //ライトのオンオフ
     model_->SetEnableLighting(enableLighting);
 

@@ -13,7 +13,7 @@ class CameraManager
 
 public:
 	//シングルトンインスタンスの取得
-	static CameraManager* GetInstans();
+	static CameraManager* GetInstance();
 	//終了
 	void Finalize();
 

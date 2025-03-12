@@ -75,13 +75,13 @@ void ParticleMnager::Update()
 {
 	//カメラからビュープロジェクション行列を取得
 	//ビルボード行列の計算
-	Matrix4x4 billboardMatrix = backToFrontMatrix * CameraManager::GetInstans()->GetActiveCamera()->GetWorldMatrix();
+	Matrix4x4 billboardMatrix = backToFrontMatrix * CameraManager::GetInstance()->GetActiveCamera()->GetWorldMatrix();
 	billboardMatrix.m[3][0] = 0.0f;
 	billboardMatrix.m[3][1] = 0.0f;
 	billboardMatrix.m[3][2] = 0.0f;
 	//ビルボード行列を使ってビルボード行列を計算
-	Matrix4x4 viewMatrix = CameraManager::GetInstans()->GetActiveCamera()->GetViewMatrix();
-	Matrix4x4 projectionMatrix = CameraManager::GetInstans()->GetActiveCamera()->GetProjextionMatrix();
+	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
+	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {

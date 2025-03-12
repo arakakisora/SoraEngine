@@ -43,6 +43,12 @@ struct Vector3 final {
         z += other.z;
     }
 
+    void operator-=(const Vector3& other) {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+    }
+
     float Dot(const Vector3& v) const {
         return x * v.x + y * v.y + z * v.z;
     }

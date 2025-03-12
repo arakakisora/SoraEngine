@@ -2,10 +2,12 @@
 #include <cassert>
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
+#include <cmath>
+#include <iostream>
 
 Input* Input::instance = nullptr;
 
-Input* Input::GetInstans()
+Input* Input::GetInstance()
 {
 	if (instance == nullptr) {
 		instance = new Input;
@@ -73,6 +75,16 @@ void Input::Update()
 	ScreenToClient(winApp_->GetHwnd(), &point);
 	mousePos.x = (float)point.x;
 	mousePos.y = (float)point.y;
+
+
+	// XInputの状態を取得
+	ZeroMemory(&state_, sizeof(XINPUT_STATE));
+	if (XInputGetState(0, &state_) == ERROR_SUCCESS) {
+		gamepadConnected_ = true;
+	} else {
+		gamepadConnected_ = false;
+	}
+
 }
 
 bool Input::PushKey(BYTE keyNumber)
@@ -112,4 +124,60 @@ bool Input::TriggerMouse(int buttonNumber)
 		return true;
 	}
 	return false;
+}
+
+bool Input::PushGamePadButton(WORD button)
+{
+	return (gamepadConnected_ && (state_.Gamepad.wButtons & button));
+}
+
+bool Input::TriggerGamePadButton(WORD button)
+{
+	return (gamepadConnected_ && (state_.Gamepad.wButtons & button) && !(prevState_.Gamepad.wButtons & button));
+}
+
+float Input::GetGamePadStickX(bool right)
+{
+	if (!gamepadConnected_) return 0.0f;
+
+	SHORT rawX = right ? state_.Gamepad.sThumbRX : state_.Gamepad.sThumbLX;
+	float normX = rawX / 32767.0f; // -1.0 ~ 1.0 に正規化
+
+	// デッドゾーン処理
+	const float deadzone = 0.2f;
+	if (std::fabs(normX) < deadzone) return 0.0f;
+
+	return normX;
+}
+
+float Input::GetGamePadStickY(bool right)
+{
+	if (!gamepadConnected_) return 0.0f;
+
+	SHORT rawY = right ? state_.Gamepad.sThumbRY : state_.Gamepad.sThumbLY;
+	float normY = rawY / 32767.0f; // -1.0 ~ 1.0 に正規化
+
+	// デッドゾーン処理
+	const float deadzone = 0.2f;
+	if (std::fabs(normY) < deadzone) return 0.0f;
+
+	return normY; // Y軸は通常、上がマイナスなので反転
+}
+
+BYTE Input::GetGamePadTrigger(bool right)
+{
+	return gamepadConnected_ ? (right ? state_.Gamepad.bRightTrigger : state_.Gamepad.bLeftTrigger) : 0;
+}
+
+void Input::SetVibration(float leftMotor, float rightMotor)
+{
+
+	if (!gamepadConnected_) return;
+
+	XINPUT_VIBRATION vibration;
+	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+	vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotor * 65535);
+	vibration.wRightMotorSpeed = static_cast<WORD>(rightMotor * 65535);
+	XInputSetState(0, &vibration);
+
 }
