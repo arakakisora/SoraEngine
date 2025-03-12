@@ -2,10 +2,12 @@
 #include <cassert>
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
+#include <cmath>
+#include <iostream>
 
 Input* Input::instance = nullptr;
 
-Input* Input::GetInstans()
+Input* Input::GetInstance()
 {
 	if (instance == nullptr) {
 		instance = new Input;
@@ -134,14 +136,32 @@ bool Input::TriggerGamePadButton(WORD button)
 	return (gamepadConnected_ && (state_.Gamepad.wButtons & button) && !(prevState_.Gamepad.wButtons & button));
 }
 
-SHORT Input::GetGamePadStickX(bool right)
+float Input::GetGamePadStickX(bool right)
 {
-	return gamepadConnected_ ? (right ? state_.Gamepad.sThumbRX : state_.Gamepad.sThumbLX) : 0;
+	if (!gamepadConnected_) return 0.0f;
+
+	SHORT rawX = right ? state_.Gamepad.sThumbRX : state_.Gamepad.sThumbLX;
+	float normX = rawX / 32767.0f; // -1.0 ~ 1.0 に正規化
+
+	// デッドゾーン処理
+	const float deadzone = 0.2f;
+	if (std::fabs(normX) < deadzone) return 0.0f;
+
+	return normX;
 }
 
-SHORT Input::GetGamePadStickY(bool right)
+float Input::GetGamePadStickY(bool right)
 {
-	return gamepadConnected_ ? (right ? state_.Gamepad.sThumbRY : state_.Gamepad.sThumbLY) : 0;
+	if (!gamepadConnected_) return 0.0f;
+
+	SHORT rawY = right ? state_.Gamepad.sThumbRY : state_.Gamepad.sThumbLY;
+	float normY = rawY / 32767.0f; // -1.0 ~ 1.0 に正規化
+
+	// デッドゾーン処理
+	const float deadzone = 0.2f;
+	if (std::fabs(normY) < deadzone) return 0.0f;
+
+	return normY; // Y軸は通常、上がマイナスなので反転
 }
 
 BYTE Input::GetGamePadTrigger(bool right)

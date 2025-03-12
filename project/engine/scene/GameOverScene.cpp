@@ -3,7 +3,11 @@
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
+#ifdef _DEBUG
 #include <imgui.h>
+
+#endif // _DEBUG
+
 #include "Input.h"
 #include "SceneManager.h"
 #include "CameraManager.h"
@@ -11,7 +15,7 @@
 void GameOverScene::Initialize()
 {
 
-	CameraManager::GetInstans()->Initialize();
+	CameraManager::GetInstance()->Initialize();
 
 }
 
@@ -21,7 +25,7 @@ void GameOverScene::Finalize()
 
 void GameOverScene::Update()
 {
-
+#ifdef _DEBUG
 	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("gameOverScene");
@@ -34,6 +38,9 @@ void GameOverScene::Update()
 
 
 	}
+
+#endif // _DEBUG
+
 
 }
 

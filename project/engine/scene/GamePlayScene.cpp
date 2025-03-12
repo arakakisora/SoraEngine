@@ -15,16 +15,16 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera1 = std::make_unique<Camera>();
 	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
-	CameraManager::GetInstans()->AddCamera("maincam", camera1.get());
+	CameraManager::GetInstance()->AddCamera("maincam", camera1.get());
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
 	camera2->SetTranslate({ 0,6,-20, });//カメラの位置
 	camera2->SetRotate({ 0.3f,0,0 });//カメラの向き
-	CameraManager::GetInstans()->AddCamera("subcam", camera2.get());
+	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
-	CameraManager::GetInstans()->SetActiveCamera("maincam");
+	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 
 	// ロード処理全体の時間を計測
@@ -74,22 +74,59 @@ void GamePlayScene::Initialize()
 
 	light = true;
 
-
+	
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
+
+	
+
+	
 }
 
 void GamePlayScene::Finalize()
 {
-	CameraManager::GetInstans()->RemoveCamera("maincam");
-	CameraManager::GetInstans()->RemoveCamera("subcam");
-	CameraManager::GetInstans()->Finalize();
+	CameraManager::GetInstance()->RemoveCamera("maincam");
+	CameraManager::GetInstance()->RemoveCamera("subcam");
+	CameraManager::GetInstance()->Finalize();
 
 }
 
 void GamePlayScene::Update()
 {
+	float  velocity = 0.05f;
+
+	// 左スティックのX, Y値を取得
+	float lx = Input::GetInstance()->GetGamePadStickX();
+	float ly = Input::GetInstance()->GetGamePadStickY();
+
+	Vector3 translate = object3D->GetTransform().translate;
+	translate.x += static_cast<float>(lx) * velocity;
+	translate.z += static_cast<float>(ly) * velocity;
+	object3D->SetTranslate(translate);
+
+
+	if (Input::GetInstance()->GetGamePadTrigger())//LT
+	{
+		object3D->SetScale(object3D->GetTransform().scale + Vector3(-0.01f, -0.01f, -0.01f));
+	}
+
+	if (Input::GetInstance()->GetGamePadTrigger(1))//RT
+	{
+		object3D->SetScale(object3D->GetTransform().scale + Vector3(0.01f, 0.01f, 0.01f));
+	}
+
+	if (Input::GetInstance()->PushGamePadButton(XINPUT_GAMEPAD_LEFT_SHOULDER))//LB
+	{
+		object3D->SetRotate(object3D->GetTransform().rotate + Vector3(0.0f, 0.01f, 0.0f));
+	}
+	if (Input::GetInstance()->PushGamePadButton(XINPUT_GAMEPAD_RIGHT_SHOULDER))//RB
+	{
+		object3D->SetRotate(object3D->GetTransform().rotate + Vector3(0.0f, -0.01f, 0.0f));
+	}
+
+
+
 	//カメラの更新
-	CameraManager::GetInstans()->GetActiveCamera()->Update();
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	object3D->Update();
 	terrain->Update();
 
@@ -97,24 +134,26 @@ void GamePlayScene::Update()
 	particleEmitter->Update();
 	sprite->Update();
 
+	
+
 #ifdef _DEBUG
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("maincam");
+			CameraManager::GetInstance()->SetActiveCamera("maincam");
 		}
 		if (ImGui::Button("Switch to Sub Camera")) {
-			CameraManager::GetInstans()->SetActiveCamera("subcam");
+			CameraManager::GetInstance()->SetActiveCamera("subcam");
 		}
 
 		//カメラの位置
-		Transform cameraTransform = CameraManager::GetInstans()->GetActiveCamera()->GetTransform();
+		Transform cameraTransform = CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
 		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
-			CameraManager::GetInstans()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
+			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
 		}
 		//カメラの向き
 		if (ImGui::DragFloat3("Camera Rotation", &cameraTransform.rotate.x, 0.01f)) {
-			CameraManager::GetInstans()->GetActiveCamera()->SetRotate(cameraTransform.rotate);
+			CameraManager::GetInstance()->GetActiveCamera()->SetRotate(cameraTransform.rotate);
 		}
 
 

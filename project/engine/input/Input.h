@@ -28,7 +28,7 @@ public: // インナークラス
 	};
 public:
 	//シングルトンインスタンスの取得
-	static Input* GetInstans();
+	static Input* GetInstance();
 	//終了
 	void Finalize();
 
@@ -67,8 +67,8 @@ public:
 	bool PushGamePadButton(WORD button);
 	bool TriggerGamePadButton(WORD button);
 	//スティックとトリガーの値取得
-	SHORT GetGamePadStickX(bool righ=false);
-	SHORT GetGamePadStickY(bool righ = false);
+	float GetGamePadStickX(bool righ=false);
+	float GetGamePadStickY(bool righ = false);
 	BYTE GetGamePadTrigger(bool righ = false);
 
 	// バイブレーション制御

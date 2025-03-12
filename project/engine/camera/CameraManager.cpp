@@ -4,7 +4,7 @@
 
 CameraManager* CameraManager::instance = nullptr;
 
-CameraManager* CameraManager::GetInstans()
+CameraManager* CameraManager::GetInstance()
 {
     if (!instance) {
         instance = new CameraManager();
