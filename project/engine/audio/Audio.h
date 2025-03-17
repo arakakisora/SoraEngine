@@ -4,99 +4,73 @@
 #include <wrl.h>
 #include <fstream>
 #include <cassert>
-
-
+#include <unordered_map>
 
 struct ChunkHeader {
-
-	char id[4];
-	int32_t size;
-
+    char id[4];
+    int32_t size;
 };
 
 struct RiffHeader {
-
-	ChunkHeader chunk;
-	char type[4];
-
+    ChunkHeader chunk;
+    char type[4];
 };
 
 struct FormatChunk {
-
-	ChunkHeader chunk;
-	WAVEFORMATEX fmt;
-
+    ChunkHeader chunk;
+    WAVEFORMATEX fmt;
 };
 
 struct SoundData {
-
-	//波長フォーマット
-	WAVEFORMATEX wfex;
-	//バッファの先頭アドレス
-	BYTE* PBuffer;
-	//バッファのサイズ
-	unsigned int bufferSize;
-
+    WAVEFORMATEX wfex; // 波形フォーマット
+    BYTE* PBuffer; // バッファの先頭アドレス
+    unsigned int bufferSize; // バッファのサイズ
 };
 
-class Audio
-{
-	static Audio* instance_;
-
-	Audio() = default;
-	~Audio() = default;
-	Audio(const Audio&) = delete;
-	Audio& operator=(const Audio&) = delete;
-
+class Audio {
+    static Audio* instance_;
+    Audio() = default;
+    ~Audio() = default;
+    Audio(const Audio&) = delete;
+    Audio& operator=(const Audio&) = delete;
 
 public:
+    template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+    static Audio* GetInstance();
+    void Initialize();
+    void Finalize();
 
-	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+    // Waveファイルの読み込み・解放
+    SoundData SoundLoadWave(const char* filename);
+    void SoundUnload(SoundData* soundData);
 
-	static Audio* GetInstance();
+    // 音の再生・停止
+    void SoundPlayWave(const SoundData& soundData);
+    void StopAudio(); // 全音停止
+    void StopSpecificAudio(SoundData* soundData); // 指定音停止
 
-	void  Initialize();
+    // 一時停止・再開
+    void PauseAudio(); // 全音一時停止
+    void PauseSpecificAudio(SoundData* soundData); // 指定音一時停止
+    void ResumeAudio(); // 全音再開
+    void ResumeSpecificAudio(SoundData* soundData); // 指定音再開
 
-	void Finalize();
+    // 再生速度の設定
+    void SetPlaybackSpeed(float speed); // 全音の速度変更
+    void SetPlaybackSpeed(SoundData* soundData, float speed); // 指定音の速度変更
 
-	//Waveの読み込み関数
-	SoundData SoundLoadWave(const char* filename);
-	//解放関数
-	void SoundUnload(SoundData* soundData);
-	//再生関数
-	void SoundPlayWave(const SoundData& soundData);
+    // **音量調整**
+    void SetVolume(float volume); // 全ての音の音量変更
+    void SetVolume(SoundData* soundData, float volume); // 指定音の音量変更
 
-	//停止関数
-	void StopAudio();
-
-	//一時停止
-	void PauseAudio();
-	//再開
-	void ResumeAudio();
-
-	//再生速度の設定
-	void SetPlaybackSpeed(float speed);
-
-
-
-	//getter
-	IXAudio2* GetXAudio2() const { return xAudio2.Get(); }
-
-	bool IsSoundPlaying() const;
-
-
+    // 状態取得
+    bool IsSoundPlaying() const; // 何か音が鳴っているか
+    bool IsSoundPlaying(SoundData* soundData) const; // 指定音が鳴っているか
 
 private:
-	//aoudio
-	ComPtr<IXAudio2> xAudio2=nullptr;
-	IXAudio2MasteringVoice* masterVoice=nullptr;
-	//波形フォーマット元にSourcwvoiceの生成
-	IXAudio2SourceVoice* pSourceVoice = nullptr;
+    ComPtr<IXAudio2> xAudio2 = nullptr;
+    IXAudio2MasteringVoice* masterVoice = nullptr;
 
-private:
-	UINT64 playCursor = 0; // 再生位置（バイト単位）を保持
-	bool isPaused = false; // 一時停止状態を管理
-	SoundData currentSoundData; // 現在再生中のサウンドデータ
-
+    // 複数の SourceVoice を管理
+    std::unordered_map<SoundData*, IXAudio2SourceVoice*> activeVoices;
 };
-
