@@ -69,6 +69,9 @@ namespace MyMath {
 	Vector3 Add(const Vector3& v, float scalar);
 	Vector3 Add(const Vector3& v1, const Vector3& v2);
 
+	//cross
+	Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
 	//回転X
 	Matrix4x4 MakeRotateXMatrix(float radian);
 	//回転Y
@@ -82,8 +85,12 @@ namespace MyMath {
 	//ドット積
 	float Dot(const Vector3& v1, const Vector3& v2);
 	float Dot(const Vector3& v1, const float& num);
+	float Dot(const Quaternion& q1, const Quaternion& q2);
 	float Length(const Vector3& v);
+	
 
+	//Lerp
+	Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
 
 	//透視投影行列
 	Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearCilp, float farClip);
@@ -108,6 +115,25 @@ namespace MyMath {
 	bool IsCollision(const AABB& aabb, const Sphere& sphere);
 	bool IsCollision(const AABB& aabb, const Segment& segment);
 
+	//ベクトルを求める関数
+	Matrix4x4 MakeRotateAxisAngle(const Vector3& axis, float angle);
+	//ある方向をある方向に向ける回転行列
+	Matrix4x4 DirectionToDirection(const Vector3& from, const Vector3& to);
+
+	//クオタニオン
+	//クオタニオンを行列に変換
+	Matrix4x4 MakeRotationMatrix(const Quaternion& Quaternion);
+	//クオタニオンを回転行列に変換
+	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& Quaternion, const Vector3& translate);
+	//球面線形補間
+	Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
+
+
+
+	//debugテキスト
+	void MatrixImGuiText(const Matrix4x4& matrix, const char* label);
+	void QuaternionImGuiText(const Quaternion& quaternion, const char* label);
+	void Vector3ImGuiText(const Vector3& vector, const char* label);
 }
 
 
