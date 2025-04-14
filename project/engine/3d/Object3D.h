@@ -3,6 +3,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Matrix4x4.h"
+#include "MyMath.h"
 #include "RenderingData.h"
 #include "Model.h"
 #include "Camera.h"
@@ -26,6 +27,8 @@ public:
 	/// </summary>
 	void Draw();
 
+	Matrix4x4 AnimationTimer();
+
 
 	void SetModel(Model* model) { model_ = model; }
 	void SetModel(const std::string& filepath);
@@ -44,7 +47,7 @@ public:
 	//カメラ
 	//void SetCamera(Camera* camera) { this->camera = camera; }
 	////デフォルトカメラ
-	
+
 	//ディレクションライト
 	void SetDirectionalLight(const DirectionalLight& directionalLight) { *directionalLightData = directionalLight; }
 	DirectionalLight GetDirectionalLight() { return *directionalLightData; }
@@ -93,23 +96,26 @@ public:
 	void SetSpotLightDecay(float decay) { spotLightData->decay = decay; }
 	//スポットライトのコーンの角度
 	void SetSpotLightConsAngle(float consAngle) { spotLightData->consAngle = consAngle; }
-	
+
 	void SetSpotLightCosFalloffstrt(float cosFalloffstrt) { spotLightData->cosFalloffstrt = cosFalloffstrt; }
 	//スポットライトのオンオフ
 	void SetSpotLightEnable(bool enable) { spotLightData->enable = enable; }
-	
+
 
 
 
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
-	
+
 	void SetColor(const Vector4& color) { color_ = color; }
 	Vector4 GetColor() const { return color_; }
+
+	//アニメーション
+	Vector3 CalculatateValue(const std::vector<KeyframeVector3>& keyframes, float time);
+	Quaternion CalculatateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 	
 
 
-	
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;
@@ -152,6 +158,9 @@ private:
 	//カメラforGPU
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
 	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
+	//アニメーション
+	float animationTime = 0.0f;
+
 
 private:
 	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトは白

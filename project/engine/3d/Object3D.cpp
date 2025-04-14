@@ -65,8 +65,8 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 	//カメラとモデルのTrandform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	
-	 
+
+
 	//カメラforGPU
 	cameraResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
@@ -78,28 +78,44 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 
 void Object3D::Update()
 {
-    worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-    Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
-    //ライトのオンオフ
-    model_->SetEnableLighting(enableLighting);
+
+
+
+
+
+
+
+	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
+	//ライトのオンオフ
+	model_->SetEnableLighting(enableLighting);
 
 	// **ここでモデルの色を設定**
 	if (model_) {
 		model_->SetColor(color_);
 	}
 
-    if (activeCamera) {
-        const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
-        worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-        transformaitionMatrixData->WVP = model_->GetModelData().rootNode.localMatrix* worldViewProjectionMatrix;
-        transformaitionMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+	if (activeCamera) {
+		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
+		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
+		transformaitionMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
+		transformaitionMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
-        cameraForGpu->worldPosition = cameraPosition;
-    } else {
-        worldViewProjectionMatrix = worldMatrix;
-        transformaitionMatrixData->WVP = worldViewProjectionMatrix;
-        transformaitionMatrixData->World = worldMatrix;
-    }
+		cameraForGpu->worldPosition = cameraPosition;
+
+		if (!model_->GetAnimation().nodeAnimations.empty()) {
+			Matrix4x4 localMatrix = AnimationTimer();
+			transformaitionMatrixData->WVP = localMatrix * transformaitionMatrixData->WVP;
+			transformaitionMatrixData->World = localMatrix * transformaitionMatrixData->World;
+
+		}
+
+
+	} else {
+		worldViewProjectionMatrix = worldMatrix;
+		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
+		transformaitionMatrixData->World = worldMatrix;
+	}
 }
 
 void Object3D::Draw()
@@ -123,13 +139,61 @@ void Object3D::Draw()
 
 }
 
+Matrix4x4 Object3D::AnimationTimer()
+{
+	animationTime += 1.0f / 60.0f;
+	animationTime = std::fmod(animationTime, model_->GetAnimation().duration);
+	NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[model_->GetModelData().rootNode.name];
+	Vector3 translate = CalculatateValue(rootNodeAnimation.translate, animationTime);
+	Quaternion rotate = CalculatateValue(rootNodeAnimation.rotate, animationTime);
+	Vector3 scale = CalculatateValue(rootNodeAnimation.scale, animationTime);
+
+	return  MyMath::MakeAffineMatrix(scale, rotate, translate);
+}
+
 void Object3D::SetModel(const std::string& filepath)
 {
 	//もでるを検索してセットする
 	model_ = ModelManager::GetInstans()->FindModel(filepath);
 }
 
+Vector3 Object3D::CalculatateValue(const std::vector<KeyframeVector3>& keyframes, float time)
+{
+	assert(!keyframes.empty());
+	if (keyframes.size() == 1 || time <= keyframes[0].time) {
+		return keyframes[0].value;
+	}
 
+	for (size_t index = 0; index < keyframes.size() - 1; ++index) {
+		size_t nextIndenx = index + 1;
+		//indexとnextIndexの2つのキーフレームを取得して範囲内に時刻があるか判定する
+		if (keyframes[index].time <= time && time <= keyframes[nextIndenx].time) {
+			//補間する
+			float t = (time - keyframes[index].time) / (keyframes[nextIndenx].time - keyframes[index].time);
+			return MyMath::Lerp(keyframes[index].value, keyframes[nextIndenx].value, t);
+		}
+
+	}
+	return (*keyframes.rbegin()).value;
+}
+
+Quaternion Object3D::CalculatateValue(const std::vector<KeyframeQuaternion>& keyframes, float time)
+{
+	assert(!keyframes.empty());
+	if (keyframes.size() == 1 || time <= keyframes[0].time) {
+		return keyframes[0].value;
+	}
+	for (size_t index = 0; index < keyframes.size() - 1; ++index) {
+		size_t nextIndenx = index + 1;
+		//indexとnextIndexの2つのキーフレームを取得して範囲内に時刻があるか判定する
+		if (keyframes[index].time <= time && time <= keyframes[nextIndenx].time) {
+			//補間する
+			float t = (time - keyframes[index].time) / (keyframes[nextIndenx].time - keyframes[index].time);
+			return MyMath::Slerp(keyframes[index].value, keyframes[nextIndenx].value, t);
+		}
+	}
+	return (*keyframes.rbegin()).value;
+}
 
 
 
