@@ -54,7 +54,7 @@ private:
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
 
-	
+	bool number = 0;
 
 
 

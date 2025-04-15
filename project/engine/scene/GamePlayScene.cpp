@@ -123,6 +123,10 @@ void GamePlayScene::Update()
 		object3D->SetRotate(object3D->GetTransform().rotate + Vector3(0.0f, -0.01f, 0.0f));
 	}
 
+	if (Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
+		number = !number;
+	}
+
 
 
 	//カメラの更新
@@ -137,6 +141,8 @@ void GamePlayScene::Update()
 	
 
 #ifdef _DEBUG
+
+	ImGui::Text("number%d",number);
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
