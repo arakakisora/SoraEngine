@@ -76,6 +76,7 @@ void Input::Update()
 	mousePos.x = (float)point.x;
 	mousePos.y = (float)point.y;
 
+	prevState_ = state_;
 
 	// XInputの状態を取得
 	ZeroMemory(&state_, sizeof(XINPUT_STATE));
@@ -84,7 +85,7 @@ void Input::Update()
 	} else {
 		gamepadConnected_ = false;
 	}
-
+	
 }
 
 bool Input::PushKey(BYTE keyNumber)

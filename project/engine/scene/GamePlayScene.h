@@ -52,7 +52,7 @@ public:
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
 
-	
+	bool number = 0;
 
 
 	//敵発生データの読み込む
