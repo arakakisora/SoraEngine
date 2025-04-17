@@ -218,4 +218,5 @@ Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::
 
 	}
 	return animation;
+
 }
