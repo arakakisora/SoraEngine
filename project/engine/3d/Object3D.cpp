@@ -96,6 +96,7 @@ void Object3D::Update()
 	}
 
 	if (activeCamera) {
+		
 		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
 		transformaitionMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
@@ -104,7 +105,20 @@ void Object3D::Update()
 		cameraForGpu->worldPosition = cameraPosition;
 
 		if (!model_->GetAnimation().nodeAnimations.empty()) {
-			Matrix4x4 localMatrix = AnimationTimer();
+
+			animationTime += 1.0f / 60.0f;
+			animationTime = std::fmod(animationTime, model_->GetAnimation().duration);
+			const auto& name = model_->GetModelData().rootNode.name;
+			auto animation = model_->GetAnimation();
+			//NodeAnimation& rootNodeAnimation = animation.nodeAnimations[name];
+			NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[name];
+
+			//NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[model_->GetModelData().rootNode.name];
+			Vector3 translate = CalculatateValue(rootNodeAnimation.translate, animationTime);
+			Quaternion rotate = CalculatateValue(rootNodeAnimation.rotate, animationTime);
+			Vector3 scale = CalculatateValue(rootNodeAnimation.scale, animationTime);
+
+			Matrix4x4 localMatrix = MyMath::MakeAffineMatrix(scale, rotate, translate);
 			transformaitionMatrixData->WVP = localMatrix * transformaitionMatrixData->WVP;
 			transformaitionMatrixData->World = localMatrix * transformaitionMatrixData->World;
 
@@ -139,17 +153,6 @@ void Object3D::Draw()
 
 }
 
-Matrix4x4 Object3D::AnimationTimer()
-{
-	animationTime += 1.0f / 60.0f;
-	animationTime = std::fmod(animationTime, model_->GetAnimation().duration);
-	NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[model_->GetModelData().rootNode.name];
-	Vector3 translate = CalculatateValue(rootNodeAnimation.translate, animationTime);
-	Quaternion rotate = CalculatateValue(rootNodeAnimation.rotate, animationTime);
-	Vector3 scale = CalculatateValue(rootNodeAnimation.scale, animationTime);
-
-	return  MyMath::MakeAffineMatrix(scale, rotate, translate);
-}
 
 void Object3D::SetModel(const std::string& filepath)
 {
