@@ -30,24 +30,11 @@ void GamePlayScene::Initialize()
 	// ロード処理全体の時間を計測
 	auto start = std::chrono::high_resolution_clock::now();
 
+	LoadModel();
+	Loadparticle();
+	LoadAudio();
 
-	// ロード処理用スレッドを作成
-	std::thread modelThread([&]() {
-		LoadModel();
-		});
 
-	std::thread particleThread([&]() {
-		Loadparticle();
-		});
-
-	std::thread audioThread([&]() {
-		LoadAudio();
-		});
-
-	// スレッドの終了を待機
-	modelThread.join();
-	particleThread.join();
-	audioThread.join();
 
 	auto end = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double, std::milli> duration = end - start;
@@ -57,7 +44,7 @@ void GamePlayScene::Initialize()
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("sphere.obj");
+	object3D->SetModel("AnimatedCube.gltf");
 	object3D->SetLighting(true);
 	object3D->SetDirectionalLightIntensity(1.0f);
 
@@ -74,12 +61,12 @@ void GamePlayScene::Initialize()
 
 	light = true;
 
-	
+
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
-	
 
-	
+
+
 }
 
 void GamePlayScene::Finalize()
@@ -138,7 +125,7 @@ void GamePlayScene::Update()
 	particleEmitter->Update();
 	sprite->Update();
 
-	
+
 
 #ifdef _DEBUG
 
@@ -387,6 +374,8 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("plane.gltf");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 	ModelManager::GetInstans()->LoadModel("terrain.obj");
+	ModelManager::GetInstans()->LoadModel("AnimatedCube.gltf");
+	ModelManager::GetInstans()->LoadModel("sphere.gltf");
 
 
 }

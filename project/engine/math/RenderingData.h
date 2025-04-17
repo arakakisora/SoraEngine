@@ -7,6 +7,9 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
+#include "MyMath.h"
+
 
 struct VertexData {
 
@@ -113,4 +116,28 @@ struct ModelData {
 
 struct CaMeraForGpu {
 	Vector3 worldPosition;
+};
+
+//animation
+template<typename tValue>
+struct Keyframe {
+	float time;
+	tValue value;
+};
+
+using KeyframeVector3 = Keyframe<Vector3>;
+using KeyframeQuaternion = Keyframe<Quaternion>;
+
+struct NodeAnimation 
+{
+	std::vector<KeyframeVector3> translate; //平行移動
+	std::vector<KeyframeQuaternion> rotate; //回転
+	std::vector<KeyframeVector3> scale; //拡大縮小
+
+
+};
+
+struct Animation {
+	float duration;//アニメーションの長さ
+	std::map<std::string, NodeAnimation> nodeAnimations;
 };

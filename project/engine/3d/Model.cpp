@@ -14,6 +14,7 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	modelCommon_ = modeleCommon;
 
 	modelData = LoadModelFile(directorypath, filename);
+	animation = LoadAnimationFile(directorypath, filename);
 
 	//モデルオブジェクト
 	//モデル用のVetexResouceを作成
@@ -122,7 +123,7 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 {
 	ModelData modelData;//構築するModekData
 	Assimp::Importer importer;
-	std::string path = ditrectoryPath + "/" + filename;
+	std::string path = ditrectoryPath + "/" + "models" + "/" + filename;
 	const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
 	assert(scene->HasMeshes());//メッシュが何の歯対応しない
 
@@ -149,7 +150,7 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 				vertex.position.x *= -1.0f;
 				vertex.normal.x *= -1.0f;
 				modelData.vertices.push_back(vertex);
-				
+
 
 			}
 
@@ -166,7 +167,56 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 		}
 	}
 
-    modelData.rootNode =ReadNode(scene->mRootNode);
+	modelData.rootNode = ReadNode(scene->mRootNode);
 
 	return modelData;
+}
+
+Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::string& filename)
+{
+	Animation animation;
+	Assimp::Importer importer;
+	std::string filepath = directoryPath + "/" + "models" + "/" + filename;
+	const aiScene* scene = importer.ReadFile(filepath.c_str(), 0);
+	// アニメーションがない場合、空のAnimationを返す
+	if (scene->mNumAnimations == 0) {
+		return animation;
+	}
+	aiAnimation* animationAssimp = scene->mAnimations[0];//最初のアニメーションだけ採用
+	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+
+	for (uint32_t channelIndex = 0; channelIndex < animationAssimp->mNumChannels; ++channelIndex) {
+
+		aiNodeAnim* nodeAnimationAssimp = animationAssimp->mChannels[channelIndex];
+		NodeAnimation& nodeAnimation = animation.nodeAnimations[nodeAnimationAssimp->mNodeName.C_Str()];
+
+		//アニメーションのキーフレームを取得
+		//位置
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumPositionKeys; ++keyIndex) {
+			aiVectorKey& keyAssimp = nodeAnimationAssimp->mPositionKeys[keyIndex];
+			KeyframeVector3 Keyframe;
+			Keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+			Keyframe.value = { -keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };//右手-＞左手
+			nodeAnimation.translate.push_back(Keyframe);
+		}
+		//回転
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex) {
+			aiQuatKey& keyAssimp = nodeAnimationAssimp->mRotationKeys[keyIndex];
+			KeyframeQuaternion Keyframe;
+			Keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+			Keyframe.value = { keyAssimp.mValue.x,-keyAssimp.mValue.y,-keyAssimp.mValue.z,keyAssimp.mValue.w };
+			nodeAnimation.rotate.push_back(Keyframe);
+		}
+		//スケール
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex) {
+			aiVectorKey& keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
+			KeyframeVector3 Keyframe;
+			Keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+			Keyframe.value = { keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };
+			nodeAnimation.scale.push_back(Keyframe);
+		}
+
+	}
+	return animation;
+
 }

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <imgui.h>
+#include <numbers>
 
 
 
@@ -98,6 +100,17 @@ Vector3 MyMath::Add(const Vector3& v, float scalar) {
 }
 Vector3 MyMath::Add(const Vector3& v1, const Vector3& v2) {
 	return { v1.x + v2.x,v1.y + v2.y,v1.z + v2.z };
+}
+
+Vector3 MyMath::Cross(const Vector3& v1, const Vector3& v2)
+{
+	Vector3 ans;
+	ans.x = v1.y * v2.z - v1.z * v2.y;
+	ans.y = v1.z * v2.x - v1.x * v2.z;
+	ans.z = v1.x * v2.y - v1.y * v2.x;
+	return ans;
+
+
 }
 
 Matrix4x4 MyMath::MakeRotateXMatrix(float radian)
@@ -215,12 +228,27 @@ float MyMath::Dot(const Vector3& v1, const float& num)
 	return v1.x * num + v1.y * num + v1.z * num;
 }
 
+float MyMath::Dot(const Quaternion& q1, const Quaternion& q2)
+{
+	return q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
+
+}
+
 float MyMath::Length(const Vector3& v)
 {
 	float ans;
 
 	ans = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 	return ans;
+}
+
+
+
+Vector3 MyMath::Lerp(const Vector3& v1, const Vector3& v2, float t)
+{
+	
+	return v1 + (v2 - v1) * t;
+
 }
 
 Matrix4x4 MyMath::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearCilp, float farClip)
@@ -492,7 +520,154 @@ bool MyMath::IsCollision(const AABB& aabb, const Segment& segment)
 	return false;
 }
 
+Matrix4x4 MyMath::MakeRotateAxisAngle(const Vector3& axis, float angle)
+{
+	Matrix4x4 ans;
 
+	float cosA = cosf(angle);
+	float sinA = sinf(angle);
+	float oneMinusCosA = 1.0f - cosA;
+
+	float x = axis.x;
+	float y = axis.y;
+	float z = axis.z;
+
+	// Row 0
+	ans.m[0][0] = x * x * oneMinusCosA + cosA;
+	ans.m[0][1] = x * y * oneMinusCosA + z * sinA;
+	ans.m[0][2] = x * z * oneMinusCosA - y * sinA;
+	ans.m[0][3] = 0.0f;
+
+	// Row 1
+	ans.m[1][0] = y * x * oneMinusCosA - z * sinA;
+	ans.m[1][1] = y * y * oneMinusCosA + cosA;
+	ans.m[1][2] = y * z * oneMinusCosA + x * sinA;
+	ans.m[1][3] = 0.0f;
+
+	// Row 2
+	ans.m[2][0] = z * x * oneMinusCosA + y * sinA;
+	ans.m[2][1] = z * y * oneMinusCosA - x * sinA;
+	ans.m[2][2] = z * z * oneMinusCosA + cosA;
+	ans.m[2][3] = 0.0f;
+
+	// Row 3
+	ans.m[3][0] = 0.0f;
+	ans.m[3][1] = 0.0f;
+	ans.m[3][2] = 0.0f;
+	ans.m[3][3] = 1.0f;
+
+	return ans;
+}
+
+Matrix4x4 MyMath::DirectionToDirection(const Vector3& from, const Vector3& to)
+{
+	Vector3 fromNormalized = MyMath::Normlize(from);
+	Vector3 toNormalized = MyMath::Normlize(to);
+	float dotProduct = MyMath::Dot(fromNormalized, toNormalized);
+
+	if (dotProduct > 0.9999f) {
+		return Matrix4x4{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+	} else if (dotProduct < -0.9999f) {
+		Vector3 orthogonalAxis = (fabs(fromNormalized.x) > fabs(fromNormalized.z)) ? Vector3{ -fromNormalized.y, fromNormalized.x, 0.0f } : Vector3{ 0.0f, -fromNormalized.z, fromNormalized.y };
+		orthogonalAxis = MyMath::Normlize(orthogonalAxis);
+		return MakeRotateAxisAngle(orthogonalAxis, std::numbers::pi_v<float>);
+	}
+
+	Vector3 axis = MyMath::Cross(fromNormalized, toNormalized);
+	float angle = acos(dotProduct);
+	return MakeRotateAxisAngle(axis, angle);
+}
+
+Matrix4x4 MyMath::MakeRotationMatrix(const Quaternion& Quaternion)
+{
+	float x2 = Quaternion.x + Quaternion.x;
+	float y2 = Quaternion.y + Quaternion.y;
+	float z2 = Quaternion.z + Quaternion.z;
+	float xx = Quaternion.x * x2;
+	float xy = Quaternion.x * y2;
+	float xz = Quaternion.x * z2;
+	float yy = Quaternion.y * y2;
+	float yz = Quaternion.y * z2;
+	float zz = Quaternion.z * z2;
+	float wx = Quaternion.w * x2;
+	float wy = Quaternion.w * y2;
+	float wz = Quaternion.w * z2;
+	return Matrix4x4{
+		1.0f - (yy + zz), xy + wz, xz - wy, 0.0f,
+		xy - wz, 1.0f - (xx + zz), yz + wx, 0.0f,
+		xz + wy, yz - wx, 1.0f - (xx + yy), 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	};
+}
+
+Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Quaternion& quaternion, const Vector3& translate)
+{
+	Matrix4x4 rotate = MakeRotationMatrix(quaternion);
+	return MakeScaleMatrix(scale) * rotate * MakeTranslateMatrix(translate);
+}
+
+Quaternion MyMath::Slerp(const Quaternion& q1, const Quaternion& q2, float t)
+{
+	Quaternion ans;
+	float dot = Dot(q1, q2);
+	float theta = std::acos(dot);
+	float sinTheta = std::sin(theta);
+	float sin1 = std::sin((1 - t) * theta) / sinTheta;
+	float sin2 = std::sin(t * theta) / sinTheta;
+	ans.w = q1.w * sin1 + q2.w * sin2;
+	ans.x = q1.x * sin1 + q2.x * sin2;
+	ans.y = q1.y * sin1 + q2.y * sin2;
+	ans.z = q1.z * sin1 + q2.z * sin2;
+	return ans;
+
+}
+
+void MyMath::MatrixImGuiText(const Matrix4x4& matrix, const char* label)
+{
+
+	// ラベルを表示
+	ImGui::Text("%s", label);
+	// 行列の各成分を ImGui テキストで表示
+	for (int i = 0; i < 4; i++) {
+		ImGui::Text("%.03f %.03f %.03f %.03f", matrix.m[i][0], matrix.m[i][1], matrix.m[i][2], matrix.m[i][3]);
+	}
+
+}
+
+void MyMath::QuaternionImGuiText(const Quaternion& quaternion, const char* label)
+{
+	// クォータニオンの各成分を ImGui テキストで表示
+	ImGui::Text("x: %.02f", quaternion.x);
+	ImGui::SameLine();
+	ImGui::Text("y: %.02f", quaternion.y);
+	ImGui::SameLine();
+	ImGui::Text("z: %.02f", quaternion.z);
+	ImGui::SameLine();
+	ImGui::Text("w: %.02f", quaternion.w);
+
+	// ラベルを表示
+	ImGui::SameLine();
+	ImGui::Text("%s", label);
+}
+
+void MyMath::Vector3ImGuiText(const Vector3& vector, const char* label)
+{
+
+	// ラベルを表示
+	ImGui::Text("%s", label);
+	// ベクトルの各成分を ImGui テキストで表示
+	ImGui::Text("x: %.02f", vector.x);
+	ImGui::SameLine();
+	ImGui::Text("y: %.02f", vector.y);
+	ImGui::SameLine();
+	ImGui::Text("z: %.02f", vector.z);
+
+}
 
 
 
