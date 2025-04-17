@@ -140,7 +140,7 @@ void GamePlayScene::Update()
 		}
 
 		//カメラの位置
-		Transform cameraTransform = CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
+		EulerTransform cameraTransform = CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
 		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
 			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
 		}
@@ -155,7 +155,7 @@ void GamePlayScene::Update()
 	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		//potision
-		Transform transform = object3D->GetTransform();
+		EulerTransform transform = object3D->GetTransform();
 		if (ImGui::DragFloat3("obj3Position", &transform.translate.x, 0.01f)) {
 			object3D->SetTransform(transform);
 		}

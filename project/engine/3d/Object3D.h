@@ -34,8 +34,8 @@ public:
 	void SetModel(const std::string& filepath);
 
 	//transrat
-	void SetTransform(const Transform& transform) { this->transform = transform; }
-	Transform GetTransform() { return transform; }
+	void SetTransform(const EulerTransform& transform) { this->transform = transform; }
+	EulerTransform GetTransform() { return transform; }
 
 	//スケール
 	void SetScale(const Vector3& scale) { transform.scale = scale; }
@@ -146,7 +146,7 @@ private:
 	SpotLight* spotLightData = nullptr;
 
 	//SRT
-	Transform transform;
+	EulerTransform transform;
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 

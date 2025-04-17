@@ -49,7 +49,7 @@ void GraphicsPipeline::Create()
 	//裏面（時計回り）を表示しない
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	//三角形の中を塗りつぶす
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
 	//shaderをコンパイルする
 	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",

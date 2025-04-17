@@ -19,12 +19,17 @@ struct VertexData {
 
 };
 
-struct Transform {
+struct EulerTransform {
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
 };
 
+struct QuaternionTransform {
+	Vector3 scale;
+	Quaternion rotate;
+	Vector3 translate;
+};
 
 struct Material {
 
@@ -100,6 +105,7 @@ struct MaterialData {
 };
 
 struct Node {
+	QuaternionTransform transform;
 	Matrix4x4 localMatrix;
 	std::string name;
 	std::vector<Node> children;

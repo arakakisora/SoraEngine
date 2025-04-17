@@ -67,14 +67,14 @@ void Model::Draw()
 Node Model::ReadNode(aiNode* node)
 {
 	Node result;
-	aiMatrix4x4 aiLocalMatrix = node->mTransformation;//nodeののlocalMatrixを取得
-	aiLocalMatrix.Transpose();//転置
 
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			result.localMatrix.m[i][j] = aiLocalMatrix[i][j];
-		}
-	}
+	aiVector3D scale, translate;
+	aiQuaternion rotate;
+	node->mTransformation.Decompose(scale, rotate, translate);//ノードの変換行列からスケール、回転、平行移動を取得
+	result.transform.scale = { scale.x,scale.y,scale.z };//スケールを取得
+	result.transform.rotate = { rotate.x,-rotate.y,-rotate.z,rotate.w };//回転を取得
+	result.transform.translate = { -translate.x,translate.y,translate.z };//平行移動を取得
+	result.localMatrix = MyMath::MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);//ローカル行列を取得
 	result.name = node->mName.C_Str();//名前を取得
 	result.children.resize(node->mNumChildren);//子ノードの数だけリサイズ
 	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
