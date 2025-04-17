@@ -108,12 +108,12 @@ void Object3D::Update()
 
 			animationTime += 1.0f / 60.0f;
 			animationTime = std::fmod(animationTime, model_->GetAnimation().duration);
-			const auto& name = model_->GetModelData().rootNode.name;
-			auto animation = model_->GetAnimation();
+			//const auto& name = model_->GetModelData().rootNode.name;
+			//auto animation = model_->GetAnimation();
 			//NodeAnimation& rootNodeAnimation = animation.nodeAnimations[name];
-			NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[name];
-
+			//NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[name];
 			//NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[model_->GetModelData().rootNode.name];
+			const NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations.find(model_->GetModelData().rootNode.name)->second;
 			Vector3 translate = CalculatateValue(rootNodeAnimation.translate, animationTime);
 			Quaternion rotate = CalculatateValue(rootNodeAnimation.rotate, animationTime);
 			Vector3 scale = CalculatateValue(rootNodeAnimation.scale, animationTime);
