@@ -23,7 +23,7 @@ public:
 
 	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }
 	ModelData GetModelData() { return modelData; }
-	Animation GetAnimation() { return animation; }
+	Animation& GetAnimation() { return animation; }
 
 	//ライトのオンオフ
 	void SetEnableLighting(bool enable) { materialData->enableLighting = enable; }

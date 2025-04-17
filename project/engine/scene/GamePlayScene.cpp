@@ -107,9 +107,9 @@ void GamePlayScene::Initialize()
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
-	
 
-	
+
+
 }
 
 void GamePlayScene::Finalize()
