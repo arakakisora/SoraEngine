@@ -361,7 +361,7 @@ void GamePlayScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	//sprite->Draw();
+	sprite->Draw();
 
 #pragma endregion
 }

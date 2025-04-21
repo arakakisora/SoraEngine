@@ -14,7 +14,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 {
 	//引数で受け取って、メンバ変数に記録する
 	object3DCommon_ = object3DCommon;
-
+		
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	transformationMatrixResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
