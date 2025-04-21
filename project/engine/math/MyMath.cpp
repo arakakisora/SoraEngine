@@ -611,20 +611,38 @@ Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Quaternion& quate
 	return MakeScaleMatrix(scale) * rotate * MakeTranslateMatrix(translate);
 }
 
-Quaternion MyMath::Slerp(const Quaternion& q1, const Quaternion& q2, float t)
+Quaternion MyMath::Slerp(const Quaternion& start, const Quaternion& end, float t)
 {
-	Quaternion ans;
-	float dot = Dot(q1, q2);
-	float theta = std::acos(dot);
-	float sinTheta = std::sin(theta);
-	float sin1 = std::sin((1 - t) * theta) / sinTheta;
-	float sin2 = std::sin(t * theta) / sinTheta;
-	ans.w = q1.w * sin1 + q2.w * sin2;
-	ans.x = q1.x * sin1 + q2.x * sin2;
-	ans.y = q1.y * sin1 + q2.y * sin2;
-	ans.z = q1.z * sin1 + q2.z * sin2;
-	return ans;
+	// クォータニオンの内積を計算
+	float dot = start.x * end.x + start.y * end.y + start.z * end.z + start.w * end.w;
+	// 内積が負の場合は、片方のクォータニオンを反転
+	Quaternion endQuat = end;
+	if (dot < 0.0f) {
+		endQuat = { -end.x, -end.y, -end.z, -end.w };
+		dot = -dot;
+	}
+	// 内積が 1 に近い場合は、線形補間
+	if (dot > 0.9995f) {
+		return Normalize(start + (endQuat - start) * t);
+	}
+	// クォータニオンの角度を計算
+	float theta = acosf(dot);
+	// クォータニオンの正規化
+	float sinTheta = sinf(theta);
+	float sinTTheta = sinf(t * theta);
+	float sinOneMinusTTheta = sinf((1.0f - t) * theta);
+	return (start * sinOneMinusTTheta + endQuat * sinTTheta) / sinTheta;
 
+}
+
+Quaternion MyMath::Normalize(const Quaternion& quaternion)
+{
+	
+	float length = sqrtf(quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z + quaternion.w * quaternion.w);
+	if (length == 0.0f) {
+		return { 0.0f, 0.0f, 0.0f, 1.0f }; // ゼロ除算を避けるためのデフォルト値
+	}
+	return { quaternion.x / length, quaternion.y / length, quaternion.z / length, quaternion.w / length };
 }
 
 void MyMath::MatrixImGuiText(const Matrix4x4& matrix, const char* label)

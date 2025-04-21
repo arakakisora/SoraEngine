@@ -159,7 +159,6 @@
     <ClCompile Include="engine\camera\CameraManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-
     <ClCompile Include="engine\particle\ParticleMnager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -167,7 +166,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="engine\particle\ParticleEmitter.cpp">
-
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -304,6 +302,9 @@
     <ClInclude Include="engine\particle\ParticleMnager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="engine\math\Quaternion.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Object3d.hlsli">
@@ -311,5 +312,9 @@
     </None>
     <None Include="Resources\Shaders\Particle.hlsli" />
     <None Include="Resources\Shaders\Sprite.hlsli" />
+    <None Include="Resources\models\animationfly.bin">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="Resources\models\animationfly.gltf" />
   </ItemGroup>
 </Project>
