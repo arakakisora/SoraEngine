@@ -187,6 +187,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
    
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
+    <ClInclude Include="engine\math\Quaternion.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
     <ClInclude Include="engine\scene\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
@@ -242,6 +243,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\blocks.csv" />
+    <None Include="Resources\models\animationfly.bin" />
+    <None Include="Resources\models\animationfly.gltf" />
     <None Include="Resources\Shaders\Object3d.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

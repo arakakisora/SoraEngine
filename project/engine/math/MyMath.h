@@ -4,6 +4,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Vector2.h"
+#include "Quaternion.h"
 #pragma once
 #include <assert.h>
 #include <cmath>
@@ -53,9 +54,7 @@ struct AABB {
 	Vector3 max;
 };
 
-struct Quaternion {
-	float w, x, y, z;
-};
+
 
 namespace MyMath {
 	//回転
@@ -136,6 +135,9 @@ namespace MyMath {
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& Quaternion, const Vector3& translate);
 	//球面線形補間
 	Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
+
+	//クオタニオンの正規化
+	Quaternion Normalize(const Quaternion& quaternion);
 
 
 

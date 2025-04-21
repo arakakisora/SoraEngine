@@ -349,5 +349,9 @@
 
     <None Include="Resources\Shaders\Particle.hlsli" />
     <None Include="Resources\Shaders\Sprite.hlsli" />
+    <None Include="Resources\models\animationfly.bin">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="Resources\models\animationfly.gltf" />
   </ItemGroup>
 </Project>
