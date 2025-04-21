@@ -44,7 +44,7 @@ void GamePlayScene::Initialize()
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("AnimatedCube.gltf");
+	object3D->SetModel("animationfly.gltf");
 	object3D->SetLighting(true);
 	object3D->SetDirectionalLightIntensity(1.0f);
 
@@ -374,7 +374,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("plane.gltf");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 	ModelManager::GetInstans()->LoadModel("terrain.obj");
-	ModelManager::GetInstans()->LoadModel("AnimatedCube.gltf");
+	ModelManager::GetInstans()->LoadModel("animationfly.gltf");
 	ModelManager::GetInstans()->LoadModel("sphere.gltf");
 
 
