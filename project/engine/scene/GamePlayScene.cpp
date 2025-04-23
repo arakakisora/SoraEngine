@@ -376,6 +376,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("terrain.obj");
 	ModelManager::GetInstans()->LoadModel("animationfly.gltf");
 	ModelManager::GetInstans()->LoadModel("sphere.gltf");
+	ModelManager::GetInstans()->LoadModel("player.gltf");
 
 
 }
