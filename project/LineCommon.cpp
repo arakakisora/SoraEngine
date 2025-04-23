@@ -9,9 +9,10 @@ LineCommon* LineCommon::GetInstance()
 	return instance_;
 }
 
-void LineCommon::Initialize(DirectXCommon* dxCommon)
+void LineCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 {
 	dxCommon_ = dxCommon;
+	srvManager_ = srvManager;
 	//パイプラインの生成
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);

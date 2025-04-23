@@ -10,6 +10,7 @@
 #include "SceneManager.h"
 #include "ParticleEmitter.h"
 #include "ParticleMnager.h"
+#include "Line.h"
 
 
 
@@ -53,8 +54,10 @@ private:
 	bool spotLight = true;
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
-
+	
 	bool number = 0;
+
+	std::unique_ptr<Line> line;
 
 
 

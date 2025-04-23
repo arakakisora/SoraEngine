@@ -9,6 +9,7 @@
 #include "CameraManager.h"
 #include "ParticleMnager.h"
 #include <Logger.h>
+#include "LineCommon.h"
 
 void GamePlayScene::Initialize()
 {
@@ -64,7 +65,8 @@ void GamePlayScene::Initialize()
 
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
-
+	line = std::make_unique<Line>();
+	line->Initialize(LineCommon::GetInstance());
 
 
 }
@@ -125,7 +127,8 @@ void GamePlayScene::Update()
 	particleEmitter->Update();
 	sprite->Update();
 
-
+	line->DrawLine({ 0,0,0 }, { 1,1,0 }, { 1,0,0,1 });
+	line->Update();
 
 #ifdef _DEBUG
 
@@ -203,6 +206,7 @@ void GamePlayScene::Update()
 			sprite->setColor(color);
 		}
 	}
+
 
 	ImGui::Text("gamePlayScene %d");
 	if (ImGui::Button("GameClearScene"))
@@ -351,6 +355,8 @@ void GamePlayScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 	object3D->Draw();
 	terrain->Draw();
+	//ラインの描画
+	line->Draw();
 
 
 
