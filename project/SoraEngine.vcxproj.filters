@@ -353,5 +353,6 @@
       <Filter>リソース ファイル</Filter>
     </None>
     <None Include="Resources\models\animationfly.gltf" />
+    <None Include="Resources\models\player.gltf" />
   </ItemGroup>
 </Project>
