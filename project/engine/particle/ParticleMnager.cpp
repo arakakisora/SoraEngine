@@ -102,9 +102,11 @@ void ParticleMnager::Update()
 			(*particleIterator).currentTime += 1.0f / 60.0f;
 			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
 
+			//ローテート
+			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 
 			//ワールド行列を計算
-			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
+			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix* MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
@@ -239,7 +241,7 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 
 
 		//パーティクルを追加
-		particleGroups.at(name).particles.push_back(MakeNewParticle(randomEngine, position));
+		particleGroups.at(name).particles.push_back(MakeAttackPaarticle(randomEngine, position));
 
 	}
 
@@ -277,6 +279,31 @@ Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vecto
 	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
 	particle.lifetime = distTime(randomEngine);
+	particle.currentTime = 0;
+	return particle;
+}
+
+Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate)
+{
+	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
+	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+	std::uniform_real_distribution<float>disRotate(-std::numbers::pi_v<float>, std::numbers::pi_v<float>);
+	std::uniform_real_distribution<float>disScale(0.4f, 1.5f);
+
+	Particle particle;
+	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+
+	particle.transform.scale = { 0.05f,disScale(randomEngine),1.0f};
+	particle.transform.rotate = { 0.0f,0.0f,disRotate(randomEngine)};
+	//particle.transform.translate = translate + randomTranslate;
+	particle.transform.translate = translate;
+	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+	particle.Velocity = { 0.0f,0.0f,0.0f };
+	//particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
+	particle.color = { 1.0f,1.0f,1.0f,1.0f };
+	//particle.lifetime = distTime(randomEngine);
+	particle.lifetime = 1.0f;
 	particle.currentTime = 0;
 	return particle;
 }

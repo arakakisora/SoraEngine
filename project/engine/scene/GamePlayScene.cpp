@@ -19,8 +19,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate({ 0,6,-20, });//カメラの位置
-	camera2->SetRotate({ 0.3f,0,0 });//カメラの向き
+	camera2->SetTranslate(Vector3(10, 0, -15));//カメラの位置
+	camera2->SetRotate({ 0.0f,0,0 });//カメラの向き
 	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -62,7 +62,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle2");
 
 
 
@@ -386,7 +386,7 @@ void GamePlayScene::Loadparticle()
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/uvChecker.png", "plane.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/circle2.png", "plane.obj");
 
 }
 

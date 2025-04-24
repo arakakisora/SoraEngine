@@ -203,6 +203,15 @@ Matrix4x4 MyMath::MakeRotateZMatrix(float radian)
 }
 
 
+Matrix4x4 MyMath::MakeRotateMatrix(const Vector3& rotate)
+{
+
+	Matrix4x4 rotateX = MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateY = MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZ = MakeRotateZMatrix(rotate.z);
+	return rotateX * rotateY * rotateZ;
+}
+
 Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
 

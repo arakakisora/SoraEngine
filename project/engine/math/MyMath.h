@@ -78,6 +78,9 @@ namespace MyMath {
 	//回転Z
 	Matrix4x4 MakeRotateZMatrix(float radian);
 
+	//回転XYZ
+	Matrix4x4 MakeRotateMatrix(const Vector3& rotate);
+
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
 	float Cot(float theta);
