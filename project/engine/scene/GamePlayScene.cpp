@@ -66,7 +66,7 @@ void GamePlayScene::Initialize()
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 	line = std::make_unique<Line>();
-	line->Initialize(LineCommon::GetInstance());
+	
 
 
 }
@@ -127,9 +127,9 @@ void GamePlayScene::Update()
 	particleEmitter->Update();
 	sprite->Update();
 
-	line->DrawLine({ 0,0,0 }, { 1,1,0 }, { 1,0,0,1 });
-	line->Update();
-
+	line->DrawGrid();
+	
+	
 #ifdef _DEBUG
 
 	ImGui::Text("number%d",number);
@@ -353,21 +353,21 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
-	terrain->Draw();
-	//ラインの描画
-	line->Draw();
-
+	/*object3D->Draw();
+	terrain->Draw();*/
+	
+	
 
 
 	ParticleMnager::GetInstance()->Draw();
+	LineCommon::GetInstance()->Draw();
 
 #pragma endregion
 
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	sprite->Draw();
+	//sprite->Draw();
 
 #pragma endregion
 }

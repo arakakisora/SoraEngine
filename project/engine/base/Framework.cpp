@@ -94,6 +94,7 @@ void Framework::Update()
 	Input::GetInstance()->Update();
 	ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
+	LineCommon::GetInstance()->Update();
 	
 }
 
