@@ -22,7 +22,7 @@ void Line::DrawGrid(float Gridhalfwidth, uint32_t Subdivision)
 		Vector3 start{ x,0.0f,-Gridhalfwidth };
 		Vector3 end{ x,0.0f,Gridhalfwidth };
 
-		LineCommon::GetInstance()->DrawLine({-2,0,0}, {0,0,0}, {1,0,0,1});
+		LineCommon::GetInstance()->DrawLine(start, end, {1,0,0,1});
 		
 
 	}

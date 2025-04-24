@@ -128,6 +128,7 @@ void GamePlayScene::Update()
 	sprite->Update();
 
 	line->DrawGrid();
+	//line->DrawLine({ 0,0,0 }, { 0,0,1 }, { 1,0,0,1 });
 	
 	
 #ifdef _DEBUG
