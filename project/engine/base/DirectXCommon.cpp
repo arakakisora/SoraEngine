@@ -416,13 +416,10 @@ void DirectXCommon::ImguiBegin()
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	//Transition Barrierを張る
 	commandList->ResourceBarrier(1, &barrier);
-	//描画先のRVTを設定する
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+	
 	//描画先のRTVとDSVを設定する
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -440,9 +437,7 @@ void DirectXCommon::ImguiBegin()
 
 void DirectXCommon::End()
 {
-	
-	
-	
+	barrier.Transition.pResource = renderTargetTextureResource.Get();
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	//ToransitionBarrierを張る
@@ -483,6 +478,7 @@ void DirectXCommon::ImguiEnd()
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 	//画面に描く処理はすべて終わり、画面に映すので、状態遷移
 		//今回はRenderTragetからPresentにする
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	//ToransitionBarrierを張る
