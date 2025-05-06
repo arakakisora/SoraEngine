@@ -52,11 +52,13 @@ void Game::Draw()
 
 	//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
 	dxCommon->Begin();
+	//dxCommon->ImguiBegin();
 	srvManager->PreDraw();
 
 	SceneManager::GetInstance()->Draw();
 #ifdef _DEBUG
-	imGuiMnager->Draw();
+	//imGuiMnager->Draw();
 #endif // _DEBUG
+	//dxCommon->ImguiBegin();
 	dxCommon->End();
 }

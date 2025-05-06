@@ -11,6 +11,7 @@
 #include<vector>
 #include <chrono>
 #include <thread>  // std::this_thread
+#include <Vector4.h>
 
 class DirectXCommon
 {
@@ -20,6 +21,7 @@ class DirectXCommon
 	void DepthBufferInitialize();
 	void DescriptorHeepInitialize();
 	void RTVInitialize();
+	void RenderTargetTextureInitialize();
 	void DSVInitialize();
 	void FenceInitialize();
 	void ViewportInitialize();
@@ -32,8 +34,10 @@ public:
 	void Initialize(WinApp* winApp);
 	//描画前処理
 	void Begin();
+	void ImguiBegin();
 	//描画後処理
 	void End();
+	void ImguiEnd();
 
 	//<summary>
 	//SRVの指定番号のCPUデスクリプタハンドルを取得
@@ -98,6 +102,8 @@ public:
 
 	void CommandKick();
 
+	//RenderTargetTextureの生成
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetTextureResource(uint32_t width, uint32_t height,DXGI_FORMAT format,const Vector4&ClearColor);
 
 	//最大SRV数(最大テクスチャ枚数)
 	static const uint32_t kMaxSRVCount;
@@ -126,6 +132,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;//RTV
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap;	//SRV
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;//DVS用のヒープでディスクリプタの数は1．//DSVはShader内で触るものではない
+
+
 	//RTV
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStarHandle;
@@ -148,6 +156,11 @@ private:
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
 
+	//レンダーテクスチャ
+	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTextureResource;//レンダーテクスチャ
+	D3D12_CPU_DESCRIPTOR_HANDLE renderTargetTextureHandle;//レンダーテクスチャのハンドル
+	const Vector4 clearColor = {1.0f,0.0f,0.0f,1.0f };//とりあえず赤
+	
 
 private:
 
