@@ -3,6 +3,7 @@
 
 
 
+
 void Game::Initialize()
 {
 	
@@ -51,10 +52,14 @@ void Game::Draw()
 {
 
 	//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
-	dxCommon->Begin();
+	ofscreenRenderManager->Begin();
 	srvManager->PreDraw();
-
 	SceneManager::GetInstance()->Draw();
+	ofscreenRenderManager->End();
+	
+	dxCommon->Begin();
+	//描画
+	ofscreenRenderManager->Draw();
 #ifdef _DEBUG
 	imGuiMnager->Draw();
 #endif // _DEBUG
