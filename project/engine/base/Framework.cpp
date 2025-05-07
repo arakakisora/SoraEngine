@@ -18,6 +18,10 @@ void Framework::Initialize()
 	//srvマネージャの初期化	
 	srvManager = std::make_unique<SrvManager>();
 	srvManager->Initialize(dxCommon.get());
+	//ofscreenRenderManagerの初期化
+	ofscreenRenderManager = std::make_unique<OfscreenRenderManager>();
+	ofscreenRenderManager->Initialize(dxCommon.get(), srvManager.get());
+
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 	//Input初期化

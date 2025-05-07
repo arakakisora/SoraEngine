@@ -24,6 +24,7 @@
 #include "SrvManager.h"
 #include "SceneManager.h"
 #include <SceneFactory.h>
+#include "OfscreenRenderManager.h"
 
 
 class Framework
@@ -58,6 +59,8 @@ public:
 	std::unique_ptr<ImGuiManager> imGuiMnager;
 	//SceneManagerのポインタ
 	std::unique_ptr<AbstractSceneFactory> sceneFactory;
+	std::unique_ptr<OfscreenRenderManager> ofscreenRenderManager;
+
 
 };
 

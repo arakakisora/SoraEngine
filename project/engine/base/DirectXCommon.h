@@ -21,7 +21,6 @@ class DirectXCommon
 	void DepthBufferInitialize();
 	void DescriptorHeepInitialize();
 	void RTVInitialize();
-	void RenderTargetTextureInitialize();
 	void DSVInitialize();
 	void FenceInitialize();
 	void ViewportInitialize();
@@ -33,11 +32,11 @@ public:
 	//初期化
 	void Initialize(WinApp* winApp);
 	//描画前処理
+	
 	void Begin();
-	void ImguiBegin();
 	//描画後処理
+	
 	void End();
-	void ImguiEnd();
 
 	//<summary>
 	//SRVの指定番号のCPUデスクリプタハンドルを取得
@@ -73,8 +72,17 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
 
-	ID3D12Device* GetDevice() const { return device.Get(); }
-	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
+	ID3D12Device* GetDevice() const { return device.Get(); }//デバイスを取得する
+	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }//コマンドリストを取得する
+
+	// RTVのビュー記述子を取得する
+	const D3D12_RENDER_TARGET_VIEW_DESC& GetRTVDesc() const { return rtvDesc; }
+	//getdsvDescriptorHeap
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDSVDescriptorHeap() { return dsvDescriptorHeap; }
+	//getviewport
+	D3D12_VIEWPORT GetViewport() const { return viewport; }
+	//getscissorRect
+	D3D12_RECT GetScissorRect() const { return scissorRect; }
 
 	//CompileShader関数の作成
 	IDxcBlob* CompileShader(
@@ -102,9 +110,10 @@ public:
 
 	void CommandKick();
 
-	//RenderTargetTextureの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetTextureResource(uint32_t width, uint32_t height,DXGI_FORMAT format,const Vector4&ClearColor);
+	
+	void TransitionResource(ID3D12Resource* resource,D3D12_RESOURCE_STATES before,D3D12_RESOURCE_STATES after);
 
+	
 	//最大SRV数(最大テクスチャ枚数)
 	static const uint32_t kMaxSRVCount;
 private:
@@ -156,10 +165,6 @@ private:
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
 
-	//レンダーテクスチャ
-	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTextureResource;//レンダーテクスチャ
-	D3D12_CPU_DESCRIPTOR_HANDLE renderTargetTextureHandle;//レンダーテクスチャのハンドル
-	const Vector4 clearColor = {1.0f,0.0f,0.0f,1.0f };//とりあえず赤
 	
 
 private:
