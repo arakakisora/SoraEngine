@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include "Input.h"
 #include "TitleScene.h"
+#include "CameraManager.h"
 
 void GamePlayScene::Initialize()
 {
@@ -14,10 +15,15 @@ void GamePlayScene::Initialize()
 	//カメラの生成	
 	camera = new Camera();
 	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 0,0,-30, });
-	Object3DCommon::GetInstance()->SetDefaultCamera(camera);
+	camera->SetTranslate({ 0,0,-10, });
+	CameraManager::GetInstance()->AddCamera("maincam", camera);
+
+	// デフォルトカメラを設定
+	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 
+	
+	
 
 	//3Dオブジェクト読み込み
 	ModelManager::GetInstans()->LoadModel("plane.obj");
@@ -51,13 +57,9 @@ void GamePlayScene::Initialize()
 	player->SetDeathHeight(0.0f);
 
 
-	//カメラのターゲットをプレイヤーに設定
-	camera->SetFollowTarget(object3DPlayer, { 0.0f, 0.0f, -15.0f });
-	camera->SetFollowMode(true);
 
 
-	/*camera->SetFollowTarget(player, { 0.0f, 0.0f, -15.0f });
-	camera->SetFollowMode(false);*/
+	
 
 	//3Dオブジェクトの初期化
 	object3D2nd = new Object3D();
@@ -89,6 +91,12 @@ void GamePlayScene::Initialize()
 	skydome_->Initialize(Object3DCommon::GetInstance());
 	skydome_->SetModel("skyplane.obj");
 	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
+
+	//フォローカメラ設定
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(object3DPlayer, { 0, 0, -15 });
+
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+
 
 }
 
@@ -131,7 +139,7 @@ void GamePlayScene::Update()
 	skydome_->Update();
 
 	//カメラの更新
-	camera->Update();
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 	//プレイヤーの更新
 	player->Update();
@@ -205,6 +213,7 @@ void GamePlayScene::Update()
 
 void GamePlayScene::Draw()
 {
+
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();

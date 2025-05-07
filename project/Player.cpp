@@ -38,7 +38,7 @@ Player::~Player()
 
 void Player::Update() {
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 
 	if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 	{

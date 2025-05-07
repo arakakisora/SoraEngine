@@ -152,7 +152,7 @@ private:
 	Matrix4x4 worldViewProjectionMatrix;
 
 	//ライトのオンオフ
-	bool enableLighting = true;
+	bool enableLighting = false;
 
 	Camera* camera = nullptr;
 	//カメラforGPU

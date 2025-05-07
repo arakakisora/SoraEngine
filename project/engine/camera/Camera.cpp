@@ -31,7 +31,7 @@ void Camera::Update()
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	viewMatrix = worldMatrix.Inverse();
 	viewProjectionMatrix = viewMatrix * projectionMatrix;
-#ifdef DEBUG_
+#ifdef _DEBUG
 
 	if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 	{

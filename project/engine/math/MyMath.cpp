@@ -251,6 +251,26 @@ Vector3 MyMath::Lerp(const Vector3& v1, const Vector3& v2, float t)
 
 }
 
+Vector3 MyMath::Slerp(const Vector3& v1, const Vector3& v2, float t)
+{
+	float dot = Dot(v1, v2);
+	if (dot < -1.0f) { dot = -1.0f; }
+	if (dot > 1.0f) { dot = 1.0f; }
+	float theta = std::acos(dot);
+	float sinTheta = std::sin(theta);
+	if (sinTheta < 0.001f) {
+		return Lerp(v1, v2, t);
+	}
+	float a = std::sin((1 - t) * theta) / sinTheta;
+	float b = std::sin(t * theta) / sinTheta;
+	return v1 * a + v2 * b;
+}
+
+float MyMath::fLerp(float v1, float v2, float t)
+{
+	return v1 + (v2 - v1) * t;
+}
+
 Matrix4x4 MyMath::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearCilp, float farClip)
 {
 

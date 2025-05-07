@@ -87,6 +87,9 @@ namespace MyMath {
 
 	//Lerp
 	Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+	//Slerp
+	Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t);
+	float fLerp(float v1, float v2, float t);
 
 	//透視投影行列
 	Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearCilp, float farClip);
