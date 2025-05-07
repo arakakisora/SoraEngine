@@ -145,6 +145,7 @@ void GamePlayScene::Update()
 
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 
+
 	}
 
 	//敵の更新
