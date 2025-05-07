@@ -3,7 +3,7 @@
 #include "Sprite.h"
 
 
-class GameclearScene :public BaseScene
+class GameClearScene :public BaseScene
 {
 
 public:

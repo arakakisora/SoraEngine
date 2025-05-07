@@ -17,7 +17,6 @@ struct Sphere {
 	Vector3 center;
 	float radius;
 };
-#include "RenderingData.h"
 
 
 
@@ -69,9 +68,6 @@ namespace MyMath {
 	//cross
 	Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
-	Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
-
-
 	//回転X
 	Matrix4x4 MakeRotateXMatrix(float radian);
 	//回転Y
@@ -87,7 +83,7 @@ namespace MyMath {
 	float Dot(const Vector3& v1, const float& num);
 	float Dot(const Quaternion& q1, const Quaternion& q2);
 	float Length(const Vector3& v);
-	
+
 
 	//Lerp
 	Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
@@ -137,11 +133,6 @@ namespace MyMath {
 	void MatrixImGuiText(const Matrix4x4& matrix, const char* label);
 	void QuaternionImGuiText(const Quaternion& quaternion, const char* label);
 	void Vector3ImGuiText(const Vector3& vector, const char* label);
-
-	float fLerp(float a, float b, float t);
-	Vector3 Lerp(const Vector3& a, const Vector3& b, float t);
-
-	bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 }
 
 

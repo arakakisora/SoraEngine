@@ -89,15 +89,6 @@ Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 
 Vector3 MyMath::Normlize(const Vector3& vector)
 {
-Vector3 MyMath::TransformNormal(const Vector3& v, const Matrix4x4& m)
-{
-	Vector3 result{
-		{v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0]},
-		{v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1]},
-		{v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]},
-	};
-	return result;
-}
 
 	float length = std::sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 	return Vector3(vector.x / length, vector.y / length, vector.z / length);
@@ -255,7 +246,7 @@ float MyMath::Length(const Vector3& v)
 
 Vector3 MyMath::Lerp(const Vector3& v1, const Vector3& v2, float t)
 {
-	
+
 	return v1 + (v2 - v1) * t;
 
 }
@@ -494,27 +485,10 @@ bool MyMath::IsCollision(const AABB& aabb, const Segment& segment)
 {
 	Vector3 Tmin{
 
-
-
-	return ans;
-
-}
-
-float MyMath::fLerp(float a, float b, float t)
-{
-	float  ans;
-
-	ans = t * a + (1.0f - t) * b;
-	return ans;
-}
-
 		{(aabb.min.x - segment.origin.x) / segment.diff.x},
 		{(aabb.min.y - segment.origin.y) / segment.diff.y},
 		{(aabb.min.z - segment.origin.z) / segment.diff.z},
 	};
-Vector3 MyMath::Lerp(const Vector3& a, const Vector3& b, float t)
-{
-	Vector3 ans;
 
 	Vector3 Tmax{
 		{(aabb.max.x - segment.origin.x) / segment.diff.x},
@@ -553,9 +527,6 @@ Matrix4x4 MyMath::MakeRotateAxisAngle(const Vector3& axis, float angle)
 	float cosA = cosf(angle);
 	float sinA = sinf(angle);
 	float oneMinusCosA = 1.0f - cosA;
-	ans.x = t * a.x + (1.0f - t) * b.x;
-	ans.y = t * a.y + (1.0f - t) * b.y;
-	ans.z = t * a.z + (1.0f - t) * b.z;
 
 	float x = axis.x;
 	float y = axis.y;
@@ -593,17 +564,10 @@ Matrix4x4 MyMath::DirectionToDirection(const Vector3& from, const Vector3& to)
 	Vector3 f = MyMath::Normlize(from);
 	Vector3 t = MyMath::Normlize(to);
 	float dot = MyMath::Dot(f, t);
-}
 
 	// ほぼ同じ方向なら単位行列
 	if (dot > 0.9999f) {
 		return MakeIdentity4x4();
-	}
-bool MyMath::IsCollision(const AABB& aabb1, const AABB& aabb2)
-{
-	if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) && (aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) && (aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z)) {
-
-		return true;
 	}
 
 	// 真逆方向（180度）なら適当な直交軸を使って180度回転
@@ -614,11 +578,6 @@ bool MyMath::IsCollision(const AABB& aabb1, const AABB& aabb2)
 		axis = MyMath::Normlize(axis);
 		return MakeRotateAxisAngle(axis, std::numbers::pi_v<float>);
 	}
-	return false;
-}
-
-
-
 
 	// 通常回転
 	Vector3 axis = MyMath::Cross(f, t);
@@ -682,7 +641,7 @@ Quaternion MyMath::Slerp(const Quaternion& start, const Quaternion& end, float t
 
 Quaternion MyMath::Normalize(const Quaternion& quaternion)
 {
-	
+
 	float length = sqrtf(quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z + quaternion.w * quaternion.w);
 	if (length == 0.0f) {
 		return { 0.0f, 0.0f, 0.0f, 1.0f }; // ゼロ除算を避けるためのデフォルト値

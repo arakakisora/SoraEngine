@@ -4,7 +4,7 @@
 #include <Object3DCommon.h>
 #include <SpriteCommon.h>
 
-void GameclearScene::Initialize()
+void GameClearScene::Initialize()
 {
 	//titeleの生成
 	sprite = new Sprite();
@@ -12,13 +12,13 @@ void GameclearScene::Initialize()
 	//titleSprite->SetSize({ 1280,720 });
 }
 
-void GameclearScene::Finalize()
+void GameClearScene::Finalize()
 {
 	delete sprite;
 	sprite = nullptr;
 }
 
-void GameclearScene::Update()
+void GameClearScene::Update()
 {
 
 	//スプライトの更新
@@ -33,7 +33,7 @@ void GameclearScene::Update()
 
 }
 
-void GameclearScene::Draw()
+void GameClearScene::Draw()
 {
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む

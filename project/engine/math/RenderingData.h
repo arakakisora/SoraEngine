@@ -142,10 +142,4 @@ struct Animation {
 	std::map<std::string, NodeAnimation> nodeAnimations;
 };
 
-}; 
 
-struct AABB {
-
-	Vector3 min;
-	Vector3 max;
-};
