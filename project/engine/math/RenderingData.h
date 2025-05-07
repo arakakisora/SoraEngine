@@ -141,3 +141,4 @@ struct Animation {
 	float duration;//アニメーションの長さ
 	std::map<std::string, NodeAnimation> nodeAnimations;
 };
+

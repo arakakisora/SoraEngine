@@ -561,25 +561,29 @@ Matrix4x4 MyMath::MakeRotateAxisAngle(const Vector3& axis, float angle)
 
 Matrix4x4 MyMath::DirectionToDirection(const Vector3& from, const Vector3& to)
 {
-	Vector3 fromNormalized = MyMath::Normlize(from);
-	Vector3 toNormalized = MyMath::Normlize(to);
-	float dotProduct = MyMath::Dot(fromNormalized, toNormalized);
+	Vector3 f = MyMath::Normlize(from);
+	Vector3 t = MyMath::Normlize(to);
+	float dot = MyMath::Dot(f, t);
 
-	if (dotProduct > 0.9999f) {
-		return Matrix4x4{
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		};
-	} else if (dotProduct < -0.9999f) {
-		Vector3 orthogonalAxis = (fabs(fromNormalized.x) > fabs(fromNormalized.z)) ? Vector3{ -fromNormalized.y, fromNormalized.x, 0.0f } : Vector3{ 0.0f, -fromNormalized.z, fromNormalized.y };
-		orthogonalAxis = MyMath::Normlize(orthogonalAxis);
-		return MakeRotateAxisAngle(orthogonalAxis, std::numbers::pi_v<float>);
+	// ほぼ同じ方向なら単位行列
+	if (dot > 0.9999f) {
+		return MakeIdentity4x4();
 	}
 
-	Vector3 axis = MyMath::Cross(fromNormalized, toNormalized);
-	float angle = acos(dotProduct);
+	// 真逆方向（180度）なら適当な直交軸を使って180度回転
+	if (dot < -0.9999f) {
+		// from と直交する適当なベクトルを選ぶ
+		Vector3 ortho = (std::abs(f.x) < 0.1f) ? Vector3{ 1, 0, 0 } : Vector3{ 0, 1, 0 };
+		Vector3 axis = MyMath::Cross(f, ortho);
+		axis = MyMath::Normlize(axis);
+		return MakeRotateAxisAngle(axis, std::numbers::pi_v<float>);
+	}
+
+	// 通常回転
+	Vector3 axis = MyMath::Cross(f, t);
+	axis = MyMath::Normlize(axis);
+	float angle = std::acos(std::clamp(dot, -1.0f, 1.0f)); // NaN対策
+
 	return MakeRotateAxisAngle(axis, angle);
 }
 

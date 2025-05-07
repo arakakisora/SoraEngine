@@ -26,6 +26,9 @@
 #include <SceneFactory.h>
 #include "OfscreenRenderManager.h"
 
+#include "Linecommon.h"
+#include "Line.h"
+
 
 class Framework
 {

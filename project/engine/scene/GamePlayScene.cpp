@@ -9,6 +9,7 @@
 #include "CameraManager.h"
 #include "ParticleMnager.h"
 #include <Logger.h>
+#include "LineCommon.h"
 
 void GamePlayScene::Initialize()
 {
@@ -64,8 +65,11 @@ void GamePlayScene::Initialize()
 
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
+	line = std::make_unique<Line>();
 
 
+	startline = { 0,0,0 };
+	endline = { 1,0,0 };
 
 }
 
@@ -126,10 +130,27 @@ void GamePlayScene::Update()
 	sprite->Update();
 
 
+	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
+	line->DrawGrid(10.0f, 10);
+	line->DrawLienAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
+	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
+	
+
 
 #ifdef _DEBUG
 
-	ImGui::Text("number%d",number);
+	if (ImGui::CollapsingHeader("line", ImGuiTreeNodeFlags_DefaultOpen)) {
+	
+		ImGui::DragFloat3("startline", &startline.x, 0.01f);
+		ImGui::DragFloat3("endline", &endline.x, 0.01f);
+
+		line->DrawLine(startline, endline, { 1,0,0,1 });
+	
+	}
+	
+
+
+		ImGui::Text("number%d", number);
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
@@ -203,6 +224,7 @@ void GamePlayScene::Update()
 			sprite->setColor(color);
 		}
 	}
+
 
 	ImGui::Text("gamePlayScene %d");
 	if (ImGui::Button("GameClearScene"))
@@ -354,7 +376,9 @@ void GamePlayScene::Draw()
 
 
 
+
 	ParticleMnager::GetInstance()->Draw();
+	LineCommon::GetInstance()->Draw();
 
 #pragma endregion
 

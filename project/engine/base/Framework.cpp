@@ -42,6 +42,10 @@ void Framework::Initialize()
 	//3Dオブジェクト共通部の初期化
 	Object3DCommon::GetInstance()->Initialize(dxCommon.get());
 
+	//linen初期化
+	LineCommon::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
+	
+
 #ifdef _DEBUG
 	//imguiMnagerの初期化
 	imGuiMnager = std::make_unique<ImGuiManager>();
@@ -79,6 +83,8 @@ void Framework::Finalize()
 	SpriteCommon::GetInstance()->Finalize();
 	Object3DCommon::GetInstance()->Finalize();
 	SceneManager::GetInstance()->Finalize();
+	LineCommon::GetInstance()->Finalize();
+
 }
 
 void Framework::Update()
@@ -92,6 +98,7 @@ void Framework::Update()
 	Input::GetInstance()->Update();
 	ParticleMnager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
+	LineCommon::GetInstance()->Update();
 	
 }
 

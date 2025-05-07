@@ -166,6 +166,14 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="engine\particle\ParticleEmitter.cpp">
+
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="LineCommon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="OfscreenRenderManager.cpp">
@@ -183,10 +191,15 @@
     <FxCompile Include="Resources\Shaders\Particle.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.VS.hlsl" />
+
     <FxCompile Include="Resources\Shaders\Fullscreen.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Fullscreen.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\GrayScale.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\GrayScale.PS.hlsl" />
+
+    <FxCompile Include="Resources\Shaders\Line.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Line.VS.hlsl" />
+
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\2d\Sprite.h">
@@ -309,7 +322,14 @@
     <ClInclude Include="engine\particle\ParticleMnager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+
+    <ClInclude Include="LineCommon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+
     <ClInclude Include="engine\math\Quaternion.h">
+
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="OfscreenRenderManager.h">
@@ -322,12 +342,18 @@
     </None>
     <None Include="Resources\Shaders\Particle.hlsli" />
     <None Include="Resources\Shaders\Sprite.hlsli" />
+
+    <None Include="Resources\Shaders\Line.hlsli" />
+
     <None Include="Resources\models\animationfly.bin">
       <Filter>リソース ファイル</Filter>
     </None>
     <None Include="Resources\models\animationfly.gltf" />
     <None Include="Resources\models\player.gltf" />
+
     <None Include="Resources\Shaders\Fullscreen.hlsli" />
     <None Include="Resources\Shaders\GrayScale.hlsli" />
+
+
   </ItemGroup>
 </Project>
