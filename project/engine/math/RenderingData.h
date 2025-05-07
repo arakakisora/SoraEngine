@@ -7,6 +7,9 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
+#include "MyMath.h"
+
 
 struct VertexData {
 
@@ -29,6 +32,13 @@ struct Material {
 	int32_t enableLighting;
 	float padding[3];
 	Matrix4x4 uvTransform;
+	float shiniess;
+};
+
+struct MaterialSprite
+{
+	Vector4 color;
+	Matrix4x4 uvTransform;
 };
 
 
@@ -36,6 +46,15 @@ struct TransformationMatrix
 {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
+	Matrix4x4 worldInberseTranspose;
+
+};
+
+struct TransformationMatrixsprite
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	
 
 };
 
@@ -44,6 +63,33 @@ struct DirectionalLight {
 	Vector4 color;//ライトの色
 	Vector3 direction;//ライトの向き
 	float intensity;
+	int enable;
+};
+
+struct PointLight {
+	
+	Vector4 color;//ライトの色
+	Vector3 position;//ライトの位置
+	float intensity;//ライトの強さ
+	float radius; //ライトの半径
+	float decay; //減衰率
+	int enable;
+	float padding[2];
+};
+
+struct SpotLight
+{
+	Vector4 color; //ライトの色
+	Vector3 position; //ライトの位置
+	float intensity; //ライトの強さ
+	Vector3 direction; //ライトの向き
+	float distance; //ライトの距離
+	float decay; //減衰率
+	float consAngle; //スポットライトの余弦
+	float cosFalloffstrt;
+	int enable;
+	float padding[2];
+
 };
 
 struct MaterialData {
@@ -53,10 +99,48 @@ struct MaterialData {
 
 };
 
+struct Node {
+	Matrix4x4 localMatrix;
+	std::string name;
+	std::vector<Node> children;
+};
+
 struct ModelData {
 
 	std::vector<VertexData>vertices;
 	MaterialData material;
+	Node rootNode;
+
+
+}; 
+
+struct CaMeraForGpu {
+	Vector3 worldPosition;
+};
+
+//animation
+template<typename tValue>
+struct Keyframe {
+	float time;
+	tValue value;
+};
+
+using KeyframeVector3 = Keyframe<Vector3>;
+using KeyframeQuaternion = Keyframe<Quaternion>;
+
+struct NodeAnimation 
+{
+	std::vector<KeyframeVector3> translate; //平行移動
+	std::vector<KeyframeQuaternion> rotate; //回転
+	std::vector<KeyframeVector3> scale; //拡大縮小
+
+
+};
+
+struct Animation {
+	float duration;//アニメーションの長さ
+	std::map<std::string, NodeAnimation> nodeAnimations;
+};
 
 }; 
 

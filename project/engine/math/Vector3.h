@@ -1,12 +1,11 @@
 #pragma once
-
 #include <corecrt_math.h>
-
 
 /// <summary>
 /// 3次元ベクトル
 /// </summary>
 struct Vector3 final {
+
 	float x;
 	float y;
 	float z;
@@ -42,6 +41,12 @@ struct Vector3 final {
         x += other.x;
         y += other.y;
         z += other.z;
+    }
+
+    void operator-=(const Vector3& other) {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
     }
 
     float Dot(const Vector3& v) const {

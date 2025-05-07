@@ -6,6 +6,10 @@
 #include <imgui.h>
 #include "Input.h"
 #include "TitleScene.h"
+#include "CameraManager.h"
+#include "ParticleMnager.h"
+#include <Logger.h>
+#include "LineCommon.h"
 
 void GamePlayScene::Initialize()
 {
@@ -274,6 +278,7 @@ void GamePlayScene::GenerateObject3D()
 
 			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
 
+	}
 
 				Object3D* object3D_ = new Object3D();
 				object3D_->Initialize(Object3DCommon::GetInstance());
@@ -281,12 +286,22 @@ void GamePlayScene::GenerateObject3D()
 				blockobject3D[i][j] = object3D_;
 				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
 
+		if (ImGui::Button("Emit"))
+		{
+			particleEmitter->Emit();
+		}
+		//エミット位置
+		Vector3 position = particleEmitter->GetPosition();
+		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
+			particleEmitter->SetPosition(position);
+		}
 
 			}
 		}
 	}
 
 
+#endif // _DEBUG
 }
 
 void GamePlayScene::CheckAllCollisions()
@@ -327,7 +342,8 @@ void GamePlayScene::CheckAllCollisions()
 		// ゴールシーンに遷移
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 		
-	}
+}
 
 
 }
+

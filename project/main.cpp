@@ -22,12 +22,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region 基盤システム初期化
-
-	Framework* game = new Game();
+	
+	std::unique_ptr<Framework> game =std::make_unique<Game>();
 	//ゲーム初期化
 	game->Run();
-	
-	delete game;
 
 	return 0;
 

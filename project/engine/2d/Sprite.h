@@ -12,6 +12,7 @@
 //#include <Windows.h>
 #include <wrl/client.h>
 #include <d3d12.h>
+#include <Camera.h>
 
 
 
@@ -87,8 +88,8 @@ private:
 	//バッファー内のデータを示すポインタ
 	VertexData* vertexData = nullptr;
 	uint32_t* indexData = nullptr;
-	Material* materialData = nullptr;
-	TransformationMatrix* transformaitionMatrixData = nullptr;
+	MaterialSprite* materialData = nullptr;
+	TransformationMatrixsprite* transformaitionMatrixData = nullptr;
 
 	////vetexResourceSprite頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
@@ -122,6 +123,11 @@ private:
 	Matrix4x4 projectionMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 
+
+	Camera* camera = nullptr;
+	//カメラforGPU
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
+	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
 
 
 

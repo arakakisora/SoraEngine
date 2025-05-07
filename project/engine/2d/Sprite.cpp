@@ -6,6 +6,7 @@
 
 #include "Matrix4x4.h"
 #include <MyMath.h>
+#include <CameraManager.h>
 
 void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 {
@@ -19,8 +20,8 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 	vetexResource = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(VertexData) * 4);
 	indexResource = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(uint32_t) * 6);
-	materialResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(Material));
-	transformationMatrixResource = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
+	materialResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(MaterialSprite));
+	transformationMatrixResource = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrixsprite));
 
 
 	//リソースの先頭のアドレスから使う
@@ -45,7 +46,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//色
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData->enableLighting = false;
+	
 
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 
@@ -58,14 +59,26 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	transformaitionMatrixData->WVP = transformaitionMatrixData->WVP.MakeIdentity4x4();
 	transformaitionMatrixData->World = transformaitionMatrixData->World.MakeIdentity4x4();
 
+	//カメラforGPU
+	cameraResource = SpriteCommon::GetInstance()->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
+	cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };
 
 	//画像のサイズに合わせる
 	AdjustTextureSize();
 
+
 }
+
+
 
 void Sprite::Update()
 {
+
+	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
+	Vector3 cameraPosition = activeCamera->GetTransform().translate;
+	cameraForGpu->worldPosition = cameraPosition;
+
 	transform.rotate = { 0.0f,0.0f,rotation };
 	transform.translate = { position.x,position.y,0.0f };
 	transform.scale = { size.x,size.y,1.0f, };
@@ -133,18 +146,19 @@ void Sprite::Update()
 
 void Sprite::Draw()
 {
-	//sprite用の描画
+	// sprite用の描画
 	spriteCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 	spriteCommon_->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
+	// MaterialのCBVを設定 (RootParameter[0])
 	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-	//TransFomationMatrixBufferの場所を設定
-	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
-	//spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-	//描画！
-	//commandList->DrawInstanced(6, 1, 0, 0);
-	spriteCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
+	// テクスチャのSRVを設定 (RootParameter[1])
+	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
+	// TransformationMatrixのCBVを設定 (RootParameter[2])
+	spriteCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(2, transformationMatrixResource->GetGPUVirtualAddress());
+	// インデックス付き描画
+
+	spriteCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 
 }

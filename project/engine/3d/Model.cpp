@@ -6,13 +6,15 @@
 #include "SrvManager.h"
 
 
+
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
 {
 	/*textureFilePath_ = filename;*/
 
 	modelCommon_ = modeleCommon;
 
-	modelData = LoadObjeFile(directorypath, filename);
+	modelData = LoadModelFile(directorypath, filename);
+	animation = LoadAnimationFile(directorypath, filename);
 
 	//モデルオブジェクト
 	//モデル用のVetexResouceを作成
@@ -36,8 +38,9 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	//色
 	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 
-	materialData->enableLighting = false;//有効にするか否か
+	materialData->enableLighting = true;//有効にするか否か
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
+	materialData->shiniess = 60.0f;
 
 
 	//.objの参照しているテクスチャファイル読み込み
@@ -60,6 +63,32 @@ void Model::Draw()
 
 
 }
+
+Node Model::ReadNode(aiNode* node)
+{
+	Node result;
+	aiMatrix4x4 aiLocalMatrix = node->mTransformation;//nodeののlocalMatrixを取得
+	aiLocalMatrix.Transpose();//転置
+
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.localMatrix.m[i][j] = aiLocalMatrix[i][j];
+		}
+	}
+	result.name = node->mName.C_Str();//名前を取得
+	result.children.resize(node->mNumChildren);//子ノードの数だけリサイズ
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
+		result.children[childIndex] = ReadNode(node->mChildren[childIndex]);//子ノードを読み込む
+	}
+	return result;
+}
+
+
+
+
+
+
+
 
 MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename)
 {
@@ -90,86 +119,104 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, c
 
 }
 
-ModelData Model::LoadObjeFile(const std::string& ditrectoryPath, const std::string& filename)
+ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::string& filename)
 {
-
 	ModelData modelData;//構築するModekData
-	std::vector<Vector4>positions;//位置
-	std::vector<Vector3>normals;//法線
-	std::vector<Vector2>texcoords;//テクスチャ座標
-	std::string line;//ファイルから読んだ1行を格納するもの
+	Assimp::Importer importer;
+	std::string path = ditrectoryPath + "/" + "models" + "/" + filename;
+	const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
+	assert(scene->HasMeshes());//メッシュが何の歯対応しない
 
-	//ファイル読み込み
-	std::ifstream file(ditrectoryPath + "/" + filename);//faileを開く
-	assert(file.is_open());//開けなかったら止める
+	for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
+		aiMesh* mesh = scene->mMeshes[meshIndex];
+		assert(mesh->HasNormals());//法線情報がない
+		assert(mesh->HasTextureCoords(0));//テクスチャ座標がない
 
-	while (std::getline(file, line)) {
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier;//先頭の識別子を読む
+		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
+			aiFace& face = mesh->mFaces[faceIndex];
+			assert(face.mNumIndices == 3);//三角形以外は対応しない
 
-		if (identifier == "v") {
+			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.w = 1.0f;
-			position.x *= -1;
-			positions.push_back(position);
-		}
-		else if (identifier == "vt") {
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoord.y = 1 - texcoord.y;
-			texcoords.push_back(texcoord);
-		}
-		else if (identifier == "vn") {
+				uint32_t vectorIndex = face.mIndices[element];
+				aiVector3D& position = mesh->mVertices[vectorIndex];
+				aiVector3D& normal = mesh->mNormals[vectorIndex];
+				aiVector3D& texcoord = mesh->mTextureCoords[0][vectorIndex];
+				VertexData vertex;
+				vertex.position = { position.x,position.y,position.z,1.0f };
+				vertex.normal = { normal.x,normal.y,normal.z };
+				vertex.texcoord = { texcoord.x,texcoord.y };
+				//aiprocess_MakeLefthandedはz*=-1で、右手->左手に変換するので手動で対応
+				vertex.position.x *= -1.0f;
+				vertex.normal.x *= -1.0f;
+				modelData.vertices.push_back(vertex);
 
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normal.x *= -1;
-			normals.push_back(normal);
-		}
-		else if (identifier == "f") {
-
-			VertexData triangle[3];
-			//面は三角形限定。その他は未対応
-			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				std::string vertexDefinition;
-				s >> vertexDefinition;
-				//頂点の要素へのIndexは「位置・UV・法線」で格納されているので、分解してIndexを取得する
-				std::istringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (int32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');//区切りでインデックスを読んでいく
-					elementIndices[element] = std::stoi(index);
-				}
-				//要素へのIndexから、実際の要素の値を取得して、頂点を構築する
-				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
-
-				//VertexData veretex = { position,texcoord,normal };
-				//modelData.vertices.push_back(veretex);
-				triangle[faceVertex] = { position,texcoord,normal };
 
 			}
-			//頂点を逆順で登録刷ることで、周り順を逆にする
-			modelData.vertices.push_back(triangle[2]);
-			modelData.vertices.push_back(triangle[1]);
-			modelData.vertices.push_back(triangle[0]);
-
-		}
-		else if (identifier == "mtllib") {
-
-			//materialTemlateLibraryファイルの名前を取得する
-			std::string materialFilename;
-			s >> materialFilename;
-			//基本的にobjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す
-			modelData.material = LoadMaterialTemplateFile(ditrectoryPath, materialFilename);
-
 
 		}
 	}
+
+	//マテリアルの解析
+	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
+		aiMaterial* material = scene->mMaterials[materialIndex];
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
+			aiString texturePath;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
+			modelData.material.textureFilePath = ditrectoryPath + "/" + texturePath.C_Str();
+		}
+	}
+
+	modelData.rootNode = ReadNode(scene->mRootNode);
+
 	return modelData;
+}
+
+Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::string& filename)
+{
+	Animation animation;
+	Assimp::Importer importer;
+	std::string filepath = directoryPath + "/" + "models" + "/" + filename;
+	const aiScene* scene = importer.ReadFile(filepath.c_str(), 0);
+	// アニメーションがない場合、空のAnimationを返す
+	if (scene->mNumAnimations == 0) {
+		return animation;
+	}
+	aiAnimation* animationAssimp = scene->mAnimations[0];//最初のアニメーションだけ採用
+	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+
+	for (uint32_t channelIndex = 0; channelIndex < animationAssimp->mNumChannels; ++channelIndex) {
+
+		aiNodeAnim* nodeAnimationAssimp = animationAssimp->mChannels[channelIndex];
+		NodeAnimation& nodeAnimation = animation.nodeAnimations[nodeAnimationAssimp->mNodeName.C_Str()];
+
+		//アニメーションのキーフレームを取得
+		//位置
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumPositionKeys; ++keyIndex) {
+			aiVectorKey& keyAssimp = nodeAnimationAssimp->mPositionKeys[keyIndex];
+			KeyframeVector3 Keyframe;
+			Keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+			Keyframe.value = { -keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };//右手-＞左手
+			nodeAnimation.translate.push_back(Keyframe);
+		}
+		//回転
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex) {
+			aiQuatKey& keyAssimp = nodeAnimationAssimp->mRotationKeys[keyIndex];
+			KeyframeQuaternion Keyframe;
+			Keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+			Keyframe.value = { keyAssimp.mValue.x,-keyAssimp.mValue.y,-keyAssimp.mValue.z,keyAssimp.mValue.w };
+			nodeAnimation.rotate.push_back(Keyframe);
+		}
+		//スケール
+		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex) {
+			aiVectorKey& keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
+			KeyframeVector3 Keyframe;
+			Keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+			Keyframe.value = { keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };
+			nodeAnimation.scale.push_back(Keyframe);
+		}
+
+	}
+	return animation;
+
 }

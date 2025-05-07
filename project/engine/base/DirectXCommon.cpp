@@ -188,6 +188,7 @@ void DirectXCommon::DepthBufferInitialize()
 	depthStenciResource = resource;
 
 }
+
 const uint32_t DirectXCommon::kMaxSRVCount = 512;
 void DirectXCommon::DescriptorHeepInitialize()
 {
@@ -197,7 +198,7 @@ void DirectXCommon::DescriptorHeepInitialize()
 	descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	//ディスクリプタヒープの生成
-	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);//RTV
+	rtvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3, false);//RTV
 	srvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, kMaxSRVCount, true);//SRV
 	dsvDescriptorHeap = CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);//DVS用のヒープでディスクリプタの数は1．DSVはShader内で触るものではない
 
@@ -222,6 +223,7 @@ void DirectXCommon::RTVInitialize()
 	rtvStarHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	//まず1つ目を作る。1つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
 	rtvHandles[0] = rtvStarHandle;
+
 	device->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
 	//２つ目のディスクリプタハンドルを得る（自力で）
 	rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -229,6 +231,8 @@ void DirectXCommon::RTVInitialize()
 	device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
 #pragma endregion
 }
+
+
 
 void DirectXCommon::DSVInitialize()
 {
@@ -325,6 +329,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	DepthBufferInitialize();
 	DescriptorHeepInitialize();
 	RTVInitialize();
+	
 	DSVInitialize();
 	FenceInitialize();
 	ViewportInitialize();
@@ -334,8 +339,11 @@ void DirectXCommon::Initialize(WinApp* winApp)
 
 }
 
+
+
 void DirectXCommon::Begin()
 {
+
 	//これから書き込むバックバッファのインデックスを取得する
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 	//今回のバリアはTransition
@@ -350,13 +358,10 @@ void DirectXCommon::Begin()
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	//Transition Barrierを張る
 	commandList->ResourceBarrier(1, &barrier);
-	//描画先のRVTを設定する
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+	
 	//描画先のRTVとDSVを設定する
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -367,7 +372,12 @@ void DirectXCommon::Begin()
 	commandList->RSSetViewports(1, &viewport);
 	commandList->RSSetScissorRects(1, &scissorRect);
 
+
+
+
 }
+
+
 
 void DirectXCommon::End()
 {
@@ -417,6 +427,16 @@ D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVCPUDescriputorHandole(uint32_t 
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriputorHandole(uint32_t index)
 {
 	return GetGPUDesctiptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetRTVCPUDescriputorHandole(uint32_t index)
+{
+	return GetCPUDesctiptorHandle(rtvDescriptorHeap, descriptorSizeRTV, index);
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetRTVGPUDescriputorHandole(uint32_t index)
+{
+	return GetGPUDesctiptorHandle(rtvDescriptorHeap, descriptorSizeRTV, index);
 }
 
 
@@ -664,6 +684,18 @@ void DirectXCommon::CommandKick()
 
 
 }
+
+void DirectXCommon::TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
+{
+
+
+
+
+}
+
+
+
+
 
 
 
