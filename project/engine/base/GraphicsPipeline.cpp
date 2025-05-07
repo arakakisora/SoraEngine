@@ -449,6 +449,125 @@ void GraphicsPipeline::CreateSprite()
 
 }
 
+void GraphicsPipeline::RootSignatureLineCreate()
+{
+
+	// Line用のRootSignature作成
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	// SRV（StructuredBuffer）1つだけ使う
+	D3D12_DESCRIPTOR_RANGE descriptorRange{};
+	descriptorRange.BaseShaderRegister = 0; // t0
+	descriptorRange.NumDescriptors = 1;
+	descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// RootParameterの設定（今回はSRVのDescriptorTable1つだけ）
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+
+	// rootParameters[1]はCBV（Camera）を使う
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].Descriptor.ShaderRegister = 0; // b0 に対応
+	rootParameters[0].Descriptor.RegisterSpace = 0;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	//srv
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; 
+	rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
+
+	descriptionRootSignature.pParameters = rootParameters;
+	descriptionRootSignature.NumParameters = _countof(rootParameters);
+
+	// Samplerは不要なので未設定
+	descriptionRootSignature.pStaticSamplers = nullptr;
+	descriptionRootSignature.NumStaticSamplers = 0;
+
+	// シリアライズしてRootSignatureを生成
+	ID3DBlob* signatureBlob = nullptr;
+	ID3DBlob* errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr)) {
+		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		assert(false);
+	}
+
+	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureLine));
+	assert(SUCCEEDED(hr));
+
+}
+
+void GraphicsPipeline::CreateLine()
+{
+	// RootSignature作成（ライン用）
+	RootSignatureLineCreate(); 
+	// InputLayout（位置だけでOK）
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+	inputElementDescs[0].SemanticName = "POSITION";
+	inputElementDescs[0].SemanticIndex = 0;
+	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[0].AlignedByteOffset = 0;
+
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
+	inputLayoutDesc.pInputElementDescs = inputElementDescs;
+	inputLayoutDesc.NumElements = _countof(inputElementDescs);
+
+	// BlendState（αブレンド）
+	D3D12_BLEND_DESC blendDesc{};
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	// RasterizerState
+	D3D12_RASTERIZER_DESC rasterizerDesc{};
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+	// DepthStencil
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; // ラインもZ値に影響させたいならALL
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+	// Shader
+	IDxcBlob* vertexShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Line.VS.hlsl", L"vs_6_0");
+	assert(vertexShaderBlob != nullptr);
+
+	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Line.PS.hlsl", L"ps_6_0");
+	assert(pixelShaderBlob != nullptr);
+
+	// PSO作成
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc{};
+	pipelineDesc.pRootSignature = rootSignatureLine.Get(); // ライン用RootSignature
+	pipelineDesc.InputLayout = inputLayoutDesc;
+	pipelineDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };
+	pipelineDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
+	pipelineDesc.BlendState = blendDesc;
+	pipelineDesc.RasterizerState = rasterizerDesc;
+	pipelineDesc.NumRenderTargets = 1;
+	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	pipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE; // ← ここが超重要！
+	pipelineDesc.SampleDesc.Count = 1;
+	pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+	pipelineDesc.DepthStencilState = depthStencilDesc;
+	pipelineDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	// PSO生成
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&graphicsPipelineStateLine));
+	assert(SUCCEEDED(hr));
+
+
+
+
+
+}
+
 void GraphicsPipeline::RootSignatureSpriteCreate()
 {
 	// RootSignature
@@ -512,6 +631,8 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 
 
 }
+
+
 
 void GraphicsPipeline::Initialize(DirectXCommon* dxCommon)
 {

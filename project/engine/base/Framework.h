@@ -25,6 +25,9 @@
 #include "SceneManager.h"
 #include <SceneFactory.h>
 
+#include "Linecommon.h"
+#include "Line.h"
+
 
 class Framework
 {

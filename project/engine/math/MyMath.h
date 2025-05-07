@@ -18,10 +18,7 @@ struct Sphere {
 	float radius;
 };
 
-struct Line {
-	Vector3 origin;
-	Vector3 diff;
-};
+
 
 struct Ray {
 
