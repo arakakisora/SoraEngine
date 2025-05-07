@@ -6,10 +6,6 @@
 #include <imgui.h>
 #include "Input.h"
 #include "TitleScene.h"
-#include "CameraManager.h"
-#include "ParticleMnager.h"
-#include <Logger.h>
-#include "LineCommon.h"
 
 void GamePlayScene::Initialize()
 {
@@ -53,7 +49,7 @@ void GamePlayScene::Initialize()
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(object3DPlayer, playerPostion);
 	player->SetDeathHeight(0.0f);
-	
+
 
 	//カメラのターゲットをプレイヤーに設定
 	camera->SetFollowTarget(object3DPlayer, { 0.0f, 0.0f, -15.0f });
@@ -149,7 +145,6 @@ void GamePlayScene::Update()
 
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 
-
 	}
 
 	//敵の更新
@@ -167,7 +162,7 @@ void GamePlayScene::Update()
 			return true;
 		}
 		return false;
-	});
+		});
 
 
 
@@ -278,7 +273,6 @@ void GamePlayScene::GenerateObject3D()
 
 			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
 
-	}
 
 				Object3D* object3D_ = new Object3D();
 				object3D_->Initialize(Object3DCommon::GetInstance());
@@ -286,22 +280,12 @@ void GamePlayScene::GenerateObject3D()
 				blockobject3D[i][j] = object3D_;
 				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
 
-		if (ImGui::Button("Emit"))
-		{
-			particleEmitter->Emit();
-		}
-		//エミット位置
-		Vector3 position = particleEmitter->GetPosition();
-		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
-			particleEmitter->SetPosition(position);
-		}
 
 			}
 		}
 	}
 
 
-#endif // _DEBUG
 }
 
 void GamePlayScene::CheckAllCollisions()
@@ -341,9 +325,8 @@ void GamePlayScene::CheckAllCollisions()
 	if (MyMath::IsCollision(aabb1, goolAABB)) {
 		// ゴールシーンに遷移
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
-		
-}
+
+	}
 
 
 }
-

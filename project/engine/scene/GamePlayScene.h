@@ -49,9 +49,9 @@ public:
 	Camera* camera = nullptr;
 	//スプライトの初期化
 
-	
+
 	Object3D* object3D2nd = nullptr;
-	
+
 
 	//player
 	Player* player = nullptr;
@@ -72,7 +72,7 @@ public:
 
 	// SkyDome
 	Object3D* skydome_ = nullptr;
-	
-	
+
+
 };
 
