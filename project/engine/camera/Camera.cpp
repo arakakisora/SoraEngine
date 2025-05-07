@@ -1,6 +1,6 @@
 #include "Camera.h"
 #include "MyMath.h"
-#include <exturniul/imgui.h>
+#include <imgui.h>
 #include "Object3D.h"
 
 Camera::Camera()
