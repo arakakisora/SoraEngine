@@ -133,6 +133,11 @@ namespace MyMath {
 	void MatrixImGuiText(const Matrix4x4& matrix, const char* label);
 	void QuaternionImGuiText(const Quaternion& quaternion, const char* label);
 	void Vector3ImGuiText(const Vector3& vector, const char* label);
+
+	
+
+	Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
+
 }
 
 
