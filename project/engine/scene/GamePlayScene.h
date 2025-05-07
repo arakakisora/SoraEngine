@@ -59,6 +59,10 @@ private:
 
 	std::unique_ptr<Line> line;
 
+	Vector3 startline;
+	Vector3 endline;
+
+
 
 
 };

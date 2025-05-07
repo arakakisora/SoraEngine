@@ -66,8 +66,10 @@ void GamePlayScene::Initialize()
 	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle1");
 
 	line = std::make_unique<Line>();
-	
 
+
+	startline = { 0,0,0 };
+	endline = { 1,0,0 };
 
 }
 
@@ -127,13 +129,26 @@ void GamePlayScene::Update()
 	particleEmitter->Update();
 	sprite->Update();
 
-	line->DrawGrid();
-	//line->DrawLine({ 0,0,0 }, { 0,0,1 }, { 1,0,0,1 });
+
+	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
 	
 	
+
+
 #ifdef _DEBUG
 
-	ImGui::Text("number%d",number);
+	if (ImGui::CollapsingHeader("line", ImGuiTreeNodeFlags_DefaultOpen)) {
+	
+		ImGui::DragFloat3("startline", &startline.x, 0.01f);
+		ImGui::DragFloat3("endline", &endline.x, 0.01f);
+
+		line->DrawLine(startline, endline, { 1,0,0,1 });
+	
+	}
+	
+
+
+		ImGui::Text("number%d", number);
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
@@ -356,8 +371,8 @@ void GamePlayScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 	/*object3D->Draw();
 	terrain->Draw();*/
-	
-	
+
+
 
 
 	ParticleMnager::GetInstance()->Draw();

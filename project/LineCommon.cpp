@@ -25,9 +25,8 @@ void LineCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 
 	VertexDataLine vertices[] = {
 	   {{0, 0, 0, 1}}, // 始点
-	   {{0, 1, 0, 1}}  // 終点
-	   // Replace the following line:  
-	   // memcpy(nullptr, vertices, sizeof(vertices));  
+	   {{1, 0, 0, 1}}  // 終点
+	   
 
 
 	};
@@ -108,18 +107,20 @@ void LineCommon::DrawLine(const Vector3& start, const Vector3& end, const Vector
 	Vector3 normalizeDirection = direction.Normalize();//正規化
 
 	// スケール（ラインの長さ分）
-	Matrix4x4 scaleMat = MyMath::MakeScaleMatrix({ 1.0f, length, 1.0f });
+	Matrix4x4 scaleMat = MyMath::MakeScaleMatrix({ length,1.0f , 1.0f });
 	// 回転（Y軸を方向ベクトルに合わせる）
-	Matrix4x4 rotateMat = MyMath::DirectionToDirection({ 0, 1, 0 }, normalizeDirection);
+	Matrix4x4 rotateMat = MyMath::DirectionToDirection({ 1, 0, 0 }, normalizeDirection);
 	// 移動（開始位置へ）
 	Matrix4x4 translateMat = MyMath::MakeTranslateMatrix(start);
 
-	// 最終ワールド行列
-	Matrix4x4 world =
-		MyMath::Multiply(
-			MyMath::Multiply(translateMat, rotateMat),
-			scaleMat
-		);
+	Matrix4x4 world = translateMat * rotateMat * scaleMat;
+
+	//// 最終ワールド行列
+	//Matrix4x4 world =
+	//	MyMath::Multiply(
+	//		MyMath::Multiply(translateMat, rotateMat),
+	//		scaleMat
+	//	);
 
 	Matrix4x4 viewProjection = activeCamera->GetViewprojectionMatrix();
 	Matrix4x4 worldViewProjectionMatrix = world * viewProjection;

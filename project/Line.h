@@ -16,7 +16,7 @@ public:
 
 	void DrawLienAABB(const Vector3& min, const Vector3& max, const Vector4& color);
 
-	void DrawGrid(float Gridhalfwidth = 2.0, uint32_t Subdivision = 10);
+	void DrawGrid(float Gridhalfwidth = 2.0, uint32_t Subdivision = 50);
 
 
 
