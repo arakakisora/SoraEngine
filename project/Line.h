@@ -18,7 +18,7 @@ public:
 
 	void DrawGrid(float Gridhalfwidth = 2.0, uint32_t Subdivision = 50);
 
-
+	void DrawSphere(const Vector3& center, float radius, const Vector4& color);
 
 
 };

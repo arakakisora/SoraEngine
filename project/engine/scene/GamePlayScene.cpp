@@ -132,7 +132,8 @@ void GamePlayScene::Update()
 
 	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
 	line->DrawGrid(10.0f, 10);
-	line->DrawLienAABB({ -1,0,-1 }, { 1,0,1 }, { 1,0,0,1 });
+	line->DrawLienAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
+	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
 	
 
 
@@ -370,8 +371,8 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	/*object3D->Draw();
-	terrain->Draw();*/
+	object3D->Draw();
+	terrain->Draw();
 
 
 
