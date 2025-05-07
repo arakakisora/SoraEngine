@@ -449,6 +449,55 @@ void GraphicsPipeline::CreateSprite()
 
 }
 
+void GraphicsPipeline::RootSignatureLineCreate()
+{
+
+	// Line用のRootSignature作成
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	// SRV（StructuredBuffer）1つだけ使う
+	D3D12_DESCRIPTOR_RANGE descriptorRange{};
+	descriptorRange.BaseShaderRegister = 0; // t0
+	descriptorRange.NumDescriptors = 1;
+	descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// RootParameterの設定（今回はSRVのDescriptorTable1つだけ）
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+
+	// rootParameters[1]はCBV（Camera）を使う
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].Descriptor.ShaderRegister = 0; // b0 に対応
+	rootParameters[0].Descriptor.RegisterSpace = 0;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+	//srv
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; 
+	rootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
+
+	descriptionRootSignature.pParameters = rootParameters;
+	descriptionRootSignature.NumParameters = _countof(rootParameters);
+
+	// Samplerは不要なので未設定
+	descriptionRootSignature.pStaticSamplers = nullptr;
+	descriptionRootSignature.NumStaticSamplers = 0;
+
+	// シリアライズしてRootSignatureを生成
+	ID3DBlob* signatureBlob = nullptr;
+	ID3DBlob* errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr)) {
+		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		assert(false);
+	}
+
+	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureLine));
+	assert(SUCCEEDED(hr));
+
+}
+
 void GraphicsPipeline::CreateLine()
 {
 	// RootSignature作成（ライン用）
@@ -457,7 +506,7 @@ void GraphicsPipeline::CreateLine()
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	inputElementDescs[0].AlignedByteOffset = 0;
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
@@ -583,47 +632,7 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 
 }
 
-void GraphicsPipeline::RootSignatureLineCreate()
-{
 
-	// Line用のRootSignature作成
-	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-	// SRV（StructuredBuffer）1つだけ使う
-	D3D12_DESCRIPTOR_RANGE descriptorRange{};
-	descriptorRange.BaseShaderRegister = 0; // t0
-	descriptorRange.NumDescriptors = 1;
-	descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-	// RootParameterの設定（今回はSRVのDescriptorTable1つだけ）
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // StructuredBufferは頂点シェーダで使う
-	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRange;
-	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
-
-	descriptionRootSignature.pParameters = rootParameters;
-	descriptionRootSignature.NumParameters = _countof(rootParameters);
-
-	// Samplerは不要なので未設定
-	descriptionRootSignature.pStaticSamplers = nullptr;
-	descriptionRootSignature.NumStaticSamplers = 0;
-
-	// シリアライズしてRootSignatureを生成
-	ID3DBlob* signatureBlob = nullptr;
-	ID3DBlob* errorBlob = nullptr;
-	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	if (FAILED(hr)) {
-		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-		assert(false);
-	}
-
-	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureLine));
-	assert(SUCCEEDED(hr));
-
-}
 
 void GraphicsPipeline::Initialize(DirectXCommon* dxCommon)
 {

@@ -1,16 +1,19 @@
 #include "Line.hlsli"
 
-struct TransformationMatrix
+cbuffer CameraCB : register(b0)
 {
-    float4x4 WVP;
-    float4x4 World;
+    float4x4 view;
+    float4x4 projection;
 };
+
+
 
 struct LineInstanceData
 {
-    float4x4 WVP;
-    float4x4 World;
+    float3 start;
+    float3 end;
     float4 color;
+    
 };
 
 // StructuredBuffer でインスタンスごとのデータを渡す
@@ -18,18 +21,21 @@ StructuredBuffer<LineInstanceData> gLineInstances : register(t0);
 
 struct VertexShaderInput
 {
-    float4 position : POSITION0; // 頂点位置（ローカル）
+    float3 position : POSITION0; // 頂点位置（ローカル）
 };
 
 VertexShaderOutput main(VertexShaderInput input, uint instanceId : SV_InstanceID)
 {
     VertexShaderOutput output;
 
-    // インスタンスごとの行列を使って位置変換
-    output.position = mul(input.position, gLineInstances[instanceId].WVP);
+    LineInstanceData data = gLineInstances[instanceId];
 
-    // インスタンスごとの色を出力
-    output.color = gLineInstances[instanceId].color;
+    float3 dir = data.end - data.start;
+    float3 worldPos = data.start + input.position.x * dir;
+
+    float4 viewPos = mul(float4(worldPos, 1.0f), view);
+    output.position = mul(viewPos, projection);
+    output.color = data.color;
 
     return output;
 }

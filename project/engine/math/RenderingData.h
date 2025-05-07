@@ -142,14 +142,3 @@ struct Animation {
 	std::map<std::string, NodeAnimation> nodeAnimations;
 };
 
-struct VertexDataLine
-{
-	Vector4 position;
-
-};
-
-struct LineInstanceData {
-	Matrix4x4 WVP;
-	Matrix4x4 World;
-	Vector4 color;
-};

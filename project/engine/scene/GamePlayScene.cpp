@@ -131,7 +131,8 @@ void GamePlayScene::Update()
 
 
 	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
-	
+	line->DrawGrid(10.0f, 10);
+	line->DrawLienAABB({ -1,0,-1 }, { 1,0,1 }, { 1,0,0,1 });
 	
 
 

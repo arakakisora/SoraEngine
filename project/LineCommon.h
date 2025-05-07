@@ -19,6 +19,24 @@
 #include <Camera.h>
 #include <vector>
 
+struct VertexDataLine
+{
+	Vector3 position;
+
+};
+
+struct LineInstanceData {
+	Vector3 start;
+	Vector3 end;
+	Vector4 color;
+};
+
+struct CameraBufferforGpu {
+	Matrix4x4 view;
+	Matrix4x4 projection;
+
+};
+
 class LineCommon
 {
 public:
@@ -26,7 +44,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(DirectXCommon* dxCommon,SrvManager *srvManager);
+	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager);
 	//終了
 	void Finalize();
 	//共通描画設定
@@ -59,9 +77,25 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_;
 
-	uint32_t instanceSrvIndex_ = 0;
+	uint32_t instanceSrvIndex_ = UINT32_MAX;
 	Microsoft::WRL::ComPtr<ID3D12Resource> instanceResource_;
-	std::vector<LineInstanceData> instanceDatas_;
+
+	LineInstanceData instance = {
+		.start = {0.0f, 0.0f, 0.0f},
+		.end = {0.0f, 1.0f, 1.0f},
+		.color = {1.0f, 0.0f, 0.0f, 1.0f}
+	};
+
+	std::vector<VertexDataLine>linevertices = {
+
+		{{0.0f,0.0f,0.0f}},
+		{{1.0f,0.0f,0.0f}},
+
+	};
+	std::vector<LineInstanceData> instances_; // ← 複数ライン用
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
+	CameraBufferforGpu* camerabuffer = nullptr;//カメラのデータをGPUに送るための構造体
 
 
 };

@@ -21,29 +21,22 @@ void LineCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 	graphicsPipeline_->CreateLine();
 
 
-	
-
-	VertexDataLine vertices[] = {
-	   {{0, 0, 0, 1}}, // 始点
-	   {{1, 0, 0, 1}}  // 終点
-	   
 
 
-	};
 
-
-	//モデル用のVetexResouceを作成
-	vertexResource_ = dxCommon_->CreateBufferResource(sizeof(vertices));
+	vertexResource_ = dxCommon_->CreateBufferResource(sizeof(VertexDataLine) * linevertices.size());
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = UINT(sizeof(vertices));
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexDataLine) * linevertices.size());
 	vertexBufferView_.StrideInBytes = sizeof(VertexDataLine);
 	void* mapped = nullptr;
 	vertexResource_->Map(0, nullptr, &mapped);
-	memcpy(mapped, vertices, sizeof(vertices));
+	memcpy(mapped, linevertices.data(), sizeof(VertexDataLine) * linevertices.size());
 
-	//srvのインデックスを確保
-	instanceSrvIndex_ = srvManager_->Allocate();
+	//カメラ
+	cameraResource = dxCommon_->CreateBufferResource(sizeof(CameraBufferforGpu));
+	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&camerabuffer));
 
+	instanceSrvIndex_ = UINT32_MAX;
 }
 void LineCommon::Finalize()
 {
@@ -52,45 +45,71 @@ void LineCommon::Finalize()
 }
 void LineCommon::CommonDraw()
 {
-	//RootSignatureを設定。POSに設定しているけどベット設定が必要
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureLine());
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateLine());
-	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	// 1本ずつ独立した線なので LINESTRIP ではなく LINELIST
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+
 }
 
 void LineCommon::Update()
 {
 
-	if (instanceDatas_.empty()) return;
-	size_t bufferSize = sizeof(LineInstanceData) * instanceDatas_.size();
-	
+	 
+	camerabuffer->projection = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
+	camerabuffer->view = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 
-	instanceResource_ = dxCommon_->CreateBufferResource(bufferSize);
-	void* mapped = nullptr;
-	instanceResource_->Map(0, nullptr, &mapped);
-	memcpy(mapped, instanceDatas_.data(), bufferSize);
 
-	srvManager_-> CreateSRVforStructuredBuffer(
+
+	if (instances_.empty()) return;
+	size_t instanceSize = sizeof(LineInstanceData) * instances_.size();
+	if (!instanceResource_ || instanceResource_->GetDesc().Width < instanceSize) {
+		// リソース作り直し（大きさ足りない場合）
+		D3D12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(instanceSize);
+		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+		dxCommon_->GetDevice()->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&desc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&instanceResource_));
+	}
+
+
+	// マップしてコピー
+	LineInstanceData* mapped = nullptr;
+	instanceResource_->Map(0, nullptr, reinterpret_cast<void**>(&mapped));
+	memcpy(mapped, instances_.data(), instanceSize);
+	instanceResource_->Unmap(0, nullptr);
+
+	// SRVインデックスは初回だけ確保（使い回し）
+	if (instanceSrvIndex_ == UINT32_MAX) {
+		instanceSrvIndex_ = srvManager_->Allocate();
+	}
+
+	// StructuredBuffer 用の SRV を SrvManager 経由で作成
+	srvManager_->CreateSRVforStructuredBuffer(
 		instanceSrvIndex_,
 		instanceResource_.Get(),
-		(UINT)instanceDatas_.size(),
-		sizeof(LineInstanceData)
-	);
-
+		static_cast<UINT>(instances_.size()),
+		sizeof(LineInstanceData));
 
 }
 
 void LineCommon::Draw()
 {
-
-	if (instanceDatas_.empty()) return;
+	if (instances_.empty()) return;
 
 	CommonDraw();
-	dxCommon_ ->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_);
-	srvManager_->SetGraficsRootDescriptorTable(0, instanceSrvIndex_);
-	dxCommon_->GetCommandList()->DrawInstanced(2, (UINT)instanceDatas_.size(), 0, 0);
+	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	// RootParameter[0] → b0：カメラ（CBV）
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cameraResource->GetGPUVirtualAddress());
+	srvManager_->SetGraficsRootDescriptorTable(1, instanceSrvIndex_);
+	dxCommon_->GetCommandList()->DrawInstanced(2, static_cast<UINT>(instances_.size()), 0, 0);
 
-	instanceDatas_.clear();
+	instances_.clear(); // ← 正しい変数名
+
 
 
 
@@ -98,39 +117,7 @@ void LineCommon::Draw()
 
 void LineCommon::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
-	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
-
-
-	Vector3 direction = end - start;//ベクトルの差分
-	float length = direction.Length();//長さを取得
-	if (length <= 0.0001f) { return; }
-	Vector3 normalizeDirection = direction.Normalize();//正規化
-
-	// スケール（ラインの長さ分）
-	Matrix4x4 scaleMat = MyMath::MakeScaleMatrix({ length,1.0f , 1.0f });
-	// 回転（Y軸を方向ベクトルに合わせる）
-	Matrix4x4 rotateMat = MyMath::DirectionToDirection({ 1, 0, 0 }, normalizeDirection);
-	// 移動（開始位置へ）
-	Matrix4x4 translateMat = MyMath::MakeTranslateMatrix(start);
-
-	Matrix4x4 world = translateMat * rotateMat * scaleMat;
-
-	//// 最終ワールド行列
-	//Matrix4x4 world =
-	//	MyMath::Multiply(
-	//		MyMath::Multiply(translateMat, rotateMat),
-	//		scaleMat
-	//	);
-
-	Matrix4x4 viewProjection = activeCamera->GetViewprojectionMatrix();
-	Matrix4x4 worldViewProjectionMatrix = world * viewProjection;
-
-	LineInstanceData instance{};
-	instance.World = world;
-	instance.WVP = worldViewProjectionMatrix;
-	instance.color = color;
-
-	instanceDatas_.push_back(instance);
+	instances_.push_back({ start, end, color });
 
 
 }
