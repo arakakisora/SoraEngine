@@ -1,9 +1,6 @@
 #pragma once
 #include "BaseScene.h"
-#include "Sprite.h"
-
-
-class GameclearScene :public BaseScene
+class GameClearScene:public BaseScene
 {
 
 public:
@@ -24,15 +21,7 @@ public:
 	/// </summary>
 	void Draw()override;
 
-
-
-public:
-
-	//taitorusprite
-	Sprite* sprite = nullptr;
-
-
-
+private:
 
 };
 
