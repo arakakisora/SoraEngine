@@ -118,8 +118,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\Framework.cpp" />
     <ClCompile Include="engine\scene\Game.cpp" />
     <ClCompile Include="engine\scene\GamePlayScene.cpp" />
-    <ClCompile Include="GameclearScene.cpp" />
-    <ClCompile Include="GameOverScene.cpp" />
+    <ClCompile Include="engine\scene\GameclearScene.cpp" />
+    <ClCompile Include="engine\scene\GameOverScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -187,8 +187,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\scene\SceneManager.h" />
     <ClInclude Include="engine\base\SrvManager.h" />
     <ClInclude Include="engine\scene\TitleScene.h" />
-    <ClInclude Include="GameclearScene.h" />
-    <ClInclude Include="GameOverScene.h" />
+    <ClInclude Include="engine\scene\GameclearScene.h" />
+    <ClInclude Include="engine\scene\GameOverScene.h" />
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
