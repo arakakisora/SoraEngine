@@ -166,12 +166,14 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="engine\particle\ParticleEmitter.cpp">
+
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="LineCommon.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Line.cpp">
+
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -310,10 +312,14 @@
     <ClInclude Include="engine\particle\ParticleMnager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+
     <ClInclude Include="LineCommon.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Line.h">
+
+    <ClInclude Include="engine\math\Quaternion.h">
+
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -323,6 +329,14 @@
     </None>
     <None Include="Resources\Shaders\Particle.hlsli" />
     <None Include="Resources\Shaders\Sprite.hlsli" />
+
     <None Include="Resources\Shaders\Line.hlsli" />
+
+    <None Include="Resources\models\animationfly.bin">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="Resources\models\animationfly.gltf" />
+    <None Include="Resources\models\player.gltf" />
+
   </ItemGroup>
 </Project>
