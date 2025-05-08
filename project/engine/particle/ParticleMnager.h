@@ -80,6 +80,7 @@ public:
 	void SetModel(const std::string& filepath);
 
 	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
+	Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
 	
 
 private:
