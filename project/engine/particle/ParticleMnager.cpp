@@ -55,6 +55,34 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 
 
+	//// 修正: VertexData 構造体の初期化リストを正しく記述  
+	//std::vector<VertexData> quadVertices = {
+	//   {{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 左下  
+	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
+	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
+
+	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
+	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
+	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
+	//};
+
+	std::vector<VertexData> quadVertices = MakeRingVertices();
+	vertexCount = static_cast<uint32_t>(quadVertices.size());
+
+	// GPUリソース作成
+	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * quadVertices.size());
+
+	// リソースアドレスを設定
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	vertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * quadVertices.size());
+	vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	// GPUにデータ転送
+	VertexData* vertexData = nullptr;
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std::memcpy(vertexData, quadVertices.data(), sizeof(VertexData) * quadVertices.size());
+	vertexResource->Unmap(0, nullptr);
+
 
 }
 
@@ -106,7 +134,7 @@ void ParticleMnager::Update()
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 
 			//ワールド行列を計算
-			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix* MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
+			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
@@ -162,8 +190,7 @@ void ParticleMnager::Draw()
 			continue;
 		}
 
-		//VertexBufferViewを設定
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = model_->GetVertexBufferView();
+
 		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		//マテリアルのCBufferの場所を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
@@ -172,7 +199,7 @@ void ParticleMnager::Draw()
 		// テクスチャの SRV を設定
 		srvManager_->SetGraficsRootDescriptorTable(1, particleGroup.srvIndex);
 		//描画！
-		dxCommon_->GetCommandList()->DrawInstanced(UINT(model_->GetModelData().vertices.size()), particleGroup.instanceCount, 0, 0);
+		dxCommon_->GetCommandList()->DrawInstanced(UINT(vertexCount), particleGroup.instanceCount, 0, 0);
 
 	}
 
@@ -183,6 +210,9 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	ModelManager::GetInstans()->LoadModel(modelFilePath);
 	//モデルのセット
 	SetModel(modelFilePath);
+
+	//VertexBufferViewを設定
+	//vertexBufferView = model_->GetVertexBufferView();
 
 
 
@@ -294,8 +324,9 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 	Particle particle;
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
-	particle.transform.scale = { 0.05f,disScale(randomEngine),1.0f};
-	particle.transform.rotate = { 0.0f,0.0f,disRotate(randomEngine)};
+	//particle.transform.scale = { 0.05f,disScale(randomEngine),1.0f };
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	//particle.transform.translate = translate + randomTranslate;
 	particle.transform.translate = translate;
 	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
@@ -306,4 +337,42 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 	particle.lifetime = 1.0f;
 	particle.currentTime = 0;
 	return particle;
+}
+
+std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
+{
+	std::vector<VertexData> ringVertices;
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(RingDivide);
+
+	for (uint32_t index = 0; index < RingDivide; ++index) {
+		float sin = std::sinf(index * radianPerDivide);
+		float cos = std::cosf(index * radianPerDivide);
+		float sinnext = std::sinf((index + 1) * radianPerDivide);
+		float cosnext = std::cosf((index + 1) * radianPerDivide);
+		float u = static_cast<float>(index) / RingDivide;
+		float unext = static_cast<float>(index + 1) / RingDivide;
+
+		VertexData v[] = {
+			// ① 外側 0
+			{ {-sin * outerRadius,  cos * outerRadius,  0.0f, 1.0f}, {u,     0.0f}, {0.0f, 0.0f, 1.0f} },
+			// ② 内側 0
+			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f}, {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
+			// ③ 外側 1
+			{ {-sinnext * outerRadius, cosnext * outerRadius, 0.0f, 1.0f}, {unext, 0.0f}, {0.0f, 0.0f, 1.0f} },
+
+			// ③ 外側 1（再）
+			{ {-sinnext * outerRadius, cosnext * outerRadius, 0.0f, 1.0f}, {unext, 0.0f}, {0.0f, 0.0f, 1.0f} },
+			// ② 内側 0（再）
+			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f}, {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
+			// ④ 内側 1
+			{ {-sinnext * innerRadius, cosnext * innerRadius, 0.0f, 1.0f}, {unext, 1.0f}, {0.0f, 0.0f, 1.0f} }
+		};
+
+		for (const auto& vert : v) {
+			ringVertices.push_back(vert);
+		}
+	}
+
+	return ringVertices;
+			
 }

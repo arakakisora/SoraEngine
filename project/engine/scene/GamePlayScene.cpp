@@ -20,8 +20,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate(Vector3(0, 0, -20.0f));//カメラの位置
-	camera2->SetRotate({-0.35f,0.0f,0.0f});//カメラの向き
+	camera2->SetTranslate(Vector3(0, 6.0f, -20.0f));//カメラの位置
+	camera2->SetRotate({0.35f,0.0f,0.0f});//カメラの向き
 	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定

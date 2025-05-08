@@ -19,7 +19,7 @@ void ParticleEmitter::Update()
 
 	frequencyTime += 1.0f / 60.0f;
 	//発生頻度より大きいなら発生
-	if (frequencyTime > frequency) {
+	if (frequencyTime < frequency) {
 		//パーティクルを発生
 		ParticleMnager::GetInstance()->Emit(name_, position_, count);
 		//時間をリセット

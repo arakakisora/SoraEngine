@@ -56,6 +56,65 @@ void Line::DrawAABBVector3( Vector3 center, float radius,  Vector4 color)
     DrawLineAABB(min, max, color); // 既存の min/max 版を再利用
 }
 
+//void Line::Drawring(const Vector3& center, float radius, const Vector4& color)
+//{
+//
+//
+//    std::vector<VertexData> ringVertices;
+//    ringVertices.reserve(divideCount * 6); // 1セグメント=三角形2枚=6頂点
+//
+//    const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(divideCount);
+//
+//    for (uint32_t index = 0; index < divideCount; ++index) {
+//        float sin0 = std::sin(index * radianPerDivide);
+//        float cos0 = std::cos(index * radianPerDivide);
+//        float sin1 = std::sin((index + 1) * radianPerDivide);
+//        float cos1 = std::cos((index + 1) * radianPerDivide);
+//
+//        float u0 = static_cast<float>(index) / divideCount;
+//        float u1 = static_cast<float>(index + 1) / divideCount;
+//
+//        VertexData v;
+//
+//        // 頂点①: 外側0
+//        v.position = { sin0 * outerRadius, cos0 * outerRadius, 0.0f };
+//        v.normal = { 0.0f, 0.0f, 1.0f }; // 不要なら {0,0,0} でもOK
+//        v.texcoord = { u0, 0.0f };
+//        ringVertices.push_back(v);
+//
+//        // 頂点②: 外側1
+//        v.position = { sin1 * outerRadius, cos1 * outerRadius, 0.0f };
+//        v.texcoord = { u1, 0.0f };
+//        ringVertices.push_back(v);
+//
+//        // 頂点③: 内側0
+//        v.position = { sin0 * innerRadius, cos0 * innerRadius, 0.0f };
+//        v.texcoord = { u0, 1.0f };
+//        ringVertices.push_back(v);
+//
+//        // 頂点③（繰り返し）
+//        v.position = { sin0 * innerRadius, cos0 * innerRadius, 0.0f };
+//        v.texcoord = { u0, 1.0f };
+//        ringVertices.push_back(v);
+//
+//        // 頂点②
+//        v.position = { sin1 * outerRadius, cos1 * outerRadius, 0.0f };
+//        v.texcoord = { u1, 0.0f };
+//        ringVertices.push_back(v);
+//
+//        // 頂点④
+//        v.position = { sin1 * innerRadius, cos1 * innerRadius, 0.0f };
+//        v.texcoord = { u1, 1.0f };
+//        ringVertices.push_back(v);
+//    }
+//
+//    return ringVertices;
+//
+//
+//
+//
+//}
+
 
 
 

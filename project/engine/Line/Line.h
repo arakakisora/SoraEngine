@@ -19,7 +19,7 @@ public:
 
 	void DrawAABBVector3( Vector3 center, float radius, Vector4 color);
 	
-
+	void Drawring(const Vector3& center, float radius, const Vector4& color);
 
 	void DrawGrid(Vector3 center,float Gridhalfwidth = 2.0, uint32_t Subdivision = 50);
 
