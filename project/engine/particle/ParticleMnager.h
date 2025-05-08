@@ -82,7 +82,7 @@ public:
 	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
 	Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
 	
-	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 32, float outerRadius = 1.0f, float innerRadius = 0.2f);
+	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
 	
 
 

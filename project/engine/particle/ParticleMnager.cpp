@@ -66,7 +66,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
 	//};
 
-	std::vector<VertexData> quadVertices = MakeRingVertices();
+	std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
 	vertexCount = static_cast<uint32_t>(quadVertices.size());
 
 	// GPUリソース作成
@@ -129,7 +129,7 @@ void ParticleMnager::Update()
 			//パーティクルの寿命を減らす
 			(*particleIterator).currentTime += 1.0f / 60.0f;
 			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
-
+			/*float alpha = 1.0f;*/
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 
@@ -324,15 +324,16 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 	Particle particle;
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
-	//particle.transform.scale = { 0.05f,disScale(randomEngine),1.0f };
-	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	particle.transform.scale = {1.0f,disScale(randomEngine),1.0f };
+	//particle.transform.scale = { 1.0f,1.0f,1.0f };
+	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
 	//particle.transform.translate = translate + randomTranslate;
 	particle.transform.translate = translate;
 	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 	particle.Velocity = { 0.0f,0.0f,0.0f };
-	//particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
-	particle.color = { 1.0f,1.0f,1.0f,1.0f };
+	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
+	//particle.color = { 1.0f,1.0f,1.0f,1.0f };
 	//particle.lifetime = distTime(randomEngine);
 	particle.lifetime = 1.0f;
 	particle.currentTime = 0;
@@ -341,30 +342,32 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 
 std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {
+	
 	std::vector<VertexData> ringVertices;
 	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(RingDivide);
-
+	
 	for (uint32_t index = 0; index < RingDivide; ++index) {
-		float sin = std::sinf(index * radianPerDivide);
-		float cos = std::cosf(index * radianPerDivide);
-		float sinnext = std::sinf((index + 1) * radianPerDivide);
-		float cosnext = std::cosf((index + 1) * radianPerDivide);
-		float u = static_cast<float>(index) / RingDivide;
-		float unext = static_cast<float>(index + 1) / RingDivide;
+		// 現在と次の角度
+		float angle = index * radianPerDivide;
+		float nextAngle = ((index + 1) % RingDivide) * radianPerDivide;
+
+		// sin, cos
+		float sin = std::sinf(angle);
+		float cos = std::cosf(angle);
+		float sinnext = std::sinf(nextAngle);
+		float cosnext = std::cosf(nextAngle);
+
+		// UV (ここもwrapを考慮)
+		float u = (static_cast<float>(index) / RingDivide)  ;
+		float unext = (static_cast<float>(index + 1) / RingDivide) ;
 
 		VertexData v[] = {
-			// ① 外側 0
-			{ {-sin * outerRadius,  cos * outerRadius,  0.0f, 1.0f}, {u,     0.0f}, {0.0f, 0.0f, 1.0f} },
-			// ② 内側 0
-			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f}, {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
-			// ③ 外側 1
+			{ {-sin * outerRadius,  cos * outerRadius,  0.0f, 1.0f},     {u,     0.0f}, {0.0f, 0.0f, 1.0f} },
+			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f},     {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
 			{ {-sinnext * outerRadius, cosnext * outerRadius, 0.0f, 1.0f}, {unext, 0.0f}, {0.0f, 0.0f, 1.0f} },
 
-			// ③ 外側 1（再）
 			{ {-sinnext * outerRadius, cosnext * outerRadius, 0.0f, 1.0f}, {unext, 0.0f}, {0.0f, 0.0f, 1.0f} },
-			// ② 内側 0（再）
-			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f}, {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
-			// ④ 内側 1
+			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f},     {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
 			{ {-sinnext * innerRadius, cosnext * innerRadius, 0.0f, 1.0f}, {unext, 1.0f}, {0.0f, 0.0f, 1.0f} }
 		};
 
