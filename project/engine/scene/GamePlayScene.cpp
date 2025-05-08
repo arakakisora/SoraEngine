@@ -20,8 +20,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate(Vector3(0, 0, -20.0f));//カメラの位置
-	camera2->SetRotate({-0.35f,0.0f,0.0f});//カメラの向き
+	camera2->SetTranslate(Vector3(0, 6.0f, -20.0f));//カメラの位置
+	camera2->SetRotate({0.35f,0.0f,0.0f});//カメラの向き
 	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -63,7 +63,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle2");
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
 
 	line = std::make_unique<Line>();
 
@@ -132,9 +132,10 @@ void GamePlayScene::Update()
 
 	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
 	line->DrawGrid(terrain->GetTransform().translate, 10.0f, 10);
-	//line->DrawLineAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
-	line->DrawAABBVector3(object3D->GetTransform().translate,1.0f, { 1,0,0,1 });
-	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
+	//line->DrawAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
+	//line->DrawAABBVector3(object3D->GetTransform().translate,1.0f, { 1,0,0,1 });
+	//line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
+	line->DrawRing({ 0,0,0 }, 32, 1.0f, 0.5f, { 1,0,0,1 });
 	
 
 
@@ -145,7 +146,7 @@ void GamePlayScene::Update()
 		ImGui::DragFloat3("startline", &startline.x, 0.01f);
 		ImGui::DragFloat3("endline", &endline.x, 0.01f);
 
-		line->DrawLine(startline, endline, { 1,0,0,1 });
+		line->Draw(startline, endline, { 1,0,0,1 });
 	
 	}
 	
@@ -411,7 +412,7 @@ void GamePlayScene::Loadparticle()
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/circle2.png", "plane.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", "plane.obj");
 
 }
 
