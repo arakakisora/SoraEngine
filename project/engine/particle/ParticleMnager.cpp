@@ -324,7 +324,7 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 	Particle particle;
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
-	particle.transform.scale = {1.0f,disScale(randomEngine),1.0f };
+	particle.transform.scale = {0.5f,disScale(randomEngine),1.0f };
 	//particle.transform.scale = { 1.0f,1.0f,1.0f };
 	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
