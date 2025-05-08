@@ -20,8 +20,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate(Vector3(10, 0, -15));//カメラの位置
-	camera2->SetRotate({ 0.0f,0,0 });//カメラの向き
+	camera2->SetTranslate(Vector3(0, 0, -20.0f));//カメラの位置
+	camera2->SetRotate({-0.35f,0.0f,0.0f});//カメラの向き
 	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -63,7 +63,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(10, 0, 0), 1.0f, 0.0f, 100, "Pariticle2");
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle2");
 
 	line = std::make_unique<Line>();
 
@@ -131,8 +131,9 @@ void GamePlayScene::Update()
 
 
 	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
-	line->DrawGrid(10.0f, 10);
-	line->DrawLienAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
+	line->DrawGrid(terrain->GetTransform().translate, 10.0f, 10);
+	//line->DrawLineAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
+	line->DrawAABBVector3(object3D->GetTransform().translate,1.0f, { 1,0,0,1 });
 	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
 	
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MyMath.h"
+#include <Object3D.h>
 
 
 
@@ -14,9 +15,13 @@ public:
 	//ラインを描画する
 	void DrawLine(const Vector3& start, const Vector3& end, const Vector4& color);
 
-	void DrawLienAABB(const Vector3& min, const Vector3& max, const Vector4& color);
+	void DrawLineAABB(const Vector3& min, const Vector3& max, const Vector4& color);
 
-	void DrawGrid(float Gridhalfwidth = 2.0, uint32_t Subdivision = 50);
+	void DrawAABBVector3( Vector3 center, float radius, Vector4 color);
+	
+
+
+	void DrawGrid(Vector3 center,float Gridhalfwidth = 2.0, uint32_t Subdivision = 50);
 
 	void DrawSphere(const Vector3& center, float radius, const Vector4& color);
 

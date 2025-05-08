@@ -160,6 +160,8 @@ void Object3D::SetModel(const std::string& filepath)
 	model_ = ModelManager::GetInstans()->FindModel(filepath);
 }
 
+
+
 Vector3 Object3D::CalculatateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {
 	assert(!keyframes.empty());

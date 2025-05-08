@@ -1,6 +1,7 @@
 #include "Line.h"
 #include "LineCommon.h"
 #include <numbers>
+#include "Vector3.h"
 
 
 
@@ -13,7 +14,7 @@ void Line::DrawLine(const Vector3& start, const Vector3& end, const Vector4& col
 
 }
 
-void Line::DrawLienAABB(const Vector3& min, const Vector3& max, const Vector4& color)
+void Line::DrawLineAABB(const Vector3& min, const Vector3& max, const Vector4& color)
 { // 8頂点を定義
     Vector3 p[8] = {
         { min.x, min.y, min.z }, // 0
@@ -45,8 +46,20 @@ void Line::DrawLienAABB(const Vector3& min, const Vector3& max, const Vector4& c
     LineCommon::GetInstance()->DrawLine(p[3], p[7], color);
 }
 
+void Line::DrawAABBVector3( Vector3 center, float radius,  Vector4 color)
+{
+    float half = radius ;
+    Vector3 min = center - half;
 
-void Line::DrawGrid(float Gridhalfwidth, uint32_t Subdivision)
+    Vector3 max = center + half;
+
+    DrawLineAABB(min, max, color); // 既存の min/max 版を再利用
+}
+
+
+
+
+void Line::DrawGrid(Vector3 center,float Gridhalfwidth, uint32_t Subdivision)
 {
     assert(Subdivision > 0);
 
@@ -60,8 +73,8 @@ void Line::DrawGrid(float Gridhalfwidth, uint32_t Subdivision)
     for (uint32_t i = 0; i <= Subdivision; ++i) {
         float z = start + step * i;
         LineCommon::GetInstance()->DrawLine(
-            { start, 0.0f, z },
-            { end,   0.0f, z },
+            { center.x + start, center.y, center.z + z },
+            { center.x + end,   center.y, center.z + z },
             lineColor
         );
     }
@@ -70,8 +83,8 @@ void Line::DrawGrid(float Gridhalfwidth, uint32_t Subdivision)
     for (uint32_t i = 0; i <= Subdivision; ++i) {
         float x = start + step * i;
         LineCommon::GetInstance()->DrawLine(
-            { x, 0.0f, start },
-            { x, 0.0f, end },
+            { center.x + x, center.y, center.z + start },
+            { center.x + x, center.y, center.z + end },
             lineColor
         );
     }
