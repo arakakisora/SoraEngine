@@ -29,7 +29,7 @@ private:
 	//レンダーテクスチャ
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTextureResource;//レンダーテクスチャ
 	D3D12_CPU_DESCRIPTOR_HANDLE renderTargetTextureHandle;//レンダーテクスチャのハンドル
-	const Vector4 clearColor = { 1.0f,0.0f,0.0f,1.0f };//とりあえず赤
+	const Vector4 clearColor = { 0.1f,0.25f,0.5f,1.0f };//とりあえず赤
 	uint32_t srvIndex = 0;
 
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
