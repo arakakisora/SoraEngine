@@ -66,7 +66,8 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
 	//};
 
-	std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
+	//std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
+	std::vector<VertexData>quadVertices = MakeCylinderVertices();
 	vertexCount = static_cast<uint32_t>(quadVertices.size());
 
 	// GPUリソース作成
@@ -271,7 +272,7 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 
 
 		//パーティクルを追加
-		particleGroups.at(name).particles.push_back(MakeAttackPaarticle(randomEngine, position));
+		particleGroups.at(name).particles.push_back(MakeNormalParticle(randomEngine, position));
 
 	}
 
@@ -340,6 +341,22 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 	return particle;
 }
 
+Particle ParticleMnager::MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate)
+{
+	Particle particle;
+
+	
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	particle.transform.translate = translate;
+	particle.Velocity = { 0.0f,0.0f,0.0f };
+	particle.color = { 1.0f,1.0f,1.0f,1.0f };
+	
+	particle.lifetime = 1.0f;
+	particle.currentTime = 0;
+	return particle;
+}
+
 std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {
 	
@@ -379,3 +396,36 @@ std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, f
 	return ringVertices;
 			
 }
+
+std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
+{
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(cylinderDivide);
+
+	std::vector<VertexData> cylinderVertices;
+
+	for (uint32_t index = 0; index < cylinderDivide; ++index) {
+
+		float sin = std::sinf(index * radianPerDivide);
+		float cos = std::cosf(index * radianPerDivide);
+		float sinnext = std::sinf((index + 1) * radianPerDivide);
+		float cosnext = std::cosf((index + 1) * radianPerDivide);
+		float u = float(index) / float(cylinderDivide);
+		float unext = float(index + 1) / float(cylinderDivide);
+
+		VertexData v[] = {
+			{{-sin * topRadius,height,cos * topRadius,1.0f},				{u,0.0f} ,		{-sin,0.0f,cos}},
+			{{-sinnext * topRadius,height,cosnext * topRadius,1.0f},		{unext,0.0f},	{-sinnext,0.0f,cosnext}},
+			{{-sin * bottomRadius,0.0f,cos * bottomRadius,1.0f},			{u,1.0f} ,		{-sin,0.0f,cos}},
+			{{-sinnext * topRadius,height,cosnext * topRadius,1.0f},		{unext,0.0f},	{-sinnext,0.0f,cosnext}},
+			{{-sinnext * bottomRadius,0.0f,cosnext * bottomRadius,1.0f},	{unext,1.0f},	{-sinnext,0.0f,cosnext}},
+			{{-sin * bottomRadius,0.0f,cos * bottomRadius,1.0f},{u,1.0f} ,	{-sin,0.0f,cos}}
+
+		};
+		for (const auto& vert : v) {
+			cylinderVertices.push_back(vert);
+		}
+
+	}
+	return cylinderVertices;
+}
+

@@ -63,7 +63,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle2");
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle2");
 
 	line = std::make_unique<Line>();
 
