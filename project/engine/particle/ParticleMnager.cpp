@@ -112,6 +112,14 @@ void ParticleMnager::Update()
 	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
+	
+
+	materialData->uvTransform.m[3][0] += 0.0001f; // X方向スクロール
+	materialData->uvTransform.m[3][0] = std::fmod(materialData->uvTransform.m[3][0], 1.0f);
+	if (materialData->uvTransform.m[3][0] < 0.0f) materialData->uvTransform.m[3][0] += 1.0f;
+
+
+
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
 		uint32_t counter = 0;
@@ -124,6 +132,8 @@ void ParticleMnager::Update()
 				particleIterator = particleGroup.particles.erase(particleIterator);
 				continue;
 			}
+
+
 
 			//パーティクルの位置を更新
 			(*particleIterator).transform.translate += (*particleIterator).Velocity * 1.0f / 60.0f;
@@ -350,7 +360,7 @@ Particle ParticleMnager::MakeNormalParticle(std::mt19937& randomEngine, const Ve
 	particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	particle.transform.translate = translate;
 	particle.Velocity = { 0.0f,0.0f,0.0f };
-	particle.color = { 1.0f,1.0f,1.0f,1.0f };
+	particle.color = { 1.0f,0.0f,1.0f,1.0f };
 	
 	particle.lifetime = 1.0f;
 	particle.currentTime = 0;

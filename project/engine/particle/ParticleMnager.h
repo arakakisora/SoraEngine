@@ -87,7 +87,7 @@ public:
 	//リングの頂点情報を作成
 	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
 	//シリンダーの頂点情報を作成
-	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 1.0f);
+	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 2.0f);
 
 
 private:
@@ -127,7 +127,7 @@ private:
 	Material* materialData = nullptr;
 	//std::string textureFilePath_;
 	uint32_t vertexCount = 0;
-
+	float scrollX = 0.0f; // グローバル or メンバ変数として定義しておく
 
 };
 
