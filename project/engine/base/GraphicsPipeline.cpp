@@ -635,7 +635,7 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 }
 void GraphicsPipeline::CreateCopyImage()
 {
-	RootSignatureCopyImageCreate();
+	
 
 	//InputLayout
 	// ルートシグネチャを作成（SRV1つとサンプラのみ）

@@ -63,7 +63,7 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 100, "Pariticle2");
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle2");
 
 	line = std::make_unique<Line>();
 
@@ -131,11 +131,11 @@ void GamePlayScene::Update()
 
 
 	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
-	line->DrawGrid(terrain->GetTransform().translate, 10.0f, 10);
+	/*line->DrawGrid(terrain->GetTransform().translate, 10.0f, 10);
 	line->DrawAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
 	line->DrawAABBVector3(object3D->GetTransform().translate,1.0f, { 1,0,0,1 });
 	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
-	
+	*/
 	
 
 
@@ -373,7 +373,7 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
+	/*object3D->Draw();*/
 	terrain->Draw();
 
 
