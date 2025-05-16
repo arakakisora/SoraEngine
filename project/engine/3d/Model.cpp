@@ -30,6 +30,21 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 
+
+	//インデックス設定
+	//インデックスバッファ用のリソースを作成
+	indexResource = modelCommon_->GetDxCommon()->CreateBufferResource(sizeof(uint32_t) * modelData.indices.size());
+	//リソースの先頭のアドレスから使う
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	//使用するリソースのサイズはインデックス分のサイズ
+	indexBufferView.SizeInBytes = UINT(sizeof(uint32_t) * modelData.indices.size());
+	//format
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	//書き込むためのアドレスを取得
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedIndex));
+	std::memcpy(mappedIndex, modelData.indices.data(), sizeof(uint32_t) * modelData.indices.size());
+
+
 	//マテリアル
 	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
 	materialResource = modelCommon_->GetDxCommon()->CreateBufferResource(sizeof(Material));
@@ -55,13 +70,23 @@ void Model::Draw()
 {
 	//VertexBufferViewを設定
 	modelCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	//インデックスバッファビューを設定
+	modelCommon_->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
 	//マテリアルのCBufferの場所を設定
 	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//SRVのDescriptorTableの先頭を設定
 	modelCommon_->GetSRVManager()->SetGraficsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath));
 	//描画！
-	modelCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	//modelCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
+	 // インデックス描画（インスタンス数 = 1）
+	modelCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(
+		static_cast<UINT>(modelData.indices.size()), // Index数
+		1,  // インスタンス数
+		0,  // StartIndexLocation
+		0,  // BaseVertexLocation
+		0   // StartInstanceLocation
+	);
 
 }
 
@@ -169,30 +194,31 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 		aiMesh* mesh = scene->mMeshes[meshIndex];
 		assert(mesh->HasNormals());//法線情報がない
 		assert(mesh->HasTextureCoords(0));//テクスチャ座標がない
+		modelData.vertices.resize(mesh->mNumVertices);//頂点数分のメモリを確保
 
+		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
+			aiVector3D& position = mesh->mVertices[vertexIndex];
+			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+
+			// 右手系 -> 左手系への変換を忘れずに
+			modelData.vertices[vertexIndex].position = { -position.x, position.y, position.z, 1.0f };
+			modelData.vertices[vertexIndex].normal = { -normal.x, normal.y, normal.z };
+			modelData.vertices[vertexIndex].texcoord = { texcoord.x, texcoord.y };
+		}
+
+		//インデックス情報を解析
 		for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
+			//
 			assert(face.mNumIndices == 3);//三角形以外は対応しない
-
 			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
-
-				uint32_t vectorIndex = face.mIndices[element];
-				aiVector3D& position = mesh->mVertices[vectorIndex];
-				aiVector3D& normal = mesh->mNormals[vectorIndex];
-				aiVector3D& texcoord = mesh->mTextureCoords[0][vectorIndex];
-				VertexData vertex;
-				vertex.position = { position.x,position.y,position.z,1.0f };
-				vertex.normal = { normal.x,normal.y,normal.z };
-				vertex.texcoord = { texcoord.x,texcoord.y };
-				//aiprocess_MakeLefthandedはz*=-1で、右手->左手に変換するので手動で対応
-				vertex.position.x *= -1.0f;
-				vertex.normal.x *= -1.0f;
-				modelData.vertices.push_back(vertex);
-
-
+				uint32_t vertexIndex = face.mIndices[element];
+				modelData.indices.push_back(vertexIndex);//インデックスを格納
 			}
-
 		}
+
+
 	}
 
 	//マテリアルの解析
