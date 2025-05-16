@@ -15,6 +15,7 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 
 	modelData = LoadModelFile(directorypath, filename);
 	animation = LoadAnimationFile(directorypath, filename);
+	skeleton = CreateSkeleton(modelData.rootNode);
 
 	//モデルオブジェクト
 	//モデル用のVetexResouceを作成
@@ -67,20 +68,57 @@ void Model::Draw()
 Node Model::ReadNode(aiNode* node)
 {
 	Node result;
-	aiMatrix4x4 aiLocalMatrix = node->mTransformation;//nodeののlocalMatrixを取得
-	aiLocalMatrix.Transpose();//転置
+	aiVector3D scale, translate;
+	aiQuaternion rotation;
 
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			result.localMatrix.m[i][j] = aiLocalMatrix[i][j];
-		}
-	}
+	node->mTransformation.Decompose(scale, rotation, translate);//スケール、回転、平行移動を取得
+	result.transform.scale = { scale.x,scale.y,scale.z };//スケールを取得
+	result.transform.rotate = { rotation.x,-rotation.y,-rotation.z,rotation.w };//回転を取得
+	result.transform.translate = { translate.x,translate.y,translate.z };//平行移動を取得
+	result.localMatrix = MyMath::MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);//ローカル行列を取得
 	result.name = node->mName.C_Str();//名前を取得
 	result.children.resize(node->mNumChildren);//子ノードの数だけリサイズ
 	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
 		result.children[childIndex] = ReadNode(node->mChildren[childIndex]);//子ノードを読み込む
 	}
 	return result;
+}
+
+Skeleton Model::CreateSkeleton(const Node& rootNode)
+{
+	Skeleton skeleton;
+
+	// ルートノードからジョイントツリーを構築
+	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+
+	// 名前と index のマッピングを行いアクセスしやすくする
+	for (const Joint& joint : skeleton.joints) {
+		skeleton.jointMap.emplace(joint.name, joint.index);
+	}
+
+	return skeleton;
+}
+
+int32_t Model::CreateJoint(const Node& node, std::optional<int32_t> parent, std::vector<Joint>& joints)
+{
+	Joint joint;
+	joint.name = node.name;
+	joint.localMatrix = node.localMatrix;
+	joint.skeletonSpaceMatrix = joint.skeletonSpaceMatrix.MakeIdentity4x4();
+	joint.transform = node.transform;
+	joint.index = int32_t(joints.size()); // 現在登録されてる数をIndexに
+	joint.parent = parent;
+
+	joints.push_back(joint); // SkeletonのJoint列に追加
+
+	// 子Jointを作成し、そのIndexを登録
+	for (const Node& child : node.children) {
+		int32_t childIndex = CreateJoint(child, joint.index, joints);
+		joints[joint.index].children.push_back(childIndex);
+	}
+
+	// 自身のIndexを返す
+	return joint.index;
 }
 
 

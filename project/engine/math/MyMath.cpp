@@ -658,6 +658,17 @@ Quaternion MyMath::Normalize(const Quaternion& quaternion)
 	return { quaternion.x / length, quaternion.y / length, quaternion.z / length, quaternion.w / length };
 }
 
+Vector3 MyMath::GetTranslate(const Matrix4x4& matrix)
+{
+	
+	Vector3 ans;
+	ans.x = matrix.m[3][0];
+	ans.y = matrix.m[3][1];
+	ans.z = matrix.m[3][2];
+	return ans;
+
+}
+
 void MyMath::MatrixImGuiText(const Matrix4x4& matrix, const char* label)
 {
 

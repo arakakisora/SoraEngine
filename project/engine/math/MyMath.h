@@ -130,7 +130,7 @@ namespace MyMath {
 	//クオタニオンの正規化
 	Quaternion Normalize(const Quaternion& quaternion);
 
-
+	Vector3 GetTranslate( const Matrix4x4& matrix);
 
 	//debugテキスト
 	void MatrixImGuiText(const Matrix4x4& matrix, const char* label);

@@ -45,9 +45,10 @@ void GamePlayScene::Initialize()
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("animationfly.gltf");
+	object3D->SetModel("walk.gltf");
 	object3D->SetLighting(true);
 	object3D->SetDirectionalLightIntensity(1.0f);
+	object3D->SetRotate({0.0f,-3.0f,0.0f});
 
 	terrain = std::make_unique<Object3D>();
 	terrain->Initialize(Object3DCommon::GetInstance());
@@ -163,7 +164,7 @@ void GamePlayScene::Update()
 		}
 
 		//カメラの位置
-		Transform cameraTransform = CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
+		EulerTransform cameraTransform = CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
 		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
 			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
 		}
@@ -178,7 +179,7 @@ void GamePlayScene::Update()
 	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		//potision
-		Transform transform = object3D->GetTransform();
+		EulerTransform transform = object3D->GetTransform();
 		if (ImGui::DragFloat3("obj3Position", &transform.translate.x, 0.01f)) {
 			object3D->SetTransform(transform);
 		}
@@ -403,6 +404,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("animationfly.gltf");
 	ModelManager::GetInstans()->LoadModel("sphere.gltf");
 	ModelManager::GetInstans()->LoadModel("player.gltf");
+	ModelManager::GetInstans()->LoadModel("walk.gltf");
 
 
 }
