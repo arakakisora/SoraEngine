@@ -63,5 +63,10 @@ private:
 	Material* materialData = nullptr;
 	//std::string textureFilePath_;
 
+
+	//index描画
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;//インデックスバッファリソース
+	D3D12_INDEX_BUFFER_VIEW indexBufferView;//インデックスバッファビュー
+	uint32_t* mappedIndex = nullptr;
 };
 
