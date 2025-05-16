@@ -18,12 +18,16 @@ public:
 	/// </summary>
 	void Draw();
 
-
+	//ノードを読む
 	Node ReadNode(aiNode* node);
+	Skeleton CreateSkeleton(const Node& rootNode);
+	int32_t CreateJoint(const Node& node, std::optional<int32_t> parent, std::vector<Joint>& joints);
 
-	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }
-	ModelData GetModelData() { return modelData; }
-	Animation& GetAnimation() { return animation; }
+
+	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }//頂点バッファビューを取得
+	ModelData GetModelData() { return modelData; }//モデルデータを取得
+	Animation& GetAnimation() { return animation; }//アニメーションデータを取得
+	Skeleton& GetSkeleton() { return skeleton; }//スケルトンデータを取得
 
 
 	//ライトのオンオフ
@@ -43,6 +47,8 @@ private:
 	//アニメーション
 	//アニメーションデータ
 	Animation animation;
+	//スケルトン
+	Skeleton skeleton;
 
 	//バッファリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;

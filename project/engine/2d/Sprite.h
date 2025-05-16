@@ -96,7 +96,7 @@ private:
 	//IndexBufferSprite頂点バッファーを作成する
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
 	//Transform
-	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 	//設定用SRT
 	Vector2 size = { 640.0f,360.0f };

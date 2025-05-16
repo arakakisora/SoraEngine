@@ -138,4 +138,27 @@ void Line::DrawSphere(const Vector3& center, float radius, const Vector4& color)
 
 }
 
+void Line::DrawSkeleton(const Skeleton& skeleton, const std::vector<Matrix4x4>& skeletonPose, const Vector4& color)
+{
+	for (const Joint& joint : skeleton.joints) {
+		// ジョイントの位置（子）
+		Vector3 jointPos = MyMath::GetTranslate(skeletonPose[joint.index]) ; // 変換版（より見やすく）
+
+		// ★ ジョイント球を描画（小さめの球）
+		DrawSphere(jointPos, 0.005f, color);
+
+		// 親がいるならラインを描画
+		if (joint.parent.has_value()) {
+			int parentIndex = joint.parent.value();
+			Vector3 parentPos = MyMath::GetTranslate( skeletonPose[parentIndex]);
+
+			LineCommon::GetInstance()->DrawLine(parentPos, jointPos, color);
+		}
+	}
+
+	
+
+
+}
+
 

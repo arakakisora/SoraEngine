@@ -8,7 +8,7 @@
 
 struct Particle {
 
-	Transform transform;
+	EulerTransform transform;
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
@@ -112,7 +112,7 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	
 	//SRT
-	Transform transform;
+	EulerTransform transform;
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 
