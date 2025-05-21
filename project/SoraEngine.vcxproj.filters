@@ -32,8 +32,8 @@
     <ClCompile Include="engine\scene\GameClearScene.cpp" />
     <ClCompile Include="engine\scene\GameOverScene.cpp" />
     <ClCompile Include="engine\base\GraphicsPipeline.cpp" />
-    <ClCompile Include="Line.cpp" />
-    <ClCompile Include="LineCommon.cpp" />
+    <ClCompile Include="engine\Line\Line.cpp" />
+    <ClCompile Include="engine\Line\LineCommon.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -56,7 +56,7 @@
     <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
-    <ClCompile Include="OfscreenRenderManager.cpp" />
+    <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
@@ -104,9 +104,9 @@
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
     <ClInclude Include="engine\particle\ParticleMnager.h" />
-    <ClInclude Include="OfscreenRenderManager.h" />
-    <ClInclude Include="Line.h" />
-    <ClInclude Include="LineCommon.h" />
+    <ClInclude Include="engine\base\OfscreenRenderManager.h" />
+    <ClInclude Include="engine\Line\Line.h" />
+    <ClInclude Include="engine\Line\LineCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\blocks.csv" />
