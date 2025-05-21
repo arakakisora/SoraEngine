@@ -25,14 +25,14 @@ uint32_t SrvManager::Allocate()
 	return index;
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDrscriptorHandle(uint32_t index)
+D3D12_CPU_DESCRIPTOR_HANDLE SrvManager::GetCPUDescriptorHandle(uint32_t index)
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	handleCPU.ptr += (descriptorSize * index);
 	return handleCPU;
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDrscriptorHandle(uint32_t index)
+D3D12_GPU_DESCRIPTOR_HANDLE SrvManager::GetGPUDescriptorHandle(uint32_t index)
 {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	handleGPU.ptr += (descriptorSize * index);
@@ -47,7 +47,7 @@ void SrvManager::CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResou
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = UINT(MipLevels);
 	srvDesc.Format = foemat;
-	directXCommon->GetDevice()->CreateShaderResourceView(pResource, &srvDesc, GetCPUDrscriptorHandle(srvIndex));
+	directXCommon->GetDevice()->CreateShaderResourceView(pResource, &srvDesc, GetCPUDescriptorHandle(srvIndex));
 
 }
 
@@ -62,7 +62,7 @@ void SrvManager::CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource*
 	srvDesc.Buffer.NumElements = numElements;
 	srvDesc.Buffer.StructureByteStride = structureByteStride;
 
-	directXCommon->GetDevice()->CreateShaderResourceView(pResourece, &srvDesc, GetCPUDrscriptorHandle(srvIndex));
+	directXCommon->GetDevice()->CreateShaderResourceView(pResourece, &srvDesc, GetCPUDescriptorHandle(srvIndex));
 
 }
 
@@ -76,7 +76,7 @@ void SrvManager::PreDraw()
 
 void SrvManager::SetGraficsRootDescriptorTable(UINT RootprameterIndex, uint32_t srvIndex)
 {
-	directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(RootprameterIndex, GetGPUDrscriptorHandle(srvIndex));
+	directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(RootprameterIndex, GetGPUDescriptorHandle(srvIndex));
 }
 
 bool SrvManager::CheckTexturesNumber()

@@ -25,6 +25,7 @@ public:
 
 	void SkeletonUpdate( Skeleton& skeleton);
 	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+	void SkinClusterUpdate(SkinCluster&skinCluster,const Skeleton&skeleton);
 	/// <summary>
 	/// 描画
 	/// </summary>
