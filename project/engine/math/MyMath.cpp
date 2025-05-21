@@ -203,6 +203,15 @@ Matrix4x4 MyMath::MakeRotateZMatrix(float radian)
 }
 
 
+Matrix4x4 MyMath::MakeRotateMatrix(const Vector3& rotate)
+{
+
+	Matrix4x4 rotateX = MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateY = MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZ = MakeRotateZMatrix(rotate.z);
+	return rotateX * rotateY * rotateZ;
+}
+
 Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
 
@@ -667,6 +676,17 @@ Quaternion MyMath::Normalize(const Quaternion& quaternion)
 		return { 0.0f, 0.0f, 0.0f, 1.0f }; // ゼロ除算を避けるためのデフォルト値
 	}
 	return { quaternion.x / length, quaternion.y / length, quaternion.z / length, quaternion.w / length };
+}
+
+Vector3 MyMath::GetTranslate(const Matrix4x4& matrix)
+{
+	
+	Vector3 ans;
+	ans.x = matrix.m[3][0];
+	ans.y = matrix.m[3][1];
+	ans.z = matrix.m[3][2];
+	return ans;
+
 }
 
 void MyMath::MatrixImGuiText(const Matrix4x4& matrix, const char* label)

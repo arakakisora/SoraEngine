@@ -8,11 +8,11 @@
 
 struct Particle {
 
-	Transform transform;
+	EulerTransform transform;
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
-
+	
 	Vector4 color;
 
 
@@ -79,8 +79,16 @@ public:
 
 	void SetModel(const std::string& filepath);
 
+
 	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
+	Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
+	Particle MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate);
 	
+	//リングの頂点情報を作成
+	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
+	//シリンダーの頂点情報を作成
+	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 2.0f);
+
 
 private:
 
@@ -104,7 +112,7 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	
 	//SRT
-	Transform transform;
+	EulerTransform transform;
 	Matrix4x4 worldMatrix;
 	Matrix4x4 worldViewProjectionMatrix;
 
@@ -118,7 +126,9 @@ private:
 	//マテリアルにデータを書き込む	
 	Material* materialData = nullptr;
 	//std::string textureFilePath_;
-	
+	uint32_t vertexCount = 0;
+	float scrollX = 0.0f; // グローバル or メンバ変数として定義しておく
+
 };
 
 

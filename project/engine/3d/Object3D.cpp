@@ -9,12 +9,11 @@
 
 
 
-
 void Object3D::Initialize(Object3DCommon* object3DCommon)
 {
 	//引数で受け取って、メンバ変数に記録する
 	object3DCommon_ = object3DCommon;
-		
+
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	transformationMatrixResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
@@ -72,7 +71,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
 	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
 
-
+	
 
 }
 
@@ -80,8 +79,9 @@ void Object3D::Update()
 {
 
 
-
-
+	ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
+	SkeletonUpdate(model_->GetSkeleton());
+	
 
 
 
@@ -96,33 +96,19 @@ void Object3D::Update()
 	}
 
 	if (activeCamera) {
-		
+
+
+		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
+		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
+
 		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-		transformaitionMatrixData->WVP = model_->GetModelData().rootNode.localMatrix * worldViewProjectionMatrix;
-		transformaitionMatrixData->World = model_->GetModelData().rootNode.localMatrix * worldMatrix;
+		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
+		transformaitionMatrixData->World = worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
 		cameraForGpu->worldPosition = cameraPosition;
 
-		if (!model_->GetAnimation().nodeAnimations.empty()) {
-
-			animationTime += 1.0f / 60.0f;
-			animationTime = std::fmod(animationTime, model_->GetAnimation().duration);
-			//const auto& name = model_->GetModelData().rootNode.name;
-			//auto animation = model_->GetAnimation();
-			//NodeAnimation& rootNodeAnimation = animation.nodeAnimations[name];
-			//NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[name];
-			//NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations[model_->GetModelData().rootNode.name];
-			const NodeAnimation& rootNodeAnimation = model_->GetAnimation().nodeAnimations.find(model_->GetModelData().rootNode.name)->second;
-			Vector3 translate = CalculatateValue(rootNodeAnimation.translate, animationTime);
-			Quaternion rotate = CalculatateValue(rootNodeAnimation.rotate, animationTime);
-			Vector3 scale = CalculatateValue(rootNodeAnimation.scale, animationTime);
-
-			Matrix4x4 localMatrix = MyMath::MakeAffineMatrix(scale, rotate, translate);
-			transformaitionMatrixData->WVP = localMatrix * transformaitionMatrixData->WVP;
-			transformaitionMatrixData->World = localMatrix * transformaitionMatrixData->World;
-
-		}
+		
 
 
 	} else {
@@ -131,6 +117,45 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 	}
 }
+
+void Object3D::SkeletonUpdate(Skeleton& skeleton)
+{
+	// ← ここでサイズを合わせるのが絶対必要！！
+	skeletonPose_.resize(skeleton.joints.size());
+	//すべてのjointを更新。親が若いので通常ループで処理可能になっている
+	for (Joint& joint : skeleton.joints)
+	{
+		joint.localMatrix = MyMath::MakeAffineMatrix(joint.transform.scale, joint.transform.rotate, joint.transform.translate);
+		if (joint.parent)
+		{
+			joint.skeletonSpaceMatrix = joint.localMatrix * skeleton.joints[*joint.parent].skeletonSpaceMatrix;
+
+		} else
+		{
+			joint.skeletonSpaceMatrix = joint.localMatrix;
+		}
+		skeletonPose_[joint.index] = joint.skeletonSpaceMatrix;
+	}
+	line_.DrawSkeleton(model_->GetSkeleton(), skeletonPose_, { 1.0f,0.0f,0.0f,1.0f });
+}
+
+void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
+{
+	for (Joint& joint : skeleton.joints) {
+		// 対象のJointのAnimationがあれば、値の適用を行う。
+		// 下記のif文はC++17から可能になった初期化付きif文。
+		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end()) {
+			const NodeAnimation& nodeAnimation = it->second;
+
+			joint.transform.translate = CalculateValue(nodeAnimation.translate, animationTime);
+			joint.transform.rotate = CalculateValue(nodeAnimation.rotate, animationTime);
+			joint.transform.scale = CalculateValue(nodeAnimation.scale, animationTime);
+		}
+	}
+}
+
+
+
 
 void Object3D::Draw()
 {
@@ -160,7 +185,9 @@ void Object3D::SetModel(const std::string& filepath)
 	model_ = ModelManager::GetInstans()->FindModel(filepath);
 }
 
-Vector3 Object3D::CalculatateValue(const std::vector<KeyframeVector3>& keyframes, float time)
+
+
+Vector3 Object3D::CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {
 	assert(!keyframes.empty());
 	if (keyframes.size() == 1 || time <= keyframes[0].time) {
@@ -180,8 +207,9 @@ Vector3 Object3D::CalculatateValue(const std::vector<KeyframeVector3>& keyframes
 	return (*keyframes.rbegin()).value;
 }
 
-Quaternion Object3D::CalculatateValue(const std::vector<KeyframeQuaternion>& keyframes, float time)
+Quaternion Object3D::CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time)
 {
+
 	assert(!keyframes.empty());
 	if (keyframes.size() == 1 || time <= keyframes[0].time) {
 		return keyframes[0].value;

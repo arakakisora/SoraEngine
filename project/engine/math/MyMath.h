@@ -75,6 +75,9 @@ namespace MyMath {
 	//回転Z
 	Matrix4x4 MakeRotateZMatrix(float radian);
 
+	//回転XYZ
+	Matrix4x4 MakeRotateMatrix(const Vector3& rotate);
+
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
 	float Cot(float theta);
@@ -130,7 +133,7 @@ namespace MyMath {
 	//クオタニオンの正規化
 	Quaternion Normalize(const Quaternion& quaternion);
 
-
+	Vector3 GetTranslate( const Matrix4x4& matrix);
 
 	//debugテキスト
 	void MatrixImGuiText(const Matrix4x4& matrix, const char* label);

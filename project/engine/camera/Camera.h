@@ -28,12 +28,12 @@ public:
 	const Matrix4x4& GetViewMatrix()const { return viewMatrix; }
 	const Matrix4x4& GetProjextionMatrix()const { return projectionMatrix; }
 	const Matrix4x4& GetViewprojectionMatrix()const { return viewProjectionMatrix; }
-	const Transform& GetTransform()const { return transform; }
+	const EulerTransform& GetTransform()const { return transform; }
 
 private:
 	
 	//カメラ用のTransformを作る
-	Transform transform;
+	EulerTransform transform;
 	Matrix4x4 worldMatrix;
 	Matrix4x4 viewMatrix;
 	Matrix4x4 projectionMatrix;

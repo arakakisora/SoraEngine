@@ -25,18 +25,26 @@ struct Vector3 final {
         return Vector3{ x - other.x, y - other.y, z - other.z };
     }
 
-    Vector3 operator*(const int other) const {
+    Vector3 operator*(const int& other) const {
         return Vector3{ x * other,y * other,z * other };
     }
-    Vector3 operator*(const float other) const {
+    Vector3 operator*(const float& other) const {
         return Vector3{ x * other,y * other,z * other };
     }
-    Vector3 operator/(const int other) const {
+    Vector3 operator/(const int& other) const {
         return Vector3{ x / other, y / other, z / other };
     }
-    Vector3 operator/(const float other) const {
+    Vector3 operator/(const float& other) const {
         return Vector3{ x / other, y / other, z / other };
     }
+    Vector3 operator-(const float& other) const {
+        return Vector3{ x - other, y - other, z - other };
+    }
+
+    Vector3 operator+(const float& other) const {
+        return Vector3{ x + other, y + other, z + other };
+    }
+
     void operator+=(const Vector3& other) {
         x += other.x;
         y += other.y;

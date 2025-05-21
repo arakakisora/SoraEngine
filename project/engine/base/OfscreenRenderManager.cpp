@@ -51,7 +51,7 @@ void OfscreenRenderManager::Begin()
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dxCommon_->GetDSVDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	dxCommon_->GetCommandList()->OMSetRenderTargets(1, &renderTargetTextureHandle, false, &dsvHandle);
 	//指定した色で画面全体をクリアする
-	float kclearColor[] = { 1.0f,0.0f,0.0f,1.0f };//青っぽい色。RGBAの順
+	float kclearColor[] = { clearColor.x,clearColor.y,clearColor.z,clearColor.w };//青っぽい色。RGBAの順
 	dxCommon_->GetCommandList()->ClearRenderTargetView(renderTargetTextureHandle, kclearColor, 0, nullptr);
 	dxCommon_->GetCommandList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 

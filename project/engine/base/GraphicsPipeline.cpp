@@ -322,9 +322,9 @@ void GraphicsPipeline::RootSignatureParticleCreate()
 	//staticSamplers
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;//バイリニアフィルタ
-	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;//0～1の範囲外をリピート
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;//0～1の範囲外をリピート
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
 	staticSamplers[0].ShaderRegister = 0;
@@ -635,7 +635,7 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 }
 void GraphicsPipeline::CreateCopyImage()
 {
-	RootSignatureCopyImageCreate();
+	
 
 	//InputLayout
 	// ルートシグネチャを作成（SRV1つとサンプラのみ）
@@ -661,10 +661,10 @@ void GraphicsPipeline::CreateCopyImage()
 	depthStencilDesc.StencilEnable = false;
 
 	// シェーダーを読み込み
-	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/GrayScale.VS.hlsl", L"vs_6_0");
+	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
 	assert(vertexshaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/GrayScale.PS.hlsl", L"ps_6_0");
+	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
 	// PSO 設定
