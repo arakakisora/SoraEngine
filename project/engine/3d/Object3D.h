@@ -163,6 +163,7 @@ private:
 	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
 	//アニメーション
 	float animationTime = 0.0f;
+	bool enableAnimation_= true;
 
 
 private:

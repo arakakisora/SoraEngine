@@ -69,8 +69,16 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 
 void Model::Draw()
 {
+
+	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
+
+		vertexBufferView,
+		skinCluster.influenceBufferView
+
+	};
+
 	//VertexBufferViewを設定
-	modelCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+	modelCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
 	//インデックスバッファビューを設定
 	modelCommon_->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
 	//マテリアルのCBufferの場所を設定
@@ -350,7 +358,7 @@ SkinCluster Model::CreateSkinCluster()
 					break;
 				}
 			}
-		}	
+		}
 
 	}
 	return skinCluster;

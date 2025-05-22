@@ -58,6 +58,7 @@ public:
 	ModelData GetModelData() { return modelData; }//モデルデータを取得
 	Animation& GetAnimation() { return animation; }//アニメーションデータを取得
 	Skeleton& GetSkeleton() { return skeleton; }//スケルトンデータを取得
+	SkinCluster& GetSkinCluster() { return skinCluster; }//スキンクラスターを取得
 
 
 	//ライトのオンオフ
