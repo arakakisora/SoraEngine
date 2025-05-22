@@ -57,7 +57,7 @@ public:
 	void Attack();
 
 	float EaseOutSine(float x);
-	const Transform& GetTransform() { return object3D_->GetTransform(); }
+	const EulerTransform& GetTransform() { return object3D_->GetTransform(); }
 	const Vector3& GetVelocity() const { return velocity_; }
 	void SetMapChipField(MapChipField* mapChipFild) { mapChipFild_ = mapChipFild; }
 
@@ -87,6 +87,13 @@ public:
 	// Getter
 	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
 
+	bool GetPrayerMoveRight() { return playermoveright; }
+	bool GetPrayerMoveLeft() { return playermoveleft; }
+	void SetPrayerMoveRight(bool right) { playermoveright = right; }
+	void SetPrayerMoveLeft(bool left) { playermoveleft = left; }
+
+	//get足らんスレート
+	//const Vector3& GetTranslate() const { return object3D_->GetTransform().translate; }
 private:
 	
 	//objec3D
@@ -128,4 +135,8 @@ private:
 	//弾
 	std::list<PlayerBullet* > bullets_;
 	int32_t fireTimer = 0;
+
+	// プレイヤー移動フラグ
+	bool playermoveright = false;
+	bool playermoveleft = false;
 };

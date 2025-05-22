@@ -4,8 +4,10 @@
 #include "CameraManager.h"
 #include <MyMath.h>
 #include <numbers>
+#include <iterator>
+#ifdef _DEBUG
 #include <imgui.h>
-
+#endif // _DEBUG
 
 //シングルトンインスタンスの取得
 
@@ -55,35 +57,6 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 
 
-	//// 修正: VertexData 構造体の初期化リストを正しく記述  
-	//std::vector<VertexData> quadVertices = {
-	//   {{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 左下  
-	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
-	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
-
-	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
-	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
-	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
-	//};
-
-	//std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
-	std::vector<VertexData>quadVertices = MakeCylinderVertices();
-	vertexCount = static_cast<uint32_t>(quadVertices.size());
-
-	// GPUリソース作成
-	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * quadVertices.size());
-
-	// リソースアドレスを設定
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * quadVertices.size());
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-	// GPUにデータ転送
-	VertexData* vertexData = nullptr;
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, quadVertices.data(), sizeof(VertexData) * quadVertices.size());
-	vertexResource->Unmap(0, nullptr);
-
 
 }
 
@@ -112,14 +85,6 @@ void ParticleMnager::Update()
 	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
-	
-
-	materialData->uvTransform.m[3][0] += 0.0001f; // X方向スクロール
-	materialData->uvTransform.m[3][0] = std::fmod(materialData->uvTransform.m[3][0], 1.0f);
-	if (materialData->uvTransform.m[3][0] < 0.0f) materialData->uvTransform.m[3][0] += 1.0f;
-
-
-
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
 		uint32_t counter = 0;
@@ -133,19 +98,33 @@ void ParticleMnager::Update()
 				continue;
 			}
 
-
-
 			//パーティクルの位置を更新
 			(*particleIterator).transform.translate += (*particleIterator).Velocity * 1.0f / 60.0f;
 			//パーティクルの寿命を減らす
 			(*particleIterator).currentTime += 1.0f / 60.0f;
 			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
-			/*float alpha = 1.0f;*/
-			//ローテート
-			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
+
+
+			// 毎フレーム回転
+			particleIterator->transform.rotate.x += 0.05f;
+			particleIterator->transform.rotate.y += 0.1f;
+			particleIterator->transform.rotate.z += 0.2f;
+
+			Matrix4x4 rotateX = MyMath::MakeRotateXMatrix(particleIterator->transform.rotate.x);
+			Matrix4x4 rotateY = MyMath::MakeRotateYMatrix(particleIterator->transform.rotate.y);
+			Matrix4x4 rotateZ = MyMath::MakeRotateZMatrix(particleIterator->transform.rotate.z);
+
+			// 回転行列の合成（順序：Z → Y → X）
+			Matrix4x4 rotateMatrix = rotateZ * rotateY * rotateX;
+			Matrix4x4 scaleMatrix = MyMath::MakeScaleMatrix(particleIterator->transform.scale);
+			Matrix4x4 translateMatrix = MyMath::MakeTranslateMatrix(particleIterator->transform.translate);
+
+			// ビルボードを含めた SRT 合成（順序は演出次第で調整）
+			Matrix4x4 worldMatrix = scaleMatrix * rotateMatrix * billboardMatrix * translateMatrix;
+
 
 			//ワールド行列を計算
-			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
+			//Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
@@ -201,7 +180,8 @@ void ParticleMnager::Draw()
 			continue;
 		}
 
-
+		//VertexBufferViewを設定
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = model_->GetVertexBufferView();
 		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		//マテリアルのCBufferの場所を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
@@ -210,7 +190,7 @@ void ParticleMnager::Draw()
 		// テクスチャの SRV を設定
 		srvManager_->SetGraficsRootDescriptorTable(1, particleGroup.srvIndex);
 		//描画！
-		dxCommon_->GetCommandList()->DrawInstanced(UINT(vertexCount), particleGroup.instanceCount, 0, 0);
+		dxCommon_->GetCommandList()->DrawInstanced(UINT(model_->GetModelData().vertices.size()), particleGroup.instanceCount, 0, 0);
 
 	}
 
@@ -221,9 +201,6 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	ModelManager::GetInstans()->LoadModel(modelFilePath);
 	//モデルのセット
 	SetModel(modelFilePath);
-
-	//VertexBufferViewを設定
-	//vertexBufferView = model_->GetVertexBufferView();
 
 
 
@@ -274,7 +251,6 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count)
 {
 
-
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
 	//パーティクルグループのパーティクルリストにパーティクルを追加
@@ -282,7 +258,7 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 
 
 		//パーティクルを追加
-		particleGroups.at(name).particles.push_back(MakeNormalParticle(randomEngine, position));
+		particleGroups.at(name).particles.push_back(MakeNewParticle(randomEngine, position));
 
 	}
 
@@ -292,9 +268,6 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 	//particleGroups.at(name).instanceResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * particleGroups.at(name).instanceCount);
 	////インスタンス用のリソースをマップ
 	//particleGroups.at(name).instanceResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups.at(name).instanceData));
-	//
-
-
 }
 
 void ParticleMnager::SetModel(const std::string& filepath)
@@ -308,11 +281,11 @@ Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vecto
 
 
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
+	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
 
 	Particle particle;
-	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
 	particle.transform.scale = { 1.0f,1.0f,1.0f };
 	//particle.transform.rotate = { 0.0f,3.0f,0.0f };
@@ -324,118 +297,54 @@ Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vecto
 	return particle;
 }
 
-Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate)
+void ParticleMnager::PlayerEmit(const std::string& name, const Vector3 position, uint32_t count, bool isRight)
 {
-	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
+	assert(particleGroups.contains(name));
+
+	auto& group = particleGroups.at(name);
+
+	// 超過分を削除（新しいパーティクルを追加するために古いパーティクルを削除）
+	uint32_t currentCount = static_cast<uint32_t>(group.particles.size());
+	uint32_t const Maxsize = 15;
+	uint32_t toRemove = (currentCount + count > Maxsize) ? (currentCount + count - Maxsize) : 0;
+	if (toRemove > 0) {
+		auto eraseBegin = group.particles.begin();
+		auto eraseEnd = std::next(eraseBegin, toRemove); // リスト用
+		group.particles.erase(eraseBegin, eraseEnd);
+		group.instanceCount -= toRemove;
+	}
+
+	// 実際に追加
+	for (uint32_t i = 0; i < count; ++i) {
+		group.particles.push_back(PlayerMakeNewParticle(randomEngine, position, isRight));
+	}
+
+	group.instanceCount += count;
+}
+
+
+Particle ParticleMnager::PlayerMakeNewParticle(std::mt19937& randomEngine, const Vector3& translate, bool isRight)
+{
+
+	//std::uniform_real_distribution<float>distribution(-0.1f, 0.1f);
+	std::uniform_real_distribution<float>distrotate(-5.0f, 5.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
-	std::uniform_real_distribution<float>disRotate(-std::numbers::pi_v<float>, std::numbers::pi_v<float>);
-	std::uniform_real_distribution<float>disScale(0.4f, 1.5f);
+
+
+	std::uniform_real_distribution<float>distribution(-0.1f, 0.1f);
+	Vector3 randomTranslate{ 0.0f,distribution(randomEngine) ,0.0f };
+
+	float distVelocityX = isRight ? 1.5f : -1.5f;
+	float distVelocityY = 2.0f;
 
 	Particle particle;
-	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-
-	particle.transform.scale = {0.5f,disScale(randomEngine),1.0f };
-	//particle.transform.scale = { 1.0f,1.0f,1.0f };
-	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
-	//particle.transform.translate = translate + randomTranslate;
-	particle.transform.translate = translate;
-	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	particle.Velocity = { 0.0f,0.0f,0.0f };
+	Vector3 randomRotate{ distrotate(randomEngine),distrotate(randomEngine) ,distrotate(randomEngine) };
+	particle.transform.scale = { 0.1f,0.1f,0.1f };
+	particle.transform.translate = translate + randomTranslate;
+	particle.transform.rotate = randomRotate;
+	particle.Velocity = { distVelocityX,distVelocityY ,0.0f };
 	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
-	//particle.color = { 1.0f,1.0f,1.0f,1.0f };
-	//particle.lifetime = distTime(randomEngine);
-	particle.lifetime = 1.0f;
+	particle.lifetime = 0.3f;
 	particle.currentTime = 0;
 	return particle;
 }
-
-Particle ParticleMnager::MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate)
-{
-	Particle particle;
-
-	
-	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.translate = translate;
-	particle.Velocity = { 0.0f,0.0f,0.0f };
-	particle.color = { 1.0f,0.0f,1.0f,1.0f };
-	
-	particle.lifetime = 1.0f;
-	particle.currentTime = 0;
-	return particle;
-}
-
-std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
-{
-	
-	std::vector<VertexData> ringVertices;
-	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(RingDivide);
-	
-	for (uint32_t index = 0; index < RingDivide; ++index) {
-		// 現在と次の角度
-		float angle = index * radianPerDivide;
-		float nextAngle = ((index + 1) % RingDivide) * radianPerDivide;
-
-		// sin, cos
-		float sin = std::sinf(angle);
-		float cos = std::cosf(angle);
-		float sinnext = std::sinf(nextAngle);
-		float cosnext = std::cosf(nextAngle);
-
-		// UV (ここもwrapを考慮)
-		float u = (static_cast<float>(index) / RingDivide)  ;
-		float unext = (static_cast<float>(index + 1) / RingDivide) ;
-
-		VertexData v[] = {
-			{ {-sin * outerRadius,  cos * outerRadius,  0.0f, 1.0f},     {u,     0.0f}, {0.0f, 0.0f, 1.0f} },
-			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f},     {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
-			{ {-sinnext * outerRadius, cosnext * outerRadius, 0.0f, 1.0f}, {unext, 0.0f}, {0.0f, 0.0f, 1.0f} },
-
-			{ {-sinnext * outerRadius, cosnext * outerRadius, 0.0f, 1.0f}, {unext, 0.0f}, {0.0f, 0.0f, 1.0f} },
-			{ {-sin * innerRadius,  cos * innerRadius,  0.0f, 1.0f},     {u,     1.0f}, {0.0f, 0.0f, 1.0f} },
-			{ {-sinnext * innerRadius, cosnext * innerRadius, 0.0f, 1.0f}, {unext, 1.0f}, {0.0f, 0.0f, 1.0f} }
-		};
-
-		for (const auto& vert : v) {
-			ringVertices.push_back(vert);
-		}
-	}
-
-	return ringVertices;
-			
-}
-
-std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
-{
-	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(cylinderDivide);
-
-	std::vector<VertexData> cylinderVertices;
-
-	for (uint32_t index = 0; index < cylinderDivide; ++index) {
-
-		float sin = std::sinf(index * radianPerDivide);
-		float cos = std::cosf(index * radianPerDivide);
-		float sinnext = std::sinf((index + 1) * radianPerDivide);
-		float cosnext = std::cosf((index + 1) * radianPerDivide);
-		float u = float(index) / float(cylinderDivide);
-		float unext = float(index + 1) / float(cylinderDivide);
-
-		VertexData v[] = {
-			{{-sin * topRadius,height,cos * topRadius,1.0f},				{u,0.0f} ,		{-sin,0.0f,cos}},
-			{{-sinnext * topRadius,height,cosnext * topRadius,1.0f},		{unext,0.0f},	{-sinnext,0.0f,cosnext}},
-			{{-sin * bottomRadius,0.0f,cos * bottomRadius,1.0f},			{u,1.0f} ,		{-sin,0.0f,cos}},
-			{{-sinnext * topRadius,height,cosnext * topRadius,1.0f},		{unext,0.0f},	{-sinnext,0.0f,cosnext}},
-			{{-sinnext * bottomRadius,0.0f,cosnext * bottomRadius,1.0f},	{unext,1.0f},	{-sinnext,0.0f,cosnext}},
-			{{-sin * bottomRadius,0.0f,cos * bottomRadius,1.0f},{u,1.0f} ,	{-sin,0.0f,cos}}
-
-		};
-		for (const auto& vert : v) {
-			cylinderVertices.push_back(vert);
-		}
-
-	}
-	return cylinderVertices;
-}
-

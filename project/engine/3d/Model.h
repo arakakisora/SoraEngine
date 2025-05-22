@@ -25,7 +25,7 @@ public:
 
 
 	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }//頂点バッファビューを取得
-	ModelData GetModelData() { return modelData; }//モデルデータを取得
+	ModelData &GetModelData() { return modelData; }//モデルデータを取得
 	Animation& GetAnimation() { return animation; }//アニメーションデータを取得
 	Skeleton& GetSkeleton() { return skeleton; }//スケルトンデータを取得
 

@@ -6,6 +6,7 @@
 #include "Object3D.h"
 #include "Audio.h"
 #include "BaseScene.h"
+#include "FadeManager.h"
 
 class TitleScene :public BaseScene
 {
@@ -35,7 +36,7 @@ public:
 	//taitorusprite
 	Sprite* titleSprite = nullptr;
 	
-
+	FadeManager fadeManager_;
 
 
 

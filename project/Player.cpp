@@ -42,12 +42,17 @@ void Player::Update() {
 
 	if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		Transform transform = object3D_->GetTransform();
+		EulerTransform transform = object3D_->GetTransform();
 
 		//ImGui::DragFloat3("*ModelScale", &transform.scale.x, 0.01f);
 		ImGui::DragFloat3("*PlayerRotate", &transform.rotate.x, 0.01f);
 		ImGui::DragFloat3("*PlayerTransrate", &transform.translate.x, 0.01f);
 		object3D_->SetTransform(transform);
+
+		//ライティング
+		Vector3 lightDirection = object3D_->GetDirectionalLight().direction;
+		ImGui::DragFloat3("*LightDirection", &lightDirection.x, 0.01f);
+		object3D_->SetDirectionalLightDirection(lightDirection);
 
 	}
 #endif // DEBUG_
@@ -126,7 +131,8 @@ void Player::PrayerMove() {
 				}
 
 				accceleration.x += kAccleration;
-
+				playermoveright = true;
+				playermoveleft = false;
 			}
 			else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 
@@ -140,6 +146,8 @@ void Player::PrayerMove() {
 				}
 
 				accceleration.x -= kAccleration;
+				playermoveleft = true;
+				playermoveright = false;
 			}
 			velocity_.x += accceleration.x;
 			velocity_.y += accceleration.y;
@@ -153,6 +161,9 @@ void Player::PrayerMove() {
 			velocity_.x *= (1.0f - kAttenuation);
 			velocity_.y *= (1.0f - kAttenuation);
 			velocity_.z *= (1.0f - kAttenuation);
+			// スティックが真ん中なら両方falseにする
+			playermoveright = false;
+			playermoveleft = false;
 		}
 
 		if (Input::GetInstance()->PushKey(DIK_UP)) {

@@ -12,7 +12,10 @@ void TitleScene::Initialize()
 	titleSprite = new Sprite();
 	titleSprite->Initialize(SpriteCommon::GetInstance(), "Resources/titelesupercer.png");
 	titleSprite->SetSize({ 1280,720 });
-	
+
+	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.StartFadeIn();
+
 }
 
 void TitleScene::Finalize()
@@ -23,19 +26,24 @@ void TitleScene::Finalize()
 
 void TitleScene::Update()
 {
+	fadeManager_.Update();
 	//スプライトの更新
 	titleSprite->Update();
 
 	//スペースキーが押されたらゲームプレイシーンに遷移
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 
+		fadeManager_.StartFadeOut();
 		
 		
 		
+	}
+	if (fadeManager_.IsFadeOutFinished()) {
+		// シーン切り替え
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
 
-#ifdef DEBUG_
+#ifdef _DEBUG
 
 	if (ImGui::CollapsingHeader("title", ImGuiTreeNodeFlags_DefaultOpen))
 	{
@@ -64,5 +72,9 @@ void TitleScene::Draw()
 
 	//スプライトの描画
 	titleSprite->Draw();
+
+	// フェード描画
+	fadeManager_.Draw();
+
 
 }

@@ -78,9 +78,10 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 void Object3D::Update()
 {
 
-
-	ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
-	SkeletonUpdate(model_->GetSkeleton());
+	if (enableAnimation_ && model_ && model_->GetAnimation().nodeAnimations.size() > 0) {
+		ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
+		SkeletonUpdate(model_->GetSkeleton());
+	}
 	
 
 
@@ -120,6 +121,11 @@ void Object3D::Update()
 
 void Object3D::SkeletonUpdate(Skeleton& skeleton)
 {
+	//スケルトンがない場合は何もしない
+	if (skeleton.joints.empty()) {
+		return;
+	}
+
 	// ← ここでサイズを合わせるのが絶対必要！！
 	skeletonPose_.resize(skeleton.joints.size());
 	//すべてのjointを更新。親が若いので通常ループで処理可能になっている
@@ -141,6 +147,11 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 
 void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
 {
+	//アニメーションがない場合
+	if (animation.nodeAnimations.empty()) {
+		return;
+	}
+
 	for (Joint& joint : skeleton.joints) {
 		// 対象のJointのAnimationがあれば、値の適用を行う。
 		// 下記のif文はC++17から可能になった初期化付きif文。

@@ -12,11 +12,11 @@ struct Particle {
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
-	
+
 	Vector4 color;
 
 
-	
+
 
 
 };
@@ -49,7 +49,7 @@ class ParticleMnager
 public:
 
 	static ParticleMnager* GetInstance();
-	
+
 private:
 	// コンストラクタをプライベートにする
 	ParticleMnager() = default;
@@ -62,7 +62,7 @@ private:
 public:
 
 	//初期化
-	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
+	void Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger);
 
 
 
@@ -73,29 +73,25 @@ public:
 	void Update();
 	void Draw();
 
-	void CreateParticleGroup(const std::string name,const std::string textureFilePath, std::string modelFilePath);
+	void CreateParticleGroup(const std::string name, const std::string textureFilePath, std::string modelFilePath);
 
 	void Emit(const std::string& name, const Vector3 position, uint32_t count);
 
 	void SetModel(const std::string& filepath);
 
-
 	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
-	Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
-	Particle MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate);
-	
-	//リングの頂点情報を作成
-	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
-	//シリンダーの頂点情報を作成
-	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 2.0f);
 
+
+
+	void PlayerEmit(const std::string& name, const Vector3 position, uint32_t count, bool isRight);
+	Particle PlayerMakeNewParticle(std::mt19937& randomEngine, const Vector3& translate, bool isRight);
 
 private:
 
 
 	//インスタンス
 	static ParticleMnager* instance_;
-	DirectXCommon* dxCommon_=nullptr;
+	DirectXCommon* dxCommon_ = nullptr;
 	SrvManager* srvManager_ = nullptr;
 
 
@@ -110,7 +106,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 	//VBV
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-	
+
 	//SRT
 	EulerTransform transform;
 	Matrix4x4 worldMatrix;
@@ -126,9 +122,5 @@ private:
 	//マテリアルにデータを書き込む	
 	Material* materialData = nullptr;
 	//std::string textureFilePath_;
-	uint32_t vertexCount = 0;
-	float scrollX = 0.0f; // グローバル or メンバ変数として定義しておく
 
 };
-
-

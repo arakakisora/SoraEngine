@@ -13,6 +13,7 @@
 #include <vector>
 #include <Player.h>
 #include <Enemy.h>
+#include <ParticleEmitter.h>
 
 class GamePlayScene :public BaseScene
 {
@@ -41,6 +42,8 @@ public:
 	//当たり判定のまとまり
 	void CheckAllCollisions();
 
+	void Imguidebug();
+
 public:
 
 	Object3D* GoolObject3D = nullptr;
@@ -56,10 +59,12 @@ public:
 	//player
 	Player* player = nullptr;
 	Object3D* object3DPlayer = nullptr;
+	ParticleEmitter* playeremitter_;
+	Vector3 playeroffset{};
 
 	//wvpData用のTransform変数を作る
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	Transform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//mapchip
 	//ブロック
 	std::vector<std::vector<Object3D*>> blockobject3D;

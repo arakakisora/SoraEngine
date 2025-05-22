@@ -22,7 +22,7 @@ void Camera::Update()
 {
 
 	if (followMode && followTarget) {
-		const Transform& targetTransform = followTarget->GetTransform();
+		const EulerTransform& targetTransform = followTarget->GetTransform();
 		Vector3 targetPosition = targetTransform.translate + followOffset;
 		transform.translate = MyMath::Lerp(transform.translate, targetPosition, interpolationRate);
 	}

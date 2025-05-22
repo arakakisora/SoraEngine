@@ -9,6 +9,7 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
+	object3D_->SetLighting(false);
 	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
 	walkTimer_ = 0.0f;
 

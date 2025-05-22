@@ -7,6 +7,7 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
+#include <ParticleMnager.h>
 
 void GamePlayScene::Initialize()
 {
@@ -35,6 +36,8 @@ void GamePlayScene::Initialize()
 	ModelManager::GetInstans()->LoadModel("enemy.obj");
 	ModelManager::GetInstans()->LoadModel("gool.obj");
 	ModelManager::GetInstans()->LoadModel("bullet.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
+
 
 
 
@@ -52,10 +55,24 @@ void GamePlayScene::Initialize()
 	object3DPlayer->Initialize(Object3DCommon::GetInstance());
 	object3DPlayer->SetModel("player.obj");
 	object3DPlayer->SetScale(Vector3{ 0.25f,0.25f,0.25f });
+	object3DPlayer->SetLighting(true);
+	object3DPlayer->SetDirectionalLightEnable(true);
+	object3DPlayer->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
+
+
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(object3DPlayer, playerPostion);
 	player->SetDeathHeight(0.0f);
-
+	
+	ParticleMnager::GetInstance()->CreateParticleGroup("Player", "Resources/block.png", "sphere.obj");
+	playeremitter_ = new ParticleEmitter(
+		{ 0.0f,0.3f,0.0f },
+		5.0f,
+		0.0f,
+		1,
+		"Player"
+	);
+	playeroffset = { 0.0f,0.0f,0.0f };
 
 
 
@@ -91,6 +108,8 @@ void GamePlayScene::Initialize()
 	skydome_->Initialize(Object3DCommon::GetInstance());
 	skydome_->SetModel("skyplane.obj");
 	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
+	//ライト
+	skydome_->SetLighting(false);
 
 	//フォローカメラ設定
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(object3DPlayer, { 0, 0, -15 });
@@ -131,7 +150,7 @@ void GamePlayScene::Finalize()
 	}
 
 
-
+	delete playeremitter_;
 }
 
 void GamePlayScene::Update()
@@ -143,6 +162,30 @@ void GamePlayScene::Update()
 
 	//プレイヤーの更新
 	player->Update();
+
+	// プレイヤーが右に移動中
+	if (player->GetPrayerMoveRight()) {
+		playeroffset = { -0.3f,0.0f,0.0f };
+		playeremitter_->SetPosition(object3DPlayer->GetTransform().translate + playeroffset);
+		// 左方向に設定
+		playeremitter_->SetisRight(false);
+		// プレイヤーのパーティクルを発生させる
+		playeremitter_->PlayerEmit();
+	}
+
+	// プレイヤーが左に移動中
+	if (player->GetPrayerMoveLeft()) {
+		playeroffset = { 0.3f,0.0f,0.0f };
+		playeremitter_->SetPosition(object3DPlayer->GetTransform().translate + playeroffset);
+		// 右方向に設定
+		playeremitter_->SetisRight(true);
+		// プレイヤーのパーティクルを発生させる
+		playeremitter_->PlayerEmit();
+	}
+
+	playeremitter_->SetPosition(object3DPlayer->GetTransform().translate + playeroffset);
+	// パーティクルの更新
+	//playeremitter_->Update();
 
 	//Goolの更新
 	GoolObject3D->Update();
@@ -190,16 +233,9 @@ void GamePlayScene::Update()
 
 #ifdef _DEBUG
 
-	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		/*transformModel = object3D->GetTransform();
+	
 
-		ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-		ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-		ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
-
-		object3D->SetTransform(transformModel);*/
-	}
+	Imguidebug();
 #endif // _DEBUG
 
 
@@ -249,7 +285,7 @@ void GamePlayScene::Draw()
 	GoolObject3D->Draw();
 
 	//object3D2nd->Draw();
-
+	ParticleMnager::GetInstance()->Draw();
 #pragma endregion
 
 #pragma region スプライト描画
@@ -288,6 +324,10 @@ void GamePlayScene::GenerateObject3D()
 				object3D_->SetModel("blokc.obj");
 				blockobject3D[i][j] = object3D_;
 				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
+				//ライト
+				object3D_->SetLighting(true);
+				object3D_->SetDirectionalLightEnable(true);
+				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
 
 
 			}
@@ -336,6 +376,28 @@ void GamePlayScene::CheckAllCollisions()
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 
 	}
+
+
+}
+
+void GamePlayScene::Imguidebug()
+{
+
+	if (ImGui::CollapsingHeader("plyer", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		/*transformModel = object3DPlayer->GetTransform();
+
+		ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
+		ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
+		ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+
+		object3DPlayer->SetTransform(transformModel);*/
+
+
+
+	}
+	
+		
 
 
 }

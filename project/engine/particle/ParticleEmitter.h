@@ -12,13 +12,17 @@ public:
 		const float currentTime,
 		const uint32_t count,
 		const std::string& name
-	
+
 	);
 
-	
+
 	void Update();
 
+
+	//void Update2();
+
 	void Emit();
+	void PlayerEmit();
 
 	//getter
 	const Vector3& GetPosition() const { return position_; }
@@ -34,13 +38,12 @@ public:
 	void SetCount(const uint32_t count) { this->count = count; }
 	void SetName(const std::string& name) { name_ = name; }
 
-	
-	
-	
+	void SetisRight(bool isfige) { isRight = isfige; }
+
 private:
 	//位置
 	Vector3 position_;
-	
+
 	//寿命
 
 	float frequency;
@@ -52,6 +55,8 @@ private:
 	//名前
 	std::string name_;
 
+	int emitCount_ = 0;     // 現在までに発生させたパーティクルの回数
+	const int maxEmitCount_ = 50; // 最大発生回数（50回）
+	bool isRight = false;
 
 };
-

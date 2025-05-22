@@ -118,7 +118,10 @@ public:
 	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 	
 
+	//getワールドトランスフォーム
+	Matrix4x4 GetWorldMatrix() { return worldMatrix; }
 
+	void SetEnableAnimation(bool enable) { enableAnimation_ = enable; }
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;//Object3DCommonのポインタ
@@ -169,7 +172,9 @@ private:
 	Line line_; // Lineクラスのポインタ
 	std::vector<Matrix4x4> skeletonPose_;
 
-
+	// Object3D.h
+	bool enableAnimation_ = false;
+	
 
 };
 
