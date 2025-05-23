@@ -375,7 +375,7 @@ void GamePlayScene::Draw()
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
 	object3D->Draw();
-	terrain->Draw();
+	//terrain->Draw();
 
 
 

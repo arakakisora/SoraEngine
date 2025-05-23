@@ -235,7 +235,7 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 			bindPoseMatrixAssimp.Decompose(scale, rotation, translate);//スケール、回転、平行移動を取得
 			Matrix4x4 bindposeMatrix = MyMath::MakeAffineMatrix(
 				{ scale.x,scale.y,scale.z }, { rotation.x,-rotation.y,-rotation.z,rotation.w }, { -translate.x,translate.y,translate.z });//ローカル行列を取得
-			jointWeightData.inverseBindPoseMatrix = bindposeMatrix;//逆バインドポーズ行列を格納
+			jointWeightData.inverseBindPoseMatrix = bindposeMatrix.Inverse();//逆バインドポーズ行列を格納
 
 			//ジョイントに関連つけられた頂点の重みとその頂点のインデックスを取り出して格納する
 			for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {

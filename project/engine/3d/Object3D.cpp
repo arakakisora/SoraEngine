@@ -83,6 +83,9 @@ void Object3D::Update()
 		ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
 		SkeletonUpdate(model_->GetSkeleton());
 		SkinClusterUpdate(model_->GetSkinCluster(), model_->GetSkeleton());
+
+		
+
 		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
 		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
 	}
@@ -112,7 +115,7 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
 		cameraForGpu->worldPosition = cameraPosition;
-
+		
 
 
 
@@ -121,6 +124,8 @@ void Object3D::Update()
 		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 		transformaitionMatrixData->World = worldMatrix;
 	}
+
+	
 }
 
 void Object3D::SkeletonUpdate(Skeleton& skeleton)
@@ -141,7 +146,7 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 		}
 		skeletonPose_[joint.index] = joint.skeletonSpaceMatrix;
 	}
-	line_.DrawSkeleton(model_->GetSkeleton(), skeletonPose_, { 1.0f,0.0f,0.0f,1.0f });
+	
 }
 
 void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
@@ -195,6 +200,7 @@ void Object3D::Draw()
 	if (model_) {
 		model_->Draw();
 	}
+
 
 }
 
