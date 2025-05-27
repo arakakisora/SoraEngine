@@ -6,6 +6,21 @@
 #include "Model.h"
 #include "GraphicsPipeline.h"
 
+
+enum class VerticesType
+{
+	Ring,
+	Cylinder,
+	Quad,
+
+};
+
+enum class ParticleType
+{
+	Normal,
+	Attack,
+};
+
 struct Particle {
 
 	EulerTransform transform;
@@ -15,10 +30,7 @@ struct Particle {
 	
 	Vector4 color;
 
-
 	
-
-
 };
 
 struct ParticleForGPU
@@ -44,6 +56,11 @@ class ParticleMnager
 		uint32_t instanceCount;
 		//insutanceのデータ
 		ParticleForGPU* instanceData = nullptr;
+		//頂点
+		uint32_t vertexCount = 0;
+		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
+		//VBV
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
 	};
 public:
@@ -73,22 +90,24 @@ public:
 	void Update();
 	void Draw();
 
-	void CreateParticleGroup(const std::string name,const std::string textureFilePath, std::string modelFilePath);
+	void CreateParticleGroup(const std::string name,const std::string textureFilePath, VerticesType verticesType = VerticesType::Quad);
 
-	void Emit(const std::string& name, const Vector3 position, uint32_t count);
+	void Emit(const std::string& name, const Vector3 position, uint32_t count, ParticleType type);
 
 	void SetModel(const std::string& filepath);
 
+	std::function<Particle(std::mt19937&, const Vector3&)> GetParticleFactory(ParticleType type);
 
-	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
-	Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
-	Particle MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate);
+	static Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
+	static Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
+	static Particle MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate);
 	
 	//リングの頂点情報を作成
 	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
 	//シリンダーの頂点情報を作成
 	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 2.0f);
-
+	//クワッドの頂点情報を作成
+	std::vector<VertexData> MakeQuadVertices();
 
 private:
 
@@ -107,9 +126,7 @@ private:
 	std::mt19937 randomEngine;
 
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
-	//VBV
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	
 	
 	//SRT
 	EulerTransform transform;
@@ -126,8 +143,11 @@ private:
 	//マテリアルにデータを書き込む	
 	Material* materialData = nullptr;
 	//std::string textureFilePath_;
-	uint32_t vertexCount = 0;
+	
 	float scrollX = 0.0f; // グローバル or メンバ変数として定義しておく
+
+	// 頂点の種類
+	VerticesType verticesType = VerticesType::Quad;
 
 };
 
