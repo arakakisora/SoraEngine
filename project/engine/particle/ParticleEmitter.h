@@ -1,6 +1,9 @@
 #pragma once
 #include <Vector3.h>
 #include <string>
+#include "ParticleMnager.h"
+
+
 class ParticleEmitter
 {
 public:
@@ -11,7 +14,8 @@ public:
 		const float lifetime,
 		const float currentTime,
 		const uint32_t count,
-		const std::string& name
+		const std::string& name,
+		ParticleType type = ParticleType::Normal
 	
 	);
 
@@ -40,17 +44,16 @@ public:
 private:
 	//位置
 	Vector3 position_;
-	
 	//寿命
-
 	float frequency;
 	//現在の寿命
 	float frequencyTime;
 	//count
 	uint32_t count;
-
 	//名前
 	std::string name_;
+	//particleタイプ
+	ParticleType type_ = ParticleType::Normal; // デフォルトはNormalタイプ
 
 
 };

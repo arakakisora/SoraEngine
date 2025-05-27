@@ -64,7 +64,8 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle2");
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle2",ParticleType::Attack);
+	particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
 
 	line = std::make_unique<Line>();
 
@@ -128,6 +129,7 @@ void GamePlayScene::Update()
 
 	//パーティクルの更新
 	particleEmitter->Update();
+	particleEmitter2->Update();
 	sprite->Update();
 
 
@@ -405,7 +407,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("sphere.gltf");
 	ModelManager::GetInstans()->LoadModel("player.gltf");
 	ModelManager::GetInstans()->LoadModel("walk.gltf");
-
+	
 
 }
 
@@ -413,8 +415,8 @@ void GamePlayScene::Loadparticle()
 {
 
 	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png", "sphere.obj");
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", "plane.obj");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Cylinder);
 
 }
 

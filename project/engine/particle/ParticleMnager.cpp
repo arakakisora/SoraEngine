@@ -55,34 +55,6 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 
 
-	//// 修正: VertexData 構造体の初期化リストを正しく記述  
-	//std::vector<VertexData> quadVertices = {
-	//   {{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 左下  
-	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
-	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
-
-	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
-	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
-	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
-	//};
-
-	//std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
-	std::vector<VertexData>quadVertices = MakeCylinderVertices();
-	vertexCount = static_cast<uint32_t>(quadVertices.size());
-
-	// GPUリソース作成
-	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * quadVertices.size());
-
-	// リソースアドレスを設定
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * quadVertices.size());
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-	// GPUにデータ転送
-	VertexData* vertexData = nullptr;
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, quadVertices.data(), sizeof(VertexData) * quadVertices.size());
-	vertexResource->Unmap(0, nullptr);
 
 
 }
@@ -112,7 +84,7 @@ void ParticleMnager::Update()
 	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
-	
+
 
 	materialData->uvTransform.m[3][0] += 0.0001f; // X方向スクロール
 	materialData->uvTransform.m[3][0] = std::fmod(materialData->uvTransform.m[3][0], 1.0f);
@@ -202,7 +174,7 @@ void ParticleMnager::Draw()
 		}
 
 
-		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &particleGroup.vertexBufferView);
 		//マテリアルのCBufferの場所を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 		// インスタンシングデータの SRV を設定
@@ -210,20 +182,35 @@ void ParticleMnager::Draw()
 		// テクスチャの SRV を設定
 		srvManager_->SetGraficsRootDescriptorTable(1, particleGroup.srvIndex);
 		//描画！
-		dxCommon_->GetCommandList()->DrawInstanced(UINT(vertexCount), particleGroup.instanceCount, 0, 0);
+		dxCommon_->GetCommandList()->DrawInstanced(UINT(particleGroup.vertexCount), particleGroup.instanceCount, 0, 0);
 
 	}
 
 }
 
-void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, std::string modelFilePath)
+void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesType)
 {
-	ModelManager::GetInstans()->LoadModel(modelFilePath);
-	//モデルのセット
-	SetModel(modelFilePath);
+	//ModelManager::GetInstans()->LoadModel(modelFilePath);
+	////モデルのセット
+	//SetModel(modelFilePath);
 
 	//VertexBufferViewを設定
 	//vertexBufferView = model_->GetVertexBufferView();
+
+
+	//// 修正: VertexData 構造体の初期化リストを正しく記述  
+	//std::vector<VertexData> quadVertices = {
+	//   {{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 左下  
+	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
+	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
+
+	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
+	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
+	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
+	//};
+
+	//std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
+
 
 
 
@@ -235,6 +222,34 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//パーティクルグループを作成コンテナに登録
 	ParticleGroup particleGroup;
 	particleGroups.insert(std::make_pair(name, std::move(particleGroup)));//名前をキーにして登録
+
+
+	std::vector<VertexData>vertices = MakeCylinderVertices();
+
+	switch (verticesType) {
+	case VerticesType::Quad:
+		vertices = MakeQuadVertices();
+		break;
+	case VerticesType::Ring:
+		vertices = MakeRingVertices();
+		break;
+	case VerticesType::Cylinder:
+		vertices = MakeCylinderVertices();
+		break;
+	}
+	particleGroups.at(name).vertexCount = static_cast<uint32_t>(vertices.size());
+	// GPUリソース作成
+	particleGroups.at(name).vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * vertices.size());
+	// リソースアドレスを設定
+	particleGroups.at(name).vertexBufferView.BufferLocation = particleGroups.at(name).vertexResource->GetGPUVirtualAddress();
+	particleGroups.at(name).vertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * vertices.size());
+	particleGroups.at(name).vertexBufferView.StrideInBytes = sizeof(VertexData);
+	// GPUにデータ転送
+	VertexData* vertexData = nullptr;
+	particleGroups.at(name).vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std::memcpy(vertexData, vertices.data(), sizeof(VertexData) * vertices.size());
+	particleGroups.at(name).vertexResource->Unmap(0, nullptr);
+
 	//テクスチャファイルパスを登録
 	particleGroups.at(name).materialdata.textureFilePath = textureFilePath;
 	//テクスチャファイルを読み込んでSRVを取得
@@ -271,7 +286,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count)
+void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count, ParticleType type)
 {
 
 
@@ -282,7 +297,8 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 
 
 		//パーティクルを追加
-		particleGroups.at(name).particles.push_back(MakeNormalParticle(randomEngine, position));
+		auto factory = GetParticleFactory(type);
+		particleGroups.at(name).particles.push_back(factory(randomEngine, position));
 
 	}
 
@@ -302,6 +318,19 @@ void ParticleMnager::SetModel(const std::string& filepath)
 	//もでるを検索してセットする
 	model_ = ModelManager::GetInstans()->FindModel(filepath);
 }
+
+std::function<Particle(std::mt19937&, const Vector3&)> ParticleMnager::GetParticleFactory(ParticleType type)
+{
+	switch (type) {
+	case ParticleType::Normal:
+		return [](auto& rng, const Vector3& pos) { return MakeNormalParticle(rng, pos); };
+	case ParticleType::Attack:
+		return [](auto& rng, const Vector3& pos) { return MakeAttackPaarticle(rng, pos); };
+	default:
+		return [](auto& rng, const Vector3& pos) { return MakeNormalParticle(rng, pos); };
+	}
+}
+
 
 Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate)
 {
@@ -335,7 +364,7 @@ Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const V
 	Particle particle;
 	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 
-	particle.transform.scale = {0.5f,disScale(randomEngine),1.0f };
+	particle.transform.scale = { 0.5f,disScale(randomEngine),1.0f };
 	//particle.transform.scale = { 1.0f,1.0f,1.0f };
 	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
@@ -355,13 +384,13 @@ Particle ParticleMnager::MakeNormalParticle(std::mt19937& randomEngine, const Ve
 {
 	Particle particle;
 
-	
+
 	particle.transform.scale = { 1.0f,1.0f,1.0f };
 	particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	particle.transform.translate = translate;
 	particle.Velocity = { 0.0f,0.0f,0.0f };
 	particle.color = { 1.0f,0.0f,1.0f,1.0f };
-	
+
 	particle.lifetime = 1.0f;
 	particle.currentTime = 0;
 	return particle;
@@ -369,10 +398,10 @@ Particle ParticleMnager::MakeNormalParticle(std::mt19937& randomEngine, const Ve
 
 std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {
-	
+
 	std::vector<VertexData> ringVertices;
 	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(RingDivide);
-	
+
 	for (uint32_t index = 0; index < RingDivide; ++index) {
 		// 現在と次の角度
 		float angle = index * radianPerDivide;
@@ -385,8 +414,8 @@ std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, f
 		float cosnext = std::cosf(nextAngle);
 
 		// UV (ここもwrapを考慮)
-		float u = (static_cast<float>(index) / RingDivide)  ;
-		float unext = (static_cast<float>(index + 1) / RingDivide) ;
+		float u = (static_cast<float>(index) / RingDivide);
+		float unext = (static_cast<float>(index + 1) / RingDivide);
 
 		VertexData v[] = {
 			{ {-sin * outerRadius,  cos * outerRadius,  0.0f, 1.0f},     {u,     0.0f}, {0.0f, 0.0f, 1.0f} },
@@ -404,7 +433,7 @@ std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, f
 	}
 
 	return ringVertices;
-			
+
 }
 
 std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
@@ -437,5 +466,20 @@ std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDi
 
 	}
 	return cylinderVertices;
+}
+
+std::vector<VertexData> ParticleMnager::MakeQuadVertices()
+{
+	//クワッドの頂点情報を作成
+	std::vector<VertexData> vertices;
+	vertices = {
+			{{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+	};
+	return vertices;
 }
 
