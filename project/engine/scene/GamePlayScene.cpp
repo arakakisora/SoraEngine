@@ -415,7 +415,7 @@ void GamePlayScene::Loadparticle()
 {
 
 	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/uvChecker.png");
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/betomu.png");
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Cylinder);
 
 }
