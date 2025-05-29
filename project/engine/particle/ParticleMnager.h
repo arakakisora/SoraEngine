@@ -5,6 +5,9 @@
 #include <random>
 #include "Model.h"
 #include "GraphicsPipeline.h"
+#include "IParticleBehavior.h"
+#include <memory>
+
 
 
 enum class VerticesType
@@ -15,11 +18,6 @@ enum class VerticesType
 
 };
 
-enum class ParticleType
-{
-	Normal,
-	Attack,
-};
 
 struct Particle {
 
@@ -48,6 +46,8 @@ class ParticleMnager
 		MaterialData materialdata;
 		//particleのリスト
 		std::list<Particle> particles;
+		std::unique_ptr<IParticleBehavior> behavior;
+
 		//insutansing用のsrvインデックス
 		uint32_t srvIndex;
 		//insutansing用のリソース
@@ -61,6 +61,11 @@ class ParticleMnager
 		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 		//VBV
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+		//マテリアルにデータを書き込む	
+		Material* materialData = nullptr;
+		//std::string textureFilePath_;
 
 	};
 public:
@@ -90,17 +95,12 @@ public:
 	void Update();
 	void Draw();
 
-	void CreateParticleGroup(const std::string name,const std::string textureFilePath, VerticesType verticesType = VerticesType::Quad);
+	void CreateParticleGroup(const std::string name,const std::string textureFilePath, VerticesType verticesType = VerticesType::Quad, std::unique_ptr<IParticleBehavior> behavior=nullptr);
 
-	void Emit(const std::string& name, const Vector3 position, uint32_t count, ParticleType type);
+	void Emit(const std::string& name, const Vector3 position, uint32_t count);
 
 	void SetModel(const std::string& filepath);
 
-	std::function<Particle(std::mt19937&, const Vector3&)> GetParticleFactory(ParticleType type);
-
-	static Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
-	static Particle MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate);
-	static Particle MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate);
 	
 	//リングの頂点情報を作成
 	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
@@ -108,6 +108,10 @@ public:
 	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 2.0f);
 	//クワッドの頂点情報を作成
 	std::vector<VertexData> MakeQuadVertices();
+
+	// Behavior設定（明示的に設定する用）
+	void SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior);
+
 
 private:
 
@@ -137,12 +141,6 @@ private:
 
 	//ビルボード行列
 	Matrix4x4 backToFrontMatrix;
-
-	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
-	//マテリアルにデータを書き込む	
-	Material* materialData = nullptr;
-	//std::string textureFilePath_;
 	
 	float scrollX = 0.0f; // グローバル or メンバ変数として定義しておく
 

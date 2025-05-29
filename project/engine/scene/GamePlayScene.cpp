@@ -10,6 +10,8 @@
 #include "ParticleMnager.h"
 #include <Logger.h>
 #include "LineCommon.h"
+#include "AttackBehavior.h"
+#include"MagicCircleBehavior.h"
 
 void GamePlayScene::Initialize()
 {
@@ -64,8 +66,14 @@ void GamePlayScene::Initialize()
 	light = true;
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle2",ParticleType::Attack);
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
+
+
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
 	particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
+
 
 	line = std::make_unique<Line>();
 
@@ -414,9 +422,7 @@ void GamePlayScene::LoadModel()
 void GamePlayScene::Loadparticle()
 {
 
-	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/betomu.png");
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Cylinder);
+	
 
 }
 
