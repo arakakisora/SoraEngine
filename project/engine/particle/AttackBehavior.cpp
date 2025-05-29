@@ -29,7 +29,7 @@ Particle AttackBehavior::Create(std::mt19937& randomEngine, const Vector3& pos)
 	return particle;
 }
 
-void AttackBehavior::Update(Particle& particle, float dt, Material* matelialData)
+void AttackBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
 {
 
 	matelialData= matelialData; // X方向スクロール

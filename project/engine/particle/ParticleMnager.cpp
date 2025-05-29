@@ -76,10 +76,6 @@ void ParticleMnager::Update()
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
 
-
-
-
-
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
 		auto& behavior = particleGroup.behavior;
@@ -87,17 +83,17 @@ void ParticleMnager::Update()
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
 
-			//パーティクルの寿命が尽きたらグループから外す
+			
 
 			//寿命に達していたらグループから外す
 			if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
 				particleIterator = particleGroup.particles.erase(particleIterator);
 				continue;
 			}
+			float alpha=1.0f;
 
-			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData);
+			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha);
 			
-			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
 			/*float alpha = 1.0f;*/
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
