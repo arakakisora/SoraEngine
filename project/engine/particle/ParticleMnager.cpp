@@ -43,16 +43,7 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	//ビルボード行列の作成
 	backToFrontMatrix = MyMath::MakeRotateYMatrix(std::numbers::pi_v<float>);
 
-	//マテリアル
-	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	materialResource = dxCommon_->CreateBufferResource(sizeof(Material));
-	//マテリアルにデータを書き込む
-	materialData = nullptr;
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//色
-	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-	materialData->enableLighting = false;//有効にするか否か
-	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
+	
 
 
 
@@ -86,36 +77,30 @@ void ParticleMnager::Update()
 
 
 
-	materialData->uvTransform.m[3][0] += 0.0001f; // X方向スクロール
-	materialData->uvTransform.m[3][0] = std::fmod(materialData->uvTransform.m[3][0], 1.0f);
-	if (materialData->uvTransform.m[3][0] < 0.0f) materialData->uvTransform.m[3][0] += 1.0f;
 
 
 
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
+		auto& behavior = particleGroup.behavior;
 		uint32_t counter = 0;
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
 
 			//パーティクルの寿命が尽きたらグループから外す
+
 			//寿命に達していたらグループから外す
 			if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
 				particleIterator = particleGroup.particles.erase(particleIterator);
 				continue;
 			}
 
-
-
-			//パーティクルの位置を更新
-			(*particleIterator).transform.translate += (*particleIterator).Velocity * 1.0f / 60.0f;
-			//パーティクルの寿命を減らす
-			(*particleIterator).currentTime += 1.0f / 60.0f;
+			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData);
+			
 			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
 			/*float alpha = 1.0f;*/
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
-
 			//ワールド行列を計算
 			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
@@ -176,7 +161,7 @@ void ParticleMnager::Draw()
 
 		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &particleGroup.vertexBufferView);
 		//マテリアルのCBufferの場所を設定
-		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, particleGroup.materialResource->GetGPUVirtualAddress());
 		// インスタンシングデータの SRV を設定
 		srvManager_->SetGraficsRootDescriptorTable(2, particleGroup.materialdata.textureIndex);
 		// テクスチャの SRV を設定
@@ -188,29 +173,8 @@ void ParticleMnager::Draw()
 
 }
 
-void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesType)
+void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesType, std::unique_ptr<IParticleBehavior> behavior)
 {
-	//ModelManager::GetInstans()->LoadModel(modelFilePath);
-	////モデルのセット
-	//SetModel(modelFilePath);
-
-	//VertexBufferViewを設定
-	//vertexBufferView = model_->GetVertexBufferView();
-
-
-	//// 修正: VertexData 構造体の初期化リストを正しく記述  
-	//std::vector<VertexData> quadVertices = {
-	//   {{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 左下  
-	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
-	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
-
-	//   {{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},  // 右下  
-	//   {{-0.5f,  0.5f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 左上  
-	//   {{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},  // 右上  
-	//};
-
-	//std::vector<VertexData> quadVertices = MakeRingVertices(32, 1.0f,0.2f);
-
 
 
 
@@ -223,9 +187,19 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	ParticleGroup particleGroup;
 	particleGroups.insert(std::make_pair(name, std::move(particleGroup)));//名前をキーにして登録
 
+	//パーティクルグループのマテリアルデータを初期化
+	//マテリアル
+	particleGroups.at(name).materialResource = dxCommon_->CreateBufferResource(sizeof(Material));
+	//マテリアルにデータを書き込む
+	particleGroups.at(name).materialData = nullptr;
+	particleGroups.at(name).materialResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups.at(name).materialData));
+	//色
+	particleGroups.at(name).materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	particleGroups.at(name).materialData->enableLighting = false;//有効にするか否か
+	particleGroups.at(name).materialData->uvTransform = particleGroups.at(name).materialData->uvTransform.MakeIdentity4x4();
 
+	//頂点データを作成
 	std::vector<VertexData>vertices = MakeCylinderVertices();
-
 	switch (verticesType) {
 	case VerticesType::Quad:
 		vertices = MakeQuadVertices();
@@ -279,14 +253,15 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//srv生成
 	srvManager_->CreateSRVforStructuredBuffer(particleGroups.at(name).srvIndex, particleGroups.at(name).instanceResource.Get(), MaxInstanceCount, sizeof(ParticleForGPU));
 
-
+	// Behavior 登録
+	particleGroups.at(name).behavior = std::move(behavior);
 
 
 
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count, ParticleType type)
+void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count)
 {
 
 
@@ -296,9 +271,8 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 	for (uint32_t i = 0; i < count; ++i) {
 
 
-		//パーティクルを追加
-		auto factory = GetParticleFactory(type);
-		particleGroups.at(name).particles.push_back(factory(randomEngine, position));
+		
+		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, position));
 
 	}
 
@@ -317,83 +291,6 @@ void ParticleMnager::SetModel(const std::string& filepath)
 {
 	//もでるを検索してセットする
 	model_ = ModelManager::GetInstans()->FindModel(filepath);
-}
-
-std::function<Particle(std::mt19937&, const Vector3&)> ParticleMnager::GetParticleFactory(ParticleType type)
-{
-	switch (type) {
-	case ParticleType::Normal:
-		return [](auto& rng, const Vector3& pos) { return MakeNormalParticle(rng, pos); };
-	case ParticleType::Attack:
-		return [](auto& rng, const Vector3& pos) { return MakeAttackPaarticle(rng, pos); };
-	default:
-		return [](auto& rng, const Vector3& pos) { return MakeNormalParticle(rng, pos); };
-	}
-}
-
-
-Particle ParticleMnager::MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate)
-{
-
-
-	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
-	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
-
-	Particle particle;
-	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-
-	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	//particle.transform.rotate = { 0.0f,3.0f,0.0f };
-	particle.transform.translate = translate + randomTranslate;
-	particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
-	particle.lifetime = distTime(randomEngine);
-	particle.currentTime = 0;
-	return particle;
-}
-
-Particle ParticleMnager::MakeAttackPaarticle(std::mt19937& randomEngine, const Vector3& translate)
-{
-	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
-	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
-	std::uniform_real_distribution<float>disRotate(-std::numbers::pi_v<float>, std::numbers::pi_v<float>);
-	std::uniform_real_distribution<float>disScale(0.4f, 1.5f);
-
-	Particle particle;
-	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-
-	particle.transform.scale = { 0.5f,disScale(randomEngine),1.0f };
-	//particle.transform.scale = { 1.0f,1.0f,1.0f };
-	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
-	//particle.transform.translate = translate + randomTranslate;
-	particle.transform.translate = translate;
-	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	particle.Velocity = { 0.0f,0.0f,0.0f };
-	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
-	//particle.color = { 1.0f,1.0f,1.0f,1.0f };
-	//particle.lifetime = distTime(randomEngine);
-	particle.lifetime = 1.0f;
-	particle.currentTime = 0;
-	return particle;
-}
-
-Particle ParticleMnager::MakeNormalParticle(std::mt19937& randomEngine, const Vector3& translate)
-{
-	Particle particle;
-
-
-	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.translate = translate;
-	particle.Velocity = { 0.0f,0.0f,0.0f };
-	particle.color = { 1.0f,0.0f,1.0f,1.0f };
-
-	particle.lifetime = 1.0f;
-	particle.currentTime = 0;
-	return particle;
 }
 
 std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
@@ -481,5 +378,14 @@ std::vector<VertexData> ParticleMnager::MakeQuadVertices()
 			{{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
 	};
 	return vertices;
+}
+
+void ParticleMnager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)
+{
+	//グループが存在するかチェック
+	assert(particleGroups.contains(groupName) && "ParticleGroup does not exist!");
+
+	// ムーブ代入でユニークポインタを保持させる
+	particleGroups.at(groupName).behavior = std::move(behavior);
 }
 

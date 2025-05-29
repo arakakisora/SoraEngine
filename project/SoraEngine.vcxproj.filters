@@ -56,6 +56,9 @@
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
+    <ClCompile Include="IParticleBehavior.cpp" />
+    <ClCompile Include="MagicCircleBehavior.cpp" />
+    <ClCompile Include="AttackBehavior.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -101,6 +104,9 @@
     <ClInclude Include="engine\base\OfscreenRenderManager.h" />
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
+    <ClInclude Include="IParticleBehavior.h" />
+    <ClInclude Include="MagicCircleBehavior.h" />
+    <ClInclude Include="AttackBehavior.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Line.hlsli" />

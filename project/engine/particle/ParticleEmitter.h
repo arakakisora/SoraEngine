@@ -10,12 +10,10 @@ public:
 	//ほとんどのメンバ変数をコンストラクタの引数として受け取り、メンバ変数に代入する
 	ParticleEmitter(
 		const Vector3& position,
-
 		const float lifetime,
 		const float currentTime,
 		const uint32_t count,
-		const std::string& name,
-		ParticleType type = ParticleType::Normal
+		const std::string& name
 	
 	);
 
@@ -53,7 +51,7 @@ private:
 	//名前
 	std::string name_;
 	//particleタイプ
-	ParticleType type_ = ParticleType::Normal; // デフォルトはNormalタイプ
+	
 
 
 };
