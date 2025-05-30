@@ -94,6 +94,16 @@ Vector3 MyMath::Normlize(const Vector3& vector)
 	return Vector3(vector.x / length, vector.y / length, vector.z / length);
 }
 
+Vector3 MyMath::TransformNormal(const Vector3& vector, const Matrix4x4& matrix)
+{
+	
+	Vector3 ans;
+	ans.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0];
+	ans.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1];
+	ans.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2];
+	return Normlize(ans);
+}
+
 //Add
 Vector3 MyMath::Add(const Vector3& v, float scalar) {
 	return Vector3(v.x + scalar, v.y + scalar, v.z + scalar);

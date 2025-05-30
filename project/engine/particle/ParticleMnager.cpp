@@ -76,6 +76,8 @@ void ParticleMnager::Update()
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
 
+	
+
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
 		auto& behavior = particleGroup.behavior;
@@ -90,9 +92,10 @@ void ParticleMnager::Update()
 				particleIterator = particleGroup.particles.erase(particleIterator);
 				continue;
 			}
+			float alpha1 =0.5;
 			float alpha=1.0f;
-
-			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha);
+			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha1);
+			
 			
 			/*float alpha = 1.0f;*/
 			//ローテート
@@ -107,7 +110,7 @@ void ParticleMnager::Update()
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
 				particleGroup.instanceData[counter].World = worldMatrix;
 				particleGroup.instanceData[counter].color = particleIterator->color;
-				particleGroup.instanceData[counter].color.w = alpha;
+				//particleGroup.instanceData[counter].color.w = alpha1;
 				++counter;
 			}
 
@@ -206,6 +209,10 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	case VerticesType::Cylinder:
 		vertices = MakeCylinderVertices();
 		break;
+
+	case VerticesType::Triangle:
+		vertices = MakeTriangleVertices();
+		break;
 	}
 	particleGroups.at(name).vertexCount = static_cast<uint32_t>(vertices.size());
 	// GPUリソース作成
@@ -257,18 +264,19 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count)
+void ParticleMnager::Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime)
 {
 
 
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
 	//パーティクルグループのパーティクルリストにパーティクルを追加
+	particleGroups.at(name).particles.clear();
 	for (uint32_t i = 0; i < count; ++i) {
 
 
 		
-		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, position));
+		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, transform,lifetime));
 
 	}
 
@@ -374,6 +382,20 @@ std::vector<VertexData> ParticleMnager::MakeQuadVertices()
 			{{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
 	};
 	return vertices;
+}
+
+std::vector<VertexData> ParticleMnager::MakeTriangleVertices()
+{
+	//三角形の頂点情報を作成
+	std::vector<VertexData> vertices;
+	vertices = {
+			{{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.0f,  0.5f, 0.0f, 1.0f}, {0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+	};
+	return vertices;
+
+
 }
 
 void ParticleMnager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)

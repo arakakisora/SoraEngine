@@ -12,6 +12,9 @@
 #include "LineCommon.h"
 #include "AttackBehavior.h"
 #include"MagicCircleBehavior.h"
+#include "Damagearea.h"
+#include "ChargeBehabiaor.h"
+
 
 void GamePlayScene::Initialize()
 {
@@ -68,12 +71,18 @@ void GamePlayScene::Initialize()
 
 	//パーティクルの初期化
 	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<MagicCircleBehavior>());
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("chargeBehabiaor", "Resources/gradation.png", VerticesType::Ring, std::make_unique<ChargeBehabiaor>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("damagearea", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<Damagearea>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("Fragment", "Resources/white.png", VerticesType::Triangle, std::make_unique<FragmentBehavior>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("explosion", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 
+	
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle2");
-	particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
-
+	particleEmitter = std::make_unique<ParticleEmitter>(transform, 1.0f, 1.0f, 1, "chargeBehabiaor");
+	particleEmitter2 = std::make_unique<ParticleEmitter>(transform, 1.0f, 1.0f, 1, "Pariticle1");
+	damagearea = std::make_unique<ParticleEmitter>(transform, 10.0f, 10.0f, 10, "damagearea");
+	FragmentB = std::make_unique<ParticleEmitter>(transform, 2.0f, 2.0f, 10, "Fragment");
+	explosion = std::make_unique<ParticleEmitter>(transform, 1.0f, 1.0f, 100, "explosion");
 
 	line = std::make_unique<Line>();
 
@@ -132,12 +141,15 @@ void GamePlayScene::Update()
 
 	//カメラの更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
-	object3D->Update();
+	//object3D->Update();
 	terrain->Update();
 
 	//パーティクルの更新
-	//particleEmitter->Update();
+	/*particleEmitter->Update();
+	explosion->Update();*/
 	particleEmitter2->Update();
+	damagearea->Update();
+	FragmentB->Update();
 	sprite->Update();
 
 
@@ -157,7 +169,7 @@ void GamePlayScene::Update()
 		ImGui::DragFloat3("startline", &startline.x, 0.01f);
 		ImGui::DragFloat3("endline", &endline.x, 0.01f);
 
-		line->Draw(startline, endline, { 1,0,0,1 });
+		//line->Draw(startline, endline, { 1,0,0,1 });
 	
 	}
 	
@@ -366,10 +378,17 @@ void GamePlayScene::Update()
 		{
 			particleEmitter->Emit();
 		}
+		if (ImGui::Button("explosion"))
+		{
+			explosion->Emit();
+		}
 		//エミット位置
 		Vector3 position = particleEmitter->GetPosition();
-		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
-			particleEmitter->SetPosition(position);
+		if (ImGui::DragFloat3("Position", &transform.translate.x, 0.01f)) {
+			FragmentB->SetPosition(transform.translate);
+		}
+		if (ImGui::DragFloat3("Rortat", &transform.rotate.x, 0.01f)) {
+			FragmentB->SetTransform(transform);
 		}
 
 	}
@@ -384,8 +403,8 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
-	terrain->Draw();
+	/*object3D->Draw();
+	terrain->Draw();*/
 
 
 

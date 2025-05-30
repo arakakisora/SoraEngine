@@ -2,7 +2,7 @@
 #include "ParticleMnager.h"
 #include <numbers>
 
-Particle AttackBehavior::Create(std::mt19937& randomEngine, const Vector3& pos)
+Particle AttackBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
@@ -18,7 +18,7 @@ Particle AttackBehavior::Create(std::mt19937& randomEngine, const Vector3& pos)
 	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
 	//particle.transform.translate = translate + randomTranslate;
-	particle.transform.translate = pos;
+	particle.transform.translate = transform.translate;
 	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
 	particle.Velocity = { 0.0f,0.0f,0.0f };
 	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };

@@ -50,10 +50,10 @@ PixelShaderOutput main(VertexShaderOutput input)
     //    discard;
     //}
     
-    //if (textureColor.a <= 0.5)
-    //{
-    //    discard;
-    //}
+    if (textureColor.a <= 0.5)
+    {
+        discard;
+    }
     
     if (textureColor.a <= 0.0)
     {

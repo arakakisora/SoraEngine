@@ -48,13 +48,22 @@ private:
 	//particle
 	std::unique_ptr<ParticleEmitter> particleEmitter;
 	std::unique_ptr<ParticleEmitter> particleEmitter2;
+	std::unique_ptr<ParticleEmitter> damagearea;
+	std::unique_ptr<ParticleEmitter> FragmentB;
+	std::unique_ptr<ParticleEmitter> explosion;
+	std::unique_ptr<ParticleEmitter>chargLine;
+
+
+
+
+
 	bool light = true;
 	bool directionLight = true;
 	bool pointLight = true;
 	bool spotLight = true;
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
-	
+
 	bool number = 0;
 
 	std::unique_ptr<Line> line;
@@ -63,7 +72,7 @@ private:
 	Vector3 endline;
 
 
-
+	EulerTransform transform = { {0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
 };
 

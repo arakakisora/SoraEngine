@@ -59,6 +59,9 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
+    <ClCompile Include="engine\particle\Damagearea.cpp" />
+    <ClCompile Include="RotatinField.cpp" />
+    <ClCompile Include="ChargeBehabiaor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -107,6 +110,9 @@
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
+    <ClInclude Include="engine\particle\Damagearea.h" />
+    <ClInclude Include="RotatinField.h" />
+    <ClInclude Include="ChargeBehabiaor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Line.hlsli" />

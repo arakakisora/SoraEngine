@@ -60,6 +60,7 @@ namespace MyMath {
 	//同時座標変換
 	Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 	Vector3 Normlize(const Vector3& vector);
+	Vector3 TransformNormal(const Vector3& vector, const Matrix4x4& matrix);
 
 	//Add
 	Vector3 Add(const Vector3& v, float scalar);

@@ -1,52 +1,57 @@
 #include "MagicCircleBehavior.h"
 #include "ParticleMnager.h"
+#include <Input.h>
+#include <imgui.h>
+#include "MyMath.h"
 
-Particle MagicCircleBehavior::Create(std::mt19937& rng, const Vector3& pos)
+Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
 	Particle particle;
 
-
-	particle.transform.scale = { 1.0f,1.0f,1.0f };
-	particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.translate = pos;
-	particle.Velocity = { 0.0f,0.0f,0.0f };
-	particle.color = { 0.0f,0.5f,1.0f,1.0f };
-
-	particle.lifetime = 1.0f;
+	particle.transform.scale = initScale_;
+	particle.transform.rotate = initRotate_;
+	particle.transform.translate = transform.translate;
+	particle.Velocity = { 0.0f, 0.0f, 0.0f };
+	particle.color = { 0.0f, 0.5f, 1.0f, 1.0f };
+	particle.lifetime = lifetime;
 	particle.currentTime = 0;
 	return particle;
 }
 
 void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materialData,float alpha)
 {
-	// X方向スクロール
+	// UVスクロール
 	materialData->uvTransform.m[3][0] += 0.01f;
 	materialData->uvTransform.m[3][0] = std::fmod(materialData->uvTransform.m[3][0], 1.0f);
 	if (materialData->uvTransform.m[3][0] < 0.0f) materialData->uvTransform.m[3][0] += 1.0f;
 
+	// 位置更新
+	particle.transform.translate += particle.Velocity * dt;
+	particle.currentTime += dt;
 
+	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
-	//// V方向反転
-	//materialData->uvTransform.m[1][1] = -1.0f;
-	//materialData->uvTransform.m[1][3] = 1.0f; // V反転補正（1.0 - v）
+	Vector3 startScale = { 0.0f, 0.0f, 0.0f };
+	Vector3 endScale = initScale_;
 
-	//パーティクルの位置を更新
-	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
+	if (t < 0.8f) {
+		float tt = t / 0.8f;
+		tt = 1.0f - std::pow(1.0f - tt, 3.0f); // EaseOutCubic
+		particle.transform.scale = MyMath::Lerp(startScale, endScale, tt);
+		particle.color.w = 1.0f;
+	} else {
+		particle.transform.scale = endScale;
+		particle.color.w = 1.0f - (t - 0.8f) / 0.2f; // フェードアウト
+	}
+
+	if (ImGui::CollapsingHeader("MagicCircleBehavior", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat3("EmiterScale", &initScale_.x, 0.01f);
+		ImGui::DragFloat3("EmiterRotate", &initRotate_.x, 0.01f);
+		ImGui::DragFloat("Lifetime", &particle.lifetime, 0.01f);
+	}
 
 	
-	particle.transform.scale += Vector3(0.01f, 0.01f, 0.01f); // スケールを徐々に大きくする
-	//パーティクルの寿命を減らす
-	particle.currentTime += 1.0f / 60.0f;
-	
 
-	
-
-	
-#ifdef _DEBUG
-	
-
-
-#endif // _DEBUG
 
 
 }

@@ -111,8 +111,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ChargeBehabiaor.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
+    <ClCompile Include="engine\particle\Damagearea.cpp" />
     <ClCompile Include="engine\scene\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\scene\BaseScene.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
@@ -151,6 +153,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
+    <ClCompile Include="RotatinField.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -231,9 +234,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ChargeBehabiaor.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
+    <ClInclude Include="engine\particle\Damagearea.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
     <ClInclude Include="engine\scene\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
@@ -277,6 +282,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\Line\LineCommon.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
+    <ClInclude Include="RotatinField.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
