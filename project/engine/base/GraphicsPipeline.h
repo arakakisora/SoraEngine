@@ -12,10 +12,9 @@ public:
 	void Create();//3dオブジェクト用
 	void CreateParticle();//パーティクル用
 	void CreateSprite();//スプライト用
-
 	void CreateCopyImage();//コピーイメージ用
-
 	void CreateLine();//ライン用
+	void CreateSkinning();//スキニング用
 
 
 
@@ -23,10 +22,9 @@ public:
 	void RootSignatureCreate();//3dオブジェクト用
 	void RootSignatureParticleCreate();//パーティクル用
 	void RootSignatureSpriteCreate();//スプライト用
-
 	void RootSignatureCopyImageCreate();//コピーイメージ用
-
 	void RootSignatureLineCreate();//ライン用
+	void RootSignatureSkinningCreate();//スキニング用
 
 
 
@@ -49,6 +47,9 @@ public:
 	ID3D12RootSignature* GetRootSignatureLine()const { return rootSignatureLine.Get(); }
 	ID3D12PipelineState* GetGraphicsPipelineStateLine()const { return graphicsPipelineStateLine.Get(); }
 
+	//スキニング用のPSO
+	ID3D12RootSignature* GetRootSignatureSkinning()const { return rootSignature.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateSkinning()const { return graphicsPipelineState.Get(); }
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;

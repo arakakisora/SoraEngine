@@ -10,6 +10,8 @@
 #include <map>
 #include "MyMath.h"
 #include <optional>
+#include <span>
+#include <array>
 
 
 struct VertexData {
@@ -112,8 +114,25 @@ struct Node {
 	std::vector<Node> children;
 };
 
+struct VertexWightData {
+
+	float weight;
+	uint32_t vectorIndex;
+
+};
+
+struct JointWeightData {
+
+	Matrix4x4 inverseBindPoseMatrix;
+	std::vector<VertexWightData> vertexWeights;
+
+};
+
+
+
 struct ModelData {
 
+	std::map<std::string, JointWeightData> skinClusterData;
 	std::vector<VertexData>vertices;
 	std::vector<uint32_t> indices;
 	MaterialData material;

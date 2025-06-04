@@ -82,8 +82,8 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	//uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()-1)+kSRVIndexTop;
 
 	textureData.srvIndex = srvmanager->Allocate();
-	textureData.srvHandleCPU = srvmanager->GetCPUDrscriptorHandle(textureData.srvIndex);
-	textureData.srvHandleGPU = srvmanager->GetGPUDrscriptorHandle(textureData.srvIndex);
+	textureData.srvHandleCPU = srvmanager->GetCPUDescriptorHandle(textureData.srvIndex);
+	textureData.srvHandleGPU = srvmanager->GetGPUDescriptorHandle(textureData.srvIndex);
 
 	srvmanager->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), textureData.metadata.format, (UINT)textureData.metadata.mipLevels);
 

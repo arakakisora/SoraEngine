@@ -19,6 +19,7 @@ void Object3DCommon::Initialize(DirectXCommon* dxCommon)
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->Create();
+	//graphicsPipeline_->CreateSkinning();
 	
 
 }

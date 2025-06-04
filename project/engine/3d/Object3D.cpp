@@ -71,7 +71,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
 	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
 
-	
+
 
 }
 
@@ -79,27 +79,35 @@ void Object3D::Update()
 {
 
 
-	ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
-	SkeletonUpdate(model_->GetSkeleton());
-	
+	if (enableAnimation_ && model_ && model_->GetAnimation().nodeAnimations.size() > 0) {
+		ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
+		SkeletonUpdate(model_->GetSkeleton());
+		SkinClusterUpdate(model_->GetSkinCluster(), model_->GetSkeleton());
+
+		
+
+		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
+		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
+	}
+
+
 
 
 
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
-	//ライトのオンオフ
-	model_->SetEnableLighting(enableLighting);
 
-	// **ここでモデルの色を設定**
 	if (model_) {
+		//ライトのオンオフ
+		model_->SetEnableLighting(enableLighting);
+		// **ここでモデルの色を設定**
 		model_->SetColor(color_);
 	}
 
 	if (activeCamera) {
 
 
-		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
-		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
+
 
 		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
@@ -107,8 +115,8 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
 		cameraForGpu->worldPosition = cameraPosition;
-
 		
+
 
 
 	} else {
@@ -116,6 +124,8 @@ void Object3D::Update()
 		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 		transformaitionMatrixData->World = worldMatrix;
 	}
+
+	
 }
 
 void Object3D::SkeletonUpdate(Skeleton& skeleton)
@@ -136,7 +146,7 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 		}
 		skeletonPose_[joint.index] = joint.skeletonSpaceMatrix;
 	}
-	line_.DrawSkeleton(model_->GetSkeleton(), skeletonPose_, { 1.0f,0.0f,0.0f,1.0f });
+	
 }
 
 void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
@@ -152,6 +162,20 @@ void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, fl
 			joint.transform.scale = CalculateValue(nodeAnimation.scale, animationTime);
 		}
 	}
+}
+
+void Object3D::SkinClusterUpdate(SkinCluster& skinCluster, const Skeleton& skeleton)
+{
+	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
+	{
+		assert(jointIndex < skinCluster.inverseBindPoseMatrices.size());
+		skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix =
+			skinCluster.inverseBindPoseMatrices[jointIndex] * skeleton.joints[jointIndex].skeletonSpaceMatrix;
+		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
+			MyMath::Transpose(skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix.Inverse());
+	}
+
+
 }
 
 
@@ -170,11 +194,13 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(5, pointLightResource->GetGPUVirtualAddress());
 	//スポットライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
-
+	//skeletonのデータをセット
+	//object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {
 		model_->Draw();
 	}
+
 
 }
 

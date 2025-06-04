@@ -25,6 +25,7 @@ public:
 
 	void SkeletonUpdate( Skeleton& skeleton);
 	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+	void SkinClusterUpdate(SkinCluster&skinCluster,const Skeleton&skeleton);
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -162,6 +163,7 @@ private:
 	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
 	//アニメーション
 	float animationTime = 0.0f;
+	bool enableAnimation_= true;
 
 
 private:
