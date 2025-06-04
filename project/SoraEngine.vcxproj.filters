@@ -61,6 +61,7 @@
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
     <ClCompile Include="FadeManager.cpp" />
+    <ClCompile Include="CollisionMnager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
@@ -111,6 +112,7 @@
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
     <ClInclude Include="FadeManager.h" />
+    <ClInclude Include="CollisionMnager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BoxFilter.hlsli" />

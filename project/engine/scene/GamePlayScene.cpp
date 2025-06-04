@@ -8,6 +8,7 @@
 #include "TitleScene.h"
 #include "CameraManager.h"
 #include <ParticleMnager.h>
+#include "CollisionMnager.h"
 
 void GamePlayScene::Initialize()
 {
@@ -159,6 +160,22 @@ void GamePlayScene::Update()
 
 	//カメラの更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
+	CollisionManager::GetInstance().RegisterObject(
+		"player",
+		player->GetAABB(),
+		player,
+		0,
+		[player](const CollisionObject& other) {
+			if (other.tag == "wall") {
+				player->SetOnGround(true);
+				player->SetVelocityY(0.0f);
+			}
+			else if (other.tag == "enemy") {
+				player->SetIsDead(true);
+			}
+		}
+	);
 
 	//プレイヤーの更新
 	player->Update();

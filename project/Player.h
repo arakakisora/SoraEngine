@@ -52,6 +52,7 @@ public:
 
 	void PrayerMove(); // 自機の動き
 	void PrayerTurn(); // 自機の振り向き
+	void PlayerColision();
 
 	//攻撃
 	void Attack();
@@ -62,18 +63,18 @@ public:
 	void SetMapChipField(MapChipField* mapChipFild) { mapChipFild_ = mapChipFild; }
 
 	// map衝突判定
-	void MapCollision(CollisionMapInfo& info);
+	//void MapCollision(CollisionMapInfo& info);
 	Vector3 CornerPosition(const Vector3& centor, Corner corner);
 	void PlayerCollisionMove(const CollisionMapInfo& inffo);
-	void CeilingCollisionMove(const CollisionMapInfo& info);
-	void OnGroundSwitching(const CollisionMapInfo& info);
-	void HitWallCollisionMove(const CollisionMapInfo& info);
+	//void CeilingCollisionMove(const CollisionMapInfo& info);
+	//void OnGroundSwitching(const CollisionMapInfo& info);
+	//void HitWallCollisionMove(const CollisionMapInfo& info);
 
 	// 当たり判定
-	void CollisionMapInfoTop(CollisionMapInfo& info);
+	/*void CollisionMapInfoTop(CollisionMapInfo& info);
 	void CollisionMapInfoBootm(CollisionMapInfo& info);
 	void CollisionMapInfoRight(CollisionMapInfo& info);
-	void CollisionMapInfoLeft(CollisionMapInfo& info);
+	void CollisionMapInfoLeft(CollisionMapInfo& info);*/
 
 	Vector3 GetWorldPosition();
 	AABB GetAABB();
