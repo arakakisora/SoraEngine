@@ -1,5 +1,6 @@
 #include "Object3DCommon.h"
 #include "Logger.h"
+#include "SrvManager.h"
 
 Object3DCommon* Object3DCommon::instance_ = nullptr;
 Object3DCommon* Object3DCommon::GetInstance()
@@ -11,16 +12,19 @@ Object3DCommon* Object3DCommon::GetInstance()
 
 }
 
-void Object3DCommon::Initialize(DirectXCommon* dxCommon)
+void Object3DCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager_)
 {
 
 	dxCommon_ = dxCommon;
+	srvManager_ = srvManager_;
 	//パイプラインの生成
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->Create();
-	//graphicsPipeline_->CreateSkinning();
-	
+	//コンピュートパイプラインの生成
+	skinningComputeGraphicsPipeline_ = std::make_unique<GraphicsPipeline>();
+	skinningComputeGraphicsPipeline_->Initialize(dxCommon_);
+	skinningComputeGraphicsPipeline_->CreateCompute();
 
 }
 
@@ -38,6 +42,10 @@ void Object3DCommon::CommonDraw()
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignature());
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineState());
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//コンピュートシェーダーを設定
+	dxCommon_->GetCommandList()->SetComputeRootSignature(skinningComputeGraphicsPipeline_->GetRootSignatureCompute());
+	dxCommon_->GetCommandList()->SetPipelineState(skinningComputeGraphicsPipeline_->GetGraphicsPipelineStateCompute());
 
 }
 

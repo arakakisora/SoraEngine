@@ -65,6 +65,28 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	//読み込んだテクスチャ番号を取得
 	modelData.material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath);
 
+
+	// ディスクリプタを確保
+	uint32_t uavIndex = modelCommon_->GetSRVManager()->Allocate();
+	D3D12_CPU_DESCRIPTOR_HANDLE uavHandleCPU = modelCommon_->GetSRVManager()->GetCPUDescriptorHandle(uavIndex);
+
+
+	//UAVの作成
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;//UAVはFormatを指定しない
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;//バッファーを指定
+	uavDesc.Buffer.FirstElement = 0;//バッファーの先頭から
+	uavDesc.Buffer.NumElements = UINT(sizeof(VertexData) * modelData.vertices.size());//頂点数
+	uavDesc.Buffer.CounterOffsetInBytes = 0;//カウンターオフセットは0
+	uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+	uavDesc.Buffer.StructureByteStride = sizeof(VertexData);//頂点のサイズを指定
+
+	// UAVを作成
+	modelCommon_->GetDxCommon()->GetDevice()->CreateUnorderedAccessView(
+		vertexResource.Get(), nullptr, &uavDesc, uavHandleCPU
+	);
+
+	
 }
 
 void Model::Draw()
@@ -76,6 +98,22 @@ void Model::Draw()
 		skinCluster.influenceBufferView
 
 	};
+
+	// RootParameter[0] - SRV群 (t0〜t2)
+	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootDescriptorTable(0, skinCluster.paletteSrvHandle.second); // ← SRVヒープにまとめる
+
+	//UAVを作成
+	uint32_t uavIndex = modelCommon_->GetSRVManager()->Allocate();
+	D3D12_GPU_DESCRIPTOR_HANDLE uavHandle = modelCommon_->GetSRVManager()->GetGPUDescriptorHandle(uavIndex);
+	modelCommon_->GetSRVManager()->CreateUAVforStructuredBuffer(uavIndex, vertexResource.Get(), UINT(modelData.vertices.size()), sizeof(VertexData));
+	//RootParameter[1] - UAV (u0)
+	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootDescriptorTable(1, uavHandle); // ← 出力バッファ用
+	// RootParameter[2] - CBV (b0)
+	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootConstantBufferView(2, skinCluster.influenceResource->GetGPUVirtualAddress());
+
+
+
+
 
 	//VertexBufferViewを設定
 	modelCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);

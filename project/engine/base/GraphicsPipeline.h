@@ -10,21 +10,23 @@ public:
 
 
 	void Create();//3dオブジェクト用
-	void CreateParticle();//パーティクル用
-	void CreateSprite();//スプライト用
-	void CreateCopyImage();//コピーイメージ用
-	void CreateLine();//ライン用
-	void CreateSkinning();//スキニング用
-
-
-
-	//ルートシグネチャの作成
 	void RootSignatureCreate();//3dオブジェクト用
+
+	void CreateParticle();//パーティクル用
 	void RootSignatureParticleCreate();//パーティクル用
+
+	void CreateSprite();//スプライト用
 	void RootSignatureSpriteCreate();//スプライト用
+
+	void CreateCopyImage();//コピーイメージ用
 	void RootSignatureCopyImageCreate();//コピーイメージ用
+
+	void CreateLine();//ライン用
 	void RootSignatureLineCreate();//ライン用
-	void RootSignatureSkinningCreate();//スキニング用
+
+
+	void CreateCompute();//コンピュートシェーダー用
+	void RootSignatureComputeCreate();//コンピュートシェーダー用
 
 
 
@@ -47,9 +49,9 @@ public:
 	ID3D12RootSignature* GetRootSignatureLine()const { return rootSignatureLine.Get(); }
 	ID3D12PipelineState* GetGraphicsPipelineStateLine()const { return graphicsPipelineStateLine.Get(); }
 
-	//スキニング用のPSO
-	ID3D12RootSignature* GetRootSignatureSkinning()const { return rootSignature.Get(); }
-	ID3D12PipelineState* GetGraphicsPipelineStateSkinning()const { return graphicsPipelineState.Get(); }
+	//コンピュートシェーダー用のPSO
+	ID3D12RootSignature* GetRootSignatureCompute()const { return rootSignatureCompute.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateCompute()const { return graphicsPipelineStateCompute.Get(); }
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;
@@ -76,6 +78,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureLine = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateLine = nullptr;
 
+
+	//コンピュートシェーダー用
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureCompute = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateCompute = nullptr;
 
 };
 

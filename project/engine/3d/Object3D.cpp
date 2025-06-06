@@ -71,7 +71,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
 	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
 
-
+	
 
 }
 
@@ -194,6 +194,8 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(5, pointLightResource->GetGPUVirtualAddress());
 	//スポットライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
+
+	
 	//skeletonのデータをセット
 	//object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//3Dモデルが割り当てられているなら描画する

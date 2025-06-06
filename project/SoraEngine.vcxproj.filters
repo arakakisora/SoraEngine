@@ -18,6 +18,7 @@
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\BoxFilter.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\ComputeShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\camera\CameraManager.cpp" />

@@ -40,7 +40,7 @@ void Framework::Initialize()
 	ModelManager::GetInstans()->Initialize(dxCommon.get(), srvManager.get());
 
 	//3Dオブジェクト共通部の初期化
-	Object3DCommon::GetInstance()->Initialize(dxCommon.get());
+	Object3DCommon::GetInstance()->Initialize(dxCommon.get(),srvManager.get());
 
 	//linen初期化
 	LineCommon::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
