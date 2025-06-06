@@ -86,7 +86,7 @@ void Model::Draw()
 	//SRVのDescriptorTableの先頭を設定
 	modelCommon_->GetSRVManager()->SetGraficsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath));
 	//描画！
-	//modelCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+	modelCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 	 // インデックス描画（インスタンス数 = 1）
 	modelCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(

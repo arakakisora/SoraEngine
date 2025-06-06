@@ -204,6 +204,28 @@ void Object3D::Draw()
 
 }
 
+void Object3D::DrawSkinning()
+{
+
+
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+	//平行光源Cbufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+	//カメラのデータをセット
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
+	//ポイントライトのCBufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(5, pointLightResource->GetGPUVirtualAddress());
+	//スポットライトのCBufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
+	//skeletonのデータをセット
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
+	//3Dモデルが割り当てられているなら描画する
+	if (model_) {
+		model_->Draw();
+	}
+
+}
+
 
 void Object3D::SetModel(const std::string& filepath)
 {
