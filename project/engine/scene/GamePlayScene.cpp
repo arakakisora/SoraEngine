@@ -382,9 +382,9 @@ void GamePlayScene::Draw()
 {
 #pragma region 3Dオブジェクト描画
 
-	////3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
-	//Object3DCommon::GetInstance()->CommonDraw();
-	//terrain->Draw();
+	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
+	Object3DCommon::GetInstance()->CommonDraw();
+	terrain->Draw();
 
 	Object3DCommon::GetInstance()->SkinNingCommonDraw();
 	object3D->DrawSkinning();
