@@ -30,7 +30,7 @@ Player::~Player()
 		delete bullet;
 	}
 
-	delete object3DBullet_;
+	
 	
 		
 		
@@ -572,11 +572,17 @@ void Player::OnCollision(const Enemy* enemy) {
 
 void Player::Attack()
 {
-	// 回転中は弾を発射しない
-	if (turnTimer_ > 0.0f) {
-		return;
+	const int32_t kFireInterval = 15; // 弾を撃てる間隔（フレーム数）
+	if (turnTimer_ > 0.0f) return;
+
+	// クールタイム中は待つ
+	if (fireTimer > 0) {
+		--fireTimer;
 	}
-	if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+
+	if (Input::GetInstance()->PushKey(DIK_SPACE) && fireTimer <= 0) {
+
+		fireTimer = kFireInterval; // クールタイムリセット
 
 		//弾の速度
 		const float kBlletSpeed = 1.0f;
@@ -595,7 +601,7 @@ void Player::Attack()
 
 		//弾生成、初期化
 		PlayerBullet* newbBullet = new PlayerBullet();
-		newbBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity);
+		newbBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity,mapChipFild_);
 
 
 		//弾を登録

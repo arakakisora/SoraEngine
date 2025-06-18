@@ -23,8 +23,8 @@ void GamePlayScene::Initialize()
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 
-	
-	
+
+
 
 	//3Dオブジェクト読み込み
 	ModelManager::GetInstans()->LoadModel("plane.obj");
@@ -63,7 +63,7 @@ void GamePlayScene::Initialize()
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(object3DPlayer, playerPostion);
 	player->SetDeathHeight(0.0f);
-	
+
 	ParticleMnager::GetInstance()->CreateParticleGroup("Player", "Resources/block.png", "sphere.obj");
 	playeremitter_ = new ParticleEmitter(
 		{ 0.0f,0.3f,0.0f },
@@ -76,47 +76,54 @@ void GamePlayScene::Initialize()
 
 
 
-	
+
 
 	//3Dオブジェクトの初期化
 	object3D2nd = new Object3D();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
 
-	// Enemy
+	// EnemyAdd commentMore actions
 	//enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	for (int32_t i = 0; i < enemynumber; i++) {
 		Object3D* object3DEnemy = new Object3D(); // 各Enemyごとに新しいObject3Dを生成
 		//object3DEnemy = new Object3D();
-		object3DEnemy->Initialize(Object3DCommon::GetInstance());
-		object3DEnemy->SetModel("enemy.obj");
-		Enemy* newEnemy = new Enemy();
-		Vector3 enemyPosition = mapChipField_->GetMapChipPostionByIndex(10 + i, 18);
-		newEnemy->Initialize(object3DEnemy, enemyPosition);
-		enemies_.push_back(newEnemy);
+	// CSVから敵の位置を取得
+		std::vector<Vector3> enemyPositions = mapChipField_->GetEnemyPositions();
+		for (const Vector3& enemyPos : enemyPositions) {
+			Object3D* object3DEnemy = new Object3D();
+			object3DEnemy->Initialize(Object3DCommon::GetInstance());
+			object3DEnemy->SetModel("enemy.obj");
+
+			Enemy* newEnemy = new Enemy();
+			Vector3 enemyPosition = mapChipField_->GetMapChipPostionByIndex(10 + i, 18);
+			newEnemy->Initialize(object3DEnemy, enemyPosition);
+			newEnemy->Initialize(object3DEnemy, enemyPos);
+			enemies_.push_back(newEnemy);
+		}
+
+		// ゴールの生成
+		GoolObject3D = new Object3D();
+		GoolObject3D->Initialize(Object3DCommon::GetInstance());
+		GoolObject3D->SetModel("gool.obj");
+		Vector3 goolPosition = mapChipField_->GetMapChipPostionByIndex(82, 15);
+		GoolObject3D->SetTranslate(goolPosition);
+
+		//SkyDome
+		skydome_ = new Object3D();
+		skydome_->Initialize(Object3DCommon::GetInstance());
+		skydome_->SetModel("skyplane.obj");
+		skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
+		//ライト
+		skydome_->SetLighting(false);
+
+		//フォローカメラ設定
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(object3DPlayer, { 0, 0, -15 });
+
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+
+
 	}
-
-	// ゴールの生成
-	GoolObject3D = new Object3D();
-	GoolObject3D->Initialize(Object3DCommon::GetInstance());
-	GoolObject3D->SetModel("gool.obj");
-	Vector3 goolPosition = mapChipField_->GetMapChipPostionByIndex(82, 15);
-	GoolObject3D->SetTranslate(goolPosition);
-
-	//SkyDome
-	skydome_ = new Object3D();
-	skydome_->Initialize(Object3DCommon::GetInstance());
-	skydome_->SetModel("skyplane.obj");
-	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
-	//ライト
-	skydome_->SetLighting(false);
-
-	//フォローカメラ設定
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(object3DPlayer, { 0, 0, -15 });
-
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
-
-
 }
 
 void GamePlayScene::Finalize()
@@ -144,7 +151,7 @@ void GamePlayScene::Finalize()
 
 	for (auto& enemy : enemies_) {
 		if (enemy) {
-			enemy->ReleaseObject3D();
+			//enemy->ReleaseObject3D();
 			delete enemy; // Enemy自体を解放
 		}
 	}
@@ -202,7 +209,7 @@ void GamePlayScene::Update()
 	for (Enemy* enemy : enemies_) {
 
 		if (!nullptr) {
-			enemy->Update();
+			enemy->Update(mapChipField_);
 		}
 	}
 

@@ -6,21 +6,23 @@
 #include <numbers>
 #include "MyMath.h"
 #include"Object3D.h"
+#include <MapChipField.h>
 
- 
+
 class Player;
 class PlayerBullet;
 class Enemy {
 public:
+	~Enemy();
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(Object3D *obj, const Vector3& position);
+	void Initialize(Object3D* obj, const Vector3& position);
 
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
-	void Update();
+	void Update(MapChipField* mapChipField);
 
 	/// <summary>
 	/// 描画
@@ -31,6 +33,8 @@ public:
 	AABB GetAABB();
 	void OnCollision(const Player* player);
 
+	Vector3 GetRayEndPosition();
+	int GetRayMapChipNumber(MapChipField* mapChipField);
 
 	// Object3D解放用のメソッド
 	void ReleaseObject3D() {
@@ -44,7 +48,7 @@ public:
 
 
 private:
-	
+
 	Object3D* object3D_ = nullptr;
 	// 敵の動き
 	static inline const float kWalkSpeed = 0.01f; // 歩行の速さ
@@ -59,5 +63,6 @@ private:
 
 	//death
 	bool isDead_ = false;
-	
+	float rotateY = 0.0f;
+
 };
