@@ -63,10 +63,10 @@ private:
 
 	//death
 	bool isDead_ = false;
-	int HP = 3;
+	int HP = 10;
 	float rotateY = 0.0f;
 	Vector4 defaultColor_ = { 1, 1, 1, 1 }; // 通常時の色
 	float damageTimer_ = 0.0f;
-	static inline const float kDamageDisplayTime =1.0f; // 赤くなる時間（秒）
+	static inline const float kDamageDisplayTime =0.2f; // 赤くなる時間（秒）
 
 };

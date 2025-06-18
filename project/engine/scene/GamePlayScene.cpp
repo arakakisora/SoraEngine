@@ -89,18 +89,17 @@ void GamePlayScene::Initialize()
 		
 		//object3DEnemy = new Object3D();
 	// CSVから敵の位置を取得
-		std::vector<Vector3> enemyPositions = mapChipField_->GetEnemyPositions();
-		for (const Vector3& enemyPos : enemyPositions) {
-			Object3D* object3DEnemy = new Object3D();
-			object3DEnemy->Initialize(Object3DCommon::GetInstance());
-			object3DEnemy->SetModel("enemy.obj");
+	std::vector<Vector3> enemyPositions = mapChipField_->GetEnemyPositions();
+	for (const Vector3& enemyPos : enemyPositions) {
+		Object3D* object3DEnemy = new Object3D();
+		object3DEnemy->Initialize(Object3DCommon::GetInstance());
+		object3DEnemy->SetModel("enemy.obj");
 
-			Enemy* newEnemy = new Enemy();
-			Vector3 enemyPosition = mapChipField_->GetMapChipPostionByIndex(10 + i, 18);
-			newEnemy->Initialize(object3DEnemy, enemyPosition);
-			newEnemy->Initialize(object3DEnemy, enemyPos);
-			enemies_.push_back(newEnemy);
-		}
+		Enemy* newEnemy = new Enemy();
+		newEnemy->Initialize(object3DEnemy, enemyPos); // ← これだけでOK
+
+		enemies_.push_back(newEnemy);
+	}
 
 		// ゴールの生成
 		GoolObject3D = new Object3D();

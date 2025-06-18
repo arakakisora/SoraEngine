@@ -31,6 +31,8 @@ public:
 	Vector3 GetRayEndPosition();
 	int GetRayMapChipNumber(MapChipField* mapChipField);
 	
+	int GetPower() const { return power_; }
+	void SetPower(int p) { power_ = p; }
 
 
 private:
@@ -45,4 +47,5 @@ private:
 	int32_t deathTimer_ = kLifeTime;//デスタイマー
 	bool isDead_ = false;			//デスフラグ
 	MapChipField* mapChipField_ = nullptr;
+	int power_ = 1; // 弾の威力
 };

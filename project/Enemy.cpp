@@ -1,5 +1,6 @@
 #include "Enemy.h"
 #include "imgui.h"
+#include "PlayerBullet.h"
 
 
 Enemy::~Enemy()
@@ -62,19 +63,8 @@ void Enemy::Update(MapChipField* mapChipField) {
 
 	if (damageTimer_ > 0.0f) {
 		damageTimer_ -= 1.0f / 60.0f;
-
-		// 点滅ロジック（フレーム交互に色を切り替える）
-		int frame = static_cast<int>(damageTimer_ * 60.0f); // 残りフレーム数
-		if (frame % 2 == 0) {
-			object3D_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤
-		}
-		else {
-			object3D_->SetColor(defaultColor_);             // 元の色
-		}
-
-		// タイマーが終わったら元に戻す
 		if (damageTimer_ <= 0.0f) {
-			object3D_->SetColor(defaultColor_);
+			object3D_->SetColor(defaultColor_); // 元の色に戻す
 		}
 	}
 	
@@ -121,10 +111,10 @@ void Enemy::OnCollision(const Player* player) {
 void Enemy::OnCollision(const PlayerBullet* bullet)
 {
 	if (bullet) {
-		HP-=1;
-		
+		HP -= bullet->GetPower(); // 弾の攻撃力に応じてHPを減らす
+		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
 		damageTimer_ = kDamageDisplayTime;
-		object3D_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤くする
+
 		if (HP <= 0) {
 			isDead_ = true;
 		}

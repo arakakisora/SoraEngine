@@ -30,10 +30,10 @@ Player::~Player()
 		delete bullet;
 	}
 
-	
-	
-		
-		
+
+
+
+
 }
 
 void Player::Update() {
@@ -59,6 +59,17 @@ void Player::Update() {
 
 
 	PrayerMove();
+
+	if (Input::GetInstance()->TriggerKey(DIK_1)) {
+		currentWeaponType_ = WeaponType::Gatling;
+
+	}
+	if (Input::GetInstance()->TriggerKey(DIK_2)) {
+		currentWeaponType_ = WeaponType::Cannon;
+		//弾のサイズを大きくする
+		
+	}
+
 	Attack();
 
 	for (PlayerBullet* bullet : bullets_) {
@@ -71,14 +82,14 @@ void Player::Update() {
 	bullets_.remove_if([](PlayerBullet* bullet) {
 		if (bullet->GetIsDead()) {
 			delete bullet;
-			
+
 			return true;
 
 		}
 		return false;
-	});
+		});
 
-	
+
 
 
 	// 衝突判定を初期化
@@ -572,8 +583,36 @@ void Player::OnCollision(const Enemy* enemy) {
 
 void Player::Attack()
 {
-	const int32_t kFireInterval = 15; // 弾を撃てる間隔（フレーム数）
+	
 	if (turnTimer_ > 0.0f) return;
+
+	// 武器ごとの設定
+	int32_t kFireInterval = 0;
+	int damage = 1;
+
+	switch (currentWeaponType_) {
+	case WeaponType::Gatling:
+		kFireInterval = 10; // 高速連射
+		damage = 1;
+		for (PlayerBullet* bullet : bullets_) {
+			object3DBullet_->SetScale(Vector3{ 0.4f,0.4f,0.4f });
+		}
+		break;
+	case WeaponType::Cannon:
+		kFireInterval = 60; // リロード長い
+		damage = 3;
+		for (PlayerBullet* bullet : bullets_) {
+			object3DBullet_->SetScale(Vector3{ 1.5f,1.5f,1.5f });
+		}
+		break;
+	}
+#ifdef _DEBUG
+	//リロードを表示
+	ImGui::Text("FireInterval: %d", fireTimer);
+	//モード切替
+	ImGui::Text("CurrentWeaponType: %d", static_cast<int>(currentWeaponType_));
+#endif // _DEBUG
+
 
 	// クールタイム中は待つ
 	if (fireTimer > 0) {
@@ -582,30 +621,23 @@ void Player::Attack()
 
 	if (Input::GetInstance()->PushKey(DIK_SPACE) && fireTimer <= 0) {
 
-		fireTimer = kFireInterval; // クールタイムリセット
+		fireTimer = kFireInterval;
 
-		//弾の速度
-		const float kBlletSpeed = 1.0f;
-		Vector3 velocity(0, 0, kBlletSpeed);
-
-		//自機の向きに合わせて回転させる
+		// 弾の速度
+		const float kBulletSpeed = 1.0f;
+		Vector3 velocity(0, 0, kBulletSpeed);
 		velocity = MyMath::TransformNormal(velocity, object3D_->GetWorldMatrix());
-
 
 		object3DBullet_ = new Object3D();
 		object3DBullet_->Initialize(Object3DCommon::GetInstance());
 		object3DBullet_->SetModel("bullet.obj");
 		object3DBullet_->SetScale({ 0.4f,0.4f,0.4f });
 
-		
+		PlayerBullet* newBullet = new PlayerBullet();
+		newBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity, mapChipFild_);
+		newBullet->SetPower(damage); // ← ダメージを設定（次のステップで追加）
 
-		//弾生成、初期化
-		PlayerBullet* newbBullet = new PlayerBullet();
-		newbBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity,mapChipFild_);
-
-
-		//弾を登録
-		bullets_.push_back(newbBullet);
+		bullets_.push_back(newBullet);
 
 
 

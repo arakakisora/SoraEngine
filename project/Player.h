@@ -33,6 +33,11 @@ enum Corner {
 	kNumCorner // 要素数
 };
 
+enum class WeaponType {
+	Gatling,
+	Cannon,
+};
+
 
 class Enemy;
 class MapChipField;
@@ -132,7 +137,9 @@ private:
 
 	//落下死高さ
 	float deathHeight_; // 落下死の高さ
+
 	//弾
+	WeaponType currentWeaponType_ = WeaponType::Gatling; // 現在の武器タイプ
 	std::list<PlayerBullet* > bullets_;
 	int32_t fireTimer = 0;
 
