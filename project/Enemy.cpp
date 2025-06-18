@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "imgui.h"
 
 
 Enemy::~Enemy()
@@ -21,6 +22,8 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
 	walkTimer_ = 0.0f;
 	rotateY = std::numbers::pi_v<float> / 2.0f;
+	defaultColor_ = object3D_->GetColor(); // 初期色を保存
+	//object3D_->SetColor({1.0f,0.0f,0.0f,1.0f}); // 初期色を設定
 
 }
 
@@ -57,7 +60,34 @@ void Enemy::Update(MapChipField* mapChipField) {
 		}
 	}
 
+	if (damageTimer_ > 0.0f) {
+		damageTimer_ -= 1.0f / 60.0f;
+
+		// 点滅ロジック（フレーム交互に色を切り替える）
+		int frame = static_cast<int>(damageTimer_ * 60.0f); // 残りフレーム数
+		if (frame % 2 == 0) {
+			object3D_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤
+		}
+		else {
+			object3D_->SetColor(defaultColor_);             // 元の色
+		}
+
+		// タイマーが終わったら元に戻す
+		if (damageTimer_ <= 0.0f) {
+			object3D_->SetColor(defaultColor_);
+		}
+	}
+	
 	object3D_->Update();
+
+
+	//imgui	
+
+	//HPの表示
+	ImGui::Text("HP: %d", HP);
+	
+
+
 }
 
 void Enemy::Draw() { object3D_->Draw(); }
@@ -91,9 +121,15 @@ void Enemy::OnCollision(const Player* player) {
 void Enemy::OnCollision(const PlayerBullet* bullet)
 {
 	if (bullet) {
-		// 弾との衝突の場合
-		isDead_ = true; // 敵を死亡させる
+		HP-=1;
+		
+		damageTimer_ = kDamageDisplayTime;
+		object3D_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); // 赤くする
+		if (HP <= 0) {
+			isDead_ = true;
+		}
 	}
+
 
 }
 

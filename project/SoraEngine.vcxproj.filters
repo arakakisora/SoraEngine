@@ -114,7 +114,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
-    <None Include="Resources\blocks.csv" />
+    <None Include="Resources\Mapdate\blocks.csv" />
     <None Include="Resources\Shaders\Line.hlsli" />
     <None Include="Resources\models\animationfly.bin" />
     <None Include="Resources\models\animationfly.gltf" />
@@ -125,5 +125,6 @@
     <None Include="Resources\Shaders\Particle.hlsli" />
     <None Include="Resources\Shaders\Sprite.hlsli" />
     <None Include="Resources\Shaders\Vignette.hlsli" />
+    <None Include="Resources\Mapdate\testmap.csv" />
   </ItemGroup>
 </Project>

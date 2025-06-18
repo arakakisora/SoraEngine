@@ -45,7 +45,7 @@ void GamePlayScene::Initialize()
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+	mapChipField_->LoadMapChipCsv("Resources/Mapdate/testmap.csv");
 	GenerateObject3D();
 
 	//playerの生成	
@@ -85,8 +85,8 @@ void GamePlayScene::Initialize()
 
 	// EnemyAdd commentMore actions
 	//enemyModel_ = Model::CreateFromOBJ("enemy", true);
-	for (int32_t i = 0; i < enemynumber; i++) {
-		Object3D* object3DEnemy = new Object3D(); // 各Enemyごとに新しいObject3Dを生成
+	
+		
 		//object3DEnemy = new Object3D();
 	// CSVから敵の位置を取得
 		std::vector<Vector3> enemyPositions = mapChipField_->GetEnemyPositions();
@@ -123,7 +123,7 @@ void GamePlayScene::Initialize()
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 
 
-	}
+	
 }
 
 void GamePlayScene::Finalize()
