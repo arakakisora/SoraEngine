@@ -99,9 +99,16 @@ void Model::Draw()
 
 	};
 
+	//StructuredBuffer<Well> gMatrixPalette : register(t0); //Palette
+	//StructuredBuffer<Vertex> gInputVertices : register(t1);//頂点情報
+	//StructuredBuffer<VertexInfluence> gInfluences : register(t2);//インフルエンス  
+	//RWStructuredBuffer<Vertex> gOutputVertices : register(u0); //出力頂点情報
+	//ConstantBuffer<SkinningInformation> gSkinningInformation : register(b0); //スキニング情報
+
 	// RootParameter[0] - SRV群 (t0〜t2)
 	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootDescriptorTable(0, skinCluster.paletteSrvHandle.second); // ← SRVヒープにまとめる
-
+	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootDescriptorTable(1, modelCommon_->GetSRVManager()->GetGPUDescriptorHandle(modelData.material.textureIndex)); // テクスチャのSRV
+	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootShaderResourceView(2, vertexResource->GetGPUVirtualAddress()); // ← 入力頂点バッファ
 	//UAVを作成
 	uint32_t uavIndex = modelCommon_->GetSRVManager()->Allocate();
 	D3D12_GPU_DESCRIPTOR_HANDLE uavHandle = modelCommon_->GetSRVManager()->GetGPUDescriptorHandle(uavIndex);
@@ -111,9 +118,7 @@ void Model::Draw()
 	// RootParameter[2] - CBV (b0)
 	modelCommon_->GetDxCommon()->GetCommandList()->SetComputeRootConstantBufferView(2, skinCluster.influenceResource->GetGPUVirtualAddress());
 
-
-
-
+	modelCommon_->GetDxCommon()->GetCommandList()->Dispatch(UINT(modelData.vertices.size() + 1023) / 1024, 1, 1);
 
 	//VertexBufferViewを設定
 	modelCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
