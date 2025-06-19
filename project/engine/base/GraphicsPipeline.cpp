@@ -873,10 +873,10 @@ void GraphicsPipeline::CreateCopyImage()
 	depthStencilDesc.StencilEnable = false;
 
 	// シェーダーを読み込み
-	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/GaussianFilter.VS.hlsl", L"vs_6_0");
+	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/LuminanceBasedOutline.VS.hlsl", L"vs_6_0");
 	assert(vertexshaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/GaussianFilter.PS.hlsl", L"ps_6_0");
+	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/LuminanceBasedOutline.PS.hlsl", L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
 	// PSO 設定

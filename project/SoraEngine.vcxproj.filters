@@ -20,6 +20,9 @@
     <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\GaussianFilter.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\LuminanceBasedOutline.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\LuminanceBasedOutline.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\DepthBasedOutline.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\camera\CameraManager.cpp" />
@@ -124,5 +127,6 @@
     <None Include="Resources\Shaders\Vignette.hlsli" />
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
     <None Include="Resources\Shaders\GaussianFilter.hlsli" />
+    <None Include="Resources\Shaders\LuminanceBasedOutline.hlsli" />
   </ItemGroup>
 </Project>

@@ -8,15 +8,12 @@ public:
 	/// </summary>
 	void Initialize(DirectXCommon* dxCommon);
 
-
 	void Create();//3dオブジェクト用
 	void CreateParticle();//パーティクル用
 	void CreateSprite();//スプライト用
 	void CreateCopyImage();//コピーイメージ用
 	void CreateLine();//ライン用
 	void CreateSkinning();//スキニング用
-
-
 
 	//ルートシグネチャの作成
 	void RootSignatureCreate();//3dオブジェクト用
@@ -25,8 +22,6 @@ public:
 	void RootSignatureCopyImageCreate();//コピーイメージ用
 	void RootSignatureLineCreate();//ライン用
 	void RootSignatureSkinningCreate();//スキニング用
-
-
 
 	//ゲッター
 	ID3D12RootSignature* GetRootSignature()const { return rootSignature.Get(); }

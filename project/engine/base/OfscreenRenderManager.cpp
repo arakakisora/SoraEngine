@@ -82,7 +82,6 @@ void OfscreenRenderManager::End()
 		currentState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	}
 
-
 }
 
 void OfscreenRenderManager::Draw()

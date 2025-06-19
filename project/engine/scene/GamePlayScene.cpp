@@ -47,7 +47,7 @@ void GamePlayScene::Initialize()
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("walk.gltf");
+	object3D->SetModel("sphere.obj");
 	object3D->SetLighting(true);
 	object3D->SetDirectionalLightIntensity(1.0f);
 	object3D->SetRotate({0.0f,-3.0f,0.0f});

@@ -33,7 +33,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
-	directionalLightData->enable = 0;
+	directionalLightData->enable = true;
 
 	//ポイントライト
 	//ポイントライト用のリソースを作成
@@ -44,7 +44,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	pointLightData->intensity = 1.0f;
 	pointLightData->radius = 10.0f;
 	pointLightData->decay = 1.0f;
-	pointLightData->enable = 1;
+	pointLightData->enable = false;
 
 	//スポットライト
 	//スポットライト用のリソースを作成
@@ -58,7 +58,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	spotLightData->decay = 2.0f;//減衰率
 	spotLightData->consAngle = std::cos(std::numbers::pi_v<float> / 3.0f);//スポットライトの余弦
 	spotLightData->cosFalloffstrt = 1.0f;
-	spotLightData->enable = 1;
+	spotLightData->enable = false;
 
 
 
