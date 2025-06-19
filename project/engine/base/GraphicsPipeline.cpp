@@ -908,32 +908,56 @@ void GraphicsPipeline::RootSignatureCopyImageCreate()
 	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// SRV1個を使うためのDescriptorRange
-	D3D12_DESCRIPTOR_RANGE range{};
-	range.BaseShaderRegister = 0;
-	range.NumDescriptors = 1;
-	range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	D3D12_DESCRIPTOR_RANGE srvrange{};
+	srvrange.BaseShaderRegister = 0;//t0から始まる
+	srvrange.NumDescriptors = 2;// t0, t1（gTexture, gDepthTexture）
+	srvrange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	srvrange.RegisterSpace = 0;
+	srvrange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameter（テクスチャSRVのみ）
-	D3D12_ROOT_PARAMETER rootParam{};
-	rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParam.DescriptorTable.NumDescriptorRanges = 1;
-	rootParam.DescriptorTable.pDescriptorRanges = &range;
-	rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	D3D12_ROOT_PARAMETER rootParams[2]{};
+	rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParams[0].DescriptorTable.NumDescriptorRanges = 1;
+	rootParams[0].DescriptorTable.pDescriptorRanges = &srvrange;
+	rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-	desc.pParameters = &rootParam;
-	desc.NumParameters = 1;
+	// CBV (b0 : gMaterial)
+	rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParams[1].Descriptor.ShaderRegister = 0; // b0
+	rootParams[1].Descriptor.RegisterSpace = 0;
+	rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-	// Static Sampler（必要なら）
-	D3D12_STATIC_SAMPLER_DESC sampler{};
-	sampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampler.ShaderRegister = 0;
-	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	desc.pStaticSamplers = &sampler;
-	desc.NumStaticSamplers = 1;
+
+	desc.pParameters = rootParams;//ルートパラメーター配列へのポインタ
+	desc.NumParameters = _countof(rootParams);
+
+
+
+	// ===== Static Samplers =====
+	D3D12_STATIC_SAMPLER_DESC samplers[2]{};
+
+	// s0 - gSampler
+	samplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	samplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[0].ShaderRegister = 0; // s0
+	samplers[0].RegisterSpace = 0;
+	samplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// s1 - gSamplerPoint
+	samplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+	samplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samplers[1].ShaderRegister = 1; // s1
+	samplers[1].RegisterSpace = 0;
+	samplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	desc.pStaticSamplers = samplers;
+	desc.NumStaticSamplers = _countof(samplers);
+
 
 	ID3DBlob* signatureBlob = nullptr;
 	ID3DBlob* errorBlob = nullptr;

@@ -1,4 +1,5 @@
 #include "OfscreenRenderManager.h"
+#include "CameraManager.h"
 
 void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
 {
@@ -29,6 +30,15 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateCopyImage();
+
+	//マテリアルの初期化
+	//マテリアル
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	materialResource = dxCommon_ ->CreateBufferResource(sizeof(MatelalDepth));
+	//マテリアルにデータを書き込む	
+	materialData = nullptr;
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	materialData->projextionInverse = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix().Inverse();
 }
 
 void OfscreenRenderManager::Begin()
@@ -92,6 +102,8 @@ void OfscreenRenderManager::Draw()
 
 	//heapの設定
 	srvManager_->SetGraficsRootDescriptorTable(0, srvIndex);
+	//マテリアル
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 
 	//描画	
 	dxCommon_->GetCommandList()->DrawInstanced(3, 1, 0, 0);

@@ -2,18 +2,16 @@
 
 struct Material
 {
-    float4 color;
-    int enableLighting;
-    float4x4 uvTransform;
-    float shininess;
+   
     float4x4 projextionInverse;
 };
     
-ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
 
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
+
+ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
 Texture2D<float> gDepthTexture : register(t1);
 SamplerState gSamplerPoint : register(s1);
 

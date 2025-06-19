@@ -2,6 +2,11 @@
 #include"DirectXCommon.h"
 #include"SrvManager.h"
 #include "GraphicsPipeline.h"
+#include "Matrix4x4.h"
+
+struct MatelalDepth {
+	Matrix4x4 projextionInverse;
+};
 
 class OfscreenRenderManager
 {
@@ -36,6 +41,13 @@ private:
 
 	D3D12_RESOURCE_STATES currentState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
+	//constantバッファのリソース
+	//マテリアル
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+	//マテリアルにデータを書き込む	
+	MatelalDepth* materialData = nullptr;
+	
 
 };
 

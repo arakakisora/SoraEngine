@@ -94,6 +94,7 @@ private:
 	VertexData* vertexData = nullptr;
 	//バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+
 	//マテリアル
 	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
