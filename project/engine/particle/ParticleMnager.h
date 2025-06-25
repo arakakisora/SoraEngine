@@ -15,6 +15,7 @@ enum class VerticesType
 	Ring,
 	Cylinder,
 	Quad,
+	Triangle,
 
 };
 
@@ -25,8 +26,9 @@ struct Particle {
 	Vector3 Velocity;
 	float lifetime;
 	float currentTime;
-
-	Vector4 color;
+	Vector3 center; // ← 発生中心を記録
+	
+	Vector4 color = {0,0,0};
 
 	
 };
@@ -71,7 +73,7 @@ class ParticleMnager
 public:
 
 	static ParticleMnager* GetInstance();
-
+	
 private:
 	// コンストラクタをプライベートにする
 	ParticleMnager() = default;
@@ -84,7 +86,7 @@ private:
 public:
 
 	//初期化
-	void Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger);
+	void Initialize(DirectXCommon* dxcommn,SrvManager*srvmaneger);
 
 
 
@@ -97,17 +99,22 @@ public:
 
 	void CreateParticleGroup(const std::string name,const std::string textureFilePath, VerticesType verticesType = VerticesType::Quad, std::unique_ptr<IParticleBehavior> behavior=nullptr);
 
-	void Emit(const std::string& name, const Vector3 position, uint32_t count);
+	void Emit(const std::string& name, const EulerTransform transform, uint32_t count,float lifetime);
 
 	void SetModel(const std::string& filepath);
 
 	
 	//リングの頂点情報を作成
-	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 128, float outerRadius = 1.0f, float innerRadius = 0.2f);
+	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 32, float outerRadius = 1.0f, float innerRadius = 0.2f);
 	//シリンダーの頂点情報を作成
 	std::vector<VertexData> MakeCylinderVertices(uint32_t cylinderDivide = 32, float topRadius = 1.0f, float bottomRadius = 1.0f, float height = 2.0f);
 	//クワッドの頂点情報を作成
 	std::vector<VertexData> MakeQuadVertices();
+	//三角形
+	std::vector<VertexData> MakeTriangleVertices();
+
+
+
 
 	// Behavior設定（明示的に設定する用）
 	void SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior);
@@ -118,7 +125,7 @@ private:
 
 	//インスタンス
 	static ParticleMnager* instance_;
-	DirectXCommon* dxCommon_ = nullptr;
+	DirectXCommon* dxCommon_=nullptr;
 	SrvManager* srvManager_ = nullptr;
 
 
@@ -148,5 +155,7 @@ private:
 	VerticesType verticesType = VerticesType::Quad;
 
 };
+
+
 
 

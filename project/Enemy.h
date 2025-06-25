@@ -6,6 +6,7 @@
 #include "MyMath.h"
 #include"Object3D.h"
 #include <MapChipField.h>
+#include "ParticleEmitter.h"
 
 
 class Player;
@@ -68,4 +69,7 @@ private:
 	float damageTimer_ = 0.0f;
 	static inline const float kDamageDisplayTime =0.2f; // 赤くなる時間（秒）
 
+	//撃破effect
+	ParticleEmitter* deatheEffect = nullptr; // パーティクルエミッター
+	EulerTransform effectPosition_ = {}; // エフェクトの位置
 };

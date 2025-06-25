@@ -1,6 +1,8 @@
 #include "Enemy.h"
 #include "imgui.h"
 #include "PlayerBullet.h"
+#include "ParticleMnager.h"
+#include "ChargeBehabiaor.h"
 
 
 Enemy::~Enemy()
@@ -26,6 +28,11 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
 	//object3D_->SetColor({1.0f,0.0f,0.0f,1.0f}); // 初期色を設定
 
+	//deatheffect
+	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
+
+
 }
 
 void Enemy::Update(MapChipField* mapChipField) {
@@ -36,14 +43,14 @@ void Enemy::Update(MapChipField* mapChipField) {
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	//worldTransform_.rotation_.x = fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian);
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	
+
 	Vector3 position = object3D_->GetTransform().translate;
-	position+= velocity_;
+	position += velocity_;
 
 	object3D_->SetTranslate(position);
 	// レイの先のマップチップを取得
 	int rayChipNumber = GetRayMapChipNumber(mapChipField);
-	
+
 
 	// レイの先にブロックがある場合、反転
 	if (rayChipNumber == 1)
@@ -54,8 +61,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 		if (velocity_.x > 0) {
 			//object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f, 0 });  // 右向き
 			rotateY = std::numbers::pi_v<float> / 2.0f;
-		}
-		else {
+		} else {
 			//object3D_->SetRotate({ 0, -std::numbers::pi_v<float> / 2.0f, 0 }); // 左向き
 			rotateY = -std::numbers::pi_v<float> / 2.0f;
 		}
@@ -67,7 +73,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 			object3D_->SetColor(defaultColor_); // 元の色に戻す
 		}
 	}
-	
+
 	object3D_->Update();
 
 
@@ -75,7 +81,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 
 	//HPの表示
 	ImGui::Text("HP: %d", HP);
-	
+
 
 
 }
