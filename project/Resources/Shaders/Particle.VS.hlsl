@@ -28,9 +28,9 @@ VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_Instan
 {
     VertexShaderOutput output;
     output.position = mul(input.position, gParticle[instanceId].WVP);
-    output.texcoord = float2(input.texcoord.x, 1.0f - input.texcoord.y); // V方向をflip
+    //output.texcoord = float2(input.texcoord.x, 1.0f - input.texcoord.y); // V方向をflip
     
-    //output.texcoord = input.texcoord;
+    output.texcoord = input.texcoord;
     output.color = gParticle[instanceId].color;
     return output;
 

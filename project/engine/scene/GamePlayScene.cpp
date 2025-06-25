@@ -80,6 +80,14 @@ void GamePlayScene::Initialize()
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 
 
+	//パーティクルの初期化
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
+
+
+	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
+	particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
+
 
 }
 

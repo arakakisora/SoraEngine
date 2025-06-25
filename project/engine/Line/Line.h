@@ -23,7 +23,7 @@ public:
 	//centerを中心に半径radiusの球を描画する
 	void DrawSphere(const Vector3& center, float radius, const Vector4& color);
 	//skeletonを描画する
-	void DrawSkeleton(const Skeleton& skeleton, const std::vector<Matrix4x4>& skeletonPose, const Vector4& color={1.0f,1.0f,1.0f,1.0f});
+	void DrawSkeleton(const Skeleton& skeleton, const std::vector<Matrix4x4>& skeletonPose, const Matrix4x4& worldMatrix, const Vector4& color={1.0f,1.0f,1.0f,1.0f});
 
 
 };

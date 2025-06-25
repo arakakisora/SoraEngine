@@ -17,6 +17,11 @@
     <FxCompile Include="Resources\Shaders\Sprite.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Vignette.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Vignette.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\BoxFilter.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\GaussianFilter.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enemy.cpp" />
@@ -63,6 +68,9 @@
     <ClCompile Include="FadeManager.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
+    <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
+    <ClCompile Include="engine\particle\AttackBehavior.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
@@ -115,6 +123,9 @@
     <ClInclude Include="FadeManager.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="engine\particle\IParticleBehavior.h" />
+    <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
+    <ClInclude Include="engine\particle\AttackBehavior.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
@@ -130,5 +141,7 @@
     <None Include="Resources\Shaders\Sprite.hlsli" />
     <None Include="Resources\Shaders\Vignette.hlsli" />
     <None Include="Resources\Mapdate\testmap.csv" />
+    <None Include="Resources\Shaders\BoxFilter.hlsli" />
+    <None Include="Resources\Shaders\GaussianFilter.hlsli" />
   </ItemGroup>
 </Project>

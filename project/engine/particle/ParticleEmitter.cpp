@@ -1,5 +1,5 @@
 #include "ParticleEmitter.h"
-#include "ParticleMnager.h"
+
 
 
 
@@ -10,6 +10,7 @@ ParticleEmitter::ParticleEmitter(const Vector3& position, const float lifetime, 
 	frequencyTime = currentTime;//現在の寿命
 	this->count = count;//count
 	name_ = name;//名前
+	
 }
 
 void ParticleEmitter::Update()

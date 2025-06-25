@@ -1,13 +1,15 @@
 #pragma once
 #include <Vector3.h>
 #include <string>
+#include "ParticleMnager.h"
+
+
 class ParticleEmitter
 {
 public:
 	//ほとんどのメンバ変数をコンストラクタの引数として受け取り、メンバ変数に代入する
 	ParticleEmitter(
 		const Vector3& position,
-
 		const float lifetime,
 		const float currentTime,
 		const uint32_t count,
@@ -43,17 +45,16 @@ public:
 private:
 	//位置
 	Vector3 position_;
-
 	//寿命
-
 	float frequency;
 	//現在の寿命
 	float frequencyTime;
 	//count
 	uint32_t count;
-
 	//名前
 	std::string name_;
+	//particleタイプ
+	
 
 	int emitCount_ = 0;     // 現在までに発生させたパーティクルの回数
 	const int maxEmitCount_ = 50; // 最大発生回数（50回）

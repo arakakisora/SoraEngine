@@ -393,6 +393,18 @@ Matrix4x4 MyMath::Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 }
 
+Matrix4x4 MyMath::Transpose(const Matrix4x4& matrix)
+{
+	
+	Matrix4x4 result;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = matrix.m[j][i];
+		}
+	}
+	return result;
+}
+
 Vector3 MyMath::Project(const Vector3& v1, const Vector3& v2)
 {
 	float t = Dot(v1, v2) / Dot(v2, v2);
