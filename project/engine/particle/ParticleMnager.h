@@ -112,8 +112,6 @@ public:
 	// Behavior設定（明示的に設定する用）
 	void SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior);
 
-	void PlayerEmit(const std::string& name, const Vector3 position, uint32_t count, bool isRight);
-	Particle PlayerMakeNewParticle(std::mt19937& randomEngine, const Vector3& translate, bool isRight);
 
 private:
 

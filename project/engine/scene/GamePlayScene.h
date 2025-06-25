@@ -65,8 +65,6 @@ public:
 	//player
 	Player* player = nullptr;
 	
-	ParticleEmitter* playeremitter_;
-	Vector3 playeroffset{};
 
 	//wvpData用のTransform変数を作る
 	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };

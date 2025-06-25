@@ -35,15 +35,6 @@ void GamePlayScene::Initialize()
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
 
-	ParticleMnager::GetInstance()->CreateParticleGroup("Player", "Resources/block.png", "sphere.obj");
-	playeremitter_ = new ParticleEmitter(
-		{ 0.0f,0.3f,0.0f },
-		5.0f,
-		0.0f,
-		1,
-		"Player"
-	);
-	playeroffset = { 0.0f,0.0f,0.0f };
 
 	//エネミー
 	enemyManager_ = std::make_unique<EnemyManager>();
@@ -80,13 +71,13 @@ void GamePlayScene::Initialize()
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 
 
-	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
+	////パーティクルの初期化
+	//ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
+	//ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
 
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
-	particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
+	//particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
+	//particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
 
 
 }
@@ -111,7 +102,7 @@ void GamePlayScene::Finalize()
 	delete player;
 	delete GoolObject3D;
 	delete skydome_;
-	delete playeremitter_;
+	
 	
 }
 
@@ -128,35 +119,8 @@ void GamePlayScene::Update()
 	//エネミーの更新
 	enemyManager_->Update();
 	collitionManager_->Update();
-
-	// プレイヤーが右に移動中
-	if (player->GetPrayerMoveRight()) {
-		playeroffset = { -0.3f,0.0f,0.0f };
-		playeremitter_->SetPosition(player->GetObject3D()->GetTransform().translate + playeroffset);
-		// 左方向に設定
-		playeremitter_->SetisRight(false);
-		// プレイヤーのパーティクルを発生させる
-		playeremitter_->PlayerEmit();
-	}
-
-	// プレイヤーが左に移動中
-	if (player->GetPrayerMoveLeft()) {
-		playeroffset = { 0.3f,0.0f,0.0f };
-		playeremitter_->SetPosition(player->GetObject3D()->GetTransform().translate + playeroffset);
-		// 右方向に設定
-		playeremitter_->SetisRight(true);
-		// プレイヤーのパーティクルを発生させる
-		playeremitter_->PlayerEmit();
-	}
-
-	playeremitter_->SetPosition(player->GetObject3D()->GetTransform().translate + playeroffset);
-	// パーティクルの更新
-	//playeremitter_->Update();
-
 	//Goolの更新
 	GoolObject3D->Update();
-
-
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
 

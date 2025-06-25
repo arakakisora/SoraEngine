@@ -174,8 +174,6 @@ private:
 	Line line_; // Lineクラスのポインタ
 	std::vector<Matrix4x4> skeletonPose_;
 
-	// Object3D.h
-	bool enableAnimation_ = false;
 	
 
 };
