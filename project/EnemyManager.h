@@ -5,10 +5,9 @@ class MapChipField;
 class EnemyManager
 {
 public:
+	~EnemyManager();
 	//初期化
 	void Initialize(MapChipField* map);
-	//解放
-	void Finalize();
 	//更新
 	void Update();
 	//描画

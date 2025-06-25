@@ -2,6 +2,16 @@
 #include "MapChipField.h"
 #include "Object3DCommon.h"
 
+EnemyManager::~EnemyManager()
+{
+	for (auto& enemy : enemies_) {
+		if (enemy) {
+			//enemy->ReleaseObject3D();
+			delete enemy; // Enemy自体を解放
+		}
+	}
+}
+
 void EnemyManager::Initialize(MapChipField* map) {
 
 	map_ = map;
@@ -19,15 +29,7 @@ void EnemyManager::Initialize(MapChipField* map) {
 	}
 
 }
-void EnemyManager::Finalize() {
 
-	for (auto& enemy : enemies_) {
-		if (enemy) {
-			//enemy->ReleaseObject3D();
-			delete enemy; // Enemy自体を解放
-		}
-	}
-}
 void EnemyManager::Update() {
 	
 

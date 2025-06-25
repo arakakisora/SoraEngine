@@ -104,6 +104,7 @@ void GamePlayScene::Finalize()
 	delete GoolObject3D;
 	delete skydome_;
 	delete playeremitter_;
+	
 }
 
 void GamePlayScene::Update()
