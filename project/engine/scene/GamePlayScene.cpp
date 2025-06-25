@@ -12,36 +12,16 @@
 void GamePlayScene::Initialize()
 {
 
-
 	//カメラの生成	
 	camera = new Camera();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
 	CameraManager::GetInstance()->AddCamera("maincam", camera);
-
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
-
-
-
-
-	//3Dオブジェクト読み込み
-	ModelManager::GetInstans()->LoadModel("plane.obj");
-	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("cube.obj");
-	ModelManager::GetInstans()->LoadModel("player.obj");
-	ModelManager::GetInstans()->LoadModel("blokc.obj");
-	ModelManager::GetInstans()->LoadModel("skyplane.obj");
-	ModelManager::GetInstans()->LoadModel("enemy.obj");
-	ModelManager::GetInstans()->LoadModel("gool.obj");
-	ModelManager::GetInstans()->LoadModel("bullet.obj");
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
-
-
-
-
-
+	//モデルの読み込み
+	Road();
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
@@ -50,18 +30,9 @@ void GamePlayScene::Initialize()
 
 	//playerの生成	
 	player = new Player();
-	object3DPlayer = new Object3D();
 	Vector3 playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
-	object3DPlayer->Initialize(Object3DCommon::GetInstance());
-	object3DPlayer->SetModel("player.obj");
-	object3DPlayer->SetScale(Vector3{ 0.25f,0.25f,0.25f });
-	object3DPlayer->SetLighting(true);
-	object3DPlayer->SetDirectionalLightEnable(true);
-	object3DPlayer->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
-
-
 	player->SetMapChipField(mapChipField_);
-	player->Initialize(object3DPlayer, playerPostion);
+	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
 
 	ParticleMnager::GetInstance()->CreateParticleGroup("Player", "Resources/block.png", "sphere.obj");
@@ -74,8 +45,13 @@ void GamePlayScene::Initialize()
 	);
 	playeroffset = { 0.0f,0.0f,0.0f };
 
+	//エネミー
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Initialize(mapChipField_);
 
-
+	//当たり判定の初期化
+	collitionManager_ = std::make_unique<CollisionManager>();
+	collitionManager_->Initialize(player,enemyManager_.get());
 
 
 	//3Dオブジェクトの初期化
@@ -83,46 +59,28 @@ void GamePlayScene::Initialize()
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
 
-	// EnemyAdd commentMore actions
-	//enemyModel_ = Model::CreateFromOBJ("enemy", true);
-	
-		
-		//object3DEnemy = new Object3D();
-	// CSVから敵の位置を取得
-	std::vector<Vector3> enemyPositions = mapChipField_->GetEnemyPositions();
-	for (const Vector3& enemyPos : enemyPositions) {
-		Object3D* object3DEnemy = new Object3D();
-		object3DEnemy->Initialize(Object3DCommon::GetInstance());
-		object3DEnemy->SetModel("enemy.obj");
+	// ゴールの生成
+	GoolObject3D = new Object3D();
+	GoolObject3D->Initialize(Object3DCommon::GetInstance());
+	GoolObject3D->SetModel("gool.obj");
+	Vector3 goolPosition = mapChipField_->GetMapChipPostionByIndex(82, 15);
+	GoolObject3D->SetTranslate(goolPosition);
 
-		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(object3DEnemy, enemyPos); // ← これだけでOK
+	//SkyDome
+	skydome_ = new Object3D();
+	skydome_->Initialize(Object3DCommon::GetInstance());
+	skydome_->SetModel("skyplane.obj");
+	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
+	//ライト
+	skydome_->SetLighting(false);
 
-		enemies_.push_back(newEnemy);
-	}
+	//フォローカメラ設定
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), {0, 0, -15});
 
-		// ゴールの生成
-		GoolObject3D = new Object3D();
-		GoolObject3D->Initialize(Object3DCommon::GetInstance());
-		GoolObject3D->SetModel("gool.obj");
-		Vector3 goolPosition = mapChipField_->GetMapChipPostionByIndex(82, 15);
-		GoolObject3D->SetTranslate(goolPosition);
-
-		//SkyDome
-		skydome_ = new Object3D();
-		skydome_->Initialize(Object3DCommon::GetInstance());
-		skydome_->SetModel("skyplane.obj");
-		skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
-		//ライト
-		skydome_->SetLighting(false);
-
-		//フォローカメラ設定
-		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(object3DPlayer, { 0, 0, -15 });
-
-		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 
 
-	
+
 }
 
 void GamePlayScene::Finalize()
@@ -143,36 +101,29 @@ void GamePlayScene::Finalize()
 	delete camera;
 	delete mapChipField_;
 	delete player;
-	delete object3DPlayer;
-	//delete object3DEnemy;
 	delete GoolObject3D;
 	delete skydome_;
-
-	for (auto& enemy : enemies_) {
-		if (enemy) {
-			//enemy->ReleaseObject3D();
-			delete enemy; // Enemy自体を解放
-		}
-	}
-
-
 	delete playeremitter_;
 }
 
 void GamePlayScene::Update()
 {
 	skydome_->Update();
+	
 
 	//カメラの更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 	//プレイヤーの更新
 	player->Update();
+	//エネミーの更新
+	enemyManager_->Update();
+	collitionManager_->Update();
 
 	// プレイヤーが右に移動中
 	if (player->GetPrayerMoveRight()) {
 		playeroffset = { -0.3f,0.0f,0.0f };
-		playeremitter_->SetPosition(object3DPlayer->GetTransform().translate + playeroffset);
+		playeremitter_->SetPosition(player->GetObject3D()->GetTransform().translate + playeroffset);
 		// 左方向に設定
 		playeremitter_->SetisRight(false);
 		// プレイヤーのパーティクルを発生させる
@@ -182,14 +133,14 @@ void GamePlayScene::Update()
 	// プレイヤーが左に移動中
 	if (player->GetPrayerMoveLeft()) {
 		playeroffset = { 0.3f,0.0f,0.0f };
-		playeremitter_->SetPosition(object3DPlayer->GetTransform().translate + playeroffset);
+		playeremitter_->SetPosition(player->GetObject3D()->GetTransform().translate + playeroffset);
 		// 右方向に設定
 		playeremitter_->SetisRight(true);
 		// プレイヤーのパーティクルを発生させる
 		playeremitter_->PlayerEmit();
 	}
 
-	playeremitter_->SetPosition(object3DPlayer->GetTransform().translate + playeroffset);
+	playeremitter_->SetPosition(player->GetObject3D()->GetTransform().translate + playeroffset);
 	// パーティクルの更新
 	//playeremitter_->Update();
 
@@ -204,25 +155,6 @@ void GamePlayScene::Update()
 
 	}
 
-	//敵の更新
-	for (Enemy* enemy : enemies_) {
-
-		if (!nullptr) {
-			enemy->Update(mapChipField_);
-		}
-	}
-
-	//死んだ敵を削除
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
-		}
-		return false;
-		});
-
-
-
 
 	//3Dオブジェクトの更新
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
@@ -234,23 +166,12 @@ void GamePlayScene::Update()
 			obj->Update();
 		}
 	}
-	CheckAllCollisions();
+	
 
 
 #ifdef _DEBUG
-
-	
-
 	Imguidebug();
 #endif // _DEBUG
-
-
-
-
-
-
-
-
 }
 
 void GamePlayScene::Draw()
@@ -267,14 +188,9 @@ void GamePlayScene::Draw()
 		player->Draw();
 
 	}
-
-	//Enemyの描画
-
-	for (Enemy* enemy : enemies_) {
-		if (!nullptr) {
-			enemy->Draw();
-		}
-	}
+	//エネミーの描画
+	enemyManager_->Draw();
+	
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{
@@ -299,8 +215,6 @@ void GamePlayScene::Draw()
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
 	/*sprite->Draw();*/
-
-
 
 }
 
@@ -343,67 +257,42 @@ void GamePlayScene::GenerateObject3D()
 
 }
 
-void GamePlayScene::CheckAllCollisions()
-{
-
-	AABB aabb1, aabb2;
-	aabb1 = player->GetAABB();
-	for (Enemy* enemy : enemies_) {
-
-		aabb2 = enemy->GetAABB();
-
-		if (MyMath::IsCollision(aabb1, aabb2)) {
-
-			player->OnCollision(enemy);
-			enemy->OnCollision(player);
-		}
-	}
-
-	// 弾と敵の衝突
-	for (PlayerBullet* bullet : player->GetBullets()) { // GetBullets を追加で実装
-		AABB bulletAABB = bullet->GetAABB();
-		for (Enemy* enemy : enemies_) {
-			aabb2 = enemy->GetAABB();
-			if (MyMath::IsCollision(bulletAABB, aabb2)) {
-				bullet->OnCollison();  // 弾を削除
-				enemy->OnCollision(bullet); // 敵の処理
-				break; // 弾が消滅するので、これ以上判定を行わない
-			}
-		}
-	}
-
-	// ゴールとの当たり判定
-	AABB goolAABB;
-	goolAABB.min = GoolObject3D->GetTransform().translate - Vector3(0.5f, 0.5f, 0.5f);
-	goolAABB.max = GoolObject3D->GetTransform().translate + Vector3(0.5f, 0.5f, 0.5f);
-
-	if (MyMath::IsCollision(aabb1, goolAABB)) {
-		// ゴールシーンに遷移
-		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
-
-	}
-
-
-}
+//void GamePlayScene::CheckAllCollisions()
+//{
+//
+//
+//
+//	// ゴールとの当たり判定
+//	AABB goolAABB;
+//	goolAABB.min = GoolObject3D->GetTransform().translate - Vector3(0.5f, 0.5f, 0.5f);
+//	goolAABB.max = GoolObject3D->GetTransform().translate + Vector3(0.5f, 0.5f, 0.5f);
+//
+//	//if (MyMath::IsCollision(aabb1, goolAABB)) {
+//	//	// ゴールシーンに遷移
+//	//	SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
+//
+//	//}
+//
+//
+//}
 
 void GamePlayScene::Imguidebug()
 {
 
-	if (ImGui::CollapsingHeader("plyer", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		/*transformModel = object3DPlayer->GetTransform();
 
-		ImGui::DragFloat3("*ModelScale", &transformModel.scale.x, 0.01f);
-		ImGui::DragFloat3("*ModelRotate", &transformModel.rotate.x, 0.01f);
-		ImGui::DragFloat3("*ModelTransrate", &transformModel.translate.x, 0.01f);
+}
 
-		object3DPlayer->SetTransform(transformModel);*/
-
-
-
-	}
-	
-		
-
-
+void GamePlayScene::Road()
+{
+	//3Dオブジェクト読み込み
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("cube.obj");
+	ModelManager::GetInstans()->LoadModel("player.obj");
+	ModelManager::GetInstans()->LoadModel("blokc.obj");
+	ModelManager::GetInstans()->LoadModel("skyplane.obj");
+	ModelManager::GetInstans()->LoadModel("enemy.obj");
+	ModelManager::GetInstans()->LoadModel("gool.obj");
+	ModelManager::GetInstans()->LoadModel("bullet.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
 }

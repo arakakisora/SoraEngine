@@ -10,15 +10,21 @@
 
 
 
-void Player::Initialize(Object3D* object3D, const Vector3& position) {
+void Player::Initialize(const Vector3& position) {
 
-	// モデルの初期化
-	object3D_ = object3D;
+	
+	
+
+	object3D_ = new Object3D();
+	object3D_->Initialize(Object3DCommon::GetInstance());
+	object3D_->SetModel("player.obj");
+	object3D_->SetScale(Vector3{ 0.25f,0.25f,0.25f });
+	object3D_->SetLighting(true);
+	object3D_->SetDirectionalLightEnable(true);
+	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-
-
 
 }
 
@@ -30,7 +36,7 @@ Player::~Player()
 		delete bullet;
 	}
 
-
+	delete object3D_;
 
 
 

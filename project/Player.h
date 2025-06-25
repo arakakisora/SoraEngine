@@ -45,7 +45,7 @@ class Player {
 
 public:
 	// 初期化
-	void Initialize(Object3D* object3D, const Vector3& position);
+	void Initialize( const Vector3& position);
 
 	~Player();
 
@@ -91,6 +91,7 @@ public:
 
 	// Getter
 	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
+	Object3D* GetObject3D() const { return object3D_; }
 
 	bool GetPrayerMoveRight() { return playermoveright; }
 	bool GetPrayerMoveLeft() { return playermoveleft; }

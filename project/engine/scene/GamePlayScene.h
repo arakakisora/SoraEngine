@@ -15,6 +15,10 @@
 #include <Enemy.h>
 #include <ParticleEmitter.h>
 
+#include "EnemyManager.h"	
+#include <memory>
+#include "CollisionManager.h"
+
 class GamePlayScene :public BaseScene
 {
 public:
@@ -39,10 +43,12 @@ public:
 	/// ブロックの生成
 	void GenerateObject3D();
 
-	//当たり判定のまとまり
-	void CheckAllCollisions();
+	////当たり判定のまとまり
+	//void CheckAllCollisions();
 
 	void Imguidebug();
+
+	void Road();
 
 public:
 
@@ -58,7 +64,7 @@ public:
 
 	//player
 	Player* player = nullptr;
-	Object3D* object3DPlayer = nullptr;
+	
 	ParticleEmitter* playeremitter_;
 	Vector3 playeroffset{};
 
@@ -70,13 +76,14 @@ public:
 	std::vector<std::vector<Object3D*>> blockobject3D;
 	MapChipField* mapChipField_;
 
-	//Enemy
-	std::list<Enemy*> enemies_;
-	//Object3D* object3DEnemy = nullptr;
-	int32_t enemynumber = 3;
+	//エネミー
+	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
 
 	// SkyDome
 	Object3D* skydome_ = nullptr;
+
+	//当たり判定
+	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
 
 };

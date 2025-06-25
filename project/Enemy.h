@@ -2,7 +2,6 @@
 
 #include "assert.h"
 #include <algorithm>
-#include <algorithm>
 #include <numbers>
 #include "MyMath.h"
 #include"Object3D.h"
