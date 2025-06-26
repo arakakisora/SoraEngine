@@ -8,6 +8,7 @@
 #include "TitleScene.h"
 #include "CameraManager.h"
 #include <ParticleMnager.h>
+#include "ChargeBehabiaor.h"
 
 void GamePlayScene::Initialize()
 {
@@ -70,7 +71,7 @@ void GamePlayScene::Initialize()
 
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 
-
+	
 	////パーティクルの初期化
 	//ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
 	//ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());

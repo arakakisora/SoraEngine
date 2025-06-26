@@ -29,7 +29,7 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	//object3D_->SetColor({1.0f,0.0f,0.0f,1.0f}); // 初期色を設定
 
 	//deatheffect
-	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
 
 
@@ -75,18 +75,28 @@ void Enemy::Update(MapChipField* mapChipField) {
 	}
 
 	object3D_->Update();
+	effectPosition_ .translate= object3D_->GetTransform().translate;
+	deatheEffect->SetPosition(effectPosition_.translate);
+	//deatheEffect->Update();
 
 
 	//imgui	
 
 	//HPの表示
+#ifdef _DEBUG
 	ImGui::Text("HP: %d", HP);
+
+#endif // _DEBUG
+
 
 
 
 }
 
-void Enemy::Draw() { object3D_->Draw(); }
+void Enemy::Draw() { object3D_->Draw();
+
+
+}
 
 Vector3 Enemy::GetWorldPosition() {
 
@@ -123,6 +133,7 @@ void Enemy::OnCollision(const PlayerBullet* bullet)
 
 		if (HP <= 0) {
 			isDead_ = true;
+			deatheEffect->Emit();
 		}
 	}
 
