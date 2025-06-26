@@ -71,6 +71,7 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
+    <ClCompile Include="ChargeBehabiaor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
+    <ClInclude Include="ChargeBehabiaor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BoxFilter.hlsli" />

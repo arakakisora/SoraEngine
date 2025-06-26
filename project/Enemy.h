@@ -6,6 +6,7 @@
 #include "MyMath.h"
 #include"Object3D.h"
 #include <MapChipField.h>
+#include "ParticleEmitter.h"
 
 
 class Player;
@@ -66,6 +67,9 @@ private:
 	float rotateY = 0.0f;
 	Vector4 defaultColor_ = { 1, 1, 1, 1 }; // 通常時の色
 	float damageTimer_ = 0.0f;
-	static inline const float kDamageDisplayTime =0.2f; // 赤くなる時間（秒）
+	static inline const float kDamageDisplayTime = 0.2f; // 赤くなる時間（秒）
 
+	//撃破effect
+	ParticleEmitter* deatheEffect = nullptr; // パーティクルエミッター
+	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }}; // エフェクトの位置
 };

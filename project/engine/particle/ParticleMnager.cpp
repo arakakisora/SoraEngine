@@ -4,10 +4,8 @@
 #include "CameraManager.h"
 #include <MyMath.h>
 #include <numbers>
-#include <iterator>
-#ifdef _DEBUG
 #include <imgui.h>
-#endif // _DEBUG
+
 
 //シングルトンインスタンスの取得
 
@@ -78,9 +76,7 @@ void ParticleMnager::Update()
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 
 
-
-
-
+	
 
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
@@ -89,22 +85,23 @@ void ParticleMnager::Update()
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
 
-			//パーティクルの寿命が尽きたらグループから外す
+			
 
 			//寿命に達していたらグループから外す
 			if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
 				particleIterator = particleGroup.particles.erase(particleIterator);
 				continue;
 			}
-
-			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData);
+			float alpha1 =0.5;
+			float alpha=1.0f;
+			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha1);
 			
-			float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifetime);
+			
 			/*float alpha = 1.0f;*/
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 			//ワールド行列を計算
-			//Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * billboardMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
+			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
 			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
 
@@ -113,7 +110,7 @@ void ParticleMnager::Update()
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
 				particleGroup.instanceData[counter].World = worldMatrix;
 				particleGroup.instanceData[counter].color = particleIterator->color;
-				particleGroup.instanceData[counter].color.w = alpha;
+				//particleGroup.instanceData[counter].color.w = alpha1;
 				++counter;
 			}
 
@@ -212,6 +209,10 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	case VerticesType::Cylinder:
 		vertices = MakeCylinderVertices();
 		break;
+
+	case VerticesType::Triangle:
+		vertices = MakeTriangleVertices();
+		break;
 	}
 	particleGroups.at(name).vertexCount = static_cast<uint32_t>(vertices.size());
 	// GPUリソース作成
@@ -263,17 +264,19 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint32_t count)
+void ParticleMnager::Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime)
 {
+
 
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
 	//パーティクルグループのパーティクルリストにパーティクルを追加
+	particleGroups.at(name).particles.clear();
 	for (uint32_t i = 0; i < count; ++i) {
 
 
 		
-		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, position));
+		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, transform,lifetime));
 
 	}
 
@@ -283,6 +286,9 @@ void ParticleMnager::Emit(const std::string& name, const Vector3 position, uint3
 	//particleGroups.at(name).instanceResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * particleGroups.at(name).instanceCount);
 	////インスタンス用のリソースをマップ
 	//particleGroups.at(name).instanceResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups.at(name).instanceData));
+	//
+
+
 }
 
 void ParticleMnager::SetModel(const std::string& filepath)
@@ -331,19 +337,33 @@ std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, f
 
 }
 
-Particle ParticleMnager::PlayerMakeNewParticle(std::mt19937& randomEngine, const Vector3& translate, bool isRight)
+std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
 {
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(cylinderDivide);
 
-	//std::uniform_real_distribution<float>distribution(-0.1f, 0.1f);
-	std::uniform_real_distribution<float>distrotate(-5.0f, 5.0f);
-	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
+	std::vector<VertexData> cylinderVertices;
 
+	for (uint32_t index = 0; index < cylinderDivide; ++index) {
 
-	std::uniform_real_distribution<float>distribution(-0.1f, 0.1f);
-	Vector3 randomTranslate{ 0.0f,distribution(randomEngine) ,0.0f };
+		float sin = std::sinf(index * radianPerDivide);
+		float cos = std::cosf(index * radianPerDivide);
+		float sinnext = std::sinf((index + 1) * radianPerDivide);
+		float cosnext = std::cosf((index + 1) * radianPerDivide);
+		float u = float(index) / float(cylinderDivide);
+		float unext = float(index + 1) / float(cylinderDivide);
 
-	float distVelocityX = isRight ? 1.5f : -1.5f;
-	float distVelocityY = 2.0f;
+		VertexData v[] = {
+			{{-sin * topRadius,height,cos * topRadius,1.0f},				{u,0.0f} ,		{-sin,0.0f,cos}},
+			{{-sinnext * topRadius,height,cosnext * topRadius,1.0f},		{unext,0.0f},	{-sinnext,0.0f,cosnext}},
+			{{-sin * bottomRadius,0.0f,cos * bottomRadius,1.0f},			{u,1.0f} ,		{-sin,0.0f,cos}},
+			{{-sinnext * topRadius,height,cosnext * topRadius,1.0f},		{unext,0.0f},	{-sinnext,0.0f,cosnext}},
+			{{-sinnext * bottomRadius,0.0f,cosnext * bottomRadius,1.0f},	{unext,1.0f},	{-sinnext,0.0f,cosnext}},
+			{{-sin * bottomRadius,0.0f,cos * bottomRadius,1.0f},{u,1.0f} ,	{-sin,0.0f,cos}}
+
+		};
+		for (const auto& vert : v) {
+			cylinderVertices.push_back(vert);
+		}
 
 	}
 	return cylinderVertices;
@@ -362,6 +382,20 @@ std::vector<VertexData> ParticleMnager::MakeQuadVertices()
 			{{ 0.5f,  0.5f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
 	};
 	return vertices;
+}
+
+std::vector<VertexData> ParticleMnager::MakeTriangleVertices()
+{
+	//三角形の頂点情報を作成
+	std::vector<VertexData> vertices;
+	vertices = {
+			{{-0.5f, -0.5f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.5f, -0.5f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+			{{ 0.0f,  0.5f, 0.0f, 1.0f}, {0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+	};
+	return vertices;
+
+
 }
 
 void ParticleMnager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)
