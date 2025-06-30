@@ -36,7 +36,7 @@ void EnemyManager::Update() {
 	//敵の更新
 	for (Enemy* enemy : enemies_) {
 
-		if (!nullptr) {
+		if (enemy != nullptr) {
 			enemy->Update(map_);
 		}
 	}

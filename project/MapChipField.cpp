@@ -9,6 +9,8 @@ std::map<std::string, MapChipType> mapChipTable = {
     {"0", MapChipType::kBlank},
     {"1", MapChipType::kBlock},
 	{"2", MapChipType::kEnemy},
+	{"3", MapChipType::kGoal},
+
 };
 
 }
@@ -104,4 +106,18 @@ std::vector<Vector3> MapChipField::GetEnemyPositions()
 			}
 		}
 	return enemyPositions;
+}
+
+Vector3 MapChipField::GetGoalPosition()
+{
+	Vector3 pos;
+	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+			if (GetMapChipTypeByIndex(x, y) == MapChipType::kGoal) {
+				pos= GetMapChipPostionByIndex(x, y);
+			}
+		}
+	}
+
+	return pos;
 }

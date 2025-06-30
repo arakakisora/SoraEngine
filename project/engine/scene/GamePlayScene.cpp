@@ -26,7 +26,7 @@ void GamePlayScene::Initialize()
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdate/testmap.csv");
+	mapChipField_->LoadMapChipCsv("Resources/Mapdate/blocks.csv");
 	GenerateObject3D();
 
 	//playerの生成	
@@ -36,7 +36,6 @@ void GamePlayScene::Initialize()
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
 
-
 	//エネミー
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->Initialize(mapChipField_);
@@ -45,18 +44,10 @@ void GamePlayScene::Initialize()
 	collitionManager_ = std::make_unique<CollisionManager>();
 	collitionManager_->Initialize(player,enemyManager_.get());
 
-
 	//3Dオブジェクトの初期化
 	object3D2nd = new Object3D();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
-
-	// ゴールの生成
-	GoolObject3D = new Object3D();
-	GoolObject3D->Initialize(Object3DCommon::GetInstance());
-	GoolObject3D->SetModel("gool.obj");
-	Vector3 goolPosition = mapChipField_->GetMapChipPostionByIndex(82, 15);
-	GoolObject3D->SetTranslate(goolPosition);
 
 	//SkyDome
 	skydome_ = new Object3D();
@@ -71,14 +62,10 @@ void GamePlayScene::Initialize()
 
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 
-	
-	////パーティクルの初期化
-	//ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
-	//ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
+	//ゴールの初期化
+	goal = new Goal();
+	goal->Initialize(mapChipField_);
 
-
-	//particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
-	//particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
 
 
 }
@@ -101,8 +88,8 @@ void GamePlayScene::Finalize()
 	delete camera;
 	delete mapChipField_;
 	delete player;
-	delete GoolObject3D;
 	delete skydome_;
+	delete goal;
 	
 	
 }
@@ -110,6 +97,7 @@ void GamePlayScene::Finalize()
 void GamePlayScene::Update()
 {
 	skydome_->Update();
+	goal->Update(player->GetGoal());
 	
 
 	//カメラの更新
@@ -120,8 +108,6 @@ void GamePlayScene::Update()
 	//エネミーの更新
 	enemyManager_->Update();
 	collitionManager_->Update();
-	//Goolの更新
-	GoolObject3D->Update();
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
 
@@ -156,6 +142,7 @@ void GamePlayScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 	//SkyDome
 	skydome_->Draw();
+	goal->Draw();
 
 	//Playerの描画
 	if (player->GetIsDead_() == false) {
@@ -177,8 +164,7 @@ void GamePlayScene::Draw()
 		}
 	}
 
-	//Goolの描画
-	GoolObject3D->Draw();
+
 
 	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
@@ -231,24 +217,7 @@ void GamePlayScene::GenerateObject3D()
 
 }
 
-//void GamePlayScene::CheckAllCollisions()
-//{
-//
-//
-//
-//	// ゴールとの当たり判定
-//	AABB goolAABB;
-//	goolAABB.min = GoolObject3D->GetTransform().translate - Vector3(0.5f, 0.5f, 0.5f);
-//	goolAABB.max = GoolObject3D->GetTransform().translate + Vector3(0.5f, 0.5f, 0.5f);
-//
-//	//if (MyMath::IsCollision(aabb1, goolAABB)) {
-//	//	// ゴールシーンに遷移
-//	//	SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
-//
-//	//}
-//
-//
-//}
+
 
 void GamePlayScene::Imguidebug()
 {

@@ -10,6 +10,7 @@
 		kBlank, // 空白
 		kBlock, // ブロック
 		kEnemy, // 敵
+		kGoal,  // ゴール
 
 	};
 	struct MapChipData {
@@ -44,6 +45,9 @@ public:
 	IndexSet GetMapChipIndexSetByPosition(const Vector3& posotopn);
 	Rect GetRectByIndex(uint32_t xindex, uint32_t yIndex);
 	std::vector<Vector3> GetEnemyPositions();
+	//ゴール
+	Vector3 GetGoalPosition();
+
 
 private:
 	// 1ブロックのサイズ

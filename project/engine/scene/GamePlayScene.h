@@ -19,6 +19,8 @@
 #include <memory>
 #include "CollisionManager.h"
 
+#include "Goal.h"
+
 class GamePlayScene :public BaseScene
 {
 public:
@@ -52,19 +54,15 @@ public:
 
 public:
 
-	Object3D* GoolObject3D = nullptr;
+	
 
 	//カメラのポインタ
 	Camera* camera = nullptr;
 	//スプライトの初期化
-
-
 	Object3D* object3D2nd = nullptr;
-
-
 	//player
 	Player* player = nullptr;
-	
+	Goal* goal = nullptr; // ゴールオブジェクト
 
 	//wvpData用のTransform変数を作る
 	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };

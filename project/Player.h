@@ -98,6 +98,9 @@ public:
 	void SetPrayerMoveRight(bool right) { playermoveright = right; }
 	void SetPrayerMoveLeft(bool left) { playermoveleft = left; }
 
+	// ゴールに到達したかどうか
+	bool GetGoal() const { return goal_; }
+
 	//get足らんスレート
 	//const Vector3& GetTranslate() const { return object3D_->GetTransform().translate; }
 private:
@@ -147,4 +150,6 @@ private:
 	// プレイヤー移動フラグ
 	bool playermoveright = false;
 	bool playermoveleft = false;
+
+	bool goal_ = false; // ゴールに到達したかどうか
 };

@@ -335,11 +335,17 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			if (mapChipType == MapChipType::kBlock) {
 				hit = true;
 			}
+			else if (mapChipType == MapChipType::kGoal) {
+				goal_ = true;
+			}
 			// 右点の判定
 			indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(0, -kCollisionsmallnumber, 0));
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 			if (mapChipType == MapChipType::kBlock) {
 				hit = true;
+			}
+			else if (mapChipType == MapChipType::kGoal) {
+				goal_ = true;
 			}
 
 			if (!hit) {
@@ -395,6 +401,9 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
+	}
 	// 右点の判定
 	//   左点の判定
 
@@ -402,6 +411,9 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
+	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
 	}
 	// hit
 	if (hit) {
@@ -448,6 +460,9 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
+	}
 
 	// hit
 	if (hit) {
@@ -488,6 +503,9 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
+	}
 
 	// 右下点の判定
 
@@ -495,6 +513,9 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
+	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
 	}
 	// hit
 	if (hit) {
@@ -536,6 +557,9 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
 	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
+	}
 
 	// hidari下点の判定
 
@@ -543,6 +567,9 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
+	}
+	else if (mapChipType == MapChipType::kGoal) {
+		goal_ = true;
 	}
 	// hit
 	if (hit) {
