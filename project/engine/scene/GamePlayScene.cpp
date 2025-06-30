@@ -26,7 +26,7 @@ void GamePlayScene::Initialize()
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdate/blocks.csv");
+	mapChipField_->LoadMapChipCsv("Resources/Mapdate/testmap.csv");//testmap blocks.csv
 	GenerateObject3D();
 
 	//playerの生成	
