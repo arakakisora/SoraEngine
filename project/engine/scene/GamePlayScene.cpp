@@ -384,10 +384,10 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	object3D->Draw();
 	terrain->Draw();
 
-
+	Object3DCommon::GetInstance()->SkinNingCommonDraw();
+	object3D->DrawSkinning();
 
 
 	ParticleMnager::GetInstance()->Draw();
@@ -415,6 +415,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("sphere.gltf");
 	ModelManager::GetInstans()->LoadModel("player.gltf");
 	ModelManager::GetInstans()->LoadModel("walk.gltf");
+	ModelManager::GetInstans()->LoadModel("testanimation.gltf");
 	
 
 }
