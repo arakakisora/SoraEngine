@@ -20,6 +20,7 @@
 #include "CollisionManager.h"
 
 #include "Goal.h"
+#include "LoadJson.h"
 
 class GamePlayScene :public BaseScene
 {
@@ -81,6 +82,6 @@ public:
 	//当たり判定
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
-
+	LoadJson loadJson_;
 };
 

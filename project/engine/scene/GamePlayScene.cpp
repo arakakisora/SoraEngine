@@ -12,6 +12,7 @@
 
 void GamePlayScene::Initialize()
 {
+	loadJson_.LoadJsonFile();
 
 	//カメラの生成	
 	camera = new Camera();
