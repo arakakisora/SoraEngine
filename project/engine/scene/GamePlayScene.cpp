@@ -415,6 +415,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("sphere.gltf");
 	ModelManager::GetInstans()->LoadModel("player.gltf");
 	ModelManager::GetInstans()->LoadModel("walk.gltf");
+	ModelManager::GetInstans()->LoadModel("testanimation.gltf");
 	
 
 }
