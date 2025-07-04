@@ -12,6 +12,7 @@
 #include "ParticleMnager.h"
 #include "Line.h"
 
+#include "SkyBox.h"
 
 
 class GamePlayScene :public BaseScene
@@ -62,6 +63,8 @@ private:
 	Vector3 startline;
 	Vector3 endline;
 
+	std::unique_ptr<SkyBox> skyBox;
+	
 
 
 

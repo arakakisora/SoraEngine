@@ -20,6 +20,8 @@
     <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\GaussianFilter.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Skybox.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Skybox.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\camera\CameraManager.cpp" />
@@ -62,6 +64,8 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
+    <ClCompile Include="SkyBox.cpp" />
+    <ClCompile Include="SkyBoxCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -110,6 +114,8 @@
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
+    <ClInclude Include="SkyBox.h" />
+    <ClInclude Include="SkyBoxCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Line.hlsli" />
@@ -124,5 +130,6 @@
     <None Include="Resources\Shaders\Vignette.hlsli" />
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
     <None Include="Resources\Shaders\GaussianFilter.hlsli" />
+    <None Include="Resources\Shaders\Skybox.hlsli" />
   </ItemGroup>
 </Project>

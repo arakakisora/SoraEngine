@@ -81,6 +81,11 @@ void GamePlayScene::Initialize()
 	startline = { 0,0,0 };
 	endline = { 1,0,0 };
 
+
+	//teutoskyBox
+	skyBox = std::make_unique<SkyBox>();
+	skyBox->Initialize("Resources/test.dds");
+
 }
 
 void GamePlayScene::Finalize()
@@ -93,6 +98,8 @@ void GamePlayScene::Finalize()
 
 void GamePlayScene::Update()
 {
+	skyBox->Update();
+
 	float  velocity = 0.05f;
 
 	// 左スティックのX, Y値を取得
@@ -373,6 +380,7 @@ void GamePlayScene::Update()
 		}
 
 	}
+	skyBox->imguidebug();
 
 
 #endif // _DEBUG
@@ -392,6 +400,9 @@ void GamePlayScene::Draw()
 
 	ParticleMnager::GetInstance()->Draw();
 	LineCommon::GetInstance()->Draw();
+
+	//スカイボックスの描画
+	skyBox->Draw();
 
 #pragma endregion
 

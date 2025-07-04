@@ -24,7 +24,7 @@ void TextureManager::Finalize()
 
 }
 
-void TextureManager::Initialize(DirectXCommon* dxCommon,SrvManager*srvmanager)
+void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanager)
 {
 	dxCommon_ = dxCommon;
 	this->srvmanager = srvmanager;
@@ -44,7 +44,7 @@ uint32_t TextureManager::kSRVIndexTop = 1;
 void TextureManager::LoadTexture(const std::string& filePath)
 {
 
-	
+
 
 	if (textureDatas.contains(filePath)) {
 
@@ -58,12 +58,25 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	//テクスチャファイルを読んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	HRESULT hr;
+	if (filePathW.ends_with(L".dds")) {
+		//DDSファイルの場合はLoadFromDDSFileを使用
+		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
+	} else {
+		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	}
 	assert(SUCCEEDED(hr));
+
 
 	//ミニマップの作成
 	DirectX::ScratchImage mipImages{};
-	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	if(DirectX::IsCompressed(image.GetMetadata().format)) {
+		mipImages = std::move(image);
+	} else {
+		//非圧縮テクスチャの場合はGenerateMipMapsを使用
+		hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 4, mipImages);
+	}
+	
 	assert(SUCCEEDED(hr));
 
 	////テクスチャデータを追加
@@ -85,19 +98,19 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	textureData.srvHandleCPU = srvmanager->GetCPUDescriptorHandle(textureData.srvIndex);
 	textureData.srvHandleGPU = srvmanager->GetGPUDescriptorHandle(textureData.srvIndex);
 
-	srvmanager->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), textureData.metadata.format, (UINT)textureData.metadata.mipLevels);
+	srvmanager->CreateSRVforTexture2D(textureData.srvIndex, textureData.resource.Get(), textureData.metadata.format, (UINT)textureData.metadata.mipLevels, textureDatas[filePath].metadata);
 
 }
 
 uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filepath)
 {
-	
+
 	if (textureDatas.contains(filepath)) {
 
 		return textureDatas[filepath].srvIndex;
 
-		
-		
+
+
 	}
 
 	assert(0);
