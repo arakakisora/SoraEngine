@@ -29,6 +29,7 @@
 #include "Linecommon.h"
 #include "Line.h"
 
+#include "SkyBoxCommon.h"
 
 class Framework
 {
@@ -64,6 +65,6 @@ public:
 	std::unique_ptr<AbstractSceneFactory> sceneFactory;
 	std::unique_ptr<OfscreenRenderManager> ofscreenRenderManager;
 
-
+	
 };
 

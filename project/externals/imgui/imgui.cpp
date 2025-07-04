@@ -1,3 +1,4 @@
+
 // dear imgui, v1.91.5
 // (main code and documentation)
 
@@ -5596,6 +5597,7 @@ void ImGui::EndFrame()
 
     CallContextHooks(&g, ImGuiContextHookType_EndFramePost);
 }
+
 
 // Prepare the data for rendering so you can call GetDrawData()
 // (As with anything within the ImGui:: namspace this doesn't touch your GPU or graphics API at all:
