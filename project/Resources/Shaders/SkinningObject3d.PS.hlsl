@@ -56,7 +56,7 @@ ConstantBuffer<Camera> gCamera : register(b2); //カメラの情報
 ConstantBuffer<pointLight> gPointLight : register(b3); //ポイントライトの情報
 ConstantBuffer<SpotLght> gSpotLight : register(b4); //スポットライトの情報
 
-TextureCube<float4> gEnvironmentTexture : register(t1); //環境マップのテクスチャ
+TextureCube<float4> gEnvironmentTexture : register(t2); //環境マップのテクスチャ
 
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);

@@ -22,6 +22,7 @@
     <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Skybox.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Skybox.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SkinningObject3d.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="engine\camera\CameraManager.cpp" />

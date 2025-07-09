@@ -84,7 +84,7 @@ void Model::Draw()
 	//マテリアルのCBufferの場所を設定
 	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//SRVのDescriptorTableの先頭を設定
-	modelCommon_->GetSRVManager()->SetGraficsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath));
+	modelCommon_->GetSRVManager()->SetGraficsRootDescriptorTable(1, TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath));
 	// インデックス描画（インスタンス数 = 1）
 	modelCommon_->GetDxCommon()->GetCommandList()->DrawIndexedInstanced(
 		static_cast<UINT>(modelData.indices.size()), // Index数
