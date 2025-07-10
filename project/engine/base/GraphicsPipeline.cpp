@@ -120,7 +120,7 @@ void GraphicsPipeline::RootSignatureCreate()
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER rootParameters[7] = {};
+	D3D12_ROOT_PARAMETER rootParameters[8] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -134,7 +134,7 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 2;
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 	//ディレクショナルライト
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -151,6 +151,12 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[6].Descriptor.ShaderRegister = 4;
+	//環境マップテクスチャt2
+	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRange[1];//環境マップテクスチャの範囲
+	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
+
 
 
 
@@ -534,7 +540,7 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
 
-	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParameters[9] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -548,7 +554,7 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = 2;
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 	//ディレクショナルライト
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -570,6 +576,12 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
 	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRangeVertex[0];
+	//環境マップテクスチャt2
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[8].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[8].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+
 	
 
 

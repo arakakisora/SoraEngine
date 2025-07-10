@@ -194,6 +194,8 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(5, pointLightResource->GetGPUVirtualAddress());
 	//スポットライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
+	//環境マップテクスチャ
+	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//skeletonのデータをセット
 	//object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//3Dモデルが割り当てられているなら描画する
@@ -219,6 +221,8 @@ void Object3D::DrawSkinning()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
 	//skeletonのデータをセット
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
+	//環境マップテクスチャ
+	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {
 		model_->Draw();

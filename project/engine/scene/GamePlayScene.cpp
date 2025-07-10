@@ -43,7 +43,9 @@ void GamePlayScene::Initialize()
 	std::chrono::duration<double, std::milli> duration = end - start;
 	Logger::Log("Total loading time: " + std::to_string(duration.count()) + " milliseconds");
 
-
+	//teutoskyBox
+	skyBox = std::make_unique<SkyBox>();
+	skyBox->Initialize("Resources/test.dds");
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
@@ -51,6 +53,7 @@ void GamePlayScene::Initialize()
 	object3D->SetLighting(true);
 	object3D->SetDirectionalLightIntensity(1.0f);
 	object3D->SetRotate({0.0f,-3.0f,0.0f});
+	object3D->setskyboxfilepath(skyBox->GetTextureFilePath());
 
 	terrain = std::make_unique<Object3D>();
 	terrain->Initialize(Object3DCommon::GetInstance());
@@ -58,6 +61,7 @@ void GamePlayScene::Initialize()
 	terrain->SetTransform({ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,-1.0f,0.0f} });
 	terrain->SetLighting(true);
 	terrain->SetDirectionalLightIntensity(1.0f);
+	terrain->setskyboxfilepath(skyBox->GetTextureFilePath());
 
 	//スプライトの生成
 	sprite = std::make_unique<Sprite>();
@@ -82,9 +86,7 @@ void GamePlayScene::Initialize()
 	endline = { 1,0,0 };
 
 
-	//teutoskyBox
-	skyBox = std::make_unique<SkyBox>();
-	skyBox->Initialize("Resources/test.dds");
+
 
 }
 

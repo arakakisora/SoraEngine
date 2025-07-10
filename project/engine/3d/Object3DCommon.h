@@ -2,6 +2,7 @@
 #include "DirectXCommon.h"
 #include "Camera.h"
 #include "GraphicsPipeline.h"
+#include "SrvManager.h"
 
 class Object3DCommon
 {
@@ -14,7 +15,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize(DirectXCommon* dxCommon,SrvManager*srvmanager);
 
 	//終了
 	void Finalize();
@@ -25,6 +26,8 @@ public:
 
 	//DXCommon
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
+	//SrvManager
+	SrvManager* GetSrvManager()const { return srvManager_; }
 
 	
 
@@ -41,6 +44,8 @@ private:
 	static Object3DCommon* instance_;
 
 	DirectXCommon* dxCommon_;
+	SrvManager* srvManager_ = nullptr;
+
 
 	Camera* defaultCamera = nullptr;
 

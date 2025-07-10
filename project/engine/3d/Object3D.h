@@ -37,6 +37,8 @@ public:
 	void SetModel(Model* model) { model_ = model; }
 	void SetModel(const std::string& filepath);
 
+	void setskyboxfilepath(const std::string& filepath) { skyboxFilePath_=filepath; }
+
 	//transrat
 	void SetTransform(const EulerTransform& transform) { this->transform = transform; }
 	EulerTransform GetTransform() { return transform; }
@@ -172,7 +174,7 @@ private:
 	Line line_; // Lineクラスのポインタ
 	std::vector<Matrix4x4> skeletonPose_;
 
-
+	std::string skyboxFilePath_ ; // スカイボックスのファイルパス
 
 };
 

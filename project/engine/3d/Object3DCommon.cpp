@@ -11,10 +11,11 @@ Object3DCommon* Object3DCommon::GetInstance()
 
 }
 
-void Object3DCommon::Initialize(DirectXCommon* dxCommon)
+void Object3DCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanage)
 {
 
 	dxCommon_ = dxCommon;
+	srvManager_ = srvmanage;
 	//パイプラインの生成
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);

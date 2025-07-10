@@ -18,6 +18,7 @@ public:
 	
 	void imguidebug();
 	
+	std::string GetTextureFilePath() const { return textureFilePath_; }
 
 private:
 	SrvManager* srvManager_ = nullptr;
