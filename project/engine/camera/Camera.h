@@ -17,6 +17,7 @@ public:
 	void SetFollowTarget(Object3D *obj, const Vector3& offset);
 	void SetFollowMode(bool enable);
 
+	void SetTransform(const EulerTransform& transform) { this->transform = transform; }
 	void SetRotate(const Vector3& rotate) { this->transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { this->transform.translate = translate; }
 	void SetFovY(const float& fovy) { this->fovY = fovy; }

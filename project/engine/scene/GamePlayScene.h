@@ -59,6 +59,7 @@ public:
 
 	//カメラのポインタ
 	Camera* camera = nullptr;
+	Camera* debuckCamera = nullptr; //デバッグカメラ
 	//スプライトの初期化
 	Object3D* object3D2nd = nullptr;
 	//player
@@ -82,6 +83,6 @@ public:
 	//当たり判定
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
-	LoadJson loadJson_;
+	LoadJson* loadJson_=nullptr;
 };
 

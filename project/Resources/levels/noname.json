@@ -2,63 +2,6 @@
     "name": "SCENE",
     "objects": [
         {
-            "type": "MESH",
-            "name": "Cube",
-            "transform": {
-                "translation": [
-                    -0.9177562594413757,
-                    0.0,
-                    1.4943383932113647
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.634985327720642,
-                    2.259394407272339,
-                    1.0
-                ]
-            },
-            "collider": {
-                "type": "BOX",
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "size": [
-                    2.0,
-                    2.0,
-                    2.0
-                ]
-            },
-            "children": [
-                {
-                    "type": "MESH",
-                    "name": "球",
-                    "transform": {
-                        "translation": [
-                            1.7943962812423706,
-                            0.0,
-                            -0.3398306369781494
-                        ],
-                        "rotation": [
-                            0.0,
-                            -0.0,
-                            0.0
-                        ],
-                        "scale": [
-                            0.611626386642456,
-                            0.4425964951515198,
-                            1.0
-                        ]
-                    }
-                }
-            ]
-        },
-        {
             "type": "LIGHT",
             "name": "Light",
             "transform": {
@@ -99,6 +42,28 @@
                     1.0
                 ]
             }
+        },
+        {
+            "type": "MESH",
+            "name": "shpaer",
+            "transform": {
+                "translation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    90.00000762939453,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "file_name": "sphere.obj"
         }
     ]
 }

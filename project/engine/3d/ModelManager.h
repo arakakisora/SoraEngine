@@ -30,6 +30,12 @@ public:
 /// </summary>
 	Model* FindModel(const std::string& filePath);
 
+	//Getter
+	//modelsの取得
+	std::map<std::string, std::unique_ptr<Model>>& GetModels() { return models; }
+
+
+
 private:
 	//モデルデータ
 	std::map<std::string, std::unique_ptr < Model>> models;
