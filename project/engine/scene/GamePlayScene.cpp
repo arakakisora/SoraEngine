@@ -68,7 +68,7 @@ void GamePlayScene::Initialize()
 	//フォローカメラ設定  
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), {0, 0, -15});  
 
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);  
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);  
 
 	//ゴールの初期化  
 	goal = new Goal();  

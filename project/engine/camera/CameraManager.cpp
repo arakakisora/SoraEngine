@@ -35,13 +35,12 @@ void CameraManager::Initialize()
 
 }
 
-void CameraManager::AddCamera(const std::string& name, const Camera* camera)
+void CameraManager::AddCamera(const std::string& name,Camera* camera)
 {
 
    // assert(cameras.find(name) == cameras.end() && "Camera with the same name already exists!");
 
-    cameras[name] = *camera; // Dereference the pointer to store the Camera object
-    // 最初のカメラをアクティブに設定
+    cameras[name] = std::unique_ptr<Camera>(camera); // 所有権を移す（生ポインタ渡しOK）
     if (activeCameraName.empty()) {
         activeCameraName = name;
     }
@@ -62,7 +61,7 @@ void CameraManager::RemoveCamera(const std::string& name) {
 Camera* CameraManager::GetCamera(const std::string& name) {
     auto it = cameras.find(name);
     if (it != cameras.end()) {
-        return &(it->second);
+        return (it->second.get());
     }
     return nullptr;
 }
@@ -74,7 +73,7 @@ Camera* CameraManager::GetActiveCamera() {
         SetActiveCamera("default"); // デフォルトカメラをアクティブカメラとして設定
         return defaultCamera;
     }
-    return &cameras[activeCameraName];
+    return cameras[activeCameraName].get();
 }
 
 void CameraManager::SetActiveCamera(const std::string& name) {

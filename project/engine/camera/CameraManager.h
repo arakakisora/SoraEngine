@@ -23,7 +23,7 @@ public:
 
 
 	//カメラの追加
-	void AddCamera(const std::string& name, const Camera* camera);
+	void AddCamera(const std::string& name,  Camera* camera);
 
 	//カメラの削除
 	void RemoveCamera(const std::string& name);
@@ -42,7 +42,7 @@ public:
 
 private:
 	//カメラデータ
-	std::unordered_map<std::string, Camera> cameras;
+	std::unordered_map<std::string, std::unique_ptr<Camera>> cameras;
 
 	// アクティブカメラ名
 	std::string activeCameraName;
