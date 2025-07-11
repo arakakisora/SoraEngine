@@ -48,6 +48,8 @@ public:
 	/// </summary>
 	void Draw();
 
+	
+
 	//ノードを読む
 	Node ReadNode(aiNode* node);
 	Skeleton CreateSkeleton(const Node& rootNode);

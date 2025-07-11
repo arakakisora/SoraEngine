@@ -23,6 +23,8 @@ ParticleMnager* ParticleMnager::GetInstance()
 
 void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
+
+
 	//引数で受け取ったポインタをメンバ変数に代入
 	dxCommon_ = dxcommn;
 	srvManager_ = srvmaneger;

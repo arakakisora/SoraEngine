@@ -63,7 +63,6 @@ class ParticleMnager
 		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 		//VBV
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-
 		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 		//マテリアルにデータを書き込む	
 		Material* materialData = nullptr;
@@ -129,15 +128,12 @@ private:
 	SrvManager* srvManager_ = nullptr;
 
 
-
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
 	Model* model_ = nullptr;
 
 	std::mt19937 randomEngine;
 
-
-	
 	
 	//SRT
 	EulerTransform transform;

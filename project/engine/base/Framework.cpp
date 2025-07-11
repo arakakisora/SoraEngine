@@ -45,6 +45,7 @@ void Framework::Initialize()
 	//linen初期化
 	LineCommon::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 	
+	SkyBoxCommon::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 
 #ifdef _DEBUG
 	//imguiMnagerの初期化
@@ -74,6 +75,8 @@ void Framework::Finalize()
 	//パーティクルの解放
 	ParticleMnager::GetInstance()->Finalize();
 
+	SkyBoxCommon::GetInstance()->Finalize();
+
 	// ユニークポインタは自動的に解放されるため、deleteは不要
 #ifdef _DEBUG
 	imGuiMnager.reset();
@@ -84,6 +87,7 @@ void Framework::Finalize()
 	Object3DCommon::GetInstance()->Finalize();
 	SceneManager::GetInstance()->Finalize();
 	LineCommon::GetInstance()->Finalize();
+
 
 }
 

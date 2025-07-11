@@ -21,6 +21,7 @@ public:
 
 	//共通描画設定
 	void CommonDraw();
+	void SkinNingCommonDraw();
 
 	//DXCommon
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
@@ -44,5 +45,6 @@ private:
 	Camera* defaultCamera = nullptr;
 
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
+	std::unique_ptr<GraphicsPipeline> skinningGraphicsPipeline_;
 };
 

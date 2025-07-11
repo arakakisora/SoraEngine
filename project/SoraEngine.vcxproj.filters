@@ -22,6 +22,8 @@
     <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\GaussianFilter.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Skybox.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Skybox.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enemy.cpp" />
@@ -73,6 +75,8 @@
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="ChargeBehabiaor.cpp" />
     <ClCompile Include="Goal.cpp" />
+    <ClCompile Include="engine\skybox\SkyBox.cpp" />
+    <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
@@ -130,6 +134,8 @@
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="ChargeBehabiaor.h" />
     <ClInclude Include="Goal.h" />
+    <ClInclude Include="engine\skybox\SkyBox.h" />
+    <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
@@ -147,5 +153,6 @@
     <None Include="Resources\Mapdate\testmap.csv" />
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
     <None Include="Resources\Shaders\GaussianFilter.hlsli" />
+    <None Include="Resources\Shaders\Skybox.hlsli" />
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	//SRVの作成
 	srvIndex = srvManager_->Allocate();
 	srvManager_->CreateSRVforTexture2D(srvIndex, renderTargetTextureResource.Get(),
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1);
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, renderTargetMetadata_);
 
 
 	//graphicsPipelineの初期化

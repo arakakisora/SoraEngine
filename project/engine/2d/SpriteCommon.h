@@ -4,14 +4,14 @@
 class SpriteCommon
 {
 public:
-	
+
 	static SpriteCommon* GetInstance();
 
-	
+
 
 	/// <summary>
-		/// 初期化
-		/// </summary>
+	/// 初期化
+	/// </summary>
 	void Initialize(DirectXCommon* dxCommon);
 
 	void Finalize();
@@ -26,7 +26,7 @@ private:
 
 	static SpriteCommon* instance_;
 	DirectXCommon* dxCommon_;//dxcommnをポインタ参照
-	
+
 	//グラフィックスパイプライン
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
