@@ -64,8 +64,8 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
-    <ClCompile Include="SkyBox.cpp" />
-    <ClCompile Include="SkyBoxCommon.cpp" />
+    <ClCompile Include="engine\skybox\SkyBox.cpp" />
+    <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -114,8 +114,8 @@
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
-    <ClInclude Include="SkyBox.h" />
-    <ClInclude Include="SkyBoxCommon.h" />
+    <ClInclude Include="engine\skybox\SkyBox.h" />
+    <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\Line.hlsli" />
