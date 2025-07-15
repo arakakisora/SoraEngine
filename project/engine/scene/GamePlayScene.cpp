@@ -60,7 +60,7 @@ void GamePlayScene::Initialize()
 	//フォローカメラ設定
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), {0, 0, -15});
 
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 
 	//ゴールの初期化
 	goal = new Goal();
@@ -96,12 +96,13 @@ void GamePlayScene::Finalize()
 
 void GamePlayScene::Update()
 {
+	//カメラの更新
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
 	skydome_->Update();
 	goal->Update(player->GetGoal());
 	
 
-	//カメラの更新
-	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 	//プレイヤーの更新
 	player->Update();
