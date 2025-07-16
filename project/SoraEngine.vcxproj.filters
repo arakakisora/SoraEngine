@@ -5,6 +5,8 @@
     <FxCompile Include="Resources\Shaders\BoxFilter.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Fullscreen.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Fullscreen.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\GaussianFilter.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Line.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Line.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\GrayScale.VS.hlsl" />
@@ -13,18 +15,20 @@
     <FxCompile Include="Resources\Shaders\Object3d.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Particle.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Particle.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Skybox.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Skybox.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Vignette.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Vignette.VS.hlsl" />
-    <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl" />
-    <FxCompile Include="Resources\Shaders\BoxFilter.VS.hlsl" />
-    <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
-    <FxCompile Include="Resources\Shaders\GaussianFilter.PS.hlsl" />
-    <FxCompile Include="Resources\Shaders\GaussianFilter.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChargeBehabiaor.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\scene\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\scene\BaseScene.cpp" />
@@ -43,6 +47,10 @@
     <ClCompile Include="engine\base\GraphicsPipeline.cpp" />
     <ClCompile Include="engine\Line\Line.cpp" />
     <ClCompile Include="engine\Line\LineCommon.cpp" />
+    <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
+    <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
+    <ClCompile Include="FadeManager.cpp" />
+    <ClCompile Include="Goal.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -78,7 +86,11 @@
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ChargeBehabiaor.h" />
+    <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
@@ -116,6 +128,8 @@
     <ClInclude Include="engine\scene\TitleScene.h" />
     <ClInclude Include="engine\scene\GameClearScene.h" />
     <ClInclude Include="engine\scene\GameOverScene.h" />
+    <ClInclude Include="FadeManager.h" />
+    <ClInclude Include="Goal.h" />
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
@@ -125,9 +139,6 @@
     <ClInclude Include="engine\base\OfscreenRenderManager.h" />
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
-    <ClInclude Include="FadeManager.h" />
-    <ClInclude Include="CollisionManager.h" />
-    <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
@@ -138,7 +149,9 @@
     <ClInclude Include="engine\particle\plyerpaticleBehavior.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Mapdate\testmap.csv" />
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
+    <None Include="Resources\Shaders\GaussianFilter.hlsli" />
     <None Include="Resources\Mapdate\blocks.csv" />
     <None Include="Resources\Shaders\Line.hlsli" />
     <None Include="Resources\models\animationfly.bin" />
@@ -148,10 +161,8 @@
     <None Include="Resources\Shaders\GrayScale.hlsli" />
     <None Include="Resources\Shaders\Object3d.hlsli" />
     <None Include="Resources\Shaders\Particle.hlsli" />
+    <None Include="Resources\Shaders\Skybox.hlsli" />
     <None Include="Resources\Shaders\Sprite.hlsli" />
     <None Include="Resources\Shaders\Vignette.hlsli" />
-    <None Include="Resources\Mapdate\testmap.csv" />
-    <None Include="Resources\Shaders\BoxFilter.hlsli" />
-    <None Include="Resources\Shaders\GaussianFilter.hlsli" />
   </ItemGroup>
 </Project>

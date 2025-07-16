@@ -21,7 +21,7 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index);
 
 	//SRV生成（テクスチャ用）
-	void CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT foemat, UINT MipLevels);
+	void CreateSRVforTexture2D(uint32_t srvIndex, ID3D12Resource* pResource, DXGI_FORMAT foemat, UINT MipLevels, DirectX::TexMetadata metadata);
 	//SRV生成(structured Buffer用)
 	void CreateSRVforStructuredBuffer(uint32_t srvIndex, ID3D12Resource* pResourece, UINT numElements,
 		UINT structureByteStride);

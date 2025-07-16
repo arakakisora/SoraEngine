@@ -10,21 +10,25 @@ public:
 
 
 	void Create();//3dオブジェクト用
-	void CreateParticle();//パーティクル用
-	void CreateSprite();//スプライト用
-	void CreateCopyImage();//コピーイメージ用
-	void CreateLine();//ライン用
-	void CreateSkinning();//スキニング用
-
-
-
-	//ルートシグネチャの作成
 	void RootSignatureCreate();//3dオブジェクト用
+
+	void CreateParticle();//パーティクル用
 	void RootSignatureParticleCreate();//パーティクル用
+
+	void CreateSprite();//スプライト用
 	void RootSignatureSpriteCreate();//スプライト用
+
+	void CreateCopyImage();//コピーイメージ用
 	void RootSignatureCopyImageCreate();//コピーイメージ用
+
+	void CreateLine();//ライン用
 	void RootSignatureLineCreate();//ライン用
+
+	void CreateSkinning();//スキニング用
 	void RootSignatureSkinningCreate();//スキニング用
+
+	void CreateSkybox();//Skybox用
+	void RootSignatureSkyboxCreate();//Skybox用
 
 
 
@@ -48,14 +52,22 @@ public:
 	ID3D12PipelineState* GetGraphicsPipelineStateLine()const { return graphicsPipelineStateLine.Get(); }
 
 	//スキニング用のPSO
-	ID3D12RootSignature* GetRootSignatureSkinning()const { return rootSignature.Get(); }
-	ID3D12PipelineState* GetGraphicsPipelineStateSkinning()const { return graphicsPipelineState.Get(); }
+	ID3D12RootSignature* GetRootSignatureSkinning()const { return rootSignatureSkinning.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateSkinning()const { return graphicsPipelineStateSkinning.Get(); }
+
+	//Skybox用のPSO
+	ID3D12RootSignature* GetRootSignatureSkybox()const { return rootSignatureSkybox.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateSkybox()const { return graphicsPipelineStateSkybox.Get(); }
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+
+	//スキニング用のルートシグネチャとパイプラインステートオブジェクト
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkinning = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkinning = nullptr;
 
 	//パーティクル用のルートシグネチャ
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureParticle = nullptr;
@@ -76,6 +88,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureLine = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateLine = nullptr;
 
+	//Skybox用
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkybox = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkybox = nullptr;
 
 };
 
