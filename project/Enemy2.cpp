@@ -1,11 +1,11 @@
-#include "Enemy.h"
+#include "Enemy2.h"
 #include "imgui.h"
 #include "PlayerBullet.h"
 #include "ParticleMnager.h"
 #include "ChargeBehabiaor.h"
 
 
-Enemy::~Enemy()
+Enemy2::~Enemy2()
 {
 	if (object3D_) {
 		delete object3D_;
@@ -13,7 +13,7 @@ Enemy::~Enemy()
 	}
 }
 
-void Enemy::Initialize(Object3D* obj, const Vector3& position) {
+void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 
 
 	// texthureHandle_ = textureHandle;
@@ -21,7 +21,7 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-	object3D_->SetScale({ 1.0f,1.0f,1.0f });
+	object3D_->SetScale({ 1.5f,1.5f,1.5f });
 	object3D_->SetLighting(false);
 	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
 	walkTimer_ = 0.0f;
@@ -36,7 +36,7 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 
 }
 
-void Enemy::Update(MapChipField* mapChipField) {
+void Enemy2::Update(MapChipField* mapChipField) {
 
 	walkTimer_ += 1.0f / 60.0f;
 
@@ -62,7 +62,8 @@ void Enemy::Update(MapChipField* mapChipField) {
 		if (velocity_.x > 0) {
 			//object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f, 0 });  // 右向き
 			rotateY = std::numbers::pi_v<float> / 2.0f;
-		} else {
+		}
+		else {
 			//object3D_->SetRotate({ 0, -std::numbers::pi_v<float> / 2.0f, 0 }); // 左向き
 			rotateY = -std::numbers::pi_v<float> / 2.0f;
 		}
@@ -76,7 +77,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 	}
 
 	object3D_->Update();
-	effectPosition_ .translate= object3D_->GetTransform().translate;
+	effectPosition_.translate = object3D_->GetTransform().translate;
 	deatheEffect->SetPosition(effectPosition_.translate);
 	//deatheEffect->Update();
 
@@ -94,12 +95,13 @@ void Enemy::Update(MapChipField* mapChipField) {
 
 }
 
-void Enemy::Draw() { object3D_->Draw();
+void Enemy2::Draw() {
+	object3D_->Draw();
 
 
 }
 
-Vector3 Enemy::GetWorldPosition() {
+Vector3 Enemy2::GetWorldPosition() {
 
 	Vector3 worldPos;
 
@@ -109,7 +111,7 @@ Vector3 Enemy::GetWorldPosition() {
 	return worldPos;
 }
 
-AABB Enemy::GetAABB() {
+AABB Enemy2::GetAABB() {
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;
 	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
@@ -120,7 +122,7 @@ AABB Enemy::GetAABB() {
 
 
 
-void Enemy::OnCollision(const PlayerBullet* bullet)
+void Enemy2::OnCollision(const PlayerBullet* bullet)
 {
 	if (bullet) {
 		HP -= bullet->GetPower(); // 弾の攻撃力に応じてHPを減らす
@@ -136,7 +138,7 @@ void Enemy::OnCollision(const PlayerBullet* bullet)
 
 }
 
-Vector3 Enemy::GetRayEndPosition()
+Vector3 Enemy2::GetRayEndPosition()
 {
 	// エネミーの現在位置
 	Vector3 currentPosition = GetWorldPosition();
@@ -160,7 +162,7 @@ Vector3 Enemy::GetRayEndPosition()
 }
 
 
-int Enemy::GetRayMapChipNumber(MapChipField* mapChipField)
+int Enemy2::GetRayMapChipNumber(MapChipField* mapChipField)
 {
 	// レイの終点座標を取得
 	Vector3 rayEndPosition = GetRayEndPosition();

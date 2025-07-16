@@ -11,9 +11,9 @@
 
 class Player;
 class PlayerBullet;
-class Enemy {
+class Enemy2 {
 public:
-	~Enemy();
+	~Enemy2();
 	/// <summary>
 	/// 初期化
 	/// </summary>
@@ -31,7 +31,7 @@ public:
 
 	Vector3 GetWorldPosition();
 	AABB GetAABB();
-	
+
 
 	Vector3 GetRayEndPosition();
 	int GetRayMapChipNumber(MapChipField* mapChipField);
@@ -51,7 +51,7 @@ private:
 
 	Object3D* object3D_ = nullptr;
 	// 敵の動き
-	static inline const float kWalkSpeed = 0.01f; // 歩行の速さ
+	static inline const float kWalkSpeed = 0.005f; // 歩行の速さ
 	Vector3 velocity_ = {};                      // 速度
 	//敵のアニメーション
 	static inline const float kWalkMotionAngleStart = 0.1f;//最初の角度
@@ -63,7 +63,7 @@ private:
 
 	//death
 	bool isDead_ = false;
-	int HP = 3;
+	int HP = 10;
 	float rotateY = 0.0f;
 	Vector4 defaultColor_ = { 1, 1, 1, 1 }; // 通常時の色
 	float damageTimer_ = 0.0f;
@@ -71,5 +71,5 @@ private:
 
 	//撃破effect
 	ParticleEmitter* deatheEffect = nullptr; // パーティクルエミッター
-	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }}; // エフェクトの位置
+	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f } }; // エフェクトの位置
 };

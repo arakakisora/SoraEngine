@@ -11,6 +11,7 @@
 		kBlock, // ブロック
 		kEnemy, // 敵
 		kGoal,  // ゴール
+		kEnemy2, // 2種類目の敵
 
 	};
 	struct MapChipData {
@@ -45,6 +46,8 @@ public:
 	IndexSet GetMapChipIndexSetByPosition(const Vector3& posotopn);
 	Rect GetRectByIndex(uint32_t xindex, uint32_t yIndex);
 	std::vector<Vector3> GetEnemyPositions();
+	std::vector<int> GetEnemyNumbers() { return Enemynumber; } //敵の番号を取得
+	
 	//ゴール
 	Vector3 GetGoalPosition();
 
@@ -57,5 +60,7 @@ private:
 	static inline const uint32_t kNumBlockVirtical = 25;
 	static inline const uint32_t kNumBlockHorizontal = 100;
 	MapChipData mapChipData_;
+
+	std::vector<int> Enemynumber;
 	
 };

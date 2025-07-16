@@ -271,7 +271,7 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
 	//パーティクルグループのパーティクルリストにパーティクルを追加
-	particleGroups.at(name).particles.clear();
+	
 	for (uint32_t i = 0; i < count; ++i) {
 
 

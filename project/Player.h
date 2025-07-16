@@ -11,6 +11,7 @@
 
 #include "Object3D.h"
 #include <PlayerBullet.h>
+#include <ParticleEmitter.h>
 
 enum class LRDirecion {
 	kright,
@@ -82,9 +83,10 @@ public:
 
 	Vector3 GetWorldPosition();
 	AABB GetAABB();
-	void OnCollision(const Enemy*enemy);
+	//void OnCollision(const Enemy*enemy);
 
 	bool GetIsDead_() const { return isDead_; }
+	void SetIsDead(bool isDead) { isDead_ = isDead; }
 
 	// 落下死の高さを設定
 	void SetDeathHeight(float height) { deathHeight_ = height; }
@@ -152,4 +154,9 @@ private:
 	bool playermoveleft = false;
 
 	bool goal_ = false; // ゴールに到達したかどうか
+
+	//プレイヤーパーティクル
+	ParticleEmitter* dashparticleEmitter_ = nullptr; // プレイヤーのパーティクルエミッター
+	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
+	
 };

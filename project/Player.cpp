@@ -7,6 +7,8 @@
 #include <imgui.h>
 
 #include "Object3DCommon.h"
+#include "ParticleMnager.h"
+#include "plyerpaticleBehavior.h"
 
 
 
@@ -26,6 +28,10 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 
+	////パーティクル
+	//ParticleMnager::GetInstance()->CreateParticleGroup("dash", "Resources/uvChecker_png.png", VerticesType::Quad, std::make_unique<ExhaustGasBehavior>());
+	//dashparticleEmitter_ = new ParticleEmitter(object3D_->GetTransform(), 1.5f, 0.0f, 1, "dash");
+	//
 }
 
 Player::~Player()
@@ -129,9 +135,12 @@ void Player::Draw() {
 
 void Player::PrayerMove() {
 
+		
 	if (onGround_) {
 		// 移動入力
 		// 左右移動操作
+		/*dashparticleEmitter_->SetPosition(object3D_->GetTransform().translate);
+		dashparticleEmitter_->Update();*/
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
 			// 左右加速
 			Vector3 accceleration = {};
@@ -150,6 +159,7 @@ void Player::PrayerMove() {
 				accceleration.x += kAccleration;
 				playermoveright = true;
 				playermoveleft = false;
+				
 			}
 			else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 
@@ -165,6 +175,7 @@ void Player::PrayerMove() {
 				accceleration.x -= kAccleration;
 				playermoveleft = true;
 				playermoveright = false;
+				
 			}
 			velocity_.x += accceleration.x;
 			velocity_.y += accceleration.y;
@@ -605,14 +616,6 @@ AABB Player::GetAABB() {
 	return aabb;
 }
 
-void Player::OnCollision(const Enemy* enemy) {
-
-	(void)enemy;
-
-
-	isDead_ = true;
-
-}
 
 void Player::Attack()
 {

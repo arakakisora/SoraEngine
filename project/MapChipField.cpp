@@ -10,6 +10,7 @@ std::map<std::string, MapChipType> mapChipTable = {
     {"1", MapChipType::kBlock},
 	{"2", MapChipType::kEnemy},
 	{"3", MapChipType::kGoal},
+	{"4",MapChipType::kEnemy2}
 
 };
 
@@ -102,7 +103,13 @@ std::vector<Vector3> MapChipField::GetEnemyPositions()
 			for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
 				if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy) {
 					enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
+					Enemynumber.push_back(1); //敵の番号を追加
 				}
+				else if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy2) {
+					enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
+					Enemynumber.push_back(2); //敵の番号を追加
+				}
+				
 			}
 		}
 	return enemyPositions;
