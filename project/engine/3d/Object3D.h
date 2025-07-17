@@ -9,6 +9,12 @@
 #include "Camera.h"
 #include "Line.h"
 
+struct EnvironmentReflectionSetting {
+	float reflectionStrength = 1.0f; // 反射の強さ（0 = 無効、1 = 最大）
+	float roughness = 0.0f;          // 反射のぼかし（0 = 鏡面、1 = ぼやけ）
+	float padding[2] = {};           // HLSLと同様に16バイト境界を守るためのパディング
+};
+
 class Object3DCommon;
 class Object3D
 {
@@ -37,7 +43,12 @@ public:
 	void SetModel(Model* model) { model_ = model; }
 	void SetModel(const std::string& filepath);
 
+	//環境マップ
 	void setskyboxfilepath(const std::string& filepath) { skyboxFilePath_=filepath; }
+	void SetreflectionStrengthforkankyouMap(float reflectionStrength) { environmentReflectionSettingData->reflectionStrength = reflectionStrength; }
+	void SettoughnessforkankyouMap(float roughness) { environmentReflectionSettingData->roughness = roughness; }
+	float GetreflectionStrengthforkankyouMap() { return environmentReflectionSettingData->reflectionStrength; }
+	float GetoughnessforkankyouMap() { return environmentReflectionSettingData->roughness; }
 
 	//transrat
 	void SetTransform(const EulerTransform& transform) { this->transform = transform; }
@@ -108,9 +119,6 @@ public:
 	//スポットライトのオンオフ
 	void SetSpotLightEnable(bool enable) { spotLightData->enable = enable; }
 
-
-
-
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
 
@@ -121,7 +129,7 @@ public:
 	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 	
-
+	
 
 
 private:
@@ -168,13 +176,13 @@ private:
 	float animationTime = 0.0f;
 	bool enableAnimation_= true;
 
-
-private:
 	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトは白
 	Line line_; // Lineクラスのポインタ
 	std::vector<Matrix4x4> skeletonPose_;
 
 	std::string skyboxFilePath_ ; // スカイボックスのファイルパス
+	EnvironmentReflectionSetting* environmentReflectionSettingData; // 環境反射設定
+	Microsoft::WRL::ComPtr<ID3D12Resource> environmentReflectionSettingResource;
 
 };
 

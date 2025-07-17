@@ -120,7 +120,7 @@ void GraphicsPipeline::RootSignatureCreate()
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParameters[9] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -156,9 +156,11 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRange[1];//環境マップテクスチャの範囲
 	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
-
-
-
+	//環境マップの反射率ぼかし
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[8].Descriptor.ShaderRegister = 5;//レジスタ番号5とバインド
+		
 
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
@@ -540,7 +542,7 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
 
-	D3D12_ROOT_PARAMETER rootParameters[9] = {};
+	D3D12_ROOT_PARAMETER rootParameters[10] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -581,7 +583,10 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[8].DescriptorTable.NumDescriptorRanges = 1;
 	rootParameters[8].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
-
+	//環境マップの反射率ぼかし
+	rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[9].Descriptor.ShaderRegister = 5;//レジスタ番号5とバインド
 	
 
 

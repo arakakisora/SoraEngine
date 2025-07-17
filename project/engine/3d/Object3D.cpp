@@ -60,6 +60,12 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	spotLightData->cosFalloffstrt = 1.0f;
 	spotLightData->enable = 1;
 
+	//環境マップの反射とかぼかしリソース
+	environmentReflectionSettingResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(EnvironmentReflectionSetting));
+	environmentReflectionSettingResource->Map(0, nullptr, reinterpret_cast<void**>(&environmentReflectionSettingData));
+	environmentReflectionSettingData->reflectionStrength = 0.5f; //反射率
+	environmentReflectionSettingData->roughness = 0.5f; //ぼかし率
+
 
 
 	//カメラとモデルのTrandform変数
@@ -196,8 +202,8 @@ void Object3D::Draw()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
 	//環境マップテクスチャ
 	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
-	//skeletonのデータをセット
-	//object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
+	//環境マップの反射率ぼかし
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(8, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {
 		model_->Draw();
@@ -223,6 +229,8 @@ void Object3D::DrawSkinning()
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//環境マップテクスチャ
 	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	//環境マップの反射率ぼかし
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(9, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {
 		model_->Draw();

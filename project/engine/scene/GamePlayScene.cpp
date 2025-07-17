@@ -220,6 +220,20 @@ void GamePlayScene::Update()
 			object3D->SetLighting(light);
 
 		}
+		float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+		float toughness = object3D->GetoughnessforkankyouMap();
+		//環境マップ反射
+		// UI表示 & 値変更
+		if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+			object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+			terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
+			
+		}
+		if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+			object3D->SettoughnessforkankyouMap(toughness);
+			terrain->SettoughnessforkankyouMap(toughness);
+		}
+		
 	}
 
 	//sprite

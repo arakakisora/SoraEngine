@@ -7,6 +7,7 @@ struct Material
     float4x4 uvTransform;
     float shininess;
 };
+ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
 
 struct DirectionalLight
 {
@@ -17,6 +18,7 @@ struct DirectionalLight
     int enable;
     
 };
+ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1); //ディレクショナルライトの情報
 
 struct pointLight
 {
@@ -30,6 +32,7 @@ struct pointLight
        
     
 };
+ConstantBuffer<pointLight> gPointLight : register(b3); //ポイントライトの情報
 
 struct SpotLght
 {
@@ -44,20 +47,23 @@ struct SpotLght
     int enable;
     
 };
+ConstantBuffer<SpotLght> gSpotLight : register(b4); //スポットライトの情報
 
 struct Camera
 {
     float3 worldPosition;
 };
-
-ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
-ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1); //ディレクショナルライトの情報
 ConstantBuffer<Camera> gCamera : register(b2); //カメラの情報
-ConstantBuffer<pointLight> gPointLight : register(b3); //ポイントライトの情報
-ConstantBuffer<SpotLght> gSpotLight : register(b4); //スポットライトの情報
+
+struct EnvironmentReflectionSetting
+{
+    float reflectionStrength; // 反射の強さ（0〜1）
+    float roughness; // 粗さ → SampleLevel用
+    float2 padding; // アライメント調整
+};
+ConstantBuffer<EnvironmentReflectionSetting> gEnvReflection : register(b5);
 
 TextureCube<float4> gEnvironmentTexture : register(t1); //環境マップのテクスチャ
-
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
@@ -150,7 +156,8 @@ PixelShaderOutput main(VertexShaderOutput input)
         // 環境マップのサンプリング
         float3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
         float3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
-        float4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector); //環境マップの色を取得
+        float lod = saturate(gEnvReflection.roughness) * 6.0f;
+        float4 environmentColor = gEnvironmentTexture.SampleLevel(gSampler, reflectedVector, lod); //環境マップの色を取得
        
         
         float3 lighting = float3(0, 0, 0);
@@ -170,12 +177,13 @@ PixelShaderOutput main(VertexShaderOutput input)
             lighting += pointLightdiffuse + pointLightspecular;
         }
         
+        
 
         output.color.rgb = lighting;
         output.color.a = gMaterial.color.a * textureColor.a;
 
+        output.color.rgb += environmentColor.rgb*gEnvReflection.reflectionStrength; //環境マップの色を加算
         
-        output.color.rgb += environmentColor.rgb; //環境マップの色を加算
         
         
     }
