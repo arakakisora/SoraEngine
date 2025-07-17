@@ -107,16 +107,20 @@ void GraphicsPipeline::RootSignatureCreate()
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 
-
-	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
+	//通常テクスチャt0
+	D3D12_DESCRIPTOR_RANGE descriptorRange[2] = {};
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
+	//環境マップテクスチャt1
+	descriptorRange[1].BaseShaderRegister = 1;
+	descriptorRange[1].NumDescriptors = 1;
+	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER rootParameters[7] = {};
+	D3D12_ROOT_PARAMETER rootParameters[9] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -130,7 +134,7 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 	//ディレクショナルライト
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -147,8 +151,16 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[6].Descriptor.ShaderRegister = 4;
-
-
+	//環境マップテクスチャt2
+	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRange[1];//環境マップテクスチャの範囲
+	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
+	//環境マップの反射率ぼかし
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[8].Descriptor.ShaderRegister = 5;//レジスタ番号5とバインド
+		
 
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
@@ -513,15 +525,24 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-	// descriptorRange[1] → VertexShader用のSRV（MatrixPalette）
-	descriptorRange[1].BaseShaderRegister = 1; // ← t0
+	//環境マップテクスチャt2
+	descriptorRange[1].BaseShaderRegister = 2;
 	descriptorRange[1].NumDescriptors = 1;
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeVertex[1] = {};
+	// descriptorRange[1] → VertexShader用のSRV（MatrixPalette）
+	descriptorRangeVertex[0].BaseShaderRegister = 1; // ← t0
+	descriptorRangeVertex[0].NumDescriptors = 1;
+	descriptorRangeVertex[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRangeVertex[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+
+
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
 
-	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParameters[10] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -556,7 +577,16 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
-	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRangeVertex[0];
+	//環境マップテクスチャt2
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[8].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[8].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+	//環境マップの反射率ぼかし
+	rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[9].Descriptor.ShaderRegister = 5;//レジスタ番号5とバインド
 	
 
 
@@ -666,7 +696,7 @@ void GraphicsPipeline::CreateSkinning()
 		L"vs_6_0");
 	assert(vertexshaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl",
+	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/SkinningObject3d.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 

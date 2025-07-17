@@ -34,6 +34,8 @@ struct Well
 };
 StructuredBuffer<Well> gMatrixPalette : register(t1);
 
+
+
 Skinned Skinning(VertexShaderInput input)
 {
     Skinned skinned;

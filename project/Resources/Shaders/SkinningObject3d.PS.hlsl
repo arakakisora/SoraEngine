@@ -7,7 +7,6 @@ struct Material
     float4x4 uvTransform;
     float shininess;
 };
-ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
 
 struct DirectionalLight
 {
@@ -18,7 +17,6 @@ struct DirectionalLight
     int enable;
     
 };
-ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1); //ディレクショナルライトの情報
 
 struct pointLight
 {
@@ -32,7 +30,6 @@ struct pointLight
        
     
 };
-ConstantBuffer<pointLight> gPointLight : register(b3); //ポイントライトの情報
 
 struct SpotLght
 {
@@ -47,13 +44,11 @@ struct SpotLght
     int enable;
     
 };
-ConstantBuffer<SpotLght> gSpotLight : register(b4); //スポットライトの情報
 
 struct Camera
 {
     float3 worldPosition;
 };
-ConstantBuffer<Camera> gCamera : register(b2); //カメラの情報
 
 struct EnvironmentReflectionSetting
 {
@@ -63,7 +58,14 @@ struct EnvironmentReflectionSetting
 };
 ConstantBuffer<EnvironmentReflectionSetting> gEnvReflection : register(b5);
 
-TextureCube<float4> gEnvironmentTexture : register(t1); //環境マップのテクスチャ
+ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
+ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1); //ディレクショナルライトの情報
+ConstantBuffer<Camera> gCamera : register(b2); //カメラの情報
+ConstantBuffer<pointLight> gPointLight : register(b3); //ポイントライトの情報
+ConstantBuffer<SpotLght> gSpotLight : register(b4); //スポットライトの情報
+
+TextureCube<float4> gEnvironmentTexture : register(t2); //環境マップのテクスチャ
+
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
@@ -177,13 +179,12 @@ PixelShaderOutput main(VertexShaderOutput input)
             lighting += pointLightdiffuse + pointLightspecular;
         }
         
-        
 
         output.color.rgb = lighting;
         output.color.a = gMaterial.color.a * textureColor.a;
 
-        output.color.rgb += environmentColor.rgb*gEnvReflection.reflectionStrength; //環境マップの色を加算
         
+        output.color.rgb += environmentColor.rgb*gEnvReflection.reflectionStrength; //環境マップの色を加算
         
         
     }
