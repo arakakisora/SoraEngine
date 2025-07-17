@@ -90,7 +90,7 @@ void GamePlayScene::Finalize()
 
 	//delete object3D;  
 	delete object3D2nd;  
-	delete camera;  
+	//delete camera;  
 	delete mapChipField_;  
 	delete player;  
 	delete skydome_;  
@@ -103,13 +103,14 @@ void GamePlayScene::Finalize()
 
 void GamePlayScene::Update()  
 {  
+	//カメラの更新  
+	CameraManager::GetInstance()->GetActiveCamera()->Update();  
+
 	loadJson_->Update();  
 
 	skydome_->Update();  
 	goal->Update(player->GetGoal());  
 
-	//カメラの更新  
-	CameraManager::GetInstance()->GetActiveCamera()->Update();  
 
 	//プレイヤーの更新  
 	player->Update();  

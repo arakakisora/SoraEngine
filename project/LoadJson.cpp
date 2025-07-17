@@ -96,6 +96,8 @@ void LoadJson::Draw()
 
 void LoadJson::ParseObjectRecursive(const nlohmann::json& object)
 {
+	
+
 	assert(object.contains("type"));
 	std::string type = object["type"].get<std::string>();
 

@@ -45,7 +45,7 @@
         },
         {
             "type": "MESH",
-            "name": "shpaer",
+            "name": "立方体.004",
             "transform": {
                 "translation": [
                     0.0,
@@ -63,7 +63,8 @@
                     1.0
                 ]
             },
-            "file_name": "sphere.obj"
+            "is_disabled": false,
+            "file_name": "player.obj"
         }
     ]
 }
