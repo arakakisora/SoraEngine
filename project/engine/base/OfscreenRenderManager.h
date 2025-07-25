@@ -33,9 +33,11 @@ private:
 	SrvManager* srvManager_ = nullptr;
 	//レンダーテクスチャ
 	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetTextureResource;//レンダーテクスチャ
+	Microsoft::WRL::ComPtr<ID3D12Resource> renderTargetDethsTextureResource;//レンダーテクスチャ
 	D3D12_CPU_DESCRIPTOR_HANDLE renderTargetTextureHandle;//レンダーテクスチャのハンドル
 	const Vector4 clearColor = { 0.1f,0.25f,0.5f,1.0f };//とりあえず赤
-	uint32_t srvIndex = 0;
+	uint32_t srvIndex[2]{};
+
 
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 

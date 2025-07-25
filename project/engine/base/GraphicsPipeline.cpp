@@ -916,7 +916,7 @@ void GraphicsPipeline::RootSignatureCopyImageCreate()
 	srvrange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameter（テクスチャSRVのみ）
-	D3D12_ROOT_PARAMETER rootParams[2]{};
+	D3D12_ROOT_PARAMETER rootParams[3]{};
 	rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParams[0].DescriptorTable.NumDescriptorRanges = 1;
 	rootParams[0].DescriptorTable.pDescriptorRanges = &srvrange;
@@ -927,7 +927,6 @@ void GraphicsPipeline::RootSignatureCopyImageCreate()
 	rootParams[1].Descriptor.ShaderRegister = 0; // b0
 	rootParams[1].Descriptor.RegisterSpace = 0;
 	rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
 
 	desc.pParameters = rootParams;//ルートパラメーター配列へのポインタ
 	desc.NumParameters = _countof(rootParams);

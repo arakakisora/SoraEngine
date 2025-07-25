@@ -18,12 +18,34 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 
 	dxCommon_->GetDevice()->CreateRenderTargetView(renderTargetTextureResource.Get(),
 		&dxCommon_->GetRTVDesc(), renderTargetTextureHandle);
-
-
 	//SRVの作成
-	srvIndex = srvManager_->Allocate();
-	srvManager_->CreateSRVforTexture2D(srvIndex, renderTargetTextureResource.Get(),
+	srvIndex[0] = srvManager_->Allocate();
+	srvManager_->CreateSRVforTexture2D(srvIndex[0], renderTargetTextureResource.Get(),
 		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1);
+
+
+
+
+	renderTargetDethsTextureResource = CreateRenderTargetTextureResource(
+		WinApp::kClientWindth,
+		WinApp::kClientHeight,
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
+		clearColor
+	);
+
+	//deth用のsrv
+	srvIndex[1] = srvManager_->Allocate();
+	D3D12_SHADER_RESOURCE_VIEW_DESC depthTextureSrvDesc{};
+	// DXGI_FORMAT_D24_UNORM_S8_UINTのDepthを読むときはDXGI_FORMAT_R24_UNORM_X8_TYPELESS
+	depthTextureSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	depthTextureSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	depthTextureSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	depthTextureSrvDesc.Texture2D.MipLevels = 1;
+	dxCommon_->GetDevice()->CreateShaderResourceView(
+		renderTargetDethsTextureResource.Get(),
+		&depthTextureSrvDesc,
+		srvManager_->GetCPUDescriptorHandle(srvIndex[1])
+	);
 
 
 	//graphicsPipelineの初期化
@@ -39,6 +61,8 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	materialData = nullptr;
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	materialData->projextionInverse = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix().Inverse();
+
+	
 }
 
 void OfscreenRenderManager::Begin()
@@ -100,12 +124,13 @@ void OfscreenRenderManager::Draw()
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureCopyImage());
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	//heapの設定
-	srvManager_->SetGraficsRootDescriptorTable(0, srvIndex);
-	//マテリアル
-	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	// RootParameter[0]: SRV (gTexture, gDepthTexture)
+	srvManager_->SetGraficsRootDescriptorTable(0, srvIndex[0]);
 
-	//描画	
+	// RootParameter[1]: CBV (gMaterial)
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, materialResource->GetGPUVirtualAddress());
+
+	// Draw: フルスクリーントライアングル
 	dxCommon_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
 
 

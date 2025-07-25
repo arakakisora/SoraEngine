@@ -23,6 +23,9 @@ public:
 	void RootSignatureLineCreate();//ライン用
 	void RootSignatureSkinningCreate();//スキニング用
 
+	//DethsOutline用のルートシグネチャの作成
+
+
 	//ゲッター
 	ID3D12RootSignature* GetRootSignature()const { return rootSignature.Get(); }
 	ID3D12PipelineState* GetGraphicsPipelineState()const { return graphicsPipelineState.Get(); }
@@ -70,6 +73,10 @@ private:
 	//ライン用
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureLine = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateLine = nullptr;
+
+	//DethsOutline用
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkinning = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkinning = nullptr;
 
 
 };

@@ -18,6 +18,10 @@ void Framework::Initialize()
 	//srvマネージャの初期化	
 	srvManager = std::make_unique<SrvManager>();
 	srvManager->Initialize(dxCommon.get());
+
+	//camera初期化
+	CameraManager::GetInstance()->Initialize();
+
 	//ofscreenRenderManagerの初期化
 	ofscreenRenderManager = std::make_unique<OfscreenRenderManager>();
 	ofscreenRenderManager->Initialize(dxCommon.get(), srvManager.get());
@@ -30,8 +34,7 @@ void Framework::Initialize()
 	Audio::GetInstance()->Initialize();
 	//パーティクル
 	ParticleMnager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
-	//camera初期化
-	CameraManager::GetInstance()->Initialize();
+	
 
 	//スプライト共通部分の初期化
 	SpriteCommon::GetInstance()->Initialize(dxCommon.get());
