@@ -6,93 +6,132 @@
 void GraphicsPipeline::Create()
 {
 
-	RootSignatureCreate();
+	//RootSignatureCreate();
 
-	//InputLayout
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
-	inputElementDescs[0].SemanticName = "POSITION";
-	inputElementDescs[0].SemanticIndex = 0;
-	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	////InputLayout
+	//D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+	//inputElementDescs[0].SemanticName = "POSITION";
+	//inputElementDescs[0].SemanticIndex = 0;
+	//inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	//inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
-	inputElementDescs[1].SemanticName = "TEXCOORD";
-	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	//inputElementDescs[1].SemanticName = "TEXCOORD";
+	//inputElementDescs[1].SemanticIndex = 0;
+	//inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+	//inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
-	inputElementDescs[2].SemanticName = "NORMAL";
-	inputElementDescs[2].SemanticIndex = 0;
-	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	//inputElementDescs[2].SemanticName = "NORMAL";
+	//inputElementDescs[2].SemanticIndex = 0;
+	//inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	//inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	//D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
+	//inputLayoutDesc.pInputElementDescs = inputElementDescs;
+	//inputLayoutDesc.NumElements = _countof(inputElementDescs);
+
+	////BlendStateの設定
+	//D3D12_BLEND_DESC blendDesc{};
+	////すべての色素要素を書き込む
+
+	////ノーマルブレンド
+	//blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	//blendDesc.RenderTarget[0].BlendEnable = true;
+	//blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	//blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	//blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	//blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	//blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+
+
+	////RasiterzerStateの設定
+	//D3D12_RASTERIZER_DESC rasterizerDesc{};
+	////裏面（時計回り）を表示しない
+	//rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	////三角形の中を塗りつぶす
+	//rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+	////shaderをコンパイルする
+	//IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",
+	//	L"vs_6_0");
+	//assert(vertexshaderBlob != nullptr);
+
+	//IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl",
+	//	L"ps_6_0");
+	//assert(pixelShaderBlob != nullptr);
+
+	////DepthStencilStateの設定
+	//D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	////Deothの機能を有効化する
+	//depthStencilDesc.DepthEnable = true;
+	////書き込みします
+	//depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	////比較関数はLessEqual
+	//depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+
+	////PSOを生成する
+	//D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
+	//graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();//RootSignature
+	//graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;//InputLayout
+	//graphicsPipelineStateDesc.VS = { vertexshaderBlob->GetBufferPointer(),
+	//vertexshaderBlob->GetBufferSize() };//VertexShader
+	//graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
+	//pixelShaderBlob->GetBufferSize() };//pixelShader
+	//graphicsPipelineStateDesc.BlendState = blendDesc;//Blendstate
+	//graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;//RasterizerState
+	////書き込むRTVの情報
+	//graphicsPipelineStateDesc.NumRenderTargets = 1;
+	//graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	////利用するトポロジ（形状）のタイプ。三角刑
+	//graphicsPipelineStateDesc.PrimitiveTopologyType =
+	//	D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	////どのように画面に色を打ち込むかの設定（気にしなくてよい）
+	//graphicsPipelineStateDesc.SampleDesc.Count = 1;
+	//graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+	////DepthStencilの設定
+	//graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+	//graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	////実際に生成
+	//HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+	//	IID_PPV_ARGS(&graphicsPipelineState));
+	//assert(SUCCEEDED(hr));
+
+
+
+	// ① VS/PSをDXCでコンパイル
+	ComPtr<IDxcBlob> vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl", L"vs_6_0");
+	ComPtr<IDxcBlob> pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl", L"ps_6_0");
+
+	// ② PSからリソースを反映して RootSignature を自動生成
+	ShaderResourceMap shaderResourceMap = ReflectShaderResources(pixelShaderBlob.Get(), D3D12_SHADER_VISIBILITY_PIXEL);
+	ComPtr<ID3D12RootSignature> rootSignature = CreateRootSignatureFromResourceMap(dxCommon_->GetDevice(), shaderResourceMap);
+
+	// ③ VSからInputLayoutを自動生成
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = CreateInputLayoutFrom(vertexshaderBlob.Get());
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = _countof(inputElementDescs);
+	inputLayoutDesc.pInputElementDescs = inputLayout.data();
+	inputLayoutDesc.NumElements = static_cast<UINT>(inputLayout.size());
 
-	//BlendStateの設定
-	D3D12_BLEND_DESC blendDesc{};
-	//すべての色素要素を書き込む
+	// ④ BlendState / RasterizerState / DepthStencilState はそのまま使える（変更なし）
 
-	//ノーマルブレンド
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	blendDesc.RenderTarget[0].BlendEnable = true;
-	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-
-
-
-	//RasiterzerStateの設定
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
-	//裏面（時計回り）を表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
-	//三角形の中を塗りつぶす
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-
-	//shaderをコンパイルする
-	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",
-		L"vs_6_0");
-	assert(vertexshaderBlob != nullptr);
-
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl",
-		L"ps_6_0");
-	assert(pixelShaderBlob != nullptr);
-
-	//DepthStencilStateの設定
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	//Deothの機能を有効化する
-	depthStencilDesc.DepthEnable = true;
-	//書き込みします
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	//比較関数はLessEqual
-	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-
-
-	//PSOを生成する
+	// ⑤ PSO構築（RootSig + InputLayout 自動反映済）
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();//RootSignature
-	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;//InputLayout
-	graphicsPipelineStateDesc.VS = { vertexshaderBlob->GetBufferPointer(),
-	vertexshaderBlob->GetBufferSize() };//VertexShader
-	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
-	pixelShaderBlob->GetBufferSize() };//pixelShader
-	graphicsPipelineStateDesc.BlendState = blendDesc;//Blendstate
-	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;//RasterizerState
-	//書き込むRTVの情報
+	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
+	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
+	graphicsPipelineStateDesc.VS = { vertexshaderBlob->GetBufferPointer(), vertexshaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.BlendState = blendDesc;
+	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	//利用するトポロジ（形状）のタイプ。三角刑
-	graphicsPipelineStateDesc.PrimitiveTopologyType =
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	//どのように画面に色を打ち込むかの設定（気にしなくてよい）
+	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	//DepthStencilの設定
 	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	//実際に生成
+
+	// ⑥ 実際にPSO作成
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));

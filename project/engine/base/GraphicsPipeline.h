@@ -1,5 +1,6 @@
 #pragma once
 #include "DirectXCommon.h"
+#include "ShaderResource.h"
 class GraphicsPipeline
 {
 public:
@@ -91,6 +92,11 @@ private:
 	//Skybox用
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkybox = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkybox = nullptr;
+
+
+
+	
+
 
 };
 
