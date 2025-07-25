@@ -7,7 +7,7 @@
 #include <dxcapi.h>
 #include <wrl.h>
 #include <vector>
-using namespace Microsoft::WRL; // ComPtrなどを使用するため
+
 
 // リソースの一意な識別子
 struct ShaderResourceKey {
@@ -42,7 +42,7 @@ using ShaderResourceMap = std::map<ShaderResourceKey, BindResourceInfo>;
 struct PipelineConfig {
 	IDxcBlob* vsBlob = nullptr; // 頂点シェーダ
 	IDxcBlob* psBlob = nullptr; // ピクセルシェーダ
-	ComPtr<ID3D12RootSignature> rootSignature; // RootSig
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature; // RootSig
 	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout; // 頂点レイアウト
 	DXGI_FORMAT rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // RenderTarget Format
 	DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT; // Depth Format
@@ -55,9 +55,9 @@ struct PipelineConfig {
 //バインド情報を取得する関数（バッファ・テクスチャ・UAVなど）
 ShaderResourceMap ReflectShaderResources(IDxcBlob* shaderBlob, D3D12_SHADER_VISIBILITY visibility);
 
-ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* device, const ShaderResourceMap& resourceMap);
+Microsoft::WRL::ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* device, const ShaderResourceMap& resourceMap);
 
-ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(ID3D12Device* device, const PipelineConfig& config);
+Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(ID3D12Device* device, const PipelineConfig& config);
 
 
 std::vector<D3D12_INPUT_ELEMENT_DESC> CreateInputLayout(IDxcBlob* vsBlob);

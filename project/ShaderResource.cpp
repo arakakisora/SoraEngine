@@ -62,7 +62,7 @@ ShaderResourceMap ReflectShaderResources(IDxcBlob* shaderBlob, D3D12_SHADER_VISI
 
 }
 
-ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* device, const ShaderResourceMap& resourceMap)
+Microsoft::WRL::ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* device, const ShaderResourceMap& resourceMap)
 {
 	std::vector<D3D12_ROOT_PARAMETER> rootParameters;    // ルートパラメータのリスト
 	std::vector<D3D12_DESCRIPTOR_RANGE> descriptorRanges;// デスクリプタレンジのリスト srv/uav用
@@ -133,7 +133,6 @@ ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* devi
 
 	//必要に応じて静的サンプラを登録(gSamples:s0)
 	D3D12_STATIC_SAMPLER_DESC staticSampler{};
-	D3D12_STATIC_SAMPLER_DESC staticSampler{};
 	staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
 	staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -158,8 +157,8 @@ ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* devi
 	}
 
 	// バイナリ化（シリアライズ）＋作成
-	ComPtr<ID3DBlob> signatureBlob = nullptr;
-	ComPtr<ID3DBlob> errorBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr = D3D12SerializeRootSignature(
 		&desc,
 		D3D_ROOT_SIGNATURE_VERSION_1,
@@ -175,7 +174,7 @@ ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* devi
 		return nullptr;
 	}
 
-	ComPtr<ID3D12RootSignature> rootSig = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSig = nullptr;
 	hr = device->CreateRootSignature(
 		0,
 		signatureBlob->GetBufferPointer(),
@@ -188,7 +187,7 @@ ComPtr<ID3D12RootSignature>CreateRootSignatureFromResourceMap(ID3D12Device* devi
 
 }
 
-ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(ID3D12Device* device, const PipelineConfig& config)
+Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(ID3D12Device* device, const PipelineConfig& config)
 {
 	assert(config.vsBlob && config.psBlob);
 	assert(config.rootSignature);
@@ -228,7 +227,7 @@ ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(ID3D12Device* device, co
 	psoDesc.SampleDesc.Quality = 0;
 	psoDesc.SampleMask = UINT_MAX;
 
-	ComPtr<ID3D12PipelineState> pso;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
 	HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso));
 	assert(SUCCEEDED(hr));
 	return pso;

@@ -1,5 +1,6 @@
 #include "GraphicsPipeline.h"
 #include "Logger.h"
+#include "ShaderResource.h"
 
 
 
@@ -29,27 +30,27 @@ void GraphicsPipeline::Create()
 	//inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
 	////BlendStateの設定
-	//D3D12_BLEND_DESC blendDesc{};
-	////すべての色素要素を書き込む
+	D3D12_BLEND_DESC blendDesc{};
+	//すべての色素要素を書き込む
 
-	////ノーマルブレンド
-	//blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	//blendDesc.RenderTarget[0].BlendEnable = true;
-	//blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	//blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	//blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-	//blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-	//blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	//ノーマルブレンド
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 
 
 
-	////RasiterzerStateの設定
-	//D3D12_RASTERIZER_DESC rasterizerDesc{};
-	////裏面（時計回り）を表示しない
-	//rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
-	////三角形の中を塗りつぶす
-	//rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	//RasiterzerStateの設定
+	D3D12_RASTERIZER_DESC rasterizerDesc{};
+	//裏面（時計回り）を表示しない
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	//三角形の中を塗りつぶす
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	////shaderをコンパイルする
 	//IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",
@@ -60,14 +61,14 @@ void GraphicsPipeline::Create()
 	//	L"ps_6_0");
 	//assert(pixelShaderBlob != nullptr);
 
-	////DepthStencilStateの設定
-	//D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
-	////Deothの機能を有効化する
-	//depthStencilDesc.DepthEnable = true;
-	////書き込みします
-	//depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	////比較関数はLessEqual
-	//depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	//DepthStencilStateの設定
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	//Deothの機能を有効化する
+	depthStencilDesc.DepthEnable = true;
+	//書き込みします
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	//比較関数はLessEqual
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 
 	////PSOを生成する
@@ -100,15 +101,15 @@ void GraphicsPipeline::Create()
 
 
 	// ① VS/PSをDXCでコンパイル
-	ComPtr<IDxcBlob> vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl", L"vs_6_0");
-	ComPtr<IDxcBlob> pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl", L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.VS.hlsl", L"vs_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl", L"ps_6_0");
 
 	// ② PSからリソースを反映して RootSignature を自動生成
 	ShaderResourceMap shaderResourceMap = ReflectShaderResources(pixelShaderBlob.Get(), D3D12_SHADER_VISIBILITY_PIXEL);
-	ComPtr<ID3D12RootSignature> rootSignature = CreateRootSignatureFromResourceMap(dxCommon_->GetDevice(), shaderResourceMap);
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = CreateRootSignatureFromResourceMap(dxCommon_->GetDevice(), shaderResourceMap);
 
 	// ③ VSからInputLayoutを自動生成
-	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = CreateInputLayoutFrom(vertexshaderBlob.Get());
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = CreateInputLayout(vertexshaderBlob.Get());
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputLayout.data();
 	inputLayoutDesc.NumElements = static_cast<UINT>(inputLayout.size());
