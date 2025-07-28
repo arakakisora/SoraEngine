@@ -67,6 +67,9 @@
     <FxCompile Include="Resources\Shaders\SkinningObject3d.PS.hlsl">
       <Filter>Resources\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\LuminanceBasedOutline.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\LuminanceBasedOutline.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\RadialBlur.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -382,6 +385,7 @@
     <None Include="Resources\Shaders\Vignette.hlsli">
       <Filter>Resources\Shaders</Filter>
     </None>
+    <None Include="Resources\Shaders\LuminanceBasedOutline.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイルcpp">

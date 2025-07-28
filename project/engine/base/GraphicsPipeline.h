@@ -1,5 +1,11 @@
 #pragma once
 #include "DirectXCommon.h"
+#include <map>
+
+
+
+
+enum class PostEffectType;
 class GraphicsPipeline
 {
 public:
@@ -18,8 +24,10 @@ public:
 	void CreateSprite();//スプライト用
 	void RootSignatureSpriteCreate();//スプライト用
 
-	void CreateCopyImage();//コピーイメージ用
-	void RootSignatureCopyImageCreate();//コピーイメージ用
+	void CreateCopyImage(PostEffectType type, const std::wstring& psFilename); // ← 従来通りの単一バージョン
+	void CreateAllPostEffects(); // ← 新：複数ポストエフェクト用
+	void RootSignatureCopyImageCreate();
+	
 
 	void CreateLine();//ライン用
 	void RootSignatureLineCreate();//ライン用
@@ -45,7 +53,7 @@ public:
 
 	//コピーイメージ用のPSO
 	ID3D12RootSignature* GetRootSignatureCopyImage()const { return rootSignatureCopyImage.Get(); }
-	ID3D12PipelineState* GetGraphicsPipelineStateCopyImage()const { return graphicsPipelineStateCopyImage.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateCopyImage(PostEffectType type);
 
 	//ライン用のPSO
 	ID3D12RootSignature* GetRootSignatureLine()const { return rootSignatureLine.Get(); }
@@ -82,6 +90,7 @@ private:
 	//コピーイメージ用
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureCopyImage = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateCopyImage = nullptr;
+	std::map<PostEffectType, Microsoft::WRL::ComPtr<ID3D12PipelineState>> copyImagePipelines_; 
 
 
 	//ライン用
@@ -91,6 +100,8 @@ private:
 	//Skybox用
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkybox = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkybox = nullptr;
+
+
 
 };
 

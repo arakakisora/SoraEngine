@@ -1,5 +1,6 @@
 #include "GraphicsPipeline.h"
 #include "Logger.h"
+#include "OfscreenRenderManager.h"
 
 
 
@@ -876,13 +877,22 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 
 
 }
-void GraphicsPipeline::CreateCopyImage()
+void GraphicsPipeline::CreateCopyImage(PostEffectType type, const std::wstring& psFilename)
 {
 	
 
 	//InputLayout
 	// ルートシグネチャを作成（SRV1つとサンプラのみ）
 	RootSignatureCopyImageCreate();
+
+	// VS は共通のものを使う
+	IDxcBlob* vsBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
+	assert(vsBlob != nullptr);
+
+	// PS は type によって切り替え（ファイル名で渡す）
+	IDxcBlob* psBlob = dxCommon_->CompileShader(psFilename.c_str(), L"ps_6_0");
+	assert(psBlob != nullptr);
+
 
 	// 頂点データは使わないので設定しない（InputLayoutを無効に）
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
@@ -903,19 +913,13 @@ void GraphicsPipeline::CreateCopyImage()
 	depthStencilDesc.DepthEnable = false;
 	depthStencilDesc.StencilEnable = false;
 
-	// シェーダーを読み込み
-	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
-	assert(vertexshaderBlob != nullptr);
-
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.PS.hlsl", L"ps_6_0");
-	assert(pixelShaderBlob != nullptr);
 
 	// PSO 設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.pRootSignature = rootSignatureCopyImage.Get();
 	desc.InputLayout = inputLayoutDesc;
-	desc.VS = { vertexshaderBlob->GetBufferPointer(), vertexshaderBlob->GetBufferSize() };
-	desc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
+	desc.VS = { vsBlob->GetBufferPointer(), vsBlob->GetBufferSize() };
+	desc.PS = { psBlob->GetBufferPointer(), psBlob->GetBufferSize() };
 	desc.BlendState = blendDesc;
 	desc.RasterizerState = rasterizerDesc;
 	desc.DepthStencilState = depthStencilDesc;
@@ -925,11 +929,39 @@ void GraphicsPipeline::CreateCopyImage()
 	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	desc.SampleDesc.Count = 1;
 
-	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&graphicsPipelineStateCopyImage));
+	// PSO作成
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
 	assert(SUCCEEDED(hr));
 
+	// マップに登録
+	copyImagePipelines_[type] = pso;
 
 
+
+
+
+}
+
+void GraphicsPipeline::CreateAllPostEffects() {
+	// すべてのPostEffectとシェーダーをここに定義
+	struct EffectEntry {
+		PostEffectType type;
+		std::wstring psPath;
+	};
+
+	std::vector<EffectEntry> effects = {
+		{ PostEffectType::Fullscreen, L"Resources/Shaders/Fullscreen.PS.hlsl" },
+		{ PostEffectType::Grayscale, L"Resources/Shaders/GrayScale.PS.hlsl" },
+		{ PostEffectType::Vignette, L"Resources/Shaders/Vignette.PS.hlsl" },
+		{ PostEffectType::BoxFilter, L"Resources/Shaders/BoxFilter.PS.hlsl" },
+		{ PostEffectType::LuminanceOutline, L"Resources/Shaders/LuminanceBasedOutline.PS.hlsl" },
+		{ PostEffectType::RdialBlur, L"Resources/Shaders/RadialBlur.PS.hlsl" }
+	};
+
+	for (const auto& effect : effects) {
+		CreateCopyImage(effect.type, effect.psPath);
+	}
 }
 
 
@@ -975,6 +1007,9 @@ void GraphicsPipeline::RootSignatureCopyImageCreate()
 	assert(SUCCEEDED(hr));
 
 }
+
+
+
 
 void GraphicsPipeline::CreateSkybox()
 {
@@ -1140,6 +1175,14 @@ void GraphicsPipeline::RootSignatureSkyboxCreate()
 	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureSkybox));
 	assert(SUCCEEDED(hr));
 
+}
+
+ID3D12PipelineState* GraphicsPipeline::GetGraphicsPipelineStateCopyImage(PostEffectType type) {
+	auto it = copyImagePipelines_.find(type);
+	if (it != copyImagePipelines_.end()) {
+		return it->second.Get();
+	}
+	return nullptr; // または assert(false)
 }
 
 void GraphicsPipeline::Initialize(DirectXCommon* dxCommon)
