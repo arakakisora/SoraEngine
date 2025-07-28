@@ -55,7 +55,7 @@ void SkyBox::Initialize(std::string textureFilePath)
 	vertices[23].position = { 1.0f, -1.0f, -1.0f, 1.0f };
 
 
-	 indices = {
+	indices = {
 		// 右面
 		0, 1, 2, 2, 1, 3,
 		// 左面
@@ -106,7 +106,7 @@ void SkyBox::Initialize(std::string textureFilePath)
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->enableLighting = false;//有効にするか否か
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
-	
+
 	//transform
 	//トランスフォーム
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
@@ -167,7 +167,7 @@ void SkyBox::imguidebug()
 
 	// ImGuiのデバッグウィンドウを表示
 	if (ImGui::Begin("SkyBox Debug")) {
-		
+
 		//transformの調整
 		ImGui::Text("SkyBox Transform");
 		ImGui::DragFloat3("Scale", &transform.scale.x, 0.01f, 0.0f, 10.0f);

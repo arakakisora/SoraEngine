@@ -1,5 +1,6 @@
 #include "GraphicsPipeline.h"
 #include "Logger.h"
+#include "OfscreenRenderManager.h"
 
 
 
@@ -107,16 +108,20 @@ void GraphicsPipeline::RootSignatureCreate()
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 
-
-	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
+	//通常テクスチャt0
+	D3D12_DESCRIPTOR_RANGE descriptorRange[2] = {};
 	descriptorRange[0].BaseShaderRegister = 0;
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
+	//環境マップテクスチャt1
+	descriptorRange[1].BaseShaderRegister = 1;
+	descriptorRange[1].NumDescriptors = 1;
+	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER rootParameters[7] = {};
+	D3D12_ROOT_PARAMETER rootParameters[9] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -130,7 +135,7 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 	//ディレクショナルライト
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
@@ -147,8 +152,16 @@ void GraphicsPipeline::RootSignatureCreate()
 	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[6].Descriptor.ShaderRegister = 4;
-
-
+	//環境マップテクスチャt2
+	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRange[1];//環境マップテクスチャの範囲
+	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
+	//環境マップの反射率ぼかし
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[8].Descriptor.ShaderRegister = 5;//レジスタ番号5とバインド
+		
 
 	descriptionRootSignature.pParameters = rootParameters;//ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
@@ -513,15 +526,24 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	descriptorRange[0].NumDescriptors = 1;
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-	// descriptorRange[1] → VertexShader用のSRV（MatrixPalette）
-	descriptorRange[1].BaseShaderRegister = 1; // ← t0
+	//環境マップテクスチャt2
+	descriptorRange[1].BaseShaderRegister = 2;
 	descriptorRange[1].NumDescriptors = 1;
 	descriptorRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+	D3D12_DESCRIPTOR_RANGE descriptorRangeVertex[1] = {};
+	// descriptorRange[1] → VertexShader用のSRV（MatrixPalette）
+	descriptorRangeVertex[0].BaseShaderRegister = 1; // ← t0
+	descriptorRangeVertex[0].NumDescriptors = 1;
+	descriptorRangeVertex[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRangeVertex[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+
+
 	//RootParameter作成。複数設定できるので配列。今回結果１つだけなので長さ１配列
 
-	D3D12_ROOT_PARAMETER rootParameters[8] = {};
+	D3D12_ROOT_PARAMETER rootParameters[10] = {};
 
 	//texture
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを行う
@@ -556,7 +578,16 @@ void GraphicsPipeline::RootSignatureSkinningCreate()
 	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
-	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+	rootParameters[7].DescriptorTable.pDescriptorRanges = &descriptorRangeVertex[0];
+	//環境マップテクスチャt2
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[8].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[8].DescriptorTable.pDescriptorRanges = &descriptorRange[1];
+	//環境マップの反射率ぼかし
+	rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[9].Descriptor.ShaderRegister = 5;//レジスタ番号5とバインド
 	
 
 
@@ -666,7 +697,7 @@ void GraphicsPipeline::CreateSkinning()
 		L"vs_6_0");
 	assert(vertexshaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Object3D.PS.hlsl",
+	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/SkinningObject3d.PS.hlsl",
 		L"ps_6_0");
 	assert(pixelShaderBlob != nullptr);
 
@@ -846,13 +877,22 @@ void GraphicsPipeline::RootSignatureSpriteCreate()
 
 
 }
-void GraphicsPipeline::CreateCopyImage()
+void GraphicsPipeline::CreateCopyImage(PostEffectType type, const std::wstring& psFilename)
 {
 	
 
 	//InputLayout
 	// ルートシグネチャを作成（SRV1つとサンプラのみ）
 	RootSignatureCopyImageCreate();
+
+	// VS は共通のものを使う
+	IDxcBlob* vsBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
+	assert(vsBlob != nullptr);
+
+	// PS は type によって切り替え（ファイル名で渡す）
+	IDxcBlob* psBlob = dxCommon_->CompileShader(psFilename.c_str(), L"ps_6_0");
+	assert(psBlob != nullptr);
+
 
 	// 頂点データは使わないので設定しない（InputLayoutを無効に）
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
@@ -873,19 +913,13 @@ void GraphicsPipeline::CreateCopyImage()
 	depthStencilDesc.DepthEnable = false;
 	depthStencilDesc.StencilEnable = false;
 
-	// シェーダーを読み込み
-	IDxcBlob* vertexshaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
-	assert(vertexshaderBlob != nullptr);
-
-	IDxcBlob* pixelShaderBlob = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.PS.hlsl", L"ps_6_0");
-	assert(pixelShaderBlob != nullptr);
 
 	// PSO 設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.pRootSignature = rootSignatureCopyImage.Get();
 	desc.InputLayout = inputLayoutDesc;
-	desc.VS = { vertexshaderBlob->GetBufferPointer(), vertexshaderBlob->GetBufferSize() };
-	desc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };
+	desc.VS = { vsBlob->GetBufferPointer(), vsBlob->GetBufferSize() };
+	desc.PS = { psBlob->GetBufferPointer(), psBlob->GetBufferSize() };
 	desc.BlendState = blendDesc;
 	desc.RasterizerState = rasterizerDesc;
 	desc.DepthStencilState = depthStencilDesc;
@@ -895,11 +929,39 @@ void GraphicsPipeline::CreateCopyImage()
 	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	desc.SampleDesc.Count = 1;
 
-	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&graphicsPipelineStateCopyImage));
+	// PSO作成
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
 	assert(SUCCEEDED(hr));
 
+	// マップに登録
+	copyImagePipelines_[type] = pso;
 
 
+
+
+
+}
+
+void GraphicsPipeline::CreateAllPostEffects() {
+	// すべてのPostEffectとシェーダーをここに定義
+	struct EffectEntry {
+		PostEffectType type;
+		std::wstring psPath;
+	};
+
+	std::vector<EffectEntry> effects = {
+		{ PostEffectType::Fullscreen, L"Resources/Shaders/Fullscreen.PS.hlsl" },
+		{ PostEffectType::Grayscale, L"Resources/Shaders/GrayScale.PS.hlsl" },
+		{ PostEffectType::Vignette, L"Resources/Shaders/Vignette.PS.hlsl" },
+		{ PostEffectType::BoxFilter, L"Resources/Shaders/BoxFilter.PS.hlsl" },
+		{ PostEffectType::LuminanceOutline, L"Resources/Shaders/LuminanceBasedOutline.PS.hlsl" },
+		{ PostEffectType::RdialBlur, L"Resources/Shaders/RadialBlur.PS.hlsl" }
+	};
+
+	for (const auto& effect : effects) {
+		CreateCopyImage(effect.type, effect.psPath);
+	}
 }
 
 
@@ -945,6 +1007,9 @@ void GraphicsPipeline::RootSignatureCopyImageCreate()
 	assert(SUCCEEDED(hr));
 
 }
+
+
+
 
 void GraphicsPipeline::CreateSkybox()
 {
@@ -1110,6 +1175,14 @@ void GraphicsPipeline::RootSignatureSkyboxCreate()
 	hr = dxCommon_->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureSkybox));
 	assert(SUCCEEDED(hr));
 
+}
+
+ID3D12PipelineState* GraphicsPipeline::GetGraphicsPipelineStateCopyImage(PostEffectType type) {
+	auto it = copyImagePipelines_.find(type);
+	if (it != copyImagePipelines_.end()) {
+		return it->second.Get();
+	}
+	return nullptr; // または assert(false)
 }
 
 void GraphicsPipeline::Initialize(DirectXCommon* dxCommon)

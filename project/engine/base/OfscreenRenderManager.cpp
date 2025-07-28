@@ -1,4 +1,5 @@
 #include "OfscreenRenderManager.h"
+#include <imgui.h>
 
 void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
 {
@@ -24,11 +25,12 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	srvManager_->CreateSRVforTexture2D(srvIndex, renderTargetTextureResource.Get(),
 		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, renderTargetMetadata_);
 
-
 	//graphicsPipelineの初期化
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
-	graphicsPipeline_->CreateCopyImage();
+
+	graphicsPipeline_->RootSignatureCopyImageCreate();
+	graphicsPipeline_->CreateAllPostEffects(); // ←これだけ！
 }
 
 void OfscreenRenderManager::Begin()
@@ -87,7 +89,7 @@ void OfscreenRenderManager::End()
 
 void OfscreenRenderManager::Draw()
 {
-	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateCopyImage());
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateCopyImage(currentEffectType_));
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureCopyImage());
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -142,4 +144,26 @@ Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTarget
 	assert(SUCCEEDED(hr));
 
 	return resource;
+}
+
+void OfscreenRenderManager::DrawImGui()
+{
+	ImGui::Begin("OfscreenRenderManager");
+	const char* items[] = {
+	   "Fullscreen",
+	   "Grayscale",
+	   "Vignette",
+	   "BoxFilter",
+	   "LuminanceOutline",
+	   "RadialBlur"
+	};
+
+	// 現在の enum を int に変換
+	int current = static_cast<int>(currentEffectType_);
+
+	if (ImGui::Combo("Post Effect", &current, items, IM_ARRAYSIZE(items))) {
+		// 変更があった場合は enum にキャストして設定
+		SetPostEffectType(static_cast<PostEffectType>(current));
+	}
+	ImGui::End();
 }

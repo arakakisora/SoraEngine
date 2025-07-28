@@ -3,6 +3,26 @@
 #include"SrvManager.h"
 #include "GraphicsPipeline.h"
 
+// OfscreenRenderManager.h の上部 or 外部ファイルで定義
+//enum class PostEffectType {
+//
+//	Fullscreen,
+//	Grayscale,
+//	Vignette,
+//	BoxFilter,
+//	LuminanceOutline
+//};
+
+enum class PostEffectType {
+	Fullscreen,
+	Grayscale,
+	Vignette,
+	BoxFilter,
+	LuminanceOutline,
+	RdialBlur,
+
+};
+
 class OfscreenRenderManager
 {
 public:
@@ -15,11 +35,14 @@ public:
 	
 	void Draw();
 	
-	
 	//RenderTargetTextureの生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& ClearColor);
 
+	void SetPostEffectType(PostEffectType type) {
+		currentEffectType_ = type;
+	}
 
+	void DrawImGui();
 private:
 
 	//DirectXCommonのポインタ
@@ -33,6 +56,7 @@ private:
 	const Vector4 clearColor = { 0.1f,0.25f,0.5f,1.0f };//とりあえず赤
 	uint32_t srvIndex = 0;
 
+	PostEffectType currentEffectType_ = PostEffectType::Fullscreen; // ←追加
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
 	D3D12_RESOURCE_STATES currentState_ = D3D12_RESOURCE_STATE_RENDER_TARGET;

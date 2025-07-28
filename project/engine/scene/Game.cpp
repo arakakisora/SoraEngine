@@ -41,9 +41,9 @@ void Game::Update()
 	//更新
 	Framework::Update();
 
-
 	
 #ifdef _DEBUG
+	ofscreenRenderManager->DrawImGui();
 	imGuiMnager->End();
 #endif // _DEBUG
 }
@@ -62,6 +62,7 @@ void Game::Draw()
 	ofscreenRenderManager->Draw();
 #ifdef _DEBUG
 	imGuiMnager->Draw();
+
 #endif // _DEBUG
 	dxCommon->End();
 }
