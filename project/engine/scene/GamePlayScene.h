@@ -51,8 +51,8 @@ private:
 	std::unique_ptr<ParticleEmitter> particleEmitter2;
 	bool light = true;
 	bool directionLight = true;
-	bool pointLight = true;
-	bool spotLight = true;
+	bool pointLight = false;
+	bool spotLight = false;
 	std::unique_ptr<Sprite> sprite;
 	SoundData sampleSoundData;//サウンドデータ
 	
