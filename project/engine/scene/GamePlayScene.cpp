@@ -162,6 +162,8 @@ void GamePlayScene::Update()
 
 #ifdef _DEBUG
 
+	
+
 	if (ImGui::CollapsingHeader("line", ImGuiTreeNodeFlags_DefaultOpen)) {
 	
 		ImGui::DragFloat3("startline", &startline.x, 0.01f);
@@ -171,8 +173,6 @@ void GamePlayScene::Update()
 	
 	}
 	
-
-
 		ImGui::Text("number%d", number);
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -221,19 +221,7 @@ void GamePlayScene::Update()
 			object3D->SetLighting(light);
 
 		}
-		float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
-		float toughness = object3D->GetoughnessforkankyouMap();
-		//環境マップ反射
-		// UI表示 & 値変更
-		if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
-			object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
-			terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
-			
-		}
-		if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
-			object3D->SettoughnessforkankyouMap(toughness);
-			terrain->SettoughnessforkankyouMap(toughness);
-		}
+		
 		
 	}
 
@@ -398,6 +386,28 @@ void GamePlayScene::Update()
 
 	}
 	skyBox->imguidebug();
+
+	if (ImGui::Begin("kankyoumap")) {
+
+		float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+		float toughness = object3D->GetoughnessforkankyouMap();
+		//環境マップ反射
+		// UI表示 & 値変更
+		if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+			object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+			terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
+
+		}
+		if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+			object3D->SettoughnessforkankyouMap(toughness);
+			terrain->SettoughnessforkankyouMap(toughness);
+		}
+
+
+
+
+		ImGui::End();
+	}
 
 
 #endif // _DEBUG
