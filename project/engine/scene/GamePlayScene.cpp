@@ -23,7 +23,7 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
 	camera2->SetTranslate(Vector3(0, 6.0f, -20.0f));//カメラの位置
-	camera2->SetRotate({0.35f,0.0f,0.0f});//カメラの向き
+	camera2->SetRotate({ 0.35f,0.0f,0.0f });//カメラの向き
 	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -53,7 +53,7 @@ void GamePlayScene::Initialize()
 	object3D->SetLighting(true);
 	object3D->SetPointLightEnable(false);
 	object3D->SetDirectionalLightIntensity(1.0f);
-	object3D->SetRotate({0.0f,-3.0f,0.0f});
+	object3D->SetRotate({ 0.0f,-3.0f,0.0f });
 	object3D->setskyboxfilepath(skyBox->GetTextureFilePath());
 
 	terrain = std::make_unique<Object3D>();
@@ -157,23 +157,23 @@ void GamePlayScene::Update()
 	line->DrawAABBVector3(object3D->GetTransform().translate,1.0f, { 1,0,0,1 });
 	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
 	*/
-	
+
 
 
 #ifdef _DEBUG
 
-	
+
 
 	if (ImGui::CollapsingHeader("line", ImGuiTreeNodeFlags_DefaultOpen)) {
-	
+
 		ImGui::DragFloat3("startline", &startline.x, 0.01f);
 		ImGui::DragFloat3("endline", &endline.x, 0.01f);
 
 		line->Draw(startline, endline, { 1,0,0,1 });
-	
+
 	}
-	
-		ImGui::Text("number%d", number);
+
+	ImGui::Text("number%d", number);
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
@@ -221,8 +221,8 @@ void GamePlayScene::Update()
 			object3D->SetLighting(light);
 
 		}
-		
-		
+
+
 	}
 
 	//sprite
@@ -387,27 +387,28 @@ void GamePlayScene::Update()
 	}
 	skyBox->imguidebug();
 
-	if (ImGui::Begin("kankyoumap")) {
-
-		float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
-		float toughness = object3D->GetoughnessforkankyouMap();
-		//環境マップ反射
-		// UI表示 & 値変更
-		if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
-			object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
-			terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
-
-		}
-		if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
-			object3D->SettoughnessforkankyouMap(toughness);
-			terrain->SettoughnessforkankyouMap(toughness);
-		}
+	ImGui::Begin("kankyoumap");
 
 
+	float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+	float toughness = object3D->GetoughnessforkankyouMap();
+	//環境マップ反射
+	// UI表示 & 値変更
+	if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+		object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+		terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
 
-
-		ImGui::End();
 	}
+	if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+		object3D->SettoughnessforkankyouMap(toughness);
+		terrain->SettoughnessforkankyouMap(toughness);
+	}
+
+
+
+
+	ImGui::End();
+
 
 
 #endif // _DEBUG
@@ -454,14 +455,14 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("player.gltf");
 	ModelManager::GetInstans()->LoadModel("walk.gltf");
 	ModelManager::GetInstans()->LoadModel("testanimation.gltf");
-	
+
 
 }
 
 void GamePlayScene::Loadparticle()
 {
 
-	
+
 
 }
 
