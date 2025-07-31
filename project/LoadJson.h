@@ -5,14 +5,22 @@
 #include <json.hpp>
 
 
+struct PlyerSpoawnData {
+
+	EulerTransform transform;
+
+};
+
 struct LevelData {
 	struct ObjectData {
 		std::string fileName; // ファイル名
 		EulerTransform transform; // 位置、回転、スケール
 	};
-	std::vector<ObjectData> objects;
 
+	std::vector<ObjectData> objects;
+	std::vector<PlyerSpoawnData> players; // プレイヤーのスポーンデータ
 };
+
 
 class LoadJson
 {

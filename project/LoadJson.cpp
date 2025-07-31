@@ -122,6 +122,24 @@ void LoadJson::ParseObjectRecursive(const nlohmann::json& object)
 		objectData.transform.scale.x = (float)transform["scale"][0];
 		objectData.transform.scale.y = (float)transform["scale"][2];
 		objectData.transform.scale.z = (float)transform["scale"][1];
+	} else if (type == "PlayerSpawn") {
+		// 配列に要素を追加
+		levelData->players.emplace_back(LevelData::PlayerSpawnData{});
+		LevelData::PlayerSpawnData& spawnData = levelData->players.back();
+
+		// トランスフォームデータのパース（MESHと同様）
+		const auto& transform = object["transform"];
+		spawnData.transform.translate.x = (float)transform["translation"][0];
+		spawnData.transform.translate.y = (float)transform["translation"][2];
+		spawnData.transform.translate.z = (float)transform["translation"][1];
+
+		spawnData.transform.rotate.x = -(float)transform["rotation"][0];
+		spawnData.transform.rotate.y = -(float)transform["rotation"][2];
+		spawnData.transform.rotate.z = -(float)transform["rotation"][1];
+
+		spawnData.transform.scale.x = (float)transform["scale"][0];
+		spawnData.transform.scale.y = (float)transform["scale"][2];
+		spawnData.transform.scale.z = (float)transform["scale"][1];
 	}
 
 	// 子オブジェクトがあれば再帰呼び出し
