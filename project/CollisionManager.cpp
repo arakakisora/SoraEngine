@@ -21,8 +21,9 @@ void CollisionManager::Update()
 		
 		if (MyMath::IsCollision(aabb1, aabb2)) {
 
-			player->SetIsDead(true); // プレイヤーが死亡する処理を追加
-			
+			if (player->CanTakeDamage()) {
+				player->TakeDamage(10);
+			} // プレイヤーが死亡する処理を追加
 		}
 	}
 
@@ -56,7 +57,9 @@ void CollisionManager::Update()
 	for (Enemy2* enemy2 : enemy->GetEnemies2()) {
 		aabb2 = enemy2->GetAABB();
 		if (MyMath::IsCollision(aabb1, aabb2)) {
-			player->SetIsDead(true); // プレイヤーが死亡する処理を追加
+			if (player->CanTakeDamage()) {
+				player->TakeDamage(10);
+			} // プレイヤーが死亡する処理を追加
 		}
 	}
 }
