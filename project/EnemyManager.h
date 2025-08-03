@@ -1,6 +1,7 @@
 #pragma once
 #include "Enemy.h"
 #include "Enemy2.h"
+#include "EnemyBase.h"
 
 class MapChipField;
 class EnemyManager
@@ -15,15 +16,17 @@ public:
 	void Draw();
 
 	//Getter
-	inline const std::list<Enemy*>& GetEnemies() const { return enemies_; }
-	inline const std::list<Enemy2*>& GetEnemies2() const { return enemies2_; }
+	const std::vector<EnemyBase*>& GetEnemies() const { return enemies_; }
 private:
-	std::vector<int> Enemynumber;
-	//Enemy
-	std::list<Enemy*> enemies_;
-	//Enemy2
-	std::list<Enemy2*> enemies2_;
+	//std::vector<int> Enemynumber;
+	////Enemy
+	//std::list<Enemy*> enemies_;
+	////Enemy2
+	//std::list<Enemy2*> enemies2_;
 
+	//MapChipField* map_ = nullptr;
+
+	std::vector<EnemyBase*> enemies_;
 	MapChipField* map_ = nullptr;
 	
 };

@@ -4,52 +4,49 @@
 
 EnemyManager::~EnemyManager()
 {
-	for (auto& enemy : enemies_) {
-		if (enemy) {
-			//enemy->ReleaseObject3D();
-			delete enemy; // Enemy自体を解放
-		}
+	for (auto enemy : enemies_) {
+		
+		delete enemy;
 	}
-	//enemy2
-	for (auto& enemy2 : enemies2_) {
-		if (enemy2) {
-			//enemy2->ReleaseObject3D();
-			delete enemy2; // Enemy2自体を解放
-		}
-	}
+	enemies_.clear();
 
 }
 
 void EnemyManager::Initialize(MapChipField* map) {
 
 	map_ = map;
-	// CSVから敵の位置を取得
+
+	// 敵の位置・タイプを取得
 	std::vector<Vector3> enemyPositions = map_->GetEnemyPositions();
-	// 敵の番号を取得
-	Enemynumber = map_->GetEnemyNumbers(); //敵の番号を取得
-	for (int i = 0; const Vector3 & enemyPos : enemyPositions) {
+	std::vector<int> enemyTypes = map_->GetEnemyNumbers(); // 1 = Enemy, 2 = Enemy2
 
-		if (Enemynumber[i] == 1) {
+	for (int i = 0; i < enemyPositions.size(); ++i) {
+		const Vector3& pos = enemyPositions[i];
+		int type = enemyTypes[i];
 
-			Object3D* object3DEnemy = new Object3D();
-			object3DEnemy->Initialize(Object3DCommon::GetInstance());
-			object3DEnemy->SetModel("enemy.obj");
-			Enemy* newEnemy = new Enemy();
-			newEnemy->Initialize(object3DEnemy, enemyPos); // ← これだけでOK
+		Object3D* obj = new Object3D();
+		obj->Initialize(Object3DCommon::GetInstance());
+
+		// モデルの切り替え（必要に応じて）
+		if (type == 1) {
+			obj->SetModel("enemy.obj");
+		}
+		else if (type == 2) {
+			obj->SetModel("enemy2.obj");
+		}
+
+		EnemyBase* newEnemy = nullptr;
+		if (type == 1) {
+			newEnemy = new Enemy();
+		}
+		else if (type == 2) {
+			newEnemy = new Enemy2();
+		}
+
+		if (newEnemy) {
+			newEnemy->Initialize(obj, pos);
 			enemies_.push_back(newEnemy);
-
 		}
-		else if (Enemynumber[i] == 2) {
-			Object3D* object3DEnemy2 = new Object3D();
-			object3DEnemy2->Initialize(Object3DCommon::GetInstance());
-			object3DEnemy2->SetModel("enemy.obj");
-			Enemy2* newEnemy2 = new Enemy2();
-			newEnemy2->Initialize(object3DEnemy2, enemyPos); // ← これだけでOK
-			enemies2_.push_back(newEnemy2);
-		}
-
-
-		i++;
 	}
 
 }
@@ -57,52 +54,25 @@ void EnemyManager::Initialize(MapChipField* map) {
 void EnemyManager::Update() {
 
 
-	//敵の更新
-	for (Enemy* enemy : enemies_) {
-
-		if (enemy != nullptr) {
-			enemy->Update(map_);
-		}
-	}
-
-	//死んだ敵を削除
-	enemies_.remove_if([](Enemy* enemy) {
+	for (auto it = enemies_.begin(); it != enemies_.end(); ) {
+		EnemyBase* enemy = *it;
+		enemy->Update(map_);
 		if (enemy->IsDead()) {
 			delete enemy;
-			return true;
+			it = enemies_.erase(it);
 		}
-		return false;
-		});
-
-	//敵2の更新
-	for (Enemy2* enemy2 : enemies2_) {
-		if (enemy2 != nullptr) {
-			enemy2->Update(map_);
+		else {
+			++it;
 		}
 	}
-	//死んだ敵2を削除
-	enemies2_.remove_if([](Enemy2* enemy2) {
-		if (enemy2->IsDead()) {
-			delete enemy2;
-			return true;
-		}
-		return false;
-		});
 }
+
 
 void EnemyManager::Draw() {
 	//Enemyの描画
 
-	for (Enemy* enemy : enemies_) {
-		if (!nullptr) {
-			enemy->Draw();
-		}
-	}
-	//Enemy2の描画
-	for (Enemy2* enemy2 : enemies2_) {
-		if (!nullptr) {
-			enemy2->Draw();
-		}
+	for (auto& enemy : enemies_) {
+		enemy->Draw();
 	}
 }
 

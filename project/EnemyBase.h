@@ -8,16 +8,14 @@ class Player;
 class PlayerBullet;
 class EnemyBase {
 public:
-	virtual ~EnemyBase() {}
-
-	virtual void Initialize(Object3D* obj, const Vector3& position) = 0;
-	virtual void Update(MapChipField* mapChipField) = 0;
-	virtual void Draw() = 0;
-	virtual AABB GetAABB() = 0;
+	virtual void Initialize(Object3D* obj, const Vector3& position);
 	
-	virtual void OnCollision(const PlayerBullet* bullet) = 0;
+	virtual void Update(MapChipField* mapChipField);
 
-	virtual Vector3 GetWorldPosition() = 0;
-	virtual bool IsDead() const = 0;
+	virtual void Draw();
+
+	virtual bool IsDead() ;
+
+private:
 	
 };

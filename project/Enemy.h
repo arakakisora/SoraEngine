@@ -7,27 +7,27 @@
 #include"Object3D.h"
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
-
+#include "EnemyBase.h"
 
 class Player;
 class PlayerBullet;
-class Enemy {
+class Enemy :public EnemyBase{
 public:
 	~Enemy();
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(Object3D* obj, const Vector3& position);
+	void Initialize(Object3D* obj, const Vector3& position)override;
 
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
-	void Update(MapChipField* mapChipField);
+	void Update(MapChipField* mapChipField)override;
 
 	/// <summary>
 	/// 描画
 	/// </summary>
-	void Draw();
+	void Draw()override;
 
 	Vector3 GetWorldPosition();
 	AABB GetAABB();
@@ -43,7 +43,7 @@ public:
 	}
 	// 当たり判定
 	void OnCollision(const PlayerBullet* bullet);
-	bool IsDead() const { return isDead_; }
+	bool IsDead()override  { return isDead_; }
 
 
 
