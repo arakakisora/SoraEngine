@@ -211,9 +211,9 @@ void Object3D::Draw()
 	//スポットライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
 	//環境マップテクスチャ
-	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
-	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(8, environmentReflectionSettingResource->GetGPUVirtualAddress());
+	//object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(8, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {
 		model_->Draw();
@@ -238,9 +238,9 @@ void Object3D::DrawSkinning()
 	//skeletonのデータをセット
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//環境マップテクスチャ
-	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
-	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(9, environmentReflectionSettingResource->GetGPUVirtualAddress());
+	//object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(9, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
 	if (model_) {
 		model_->Draw();

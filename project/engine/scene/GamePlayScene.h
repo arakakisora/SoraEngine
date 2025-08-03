@@ -81,6 +81,6 @@ public:
 	//当たり判定
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
-
+	
 };
 
