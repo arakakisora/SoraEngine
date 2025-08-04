@@ -5,18 +5,18 @@
 #include <json.hpp>
 
 
-struct PlyerSpoawnData {
 
-	EulerTransform transform;
-
-};
 
 struct LevelData {
 	struct ObjectData {
 		std::string fileName; // ファイル名
 		EulerTransform transform; // 位置、回転、スケール
 	};
+	struct PlyerSpoawnData {
 
+		EulerTransform transform;
+
+	};
 	std::vector<ObjectData> objects;
 	std::vector<PlyerSpoawnData> players; // プレイヤーのスポーンデータ
 };
@@ -39,6 +39,9 @@ public:
 
 
 	void ParseObjectRecursive(const nlohmann::json& object);
+
+	//ゲッター
+	LevelData* GetLevelData() { return levelData; }
    
 private:
 	

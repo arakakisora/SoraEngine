@@ -22,6 +22,8 @@
 #include "Goal.h"
 #include "LoadJson.h"
 
+#include "testplayer.h"
+
 class GamePlayScene :public BaseScene
 {
 public:
@@ -84,5 +86,7 @@ public:
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
 	LoadJson* loadJson_=nullptr;
+
+	std::vector<std::unique_ptr<testplayer>> tPlayers_; //テスト用プレイヤー
 };
 

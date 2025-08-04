@@ -37,7 +37,7 @@ void LoadJson::LoadJsonFile()
 	assert(name.compare("SCENE") == 0);
 
 	levelData = new LevelData();
-	
+
 	for (const auto& object : deserialize["objects"]) {
 		ParseObjectRecursive(object);
 	}
@@ -96,7 +96,7 @@ void LoadJson::Draw()
 
 void LoadJson::ParseObjectRecursive(const nlohmann::json& object)
 {
-	
+
 
 	assert(object.contains("type"));
 	std::string type = object["type"].get<std::string>();
@@ -111,7 +111,7 @@ void LoadJson::ParseObjectRecursive(const nlohmann::json& object)
 
 		const auto& transform = object["transform"];
 
-		objectData.transform.translate.x = (float)transform["translation"][0];
+		objectData.transform.translate.x = -1 * (float)transform["translation"][0];
 		objectData.transform.translate.y = (float)transform["translation"][2];
 		objectData.transform.translate.z = (float)transform["translation"][1];
 
@@ -124,12 +124,12 @@ void LoadJson::ParseObjectRecursive(const nlohmann::json& object)
 		objectData.transform.scale.z = (float)transform["scale"][1];
 	} else if (type == "PlayerSpawn") {
 		// 配列に要素を追加
-		levelData->players.emplace_back(LevelData::PlayerSpawnData{});
-		LevelData::PlayerSpawnData& spawnData = levelData->players.back();
+		levelData->players.emplace_back(LevelData::PlyerSpoawnData{});
+		LevelData::PlyerSpoawnData& spawnData = levelData->players.back();
 
 		// トランスフォームデータのパース（MESHと同様）
 		const auto& transform = object["transform"];
-		spawnData.transform.translate.x = (float)transform["translation"][0];
+		spawnData.transform.translate.x = -1 * (float)transform["translation"][0];
 		spawnData.transform.translate.y = (float)transform["translation"][2];
 		spawnData.transform.translate.z = (float)transform["translation"][1];
 

@@ -74,6 +74,7 @@
     <ClCompile Include="ChargeBehabiaor.cpp" />
     <ClCompile Include="Goal.cpp" />
     <ClCompile Include="LoadJson.cpp" />
+    <ClCompile Include="testplayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
@@ -132,6 +133,7 @@
     <ClInclude Include="ChargeBehabiaor.h" />
     <ClInclude Include="Goal.h" />
     <ClInclude Include="LoadJson.h" />
+    <ClInclude Include="testplayer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\BoxFilter.hlsli" />
