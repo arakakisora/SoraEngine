@@ -20,7 +20,7 @@ void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vect
 
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(pos);
-	object3D_->setskyboxfilepath("skyBox.dds");
+	object3D_->setskyboxfilepath("Resources/skyBox.dds");
 	
 
 	// 速度

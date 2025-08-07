@@ -25,7 +25,7 @@ void GamePlayScene::Initialize()
 	Road();
 
 	skybox_ = new SkyBox();
-	skybox_->Initialize("skyBox.dds");
+	skybox_->Initialize("Resources/skyBox.dds");
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
@@ -142,14 +142,15 @@ void GamePlayScene::Update()
 
 void GamePlayScene::Draw()
 {
+	skybox_->Draw();
+
 	Object3DCommon::GetInstance()->SkinNingCommonDraw();
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
 	//SkyDome
 	//skydome_->Draw();
-	skybox_->Draw();
-	goal->Draw();
+	//goal->Draw();
 
 	//Playerの描画
 	if (player->GetIsDead_() == false) {
@@ -158,6 +159,7 @@ void GamePlayScene::Draw()
 	}
 	//エネミーの描画
 	enemyManager_->Draw();
+	
 	
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
@@ -215,7 +217,7 @@ void GamePlayScene::GenerateObject3D()
 				object3D_->SetLighting(true);
 				object3D_->SetDirectionalLightEnable(true);
 				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-				object3D_->setskyboxfilepath("skyBox.dds");
+				object3D_->setskyboxfilepath("Resources/skyBox.dds");
 
 
 			}

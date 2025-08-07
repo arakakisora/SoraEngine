@@ -24,7 +24,7 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
-	object3D_->setskyboxfilepath("skyBox.dds");
+	object3D_->setskyboxfilepath("Resources/skyBox.dds");
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
