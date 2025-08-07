@@ -56,7 +56,7 @@ struct EnvironmentReflectionSetting
     float roughness; // 粗さ → SampleLevel用
     float2 padding; // アライメント調整
 };
-//ConstantBuffer<EnvironmentReflectionSetting> gEnvReflection : register(b5);
+ConstantBuffer<EnvironmentReflectionSetting> gEnvReflection : register(b5);
 
 ConstantBuffer<Material> gMaterial : register(b0); //マテリアルの情報
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1); //ディレクショナルライトの情報
@@ -64,7 +64,7 @@ ConstantBuffer<Camera> gCamera : register(b2); //カメラの情報
 ConstantBuffer<pointLight> gPointLight : register(b3); //ポイントライトの情報
 ConstantBuffer<SpotLght> gSpotLight : register(b4); //スポットライトの情報
 
-//TextureCube<float4> gEnvironmentTexture : register(t2); //環境マップのテクスチャ
+TextureCube<float4> gEnvironmentTexture : register(t2); //環境マップのテクスチャ
 
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
@@ -155,11 +155,11 @@ PixelShaderOutput main(VertexShaderOutput input)
         float3 spotLightspecular = gSpotLight.color.rgb * gSpotLight.intensity * specularPOW_spot * float3(1.0f, 1.0f, 1.0f) * factor_spot*falloffFactor;
         
         
-        //// 環境マップのサンプリング
-        //float3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
-        //float3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
-        //float lod = saturate(gEnvReflection.roughness) * 6.0f;
-        //float4 environmentColor = gEnvironmentTexture.SampleLevel(gSampler, reflectedVector, lod); //環境マップの色を取得
+        // 環境マップのサンプリング
+        float3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
+        float3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
+        float lod = saturate(gEnvReflection.roughness) * 6.0f;
+        float4 environmentColor = gEnvironmentTexture.SampleLevel(gSampler, reflectedVector, lod); //環境マップの色を取得
        
         
         float3 lighting = float3(0, 0, 0);
@@ -184,7 +184,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color.a = gMaterial.color.a * textureColor.a;
 
         
-        //output.color.rgb += environmentColor.rgb*gEnvReflection.reflectionStrength; //環境マップの色を加算
+        output.color.rgb += environmentColor.rgb * gEnvReflection.reflectionStrength; //環境マップの色を加算
         
         
     }

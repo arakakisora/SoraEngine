@@ -55,15 +55,15 @@ struct Camera
 };
 ConstantBuffer<Camera> gCamera : register(b2); //カメラの情報
 
-//struct EnvironmentReflectionSetting
-//{
-//    float reflectionStrength; // 反射の強さ（0〜1）
-//    float roughness; // 粗さ → SampleLevel用
-//    float2 padding; // アライメント調整
-//};
-//ConstantBuffer<EnvironmentReflectionSetting> gEnvReflection : register(b5);
+struct EnvironmentReflectionSetting
+{
+    float reflectionStrength; // 反射の強さ（0〜1）
+    float roughness; // 粗さ → SampleLevel用
+    float2 padding; // アライメント調整
+};
+ConstantBuffer<EnvironmentReflectionSetting> gEnvReflection : register(b5);
 
-//TextureCube<float4> gEnvironmentTexture : register(t1); //環境マップのテクスチャ
+TextureCube<float4> gEnvironmentTexture : register(t1); //環境マップのテクスチャ
 Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
@@ -153,11 +153,11 @@ PixelShaderOutput main(VertexShaderOutput input)
         float3 spotLightspecular = gSpotLight.color.rgb * gSpotLight.intensity * specularPOW_spot * float3(1.0f, 1.0f, 1.0f) * factor_spot*falloffFactor;
         
         
-        //// 環境マップのサンプリング
-        //float3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
-        //float3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
-        //float lod = saturate(gEnvReflection.roughness) * 6.0f;
-        //float4 environmentColor = gEnvironmentTexture.SampleLevel(gSampler, reflectedVector, lod); //環境マップの色を取得
+        // 環境マップのサンプリング
+        float3 cameraToPosition = normalize(input.worldPosition - gCamera.worldPosition);
+        float3 reflectedVector = reflect(cameraToPosition, normalize(input.normal));
+        float lod = saturate(gEnvReflection.roughness) * 6.0f;
+        float4 environmentColor = gEnvironmentTexture.SampleLevel(gSampler, reflectedVector, lod); //環境マップの色を取得
        
         
         float3 lighting = float3(0, 0, 0);

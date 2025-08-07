@@ -20,6 +20,7 @@
 #include "CollisionManager.h"
 
 #include "Goal.h"
+#include "SkyBox.h"
 
 class GamePlayScene :public BaseScene
 {
@@ -80,6 +81,8 @@ public:
 
 	//当たり判定
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
+
+	SkyBox* skybox_ = nullptr; // スカイボックス
 
 	
 };
