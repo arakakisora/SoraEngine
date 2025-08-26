@@ -198,6 +198,18 @@
     <ClCompile Include="engine\scene\BaseScene.cpp">
       <Filter>ソースファイルcpp\scne</Filter>
     </ClCompile>
+    <ClCompile Include="ChargeBehabiaor.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Enemy2.cpp" />
+    <ClCompile Include="EnemyBase.cpp" />
+    <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
+    <ClCompile Include="FadeManager.cpp" />
+    <ClCompile Include="Goal.cpp" />
+    <ClCompile Include="MapChipField.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
@@ -344,6 +356,18 @@
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>ヘッダーファイル\2d</Filter>
     </ClInclude>
+    <ClInclude Include="ChargeBehabiaor.h" />
+    <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Enemy2.h" />
+    <ClInclude Include="EnemyBase.h" />
+    <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="engine\particle\plyerpaticleBehavior.h" />
+    <ClInclude Include="FadeManager.h" />
+    <ClInclude Include="Goal.h" />
+    <ClInclude Include="MapChipField.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayerBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
@@ -386,6 +410,8 @@
       <Filter>Resources\Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\LuminanceBasedOutline.hlsli" />
+    <None Include="Resources\Mapdate\testmap.csv" />
+    <None Include="Resources\Mapdate\blocks.csv" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ソースファイルcpp">
