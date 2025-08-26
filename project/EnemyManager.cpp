@@ -34,7 +34,7 @@ void EnemyManager::Initialize(MapChipField* map) {
 			Object3D* object3DEnemy = new Object3D();
 			object3DEnemy->Initialize(Object3DCommon::GetInstance());
 			object3DEnemy->SetModel("enemy.obj");
-			object3DEnemy->setskyboxfilepath("Resources/skyBox.dds");
+			//object3DEnemy->setskyboxfilepath("Resources/skyBox.dds");
 			Enemy* newEnemy = new Enemy();
 			newEnemy->Initialize(object3DEnemy, enemyPos); // ← これだけでOK
 			enemies_.push_back(newEnemy);
@@ -44,7 +44,7 @@ void EnemyManager::Initialize(MapChipField* map) {
 			Object3D* object3DEnemy2 = new Object3D();
 			object3DEnemy2->Initialize(Object3DCommon::GetInstance());
 			object3DEnemy2->SetModel("enemy.obj");
-			object3DEnemy2->setskyboxfilepath("Resources/skyBox.dds");
+			//object3DEnemy2->setskyboxfilepath("Resources/skyBox.dds");
 			Enemy2* newEnemy2 = new Enemy2();
 			newEnemy2->Initialize(object3DEnemy2, enemyPos); // ← これだけでOK
 			enemies2_.push_back(newEnemy2);

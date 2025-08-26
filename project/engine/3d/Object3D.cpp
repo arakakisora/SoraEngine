@@ -61,10 +61,14 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	spotLightData->enable = 1;
 
 	//環境マップの反射とかぼかしリソース
+
+	//環境マップの初期化
+	TextureManager::GetInstance()->LoadTexture(defaultEnvMapPath_);
 	environmentReflectionSettingResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(EnvironmentReflectionSetting));
 	environmentReflectionSettingResource->Map(0, nullptr, reinterpret_cast<void**>(&environmentReflectionSettingData));
-	environmentReflectionSettingData->reflectionStrength = 0.5f; //反射率
-	environmentReflectionSettingData->roughness = 0.5f; //ぼかし率
+	environmentReflectionSettingData->reflectionStrength =0.0f; //反射率
+	environmentReflectionSettingData->roughness = 0.0f; //ぼかし率
+
 
 
 
@@ -76,7 +80,6 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	cameraResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
 	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
-
 
 
 }
@@ -211,7 +214,10 @@ void Object3D::Draw()
 	//スポットライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
 	//環境マップテクスチャ
-	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	const std::string& envPath = skyboxFilePath_.empty() ? defaultEnvMapPath_ : skyboxFilePath_;
+	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7,
+		TextureManager::GetInstance()->GetTextureIndexByFilePath(envPath));
+	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(8, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
@@ -238,7 +244,10 @@ void Object3D::DrawSkinning()
 	//skeletonのデータをセット
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//環境マップテクスチャ
-	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	const std::string& envPath = skyboxFilePath_.empty() ? defaultEnvMapPath_ : skyboxFilePath_;
+	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8,
+		TextureManager::GetInstance()->GetTextureIndexByFilePath(envPath));
+	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(9, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
