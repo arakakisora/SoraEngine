@@ -13,6 +13,8 @@
 #include "Line.h"
 
 #include "SkyBox.h"
+#include "MapChipField.h"
+#include "StageEditor.h"
 
 
 class GamePlayScene :public BaseScene
@@ -39,6 +41,9 @@ public:
 	void LoadModel();
 	void Loadparticle();
 	void LoadAudio();
+	/// ブロックの生成
+	void GenerateObject3D();
+	void StageEditer();
 
 private:
 	std::unique_ptr<Camera> camera1;
@@ -65,8 +70,9 @@ private:
 
 	std::unique_ptr<SkyBox> skyBox;
 	
-
-
+	MapChipField* mapChipField_;
+	StageEditor editor;
+	std::vector<std::vector<Object3D*>> blockobject3D;
 
 };
 

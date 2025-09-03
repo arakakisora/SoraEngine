@@ -153,6 +153,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
+    <ClCompile Include="MapChipField.cpp" />
+    <ClCompile Include="StageEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -317,6 +319,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
+    <ClInclude Include="MapChipField.h" />
+    <ClInclude Include="StageEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
