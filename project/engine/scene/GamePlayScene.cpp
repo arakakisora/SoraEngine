@@ -22,8 +22,8 @@ void GamePlayScene::Initialize()
 
 	//カメラの生成
 	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate(Vector3(0, 6.0f, -20.0f));//カメラの位置
-	camera2->SetRotate({ 0.35f,0.0f,0.0f });//カメラの向き
+	camera2->SetTranslate(Vector3(21.1f, 13.0f, -66.0f));//カメラの位置
+	camera2->SetRotate({ 0.0f,0.0f,0.0f });//カメラの向き
 	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
 
 	// デフォルトカメラを設定
@@ -87,6 +87,11 @@ void GamePlayScene::Initialize()
 	endline = { 1,0,0 };
 
 
+	// MapChipFiled
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/stage1.csv");//testmap blocks.csv
+	GenerateObject3D();
+	
 
 
 }
@@ -96,11 +101,27 @@ void GamePlayScene::Finalize()
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("subcam");
 	CameraManager::GetInstance()->Finalize();
+	delete mapChipField_;
+	
 
 }
 
 void GamePlayScene::Update()
 {
+	//カメラの更新
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
+	//3Dオブジェクトの更新
+	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
+	{
+		for (Object3D* obj : objext3dLine)
+		{
+			if (!obj)
+				continue;
+			obj->Update();
+		}
+	}
+
 	skyBox->Update();
 
 	float  velocity = 0.05f;
@@ -140,8 +161,7 @@ void GamePlayScene::Update()
 
 
 
-	//カメラの更新
-	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
 	object3D->Update();
 	terrain->Update();
 
@@ -161,7 +181,7 @@ void GamePlayScene::Update()
 
 
 #ifdef _DEBUG
-
+	StageEditer();
 
 
 	if (ImGui::CollapsingHeader("line", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -420,17 +440,26 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	terrain->Draw();
+	//terrain->Draw();
+	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
+	{
+		for (Object3D* obj : objext3dLine)
+		{
+			if (!obj)
+				continue;
+			obj->Draw();
+		}
+	}
 
 	Object3DCommon::GetInstance()->SkinNingCommonDraw();
-	object3D->DrawSkinning();
+	//object3D->DrawSkinning();
 
 
 	ParticleMnager::GetInstance()->Draw();
 	LineCommon::GetInstance()->Draw();
 
 	//スカイボックスの描画
-	skyBox->Draw();
+	//skyBox->Draw();
 
 #pragma endregion
 
@@ -455,6 +484,7 @@ void GamePlayScene::LoadModel()
 	ModelManager::GetInstans()->LoadModel("player.gltf");
 	ModelManager::GetInstans()->LoadModel("walk.gltf");
 	ModelManager::GetInstans()->LoadModel("testanimation.gltf");
+	ModelManager::GetInstans()->LoadModel("cube.obj");
 
 
 }
@@ -473,4 +503,76 @@ void GamePlayScene::LoadAudio()
 
 
 }
+
+void GamePlayScene::GenerateObject3D()
+{
+	// 要素数
+	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();     // 縦
+	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal(); // 横
+
+
+	blockobject3D.resize(numBlokVirtical);
+
+	for (uint32_t i = 0; i < numBlokVirtical; ++i)
+	{
+		blockobject3D[i].resize(numBlokHorizontal);
+
+	}
+	// キューブ生成
+	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
+		for (uint32_t j = 0; j < numBlokHorizontal; ++j) {
+
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+
+
+				Object3D* object3D_ = new Object3D();
+				object3D_->Initialize(Object3DCommon::GetInstance());
+				object3D_->SetModel("cube.obj");
+				blockobject3D[i][j] = object3D_;
+				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
+				//ライト
+				object3D_->SetLighting(true);
+				object3D_->SetDirectionalLightEnable(true);
+				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
+
+
+
+			}
+		}
+	}
+
+
+}
+
+void GamePlayScene::StageEditer()
+{
+
+	//マップ作製エディタ
+	editor.Run();
+
+	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
+	if (editor.GetReloadRequested() == true) {
+		editor.SetReloadRequested(false);
+
+		std::string filePath = "Resources/Mapdata/";
+		filePath += editor.GetFileName();
+		mapChipField_->LoadMapChipCsv(filePath);
+
+		mapChipField_->LoadMapChipCsv(filePath);
+		// 既存のオブジェクト削除
+		for (auto& row : blockobject3D) {
+			for (auto& obj : row) {
+				delete obj;
+			}
+		}
+		blockobject3D.clear();
+
+		// 再生成
+		GenerateObject3D();
+
+		
+	}
+}
+
+
 

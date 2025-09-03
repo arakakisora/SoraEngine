@@ -181,6 +181,7 @@ private:
 	std::vector<Matrix4x4> skeletonPose_;
 
 	std::string skyboxFilePath_ ; // スカイボックスのファイルパス
+	std::string defaultEnvMapPath_ = "Resources/test.dds";
 	EnvironmentReflectionSetting* environmentReflectionSettingData; // 環境反射設定
 	Microsoft::WRL::ComPtr<ID3D12Resource> environmentReflectionSettingResource;
 

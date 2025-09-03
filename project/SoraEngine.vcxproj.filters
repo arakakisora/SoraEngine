@@ -198,6 +198,8 @@
     <ClCompile Include="engine\scene\BaseScene.cpp">
       <Filter>ソースファイルcpp\scne</Filter>
     </ClCompile>
+    <ClCompile Include="StageEditor.cpp" />
+    <ClCompile Include="MapChipField.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
@@ -344,6 +346,8 @@
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>ヘッダーファイル\2d</Filter>
     </ClInclude>
+    <ClInclude Include="StageEditor.h" />
+    <ClInclude Include="MapChipField.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

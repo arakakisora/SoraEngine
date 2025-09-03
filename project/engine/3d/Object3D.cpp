@@ -33,7 +33,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
-	directionalLightData->enable = 1;
+	directionalLightData->enable = 0;
 
 	//ポイントライト
 	//ポイントライト用のリソースを作成
@@ -44,7 +44,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	pointLightData->intensity = 1.0f;
 	pointLightData->radius = 10.0f;
 	pointLightData->decay = 1.0f;
-	pointLightData->enable = 0;
+	pointLightData->enable = 1;
 
 	//スポットライト
 	//スポットライト用のリソースを作成
@@ -58,13 +58,17 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	spotLightData->decay = 2.0f;//減衰率
 	spotLightData->consAngle = std::cos(std::numbers::pi_v<float> / 3.0f);//スポットライトの余弦
 	spotLightData->cosFalloffstrt = 1.0f;
-	spotLightData->enable = 0;
+	spotLightData->enable = 1;
 
 	//環境マップの反射とかぼかしリソース
+
+	//環境マップの初期化
+	TextureManager::GetInstance()->LoadTexture(defaultEnvMapPath_);
 	environmentReflectionSettingResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(EnvironmentReflectionSetting));
 	environmentReflectionSettingResource->Map(0, nullptr, reinterpret_cast<void**>(&environmentReflectionSettingData));
-	environmentReflectionSettingData->reflectionStrength = 0.5f; //反射率
-	environmentReflectionSettingData->roughness = 0.5f; //ぼかし率
+	environmentReflectionSettingData->reflectionStrength = 0.0f; //反射率
+	environmentReflectionSettingData->roughness = 0.0f; //ぼかし率
+
 
 
 
@@ -78,7 +82,6 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
 
 
-
 }
 
 void Object3D::Update()
@@ -90,7 +93,7 @@ void Object3D::Update()
 		SkeletonUpdate(model_->GetSkeleton());
 		SkinClusterUpdate(model_->GetSkinCluster(), model_->GetSkeleton());
 
-		
+
 
 		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
 		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
@@ -121,7 +124,7 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
 		cameraForGpu->worldPosition = cameraPosition;
-		
+
 
 
 
@@ -131,11 +134,16 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 	}
 
-	
+
 }
 
 void Object3D::SkeletonUpdate(Skeleton& skeleton)
 {
+	//スケルトンがない場合は何もしない
+	if (skeleton.joints.empty()) {
+		return;
+	}
+
 	// ← ここでサイズを合わせるのが絶対必要！！
 	skeletonPose_.resize(skeleton.joints.size());
 	//すべてのjointを更新。親が若いので通常ループで処理可能になっている
@@ -152,11 +160,16 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 		}
 		skeletonPose_[joint.index] = joint.skeletonSpaceMatrix;
 	}
-	
+
 }
 
 void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
 {
+	//アニメーションがない場合
+	if (animation.nodeAnimations.empty()) {
+		return;
+	}
+
 	for (Joint& joint : skeleton.joints) {
 		// 対象のJointのAnimationがあれば、値の適用を行う。
 		// 下記のif文はC++17から可能になった初期化付きif文。
@@ -201,7 +214,10 @@ void Object3D::Draw()
 	//スポットライトのCBufferの場所を設定
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(6, spotLightResource->GetGPUVirtualAddress());
 	//環境マップテクスチャ
-	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	const std::string& envPath = skyboxFilePath_.empty() ? defaultEnvMapPath_ : skyboxFilePath_;
+	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7,
+		TextureManager::GetInstance()->GetTextureIndexByFilePath(envPath));
+	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(8, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
@@ -228,7 +244,10 @@ void Object3D::DrawSkinning()
 	//skeletonのデータをセット
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(7, model_->GetSkinCluster().paletteSrvHandle.second);
 	//環境マップテクスチャ
-	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
+	const std::string& envPath = skyboxFilePath_.empty() ? defaultEnvMapPath_ : skyboxFilePath_;
+	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8,
+		TextureManager::GetInstance()->GetTextureIndexByFilePath(envPath));
+	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(9, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
