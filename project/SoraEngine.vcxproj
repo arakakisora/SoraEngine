@@ -67,7 +67,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)engine\stageEditer;$(ProjectDir)application\scene;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,7 +94,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)engine\stageEditer;$(ProjectDir)application\scene;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
@@ -123,11 +123,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\Logger.cpp" />
     <ClCompile Include="engine\base\ImGuiManager.cpp" />
     <ClCompile Include="engine\base\Framework.cpp" />
-    <ClCompile Include="engine\scene\DebugScene.cpp" />
+    <ClCompile Include="application\scene\DebugScene.cpp" />
     <ClCompile Include="engine\scene\Game.cpp" />
-    <ClCompile Include="engine\scene\GamePlayScene.cpp" />
-    <ClCompile Include="engine\scene\GameClearScene.cpp" />
-    <ClCompile Include="engine\scene\GameOverScene.cpp" />
+    <ClCompile Include="application\scene\GamePlayScene.cpp" />
+    <ClCompile Include="application\scene\GameClearScene.cpp" />
+    <ClCompile Include="application\scene\GameOverScene.cpp" />
     <ClCompile Include="engine\base\GraphicsPipeline.cpp" />
     <ClCompile Include="engine\Line\Line.cpp" />
     <ClCompile Include="engine\Line\LineCommon.cpp" />
@@ -148,14 +148,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\scene\SceneFactory.cpp" />
     <ClCompile Include="engine\scene\SceneManager.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
-    <ClCompile Include="engine\scene\TitleScene.cpp" />
+    <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
-    <ClCompile Include="MapChipField.cpp" />
-    <ClCompile Include="StageEditor.cpp" />
+    <ClCompile Include="engine\stageEditer\MapChipField.cpp" />
+    <ClCompile Include="engine\stageEditer\StageEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -302,15 +302,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\WinApp.h" />
     <ClInclude Include="engine\base\ImGuiManager.h" />
     <ClInclude Include="engine\base\Framework.h" />
-    <ClInclude Include="engine\scene\DebugScene.h" />
+    <ClInclude Include="application\scene\DebugScene.h" />
     <ClInclude Include="engine\scene\Game.h" />
-    <ClInclude Include="engine\scene\GamePlayScene.h" />
+    <ClInclude Include="application\scene\GamePlayScene.h" />
     <ClInclude Include="engine\scene\SceneFactory.h" />
     <ClInclude Include="engine\scene\SceneManager.h" />
     <ClInclude Include="engine\base\SrvManager.h" />
-    <ClInclude Include="engine\scene\TitleScene.h" />
-    <ClInclude Include="engine\scene\GameClearScene.h" />
-    <ClInclude Include="engine\scene\GameOverScene.h" />
+    <ClInclude Include="application\scene\TitleScene.h" />
+    <ClInclude Include="application\scene\GameClearScene.h" />
+    <ClInclude Include="application\scene\GameOverScene.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
     <ClInclude Include="engine\particle\ParticleMnager.h" />
@@ -321,8 +321,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
-    <ClInclude Include="MapChipField.h" />
-    <ClInclude Include="StageEditor.h" />
+    <ClInclude Include="engine\stageEditer\MapChipField.h" />
+    <ClInclude Include="engine\stageEditer\StageEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

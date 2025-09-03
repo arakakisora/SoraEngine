@@ -192,25 +192,25 @@
     <ClCompile Include="engine\scene\BaseScene.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\DebugScene.cpp">
+    <ClCompile Include="application\scene\DebugScene.cpp">
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
-    <ClCompile Include="MapChipField.cpp">
+    <ClCompile Include="engine\stageEditer\MapChipField.cpp">
       <Filter>engine\ソースファイルcpp\stageEditer</Filter>
     </ClCompile>
-    <ClCompile Include="StageEditor.cpp">
+    <ClCompile Include="engine\stageEditer\StageEditor.cpp">
       <Filter>engine\ソースファイルcpp\stageEditer</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\TitleScene.cpp">
+    <ClCompile Include="application\scene\TitleScene.cpp">
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\GameOverScene.cpp">
+    <ClCompile Include="application\scene\GameOverScene.cpp">
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\GameClearScene.cpp">
+    <ClCompile Include="application\scene\GameClearScene.cpp">
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\GamePlayScene.cpp">
+    <ClCompile Include="application\scene\GamePlayScene.cpp">
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
   </ItemGroup>
@@ -344,28 +344,28 @@
     <ClInclude Include="engine\scene\SceneManager.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\TitleScene.h">
+    <ClInclude Include="application\scene\TitleScene.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>engine\ヘッダーファイル\2d</Filter>
     </ClInclude>
-    <ClInclude Include="StageEditor.h">
+    <ClInclude Include="engine\stageEditer\StageEditor.h">
       <Filter>engine\ヘッダーファイル\stageEditer</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\DebugScene.h">
+    <ClInclude Include="application\scene\DebugScene.h">
       <Filter>application\ヘッダーファイル\scene</Filter>
     </ClInclude>
-    <ClInclude Include="MapChipField.h">
+    <ClInclude Include="engine\stageEditer\MapChipField.h">
       <Filter>engine\ヘッダーファイル\stageEditer</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\GamePlayScene.h">
+    <ClInclude Include="application\scene\GamePlayScene.h">
       <Filter>application\ヘッダーファイル\scene</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\GameOverScene.h">
+    <ClInclude Include="application\scene\GameOverScene.h">
       <Filter>application\ヘッダーファイル\scene</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\GameClearScene.h">
+    <ClInclude Include="application\scene\GameClearScene.h">
       <Filter>application\ヘッダーファイル\scene</Filter>
     </ClInclude>
   </ItemGroup>

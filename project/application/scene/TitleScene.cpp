@@ -26,6 +26,7 @@ void TitleScene::Finalize()
 {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->Finalize();
+
 }
 
 void TitleScene::Update()

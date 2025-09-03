@@ -102,7 +102,15 @@ void DebugScene::Finalize()
 	CameraManager::GetInstance()->RemoveCamera("subcam");
 	CameraManager::GetInstance()->Finalize();
 	delete mapChipField_;
-	
+
+	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
+	{
+		for (Object3D* obj : objext3dLine)
+		{
+			delete obj;
+		}
+	}
+	blockobject3D.clear();
 
 }
 
