@@ -22,6 +22,7 @@
 #include "Goal.h"
 #include "SkyBox.h"
 
+#include "StageEditor.h"
 class GamePlayScene :public BaseScene
 {
 public:
@@ -59,6 +60,7 @@ public:
 
 	//カメラのポインタ
 	Camera* camera = nullptr;
+	Camera* debugCamera = nullptr;
 	//スプライトの初期化
 	Object3D* object3D2nd = nullptr;
 	//player
@@ -83,6 +85,13 @@ public:
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
 
+	//debug用
+#ifdef _DEBUG
+	StageEditor editor;
+	
+#endif // _DEBUG
+
+	
 	
 };
 

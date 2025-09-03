@@ -10,6 +10,8 @@
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
 
+
+
 void GamePlayScene::Initialize()
 {
 
@@ -18,6 +20,12 @@ void GamePlayScene::Initialize()
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
 	CameraManager::GetInstance()->AddCamera("maincam", camera);
+
+	debugCamera = new Camera();
+	debugCamera->SetRotate({ 0,0,0, });
+	debugCamera->SetTranslate({ 15,13,-60, });
+	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera);
+
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
@@ -27,8 +35,10 @@ void GamePlayScene::Initialize()
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdate/testmap.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap.csv");//testmap blocks.csv
 	GenerateObject3D();
+
+
 
 	//playerの生成	
 	player = new Player();
@@ -87,6 +97,7 @@ void GamePlayScene::Finalize()
 	//delete object3D;
 	delete object3D2nd;
 	delete camera;
+	delete debugCamera;
 	delete mapChipField_;
 	delete player;
 	delete skydome_;
@@ -102,7 +113,6 @@ void GamePlayScene::Update()
 
 	skydome_->Update();
 	goal->Update(player->GetGoal());
-
 
 
 	//プレイヤーの更新
@@ -154,7 +164,7 @@ void GamePlayScene::Draw()
 		player->Draw();
 
 	}
-	//エネミーの描画
+	//エネミーの描画o 
 	enemyManager_->Draw();
 	
 	
@@ -228,7 +238,48 @@ void GamePlayScene::GenerateObject3D()
 
 void GamePlayScene::Imguidebug()
 {
+	//マップ作製エディタ
+	editor.Run();
 
+	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
+	if (editor.GetReloadRequested()==true) {
+		editor.SetReloadRequested(false);
+
+		std::string filePath = "Resources/Mapdata/";
+		filePath += editor.GetFileName();
+		mapChipField_->LoadMapChipCsv(filePath);
+
+		mapChipField_->LoadMapChipCsv(filePath);
+		// 既存のオブジェクト削除
+		for (auto& row : blockobject3D) {
+			for (auto& obj : row) {
+				delete obj;
+			}
+		}
+		blockobject3D.clear();
+
+		// 再生成
+		GenerateObject3D();
+
+		enemyManager_.reset();
+		enemyManager_ = std::make_unique<EnemyManager>();
+		enemyManager_->Initialize(mapChipField_);
+
+
+		collitionManager_->Initialize(player, enemyManager_.get());
+	}
+
+	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::Button("Switch to Main Camera")) {
+			CameraManager::GetInstance()->SetActiveCamera("maincam");
+			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(true);
+		}
+		if (ImGui::Button("Switch to Sub Camera")) {
+			CameraManager::GetInstance()->SetActiveCamera("debugcam");
+			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
+		}
+	}
+	
 
 }
 

@@ -210,6 +210,7 @@
     <ClCompile Include="MapChipField.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerBullet.cpp" />
+    <ClCompile Include="StageEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
@@ -368,6 +369,8 @@
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
+    <ClInclude Include="GridCell.h" />
+    <ClInclude Include="StageEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
