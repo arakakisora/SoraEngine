@@ -22,6 +22,8 @@ public:
 	void SetSceneFactory(AbstractSceneFactory* sceneFactory) { this->sceneFactory = sceneFactory; }
 
 	void ChangeScene(const std::string &sceneName);
+
+	void ImguiDebug();
 	
 
 private:

@@ -28,9 +28,9 @@ public:
 	/// </summary>
 	void Draw()override;
 
-public:
+private:
 
-	
+	std::unique_ptr<Camera> camera1;
 
 
 };
