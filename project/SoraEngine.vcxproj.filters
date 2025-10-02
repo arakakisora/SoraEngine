@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.VS.hlsl">
@@ -84,8 +84,6 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp">
       <Filter>ヘッダーファイル\scne\particle</Filter>
     </ClCompile>
-    <ClCompile Include="StageEditor.cpp" />
-    <ClCompile Include="MapChipField.cpp" />
     <ClCompile Include="engine\2d\Sprite.cpp">
       <Filter>ソースファイルcpp\2d</Filter>
     </ClCompile>
@@ -152,12 +150,6 @@
     <ClCompile Include="engine\input\Input.cpp">
       <Filter>ソースファイルcpp\input</Filter>
     </ClCompile>
-    <ClCompile Include="engine\Line\LineCommon.cpp">
-      <Filter>ヘッダーファイル\math\Line</Filter>
-    </ClCompile>
-    <ClCompile Include="engine\Line\Line.cpp">
-      <Filter>ヘッダーファイル\math\Line</Filter>
-    </ClCompile>
     <ClCompile Include="engine\math\MyMath.cpp">
       <Filter>ソースファイルcpp\math</Filter>
     </ClCompile>
@@ -206,13 +198,30 @@
     <ClCompile Include="engine\scene\TitleScene.cpp">
       <Filter>ソースファイルcpp\scne</Filter>
     </ClCompile>
+    <ClCompile Include="application\enemy\Enemy.cpp" />
+    <ClCompile Include="application\enemy\EnemyBase.cpp" />
+    <ClCompile Include="application\enemy\EnemyManager.cpp" />
+    <ClCompile Include="application\map\MapChipField.cpp" />
+    <ClCompile Include="application\map\StageEditor.cpp" />
+    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
+    <ClCompile Include="application\particle\CollisionManager.cpp" />
+    <ClCompile Include="application\enemy\Enemy2.cpp" />
+    <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
+    <ClCompile Include="engine\fade\FadeManager.cpp" />
+    <ClCompile Include="application\gaol\Goal.cpp" />
+    <ClCompile Include="application\player\Player.cpp" />
+    <ClCompile Include="application\player\PlayerBullet.cpp" />
+    <ClCompile Include="engine\Line\Line.cpp">
+      <Filter>ソースファイルcpp\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\Line\LineCommon.cpp">
+      <Filter>ソースファイルcpp\Line</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
       <Filter>ヘッダーファイル\particle</Filter>
     </ClInclude>
-    <ClInclude Include="StageEditor.h" />
-    <ClInclude Include="MapChipField.h" />
     <ClInclude Include="engine\2d\Sprite.h">
       <Filter>ヘッダーファイル\2d</Filter>
     </ClInclude>
@@ -354,6 +363,21 @@
     <ClInclude Include="engine\skybox\SkyBoxCommon.h">
       <Filter>ヘッダーファイル\skybox</Filter>
     </ClInclude>
+    <ClInclude Include="application\enemy\Enemy.h" />
+    <ClInclude Include="application\enemy\EnemyBase.h" />
+    <ClInclude Include="application\enemy\EnemyManager.h" />
+    <ClInclude Include="application\map\MapChipField.h" />
+    <ClInclude Include="application\map\StageEditor.h" />
+    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
+    <ClInclude Include="application\particle\CollisionManager.h" />
+    <ClInclude Include="application\enemy\Enemy2.h" />
+    <ClInclude Include="engine\particle\plyerpaticleBehavior.h" />
+    <ClInclude Include="engine\fade\FadeManager.h" />
+    <ClInclude Include="application\gaol\Goal.h" />
+    <ClInclude Include="application\map\GridCell.h" />
+    <ClInclude Include="application\map\MapType.h" />
+    <ClInclude Include="application\player\Player.h" />
+    <ClInclude Include="application\player\PlayerBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
@@ -398,6 +422,8 @@
     <None Include="Resources\Shaders\Vignette.hlsli">
       <Filter>Resources\Shaders</Filter>
     </None>
+    <None Include="Resources\Mapdate\testmap.csv" />
+    <None Include="Resources\Mapdate\blocks.csv" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resources">
@@ -477,9 +503,6 @@
     </Filter>
     <Filter Include="ソースファイルcpp\camera">
       <UniqueIdentifier>{8f0d6691-4093-4cd0-a884-965eb0429217}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダーファイル\math\Line">
-      <UniqueIdentifier>{f27e4436-3c64-4085-8405-bde6a8ebb19a}</UniqueIdentifier>
     </Filter>
     <Filter Include="ヘッダーファイル\scne\particle">
       <UniqueIdentifier>{f95094e2-3680-4ecc-87e2-584b02e03f06}</UniqueIdentifier>
