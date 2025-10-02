@@ -328,20 +328,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\scene\GameClearScene.h" />
     <ClInclude Include="engine\scene\GameOverScene.h" />
     <ClInclude Include="FadeManager.h" />
-<<<<<<< Updated upstream
-    <ClInclude Include="Goal.h" />
-    <ClInclude Include="GridCell.h" />
-    <ClInclude Include="MapChipField.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="PlayerBullet.h" />
-=======
     <ClInclude Include="application\gaol\Goal.h" />
     <ClInclude Include="application\map\GridCell.h" />
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\MapType.h" />
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="application\player\PlayerBullet.h" />
->>>>>>> Stashed changes
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
     <ClInclude Include="engine\particle\ParticleMnager.h" />
