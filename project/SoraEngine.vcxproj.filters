@@ -198,19 +198,19 @@
     <ClCompile Include="engine\scene\BaseScene.cpp">
       <Filter>ソースファイルcpp\scne</Filter>
     </ClCompile>
-    <ClCompile Include="ChargeBehabiaor.cpp" />
-    <ClCompile Include="CollisionManager.cpp" />
-    <ClCompile Include="Enemy.cpp" />
-    <ClCompile Include="Enemy2.cpp" />
-    <ClCompile Include="EnemyBase.cpp" />
-    <ClCompile Include="EnemyManager.cpp" />
+    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
+    <ClCompile Include="application\particle\CollisionManager.cpp" />
+    <ClCompile Include="application\enemy\Enemy.cpp" />
+    <ClCompile Include="application\enemy\Enemy2.cpp" />
+    <ClCompile Include="application\enemy\EnemyBase.cpp" />
+    <ClCompile Include="application\enemy\EnemyManager.cpp" />
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
     <ClCompile Include="FadeManager.cpp" />
-    <ClCompile Include="Goal.cpp" />
-    <ClCompile Include="MapChipField.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="PlayerBullet.cpp" />
-    <ClCompile Include="StageEditor.cpp" />
+    <ClCompile Include="application\gaol\Goal.cpp" />
+    <ClCompile Include="application\map\MapChipField.cpp" />
+    <ClCompile Include="application\player\Player.cpp" />
+    <ClCompile Include="application\player\PlayerBullet.cpp" />
+    <ClCompile Include="application\map\StageEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\D3DResourceLeakChecker.h">
@@ -357,20 +357,30 @@
     <ClInclude Include="engine\2d\SpriteCommon.h">
       <Filter>ヘッダーファイル\2d</Filter>
     </ClInclude>
-    <ClInclude Include="ChargeBehabiaor.h" />
-    <ClInclude Include="CollisionManager.h" />
-    <ClInclude Include="Enemy.h" />
-    <ClInclude Include="Enemy2.h" />
-    <ClInclude Include="EnemyBase.h" />
-    <ClInclude Include="EnemyManager.h" />
+    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
+    <ClInclude Include="application\particle\CollisionManager.h" />
+    <ClInclude Include="application\enemy\Enemy.h" />
+    <ClInclude Include="application\enemy\Enemy2.h" />
+    <ClInclude Include="application\enemy\EnemyBase.h" />
+    <ClInclude Include="application\enemy\EnemyManager.h" />
     <ClInclude Include="engine\particle\plyerpaticleBehavior.h" />
     <ClInclude Include="FadeManager.h" />
+<<<<<<< Updated upstream
     <ClInclude Include="Goal.h" />
     <ClInclude Include="MapChipField.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="GridCell.h" />
     <ClInclude Include="StageEditor.h" />
+=======
+    <ClInclude Include="application\gaol\Goal.h" />
+    <ClInclude Include="application\map\MapChipField.h" />
+    <ClInclude Include="application\player\Player.h" />
+    <ClInclude Include="application\player\PlayerBullet.h" />
+    <ClInclude Include="application\map\GridCell.h" />
+    <ClInclude Include="application\map\StageEditor.h" />
+    <ClInclude Include="application\map\MapType.h" />
+>>>>>>> Stashed changes
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
