@@ -10,36 +10,49 @@ EnemyManager::~EnemyManager()
 			delete enemy; // Enemy自体を解放
 		}
 	}
+	//enemy2
+	for (auto& enemy2 : enemies2_) {
+		if (enemy2) {
+			//enemy2->ReleaseObject3D();
+			delete enemy2; // Enemy2自体を解放
+		}
+	}
 
 }
 
 void EnemyManager::Initialize(MapChipField* map) {
 
 	map_ = map;
+	// CSVから敵の位置を取得
+	std::vector<Vector3> enemyPositions = map_->GetEnemyPositions();
+	// 敵の番号を取得
+	Enemynumber = map_->GetEnemyNumbers(); //敵の番号を取得
+	for (int i = 0; const Vector3 & enemyPos : enemyPositions) {
 
-	// マップから敵タイプごとの全座標を取る
-	auto posE1 = map_->GetPositionsByType(MapChipType::kEnemy);   // 敵1の全座標:contentReference[oaicite:3]{index=3}
-	auto posE2 = map_->GetPositionsByType(MapChipType::kEnemy2);  // 敵2の全座標:contentReference[oaicite:4]{index=4}
-	std::vector<std::vector<int>> enemynum = map_->GetAllNumbers();
+		if (Enemynumber[i] == 1) {
 
-		for (const auto& pos : positions) {
-			// 各個体の Object3D を作る
-			auto* obj = new Object3D();
-			obj->Initialize(Object3DCommon::GetInstance());
-			obj->SetModel("enemy.obj");
+			Object3D* object3DEnemy = new Object3D();
+			object3DEnemy->Initialize(Object3DCommon::GetInstance());
+			object3DEnemy->SetModel("enemy.obj");
+			//object3DEnemy->setskyboxfilepath("Resources/skyBox.dds");
+			Enemy* newEnemy = new Enemy();
+			newEnemy->Initialize(object3DEnemy, enemyPos); // ← これだけでOK
+			enemies_.push_back(newEnemy);
 
-			EnemyBase* e = nullptr;
-			if (t == MapChipType::kEnemy)      e = new Enemy();
-			else if (t == MapChipType::kEnemy2) e = new Enemy2();
-
-			if (e) {
-				// Initialize は (Object3D*, pos) が必須:contentReference[oaicite:5]{index=5}:contentReference[oaicite:6]{index=6}
-				e->Initialize(obj, pos);
-				enemies_.push_back(e);
-			} else {
-				delete obj; // 生成失敗時のリーク防止
-			}
 		}
+		else if (Enemynumber[i] == 2) {
+			Object3D* object3DEnemy2 = new Object3D();
+			object3DEnemy2->Initialize(Object3DCommon::GetInstance());
+			object3DEnemy2->SetModel("enemy.obj");
+			//object3DEnemy2->setskyboxfilepath("Resources/skyBox.dds");
+			Enemy2* newEnemy2 = new Enemy2();
+			newEnemy2->Initialize(object3DEnemy2, enemyPos); // ← これだけでOK
+			enemies2_.push_back(newEnemy2);
+		}
+
+
+		i++;
+	}
 
 }
 

@@ -111,12 +111,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
-    <ClCompile Include="application\particle\CollisionManager.cpp" />
     <ClCompile Include="application\enemy\Enemy.cpp" />
-    <ClCompile Include="application\enemy\Enemy2.cpp" />
     <ClCompile Include="application\enemy\EnemyBase.cpp" />
     <ClCompile Include="application\enemy\EnemyManager.cpp" />
+    <ClCompile Include="application\map\MapChipField.cpp" />
+    <ClCompile Include="application\map\StageEditor.cpp" />
+    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
+    <ClCompile Include="application\particle\CollisionManager.cpp" />
+    <ClCompile Include="application\enemy\Enemy2.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
@@ -157,7 +159,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\scene\SceneManager.cpp" />
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="engine\scene\TitleScene.cpp" />
-    <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
     <ClCompile Include="application\player\PlayerBullet.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
@@ -165,7 +166,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
-    <ClCompile Include="application\map\StageEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -282,12 +282,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
-    <ClInclude Include="application\particle\CollisionManager.h" />
     <ClInclude Include="application\enemy\Enemy.h" />
-    <ClInclude Include="application\enemy\Enemy2.h" />
     <ClInclude Include="application\enemy\EnemyBase.h" />
     <ClInclude Include="application\enemy\EnemyManager.h" />
+    <ClInclude Include="application\map\MapChipField.h" />
+    <ClInclude Include="application\map\StageEditor.h" />
+    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
+    <ClInclude Include="application\particle\CollisionManager.h" />
+    <ClInclude Include="application\enemy\Enemy2.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
@@ -330,7 +332,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="FadeManager.h" />
     <ClInclude Include="application\gaol\Goal.h" />
     <ClInclude Include="application\map\GridCell.h" />
-    <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\MapType.h" />
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="application\player\PlayerBullet.h" />
@@ -344,7 +345,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
-    <ClInclude Include="application\map\StageEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

@@ -15,10 +15,15 @@ public:
 	void Draw();
 
 	//Getter
-	inline const std::list<EnemyBase*>& GetEnemies() const { return enemies_; }
-	
+	inline const std::list<Enemy*>& GetEnemies() const { return enemies_; }
+	inline const std::list<Enemy2*>& GetEnemies2() const { return enemies2_; }
 private:
-	std::list<EnemyBase*> enemies_;
+	std::vector<int> Enemynumber;
+	//Enemy
+	std::list<Enemy*> enemies_;
+	//Enemy2
+	std::list<Enemy2*> enemies2_;
+
 	MapChipField* map_ = nullptr;
 	
 };

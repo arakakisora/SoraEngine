@@ -3,21 +3,18 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
-#include "MapType.h"
-
 
 namespace fs = std::filesystem;
 
 void StageEditor::Run() {
     // 初期化
     if (grid_.empty()) {
-        grid_.resize(range_.Height(), std::vector<GridCell>(range_.Width()));
+        constexpr int kGridWidth = 100;
+        constexpr int kGridHeight = 25;
+        grid_.resize(kGridHeight, std::vector<GridCell>(kGridWidth));
     }
-   
     RenderUI();
 }
-
-
 
 void StageEditor::RenderUI() {
     ImGui::Begin("Stage Editor");
@@ -78,34 +75,30 @@ void StageEditor::RenderUI() {
         isReloadRequested_ = true;
     }
 
-    const auto& infos = GetMapChipInfoList();
-    for (size_t i = 0; i < infos.size(); ++i) {
-        if (i > 0) ImGui::SameLine();
-        ImGui::RadioButton(infos[i].label, &selectedType_, ToInt(infos[i].type));
-    }
+    // 選択タイル
+    ImGui::RadioButton("Empty", &selectedType_, 0); // 空白  
+    ImGui::RadioButton("Block", &selectedType_, 1); // ブロック
+    ImGui::RadioButton("Enemy", &selectedType_, 2); // 敵
+    ImGui::RadioButton("Player", &selectedType_, 3);// プレイヤー
 
     ImGui::End();
 
     ImGui::Begin("Stage");
 
-
-    for (int iy = 0; iy < range_.Height(); ++iy) {
-        for (int ix = 0; ix < range_.Width(); ++ix) {
-            GridCell& cell = grid_[iy][ix];
-
-            Vector4 vColor(1, 1, 1, 1);
-            for (auto& info : infos) {
-                if (ToInt(info.type) == cell.type) {
-                    vColor = info.color;
-                    break;
-                }
+    // マップ描画エリア
+    for (int y = 0; y < grid_.size(); ++y) {
+        for (int x = 0; x < grid_[y].size(); ++x) {
+            ImVec4 color;
+            switch (grid_[y][x].type) {
+            case 0: color = ImVec4(0, 0, 0, 1); break;
+            case 1: color = ImVec4(0, 1, 0, 1); break;
+            case 2: color = ImVec4(1, 0, 0, 1); break;
+            case 3: color = ImVec4(0, 0, 1, 1); break;
+            default: color = ImVec4(1, 1, 1, 1); break;
             }
-            // Vector4 → ImVec4 に変換
-            ImVec4 color(vColor.x, vColor.y, vColor.z, vColor.w);
-
-            if (ImGui::ColorButton(("##" + std::to_string(ix) + "_" + std::to_string(iy)).c_str(),
-                color, 0, ImVec2(12, 12))) {
-                cell.type = selectedType_;
+            constexpr float kCellSize = 12.0f; // ← 10〜16 あたりがオススメ
+            if (ImGui::ColorButton(("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(), color, 0, ImVec2(kCellSize, kCellSize))) {
+                grid_[y][x].type = selectedType_;
             }
             ImGui::SameLine();
         }
@@ -113,8 +106,6 @@ void StageEditor::RenderUI() {
     }
 
     ImGui::End();
-
-   
 }
 
 void StageEditor::SaveCSV(const std::string& filename) {
