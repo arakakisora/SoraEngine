@@ -7,17 +7,19 @@
 #include"Object3D.h"
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
+#include "EnemyBase.h"
 
 
 class Player;
 class PlayerBullet;
-class Enemy {
+class Enemy:public EnemyBase {
+
 public:
 	~Enemy();
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(Object3D* obj, const Vector3& position);
+	void Initialize()override;
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -29,30 +31,25 @@ public:
 	/// </summary>
 	void Draw();
 
-	Vector3 GetWorldPosition();
-	AABB GetAABB();
-	
 
 	Vector3 GetRayEndPosition();
 	int GetRayMapChipNumber(MapChipField* mapChipField);
 
-	// Object3D解放用のメソッド
-	void ReleaseObject3D() {
-		delete object3D_;
-		object3D_ = nullptr;
-	}
+
+
 	// 当たり判定
 	void OnCollision(const PlayerBullet* bullet);
 	bool IsDead() const { return isDead_; }
 
-
+	Vector3 GetWorldPosition()override;
+	AABB GetAABB()override;
 
 private:
 
-	Object3D* object3D_ = nullptr;
+	
 	// 敵の動き
 	static inline const float kWalkSpeed = 0.01f; // 歩行の速さ
-	Vector3 velocity_ = {};                      // 速度
+	                   
 	//敵のアニメーション
 	static inline const float kWalkMotionAngleStart = 0.1f;//最初の角度
 	static inline const float kWalkMotionAngleEnd = 0.5f;//最後の角度
@@ -61,9 +58,7 @@ private:
 	static inline const float kEnemyHeight = 0.8f;
 	float walkTimer_ = 0.0f;
 
-	//death
-	bool isDead_ = false;
-	int HP = 3;
+	
 	float rotateY = 0.0f;
 	Vector4 defaultColor_ = { 1, 1, 1, 1 }; // 通常時の色
 	float damageTimer_ = 0.0f;

@@ -371,6 +371,7 @@
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="GridCell.h" />
     <ClInclude Include="StageEditor.h" />
+    <ClInclude Include="MapType.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

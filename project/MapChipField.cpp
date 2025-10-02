@@ -2,19 +2,9 @@
 #include <fstream>
 #include <map>
 #include <sstream>
+#include <algorithm>
 
-namespace {
 
-std::map<std::string, MapChipType> mapChipTable = {
-    {"0", MapChipType::kBlank},
-    {"1", MapChipType::kBlock},
-	{"2", MapChipType::kEnemy},
-	{"3", MapChipType::kGoal},
-	{"4",MapChipType::kEnemy2}
-
-};
-
-}
 
 void MapChipField::ResetMapChipData() {
 
@@ -73,58 +63,117 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 	return mapChipData_.data[yIndex][xIndex];
 }
 
-Vector3 MapChipField::GetMapChipPostionByIndex(uint32_t xIndex, uint32_t yIndex) { return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0); }
+Vector3 MapChipField::GetMapChipPostionByIndex(uint32_t xIndex, uint32_t yIndex) { 
 
-IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position) { 
-	IndexSet indexSet = {}; 
-	indexSet.xIndex = static_cast<uint32_t>((position.x + kBlockWidth / 2) / kBlockWidth);
-	indexSet.yIndex = kNumBlockVirtical - 1 - static_cast<uint32_t>((position.y + kBlockHeight / 2) / kBlockHeight);
-	return indexSet;
+	Vector3 pos{};
+	// X はそのまま
+	int bx = static_cast<int>(xIndex) + offsetXBlocks_;
+	// Y は「上が正」想定で反転（エディタ上の0行=最上段 を ワールドの maxY 側に）
+	int by = offsetYBlocks_ + (heightBlocks_ - 1 - static_cast<int>(yIndex));
 
-}
-
-Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex) {
-
-	Vector3 center = GetMapChipPostionByIndex(xindex, yIndex);
-	Rect rect;
-	rect.left = center.x - kBlockWidth / 2.0f;
-	rect.right = center.x + kBlockWidth / 2.0f;
-	rect.bottom = center.y - kBlockHeight / 2.0f;
-	rect.top = center.y + kBlockHeight / 2.0f;
-	return rect;
-
+	// ブロック中心に配置（+0.5）
+	pos.x = (bx + 0.5f) * kBlockWidth;
+	pos.y = (by + 0.5f) * kBlockHeight;
+	pos.z = 0.0f;
+	return pos;
 
 }
 
-std::vector<Vector3> MapChipField::GetEnemyPositions()
-{
-	std::vector<Vector3> enemyPositions; 
-		for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
-			for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-				if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy) {
-					enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-					Enemynumber.push_back(1); //敵の番号を追加
-				}
-				else if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy2) {
-					enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-					Enemynumber.push_back(2); //敵の番号を追加
-				}
-				
-			}
-		}
-	return enemyPositions;
+IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position) {
+	IndexSet idx{};
+	// ブロック中心基準を逆に計算
+	float fx = position.x / kBlockWidth - 0.5f;
+	float fy = position.y / kBlockHeight - 0.5f;
+
+	int bx = static_cast<int>(std::floor(fx + 0.5f));
+	int by = static_cast<int>(std::floor(fy + 0.5f));
+
+	// 反転の逆変換
+	int ix = bx - offsetXBlocks_;
+	int iy = (heightBlocks_ - 1) - (by - offsetYBlocks_);
+
+	ix = std::clamp(ix, 0, (int)kNumBlockHorizontal - 1);
+	iy = std::clamp(iy, 0, (int)kNumBlockVirtical - 1);
+
+	idx.xIndex = (uint32_t)ix;
+	idx.yIndex = (uint32_t)iy;
+	return idx;
+
 }
 
-Vector3 MapChipField::GetGoalPosition()
-{
-	Vector3 pos;
+Rect MapChipField::GetRectByIndex(uint32_t xIndex, uint32_t yIndex) {
+
+	int bx = static_cast<int>(xIndex) + offsetXBlocks_;
+	int by = offsetYBlocks_ + (heightBlocks_ - 1 - static_cast<int>(yIndex));
+
+	Rect r{};
+	r.left = bx * kBlockWidth;
+	r.right = (bx + 1) * kBlockWidth;
+	r.bottom = by * kBlockHeight;
+	r.top = (by + 1) * kBlockHeight;
+	return r;
+
+
+}    
+  
+std::vector<Vector3> MapChipField::GetPositionsByType(MapChipType target) {
+	std::vector<Vector3> result;
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			if (GetMapChipTypeByIndex(x, y) == MapChipType::kGoal) {
-				pos= GetMapChipPostionByIndex(x, y);
+			if (GetMapChipTypeByIndex(x, y) == target) {
+				result.push_back(GetMapChipPostionByIndex(x, y));
 			}
 		}
 	}
-
-	return pos;
+	return result;
 }
+
+const std::vector<std::vector<int>>& MapChipField::GetAllNumbers() const
+{
+	static std::vector<std::vector<int>> numbers;
+	numbers.clear();
+	numbers.resize(mapChipData_.data.size());
+
+	for (size_t y = 0; y < mapChipData_.data.size(); ++y) {
+		numbers[y].resize(mapChipData_.data[y].size());
+		for (size_t x = 0; x < mapChipData_.data[y].size(); ++x) {
+			numbers[y][x] = static_cast<int>(mapChipData_.data[y][x]);
+		}
+	}
+	return numbers;
+}
+
+const int MapChipField::GetSizeByType(MapChipType target)
+{
+	int num = 0;
+	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+			if (GetMapChipTypeByIndex(x, y) == target) {
+				++num;
+			}
+		}
+	}
+}
+
+
+
+//std::vector<EnemySpawn> MapChipField::GetEnemySpawns() 
+//{
+//	std::vector<EnemySpawn> result;
+//	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+//		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+//			MapChipType type = GetMapChipTypeByIndex(x, y);
+//			if (type == MapChipType::kEnemy || type == MapChipType::kEnemy2) {
+//				EnemySpawn spawn;
+//				spawn.pos = GetMapChipPostionByIndex(x, y);
+//				spawn.type = type;
+//				result.push_back(spawn);
+//			}
+//		}
+//	}
+//	return result;
+//}
+
+
+
+

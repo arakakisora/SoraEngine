@@ -3,30 +3,33 @@
 #include "PlayerBullet.h"
 #include "ParticleMnager.h"
 #include "ChargeBehabiaor.h"
+#include "Object3DCommon.h"
 
 
 Enemy::~Enemy()
 {
-	if (object3D_) {
-		delete object3D_;
-		object3D_ = nullptr;
-	}
+	
 }
 
-void Enemy::Initialize(Object3D* obj, const Vector3& position) {
+void Enemy::Initialize() {
 
 
-	// texthureHandle_ = textureHandle;
-	object3D_ = obj;
-	// プレイヤーの初期位置
-	object3D_->SetTranslate(position);
-	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-	object3D_->SetScale({ 1.0f,1.0f,1.0f });
-	object3D_->SetLighting(false);
+	// オブジェクト生成
+	object3d_ = std::make_unique<Object3D>();
+	// オブジェクト初期化
+	object3d_->Initialize(Object3DCommon::GetInstance());
+	// モデルのセット
+	object3d_->SetModel("Enemy.obj");
+
+
+	object3d_->SetTranslate(posiition_);
+	object3d_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
+	object3d_->SetScale({ 1.0f,1.0f,1.0f });
+	object3d_->SetLighting(false);
 	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
 	walkTimer_ = 0.0f;
 	rotateY = std::numbers::pi_v<float> / 2.0f;
-	defaultColor_ = object3D_->GetColor(); // 初期色を保存
+	defaultColor_ = object3d_->GetColor(); // 初期色を保存
 	//object3D_->SetColor({1.0f,0.0f,0.0f,1.0f}); // 初期色を設定
 
 	//deatheffect
@@ -43,12 +46,12 @@ void Enemy::Update(MapChipField* mapChipField) {
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	//worldTransform_.rotation_.x = fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian);
-	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
+	object3d_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
 
-	Vector3 position = object3D_->GetTransform().translate;
+	Vector3 position = object3d_->GetTransform().translate;
 	position += velocity_;
 
-	object3D_->SetTranslate(position);
+	object3d_->SetTranslate(position);
 	// レイの先のマップチップを取得
 	int rayChipNumber = GetRayMapChipNumber(mapChipField);
 
@@ -71,12 +74,12 @@ void Enemy::Update(MapChipField* mapChipField) {
 	if (damageTimer_ > 0.0f) {
 		damageTimer_ -= 1.0f / 60.0f;
 		if (damageTimer_ <= 0.0f) {
-			object3D_->SetColor(defaultColor_); // 元の色に戻す
+			object3d_->SetColor(defaultColor_); // 元の色に戻す
 		}
 	}
 
-	object3D_->Update();
-	effectPosition_ .translate= object3D_->GetTransform().translate;
+	object3d_->Update();
+	effectPosition_ .translate= object3d_->GetTransform().translate;
 	deatheEffect->SetPosition(effectPosition_.translate);
 	//deatheEffect->Update();
 
@@ -94,28 +97,9 @@ void Enemy::Update(MapChipField* mapChipField) {
 
 }
 
-void Enemy::Draw() { object3D_->Draw();
+void Enemy::Draw() { object3d_->Draw();
 
 
-}
-
-Vector3 Enemy::GetWorldPosition() {
-
-	Vector3 worldPos;
-
-	worldPos.x = object3D_->GetWorldMatrix().m[3][0];;
-	worldPos.y = object3D_->GetWorldMatrix().m[3][1];;
-	worldPos.z = object3D_->GetWorldMatrix().m[3][2];;
-	return worldPos;
-}
-
-AABB Enemy::GetAABB() {
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
-	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
-
-	return aabb;
 }
 
 
@@ -124,7 +108,7 @@ void Enemy::OnCollision(const PlayerBullet* bullet)
 {
 	if (bullet) {
 		HP -= bullet->GetPower(); // 弾の攻撃力に応じてHPを減らす
-		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
+		object3d_->SetColor({ 1, 0, 0, 1 }); // 赤くする
 		damageTimer_ = kDamageDisplayTime;
 
 		if (HP <= 0) {
@@ -173,4 +157,23 @@ int Enemy::GetRayMapChipNumber(MapChipField* mapChipField)
 
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);
+}
+
+Vector3 Enemy::GetWorldPosition() {
+
+	Vector3 worldPos;
+
+	worldPos.x = object3d_->GetWorldMatrix().m[3][0];;
+	worldPos.y = object3d_->GetWorldMatrix().m[3][1];;
+	worldPos.z = object3d_->GetWorldMatrix().m[3][2];;
+	return worldPos;
+}
+
+AABB Enemy::GetAABB() {
+	Vector3 worldPos = GetWorldPosition();
+	AABB aabb;
+	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
+	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
+
+	return aabb;
 }
