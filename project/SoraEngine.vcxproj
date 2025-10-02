@@ -67,7 +67,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\palyer;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,7 +94,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\palyer;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
@@ -141,7 +141,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\Line\LineCommon.cpp" />
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
-    <ClCompile Include="FadeManager.cpp" />
+    <ClCompile Include="engine\fade\FadeManager.cpp" />
     <ClCompile Include="application\gaol\Goal.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
@@ -329,7 +329,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\scene\TitleScene.h" />
     <ClInclude Include="engine\scene\GameClearScene.h" />
     <ClInclude Include="engine\scene\GameOverScene.h" />
-    <ClInclude Include="FadeManager.h" />
+    <ClInclude Include="engine\fade\FadeManager.h" />
     <ClInclude Include="application\gaol\Goal.h" />
     <ClInclude Include="application\map\GridCell.h" />
     <ClInclude Include="application\map\MapType.h" />
