@@ -7,85 +7,77 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
-#include "ParticleMnager.h"
-#include <Logger.h>
-#include "LineCommon.h"
-#include "AttackBehavior.h"
-#include"MagicCircleBehavior.h"
+#include <ParticleMnager.h>
+#include "ChargeBehabiaor.h"
+
+
 
 void GamePlayScene::Initialize()
 {
-	//カメラの生成
-	camera1 = std::make_unique<Camera>();
-	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
-	CameraManager::GetInstance()->AddCamera("maincam", camera1.get());
 
-	//カメラの生成
-	camera2 = std::make_unique<Camera>();
-	camera2->SetTranslate(Vector3(21.1f, 13.0f, -66.0f));//カメラの位置
-	camera2->SetRotate({ 0.0f,0.0f,0.0f });//カメラの向き
-	CameraManager::GetInstance()->AddCamera("subcam", camera2.get());
+
+	//カメラの生成	
+	camera = new Camera();
+	camera->SetRotate({ 0,0,0, });
+	camera->SetTranslate({ 0,0,-10, });
+	CameraManager::GetInstance()->AddCamera("maincam", camera);
+
+	debugCamera = new Camera();
+	debugCamera->SetRotate({ 0,0,0, });
+	debugCamera->SetTranslate({ 15,13,-60, });
+	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera);
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
-
-	// ロード処理全体の時間を計測
-	auto start = std::chrono::high_resolution_clock::now();
-
-	LoadModel();
-	Loadparticle();
-	LoadAudio();
+	//モデルの読み込み
+	Road();
 
 
 
-	auto end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> duration = end - start;
-	Logger::Log("Total loading time: " + std::to_string(duration.count()) + " milliseconds");
-
-	//teutoskyBox
-	skyBox = std::make_unique<SkyBox>();
-	skyBox->Initialize("Resources/test.dds");
-
-	object3D = std::make_unique<Object3D>();
-	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("walk.gltf");
-	object3D->SetLighting(true);
-	object3D->SetPointLightEnable(false);
-	object3D->SetDirectionalLightIntensity(1.0f);
-	object3D->SetRotate({ 0.0f,-3.0f,0.0f });
-	object3D->setskyboxfilepath(skyBox->GetTextureFilePath());
-
-	terrain = std::make_unique<Object3D>();
-	terrain->Initialize(Object3DCommon::GetInstance());
-	terrain->SetModel("terrain.obj");
-	terrain->SetTransform({ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,-1.0f,0.0f} });
-	terrain->SetLighting(true);
-	terrain->SetDirectionalLightIntensity(1.0f);
-	terrain->setskyboxfilepath(skyBox->GetTextureFilePath());
-
-	//スプライトの生成
-	sprite = std::make_unique<Sprite>();
-	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/uvChecker.png");
-
-	light = true;
+	// MapChipFiled
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap.csv");//testmap blocks.csv
+	GenerateObject3D();
 
 
-	//パーティクルの初期化
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle1", "Resources/gradationLine.png", VerticesType::Cylinder, std::make_unique<MagicCircleBehavior>());
-	ParticleMnager::GetInstance()->CreateParticleGroup("Pariticle2", "Resources/gradationLine.png", VerticesType::Ring, std::make_unique<AttackBehavior>());
 
+	//playerの生成	
+	player = new Player();
+	Vector3 playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+	player->SetMapChipField(mapChipField_);
+	player->Initialize(playerPostion);
+	player->SetDeathHeight(0.0f);
 
-	particleEmitter = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 10, "Pariticle2");
-	particleEmitter2 = std::make_unique<ParticleEmitter>(Vector3(0, 0, 0), 1.0f, 0.0f, 1, "Pariticle1");
+	//エネミー
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Initialize(mapChipField_);
 
+	//当たり判定の初期化
+	collitionManager_ = std::make_unique<CollisionManager>();
+	collitionManager_->Initialize(player,enemyManager_.get());
 
-	line = std::make_unique<Line>();
+	//3Dオブジェクトの初期化
+	object3D2nd = new Object3D();
+	object3D2nd->Initialize(Object3DCommon::GetInstance());
+	object3D2nd->SetModel("plane.obj");
 
+	//SkyDome
+	skydome_ = new Object3D();
+	skydome_->Initialize(Object3DCommon::GetInstance());
+	skydome_->SetModel("skyplane.obj");
+	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
+	//ライト
+	skydome_->SetLighting(false);
 
-	startline = { 0,0,0 };
-	endline = { 1,0,0 };
+	//フォローカメラ設定
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), {0, 0, -15});
 
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+
+	//ゴールの初期化
+	goal = new Goal();
+	goal->Initialize(mapChipField_);
 
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
@@ -98,18 +90,52 @@ void GamePlayScene::Initialize()
 
 void GamePlayScene::Finalize()
 {
-	CameraManager::GetInstance()->RemoveCamera("maincam");
-	CameraManager::GetInstance()->RemoveCamera("subcam");
-	CameraManager::GetInstance()->Finalize();
-	delete mapChipField_;
-	
 
+	//object3Dの解放
+
+	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
+	{
+		for (Object3D* obj : objext3dLine)
+		{
+			delete obj;
+		}
+	}
+	blockobject3D.clear();
+
+	//delete object3D;
+	delete object3D2nd;
+	delete camera;
+	delete debugCamera;
+	delete mapChipField_;
+	delete player;
+	delete skydome_;
+	delete goal;
+	
+	
 }
 
 void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
+
+	skydome_->Update();
+	goal->Update(player->GetGoal());
+
+
+	//プレイヤーの更新
+	player->Update();
+	//エネミーの更新
+	enemyManager_->Update();
+	collitionManager_->Update();
+	//プレイヤーが死んだらゲームオーバーシーンに遷移
+	if (player->GetIsDead_()) {
+
+		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+
+	}
+
 
 	//3Dオブジェクトの更新
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
@@ -121,386 +147,64 @@ void GamePlayScene::Update()
 			obj->Update();
 		}
 	}
-
-	skyBox->Update();
-
-	float  velocity = 0.05f;
-
-	// 左スティックのX, Y値を取得
-	float lx = Input::GetInstance()->GetGamePadStickX();
-	float ly = Input::GetInstance()->GetGamePadStickY();
-
-	Vector3 translate = object3D->GetTransform().translate;
-	translate.x += static_cast<float>(lx) * velocity;
-	translate.z += static_cast<float>(ly) * velocity;
-	object3D->SetTranslate(translate);
-
-
-	if (Input::GetInstance()->GetGamePadTrigger())//LT
-	{
-		object3D->SetScale(object3D->GetTransform().scale + Vector3(-0.01f, -0.01f, -0.01f));
-	}
-
-	if (Input::GetInstance()->GetGamePadTrigger(1))//RT
-	{
-		object3D->SetScale(object3D->GetTransform().scale + Vector3(0.01f, 0.01f, 0.01f));
-	}
-
-	if (Input::GetInstance()->PushGamePadButton(XINPUT_GAMEPAD_LEFT_SHOULDER))//LB
-	{
-		object3D->SetRotate(object3D->GetTransform().rotate + Vector3(0.0f, 0.01f, 0.0f));
-	}
-	if (Input::GetInstance()->PushGamePadButton(XINPUT_GAMEPAD_RIGHT_SHOULDER))//RB
-	{
-		object3D->SetRotate(object3D->GetTransform().rotate + Vector3(0.0f, -0.01f, 0.0f));
-	}
-
-	if (Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
-		number = !number;
-	}
-
-
-
-
-	object3D->Update();
-	terrain->Update();
-
-	//パーティクルの更新
-	particleEmitter->Update();
-	particleEmitter2->Update();
-	sprite->Update();
-
-
-	//line->DrawLine({ 0,0,0 }, { 3,0,0 }, { 1,0,0,1 });
-	/*line->DrawGrid(terrain->GetTransform().translate, 10.0f, 10);
-	line->DrawAABB({ -1,-1,-1 }, { 1,1,1 }, { 1,0,0,1 });
-	line->DrawAABBVector3(object3D->GetTransform().translate,1.0f, { 1,0,0,1 });
-	line->DrawSphere(object3D->GetTransform().translate, 1.0f, {1,0,0,1});
-	*/
-
+	
 
 
 #ifdef _DEBUG
-	StageEditer();
-
-
-	if (ImGui::CollapsingHeader("line", ImGuiTreeNodeFlags_DefaultOpen)) {
-
-		ImGui::DragFloat3("startline", &startline.x, 0.01f);
-		ImGui::DragFloat3("endline", &endline.x, 0.01f);
-
-		line->Draw(startline, endline, { 1,0,0,1 });
-
-	}
-
-	ImGui::Text("number%d", number);
-
-	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
-		if (ImGui::Button("Switch to Main Camera")) {
-			CameraManager::GetInstance()->SetActiveCamera("maincam");
-		}
-		if (ImGui::Button("Switch to Sub Camera")) {
-			CameraManager::GetInstance()->SetActiveCamera("subcam");
-		}
-
-		//カメラの位置
-		EulerTransform cameraTransform = CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
-		if (ImGui::DragFloat3("Camera Position", &cameraTransform.translate.x, 0.01f)) {
-			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(cameraTransform.translate);
-		}
-		//カメラの向き
-		if (ImGui::DragFloat3("Camera Rotation", &cameraTransform.rotate.x, 0.01f)) {
-			CameraManager::GetInstance()->GetActiveCamera()->SetRotate(cameraTransform.rotate);
-		}
-
-
-	}
-
-	if (ImGui::CollapsingHeader("object3D", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		//potision
-		EulerTransform transform = object3D->GetTransform();
-		if (ImGui::DragFloat3("obj3Position", &transform.translate.x, 0.01f)) {
-			object3D->SetTransform(transform);
-		}
-		//rotation
-		if (ImGui::DragFloat3("obj3Rotation", &transform.rotate.x, 0.01f)) {
-			object3D->SetTransform(transform);
-		}
-		//scale
-		if (ImGui::DragFloat3("obj3Scale", &transform.scale.x, 0.01f)) {
-			object3D->SetTransform(transform);
-		}
-		//color
-		Vector4 color = object3D->GetColor();
-		if (ImGui::ColorEdit4("obj3Color", &color.x)) {
-			object3D->SetColor(color);
-		}
-		//ライトのオンオフ
-		if (ImGui::Checkbox("Enable Lighting", &light)) {
-			object3D->SetLighting(light);
-
-		}
-
-
-	}
-
-	//sprite
-	if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		//position
-		Vector2 position = sprite->GetPosition();
-		if (ImGui::DragFloat2("spritePosition", &position.x, 0.01f)) {
-			sprite->SetPosition(position);
-		}
-		//rotation
-		float rotation = sprite->GetRotation();
-		if (ImGui::DragFloat("spriteRotation", &rotation, 0.01f)) {
-			sprite->SetRotation(rotation);
-		}
-		//scale
-		Vector2 scale = sprite->GetSize();
-		if (ImGui::DragFloat2("spriteScale", &scale.x, 0.01f)) {
-			sprite->SetSize(scale);
-		}
-		//color
-		Vector4 color = sprite->GetColor();
-		if (ImGui::ColorEdit4("spriteColor", &color.x)) {
-			sprite->setColor(color);
-		}
-	}
-
-
-	ImGui::Text("gamePlayScene %d");
-	if (ImGui::Button("GameClearScene"))
-	{
-		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
-	}
-	if (ImGui::Button("GameOverScene"))
-	{
-		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
-	}
-
-	//ライト
-	if (ImGui::CollapsingHeader("Directional Light", ImGuiTreeNodeFlags_DefaultOpen)) {
-		Vector4 color = object3D->GetDirectionalLight().color;
-		Vector3 direction = object3D->GetDirectionalLight().direction;
-		float intensity = object3D->GetDirectionalLight().intensity;
-		if (ImGui::ColorEdit4("Color", &color.x)) {
-			object3D->SetDirectionalLightColor(color);
-
-		}
-		if (ImGui::DragFloat3("Direction", &direction.x, 0.01f)) {
-			object3D->SetDirectionalLightDirection(direction);
-		}
-		if (ImGui::DragFloat("Intensity", &intensity, 0.01f)) {
-			object3D->SetDirectionalLightIntensity(intensity);
-
-		}
-		//ライトのオンオフ
-		if (ImGui::Checkbox("Enable DirectionalLight", &directionLight)) {
-			object3D->SetDirectionalLightEnable(directionLight);
-		}
-
-	}
-	//ポイントライト
-	if (ImGui::CollapsingHeader("Point Light", ImGuiTreeNodeFlags_DefaultOpen)) {
-		Vector4 color = object3D->GetPointLight().color;
-		Vector3 position = object3D->GetPointLight().position;
-		float intensity = object3D->GetPointLight().intensity;
-		float decay = object3D->GetPointLightDecay();
-		float radius = object3D->GetPointLightRadius();
-		//ライトのオンオフ
-		if (ImGui::Checkbox("Enable PointLight", &pointLight)) {
-			object3D->SetPointLightEnable(pointLight);
-			terrain->SetPointLightEnable(pointLight);
-		}
-
-		if (ImGui::ColorEdit4("pointColor", &color.x)) {
-			object3D->SetPointLightColor(color);
-
-		}
-		if (ImGui::DragFloat3("pointPosition", &position.x, 0.01f)) {
-			object3D->SetPointLightPosition(position);
-			terrain->SetPointLightPosition(position);
-
-		}
-		if (ImGui::DragFloat("pointIntensity", &intensity, 0.01f)) {
-			object3D->SetPointLightIntensity(intensity);
-			terrain->SetPointLightIntensity(intensity);
-		}
-		if (ImGui::DragFloat("pointRadius", &radius, 0.01f)) {
-			object3D->SetPointLightRadius(radius);
-			terrain->SetPointLightRadius(radius);
-		}
-		if (ImGui::DragFloat("pointDecay", &decay, 0.01f)) {
-			object3D->SetPointLightDecay(decay);
-			terrain->SetPointLightDecay(decay);
-		}
-
-	}
-	//スポットライト
-	if (ImGui::CollapsingHeader("Spot Light", ImGuiTreeNodeFlags_DefaultOpen)) {
-		Vector4 color = object3D->GetSpotLight().color;
-		Vector3 position = object3D->GetSpotLight().position;
-		Vector3 direction = object3D->GetSpotLight().direction;
-		float intensity = object3D->GetSpotLight().intensity;
-		float distance = object3D->GetSpotLight().distance;
-		float decay = object3D->GetSpotLight().decay;
-		float consAngle = object3D->GetSpotLight().consAngle;
-		float cosFalloffstrt = object3D->GetSpotLight().cosFalloffstrt;
-		//ライトのオンオフ
-		if (ImGui::Checkbox("Enable SpotLight", &spotLight)) {
-			object3D->SetSpotLightEnable(spotLight);
-			terrain->SetSpotLightEnable(spotLight);
-		}
-		if (ImGui::ColorEdit4("spotColor", &color.x)) {
-			object3D->SetSpotLightColor(color);
-			terrain->SetSpotLightColor(color);
-		}
-		if (ImGui::DragFloat3("spotPosition", &position.x, 0.01f)) {
-			object3D->SetSpotLightPosition(position);
-			terrain->SetSpotLightPosition(position);
-		}
-		if (ImGui::DragFloat3("spotDirection", &direction.x, 0.01f)) {
-			object3D->SetSpotLightDirection(direction);
-			terrain->SetSpotLightDirection(direction);
-		}
-		if (ImGui::DragFloat("spotIntensity", &intensity, 0.01f)) {
-			object3D->SetSpotLightIntensity(intensity);
-			terrain->SetSpotLightIntensity(intensity);
-		}
-		if (ImGui::DragFloat("spotDistance", &distance, 0.01f)) {
-			object3D->SetSpotLightDistance(distance);
-			terrain->SetSpotLightDistance(distance);
-		}
-		if (ImGui::DragFloat("spotDecay", &decay, 0.01f)) {
-			object3D->SetSpotLightDecay(decay);
-			terrain->SetSpotLightDecay(decay);
-		}
-		if (ImGui::DragFloat("spotConsAngle", &consAngle, 0.01f)) {
-			object3D->SetSpotLightConsAngle(consAngle);
-			terrain->SetSpotLightConsAngle(consAngle);
-		}
-		if (ImGui::DragFloat("spotCosFalloffstrt", &cosFalloffstrt, 0.01f)) {
-			object3D->SetSpotLightCosFalloffstrt(cosFalloffstrt);
-			terrain->SetSpotLightCosFalloffstrt(cosFalloffstrt);
-		}
-
-	}
-
-	//particleのエミッタ-
-	if (ImGui::CollapsingHeader("ParticleEmitter", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Text("ParticleEmitter");
-
-		if (ImGui::Button("Emit"))
-		{
-			particleEmitter->Emit();
-		}
-		//エミット位置
-		Vector3 position = particleEmitter->GetPosition();
-		if (ImGui::DragFloat3("Position", &position.x, 0.01f)) {
-			particleEmitter->SetPosition(position);
-		}
-
-	}
-	skyBox->imguidebug();
-
-	ImGui::Begin("kankyoumap");
-
-
-	float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
-	float toughness = object3D->GetoughnessforkankyouMap();
-	//環境マップ反射
-	// UI表示 & 値変更
-	if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
-		object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
-		terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
-
-	}
-	if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
-		object3D->SettoughnessforkankyouMap(toughness);
-		terrain->SettoughnessforkankyouMap(toughness);
-	}
-
-
-
-
-	ImGui::End();
-
-
-
+	Imguidebug();
+	
 #endif // _DEBUG
 }
 
 void GamePlayScene::Draw()
 {
-#pragma region 3Dオブジェクト描画
+	
+
+	Object3DCommon::GetInstance()->SkinNingCommonDraw();
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
-	//terrain->Draw();
+	//SkyDome
+	skydome_->Draw();
+	//goal->Draw();
+=======
+
+
+
+	//Playerの描画
+	if (player->GetIsDead_() == false) {
+		player->Draw();
+
+	}
+	//エネミーの描画o 
+	enemyManager_->Draw();
+	
+	
+
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{
+
 		for (Object3D* obj : objext3dLine)
 		{
-			if (!obj)
+			if (!obj) {
 				continue;
+			}
 			obj->Draw();
 		}
+
 	}
 
-	Object3DCommon::GetInstance()->SkinNingCommonDraw();
-	//object3D->DrawSkinning();
 
 
+	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
-	LineCommon::GetInstance()->Draw();
-
-	//スカイボックスの描画
-	//skyBox->Draw();
-
 #pragma endregion
 
 #pragma region スプライト描画
+
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	//sprite->Draw();
-
-#pragma endregion
-}
-
-void GamePlayScene::LoadModel()
-{
-
-	//モデルの読み込み
-	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("plane.gltf");
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
-	ModelManager::GetInstans()->LoadModel("terrain.obj");
-	ModelManager::GetInstans()->LoadModel("animationfly.gltf");
-	ModelManager::GetInstans()->LoadModel("sphere.gltf");
-	ModelManager::GetInstans()->LoadModel("player.gltf");
-	ModelManager::GetInstans()->LoadModel("walk.gltf");
-	ModelManager::GetInstans()->LoadModel("testanimation.gltf");
-	ModelManager::GetInstans()->LoadModel("cube.obj");
-
-
-}
-
-void GamePlayScene::Loadparticle()
-{
-
-
-
-}
-
-void GamePlayScene::LoadAudio()
-{
-	//サウンドの読み込み
-	sampleSoundData = Audio::GetInstance()->SoundLoadWave("Resources/gamePlayBGM.wav");//今のところwavのみ対応
-
+	/*sprite->Draw();*/
 
 }
 
@@ -527,31 +231,57 @@ void GamePlayScene::GenerateObject3D()
 
 				Object3D* object3D_ = new Object3D();
 				object3D_->Initialize(Object3DCommon::GetInstance());
-				object3D_->SetModel("cube.obj");
+				object3D_->SetModel("blokc.obj");
 				blockobject3D[i][j] = object3D_;
 				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
 				//ライト
 				object3D_->SetLighting(true);
 				object3D_->SetDirectionalLightEnable(true);
 				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-
+				
 
 
 			}
 		}
 	}
 
+	ImGui::Begin("kankyoumap");
+
+
+	float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+	float toughness = object3D->GetoughnessforkankyouMap();
+	//環境マップ反射
+	// UI表示 & 値変更
+	if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+		object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+		terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
+
+	}
+	if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+		object3D->SettoughnessforkankyouMap(toughness);
+		terrain->SettoughnessforkankyouMap(toughness);
+	}
+
+
+
+
+	ImGui::End();
+
+
 
 }
 
-void GamePlayScene::StageEditer()
-{
 
+
+
+void GamePlayScene::Imguidebug()
+{
 	//マップ作製エディタ
 	editor.Run();
 
+
 	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
-	if (editor.GetReloadRequested() == true) {
+	if (editor.GetReloadRequested()==true) {
 		editor.SetReloadRequested(false);
 
 		std::string filePath = "Resources/Mapdata/";
@@ -570,9 +300,43 @@ void GamePlayScene::StageEditer()
 		// 再生成
 		GenerateObject3D();
 
-		
+
+		enemyManager_.reset();
+		enemyManager_ = std::make_unique<EnemyManager>();
+		enemyManager_->Initialize(mapChipField_);
+
+
+
+		collitionManager_->Initialize(player, enemyManager_.get());
 	}
+
+
+	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::Button("Switch to Main Camera")) {
+			CameraManager::GetInstance()->SetActiveCamera("maincam");
+			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(true);
+		}
+		if (ImGui::Button("Switch to Sub Camera")) {
+			CameraManager::GetInstance()->SetActiveCamera("debugcam");
+			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
+		}
+	}
+	
+
 }
 
-
+void GamePlayScene::Road()
+{
+	//3Dオブジェクト読み込み
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstans()->LoadModel("axis.obj");
+	ModelManager::GetInstans()->LoadModel("cube.obj");
+	ModelManager::GetInstans()->LoadModel("player.obj");
+	ModelManager::GetInstans()->LoadModel("blokc.obj");
+	ModelManager::GetInstans()->LoadModel("skyplane.obj");
+	ModelManager::GetInstans()->LoadModel("enemy.obj");
+	ModelManager::GetInstans()->LoadModel("gool.obj");
+	ModelManager::GetInstans()->LoadModel("bullet.obj");
+	ModelManager::GetInstans()->LoadModel("sphere.obj");
+}
 

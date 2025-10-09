@@ -131,6 +131,10 @@ public:
 	
 	
 
+	//getワールドトランスフォーム
+	Matrix4x4 GetWorldMatrix() { return worldMatrix; }
+
+	void SetEnableAnimation(bool enable) { enableAnimation_ = enable; }
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;//Object3DCommonのポインタ
@@ -181,9 +185,12 @@ private:
 	std::vector<Matrix4x4> skeletonPose_;
 
 	std::string skyboxFilePath_ ; // スカイボックスのファイルパス
-	std::string defaultEnvMapPath_ = "Resources/test.dds";
+
+	std::string defaultEnvMapPath_ = "Resources/skyBox.dds";
+
 	EnvironmentReflectionSetting* environmentReflectionSettingData; // 環境反射設定
 	Microsoft::WRL::ComPtr<ID3D12Resource> environmentReflectionSettingResource;
+	
 
 };
 

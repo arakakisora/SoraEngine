@@ -86,10 +86,13 @@ namespace MyMath {
 	float Dot(const Vector3& v1, const float& num);
 	float Dot(const Quaternion& q1, const Quaternion& q2);
 	float Length(const Vector3& v);
-	
+
 
 	//Lerp
 	Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+	//Slerp
+	Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t);
+	float fLerp(float v1, float v2, float t);
 
 	//透視投影行列
 	Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearCilp, float farClip);
@@ -139,6 +142,11 @@ namespace MyMath {
 	void MatrixImGuiText(const Matrix4x4& matrix, const char* label);
 	void QuaternionImGuiText(const Quaternion& quaternion, const char* label);
 	void Vector3ImGuiText(const Vector3& vector, const char* label);
+
+	
+
+	Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
+
 }
 
 

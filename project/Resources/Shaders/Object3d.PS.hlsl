@@ -182,7 +182,7 @@ PixelShaderOutput main(VertexShaderOutput input)
         output.color.rgb = lighting;
         output.color.a = gMaterial.color.a * textureColor.a;
 
-        output.color.rgb += environmentColor.rgb*gEnvReflection.reflectionStrength; //環境マップの色を加算
+        //output.color.rgb += environmentColor.rgb*gEnvReflection.reflectionStrength; //環境マップの色を加算
         
         
         

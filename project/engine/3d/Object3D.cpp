@@ -66,7 +66,9 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	TextureManager::GetInstance()->LoadTexture(defaultEnvMapPath_);
 	environmentReflectionSettingResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(EnvironmentReflectionSetting));
 	environmentReflectionSettingResource->Map(0, nullptr, reinterpret_cast<void**>(&environmentReflectionSettingData));
-	environmentReflectionSettingData->reflectionStrength = 0.0f; //反射率
+
+	environmentReflectionSettingData->reflectionStrength =0.0f; //反射率
+
 	environmentReflectionSettingData->roughness = 0.0f; //ぼかし率
 
 

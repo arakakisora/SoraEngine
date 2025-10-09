@@ -1,6 +1,8 @@
 #pragma once
 #include "RenderingData.h"
 #include <WinApp.h>
+
+class Object3D;
 class Camera
 {
 public:
@@ -11,6 +13,9 @@ public:
 	
 	Camera();
 	void Update();
+
+	void SetFollowTarget(Object3D *obj, const Vector3& offset);
+	void SetFollowMode(bool enable);
 
 	void SetRotate(const Vector3& rotate) { this->transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { this->transform.translate = translate; }
@@ -40,6 +45,9 @@ private:
 	float nearCilp=0.1f;
 	float farClip=100.0f;
 
-	
+	Object3D* followTarget = nullptr;
+	Vector3 followOffset = { 0.0f, 0.0f, -15.0f };
+	bool followMode = false;
+	static inline const float interpolationRate = 0.5f; // 補間率
 };
 

@@ -5,6 +5,7 @@
 
 
 
+
 class LineCommon;
 class Line
 {

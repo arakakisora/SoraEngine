@@ -255,9 +255,29 @@ float MyMath::Length(const Vector3& v)
 
 Vector3 MyMath::Lerp(const Vector3& v1, const Vector3& v2, float t)
 {
-	
+
 	return v1 + (v2 - v1) * t;
 
+}
+
+Vector3 MyMath::Slerp(const Vector3& v1, const Vector3& v2, float t)
+{
+	float dot = Dot(v1, v2);
+	if (dot < -1.0f) { dot = -1.0f; }
+	if (dot > 1.0f) { dot = 1.0f; }
+	float theta = std::acos(dot);
+	float sinTheta = std::sin(theta);
+	if (sinTheta < 0.001f) {
+		return Lerp(v1, v2, t);
+	}
+	float a = std::sin((1 - t) * theta) / sinTheta;
+	float b = std::sin(t * theta) / sinTheta;
+	return v1 * a + v2 * b;
+}
+
+float MyMath::fLerp(float v1, float v2, float t)
+{
+	return v1 + (v2 - v1) * t;
 }
 
 Matrix4x4 MyMath::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearCilp, float farClip)
@@ -662,7 +682,7 @@ Quaternion MyMath::Slerp(const Quaternion& start, const Quaternion& end, float t
 
 Quaternion MyMath::Normalize(const Quaternion& quaternion)
 {
-	
+
 	float length = sqrtf(quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z + quaternion.w * quaternion.w);
 	if (length == 0.0f) {
 		return { 0.0f, 0.0f, 0.0f, 1.0f }; // ゼロ除算を避けるためのデフォルト値
@@ -721,6 +741,16 @@ void MyMath::Vector3ImGuiText(const Vector3& vector, const char* label)
 	ImGui::SameLine();
 	ImGui::Text("z: %.02f", vector.z);
 
+}
+
+Vector3 MyMath::TransformNormal(const Vector3& v, const Matrix4x4& m)
+{
+	Vector3 result{
+		{v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0]},
+		{v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1]},
+		{v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]},
+	};
+	return result;
 }
 
 

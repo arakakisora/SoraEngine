@@ -1,12 +1,9 @@
 #include "GameOverScene.h"
-#include "GameClearScene.h"
-#include "Object3DCommon.h"
-#include "SpriteCommon.h"
-#include "ImGuiManager.h"
-#ifdef _DEBUG
-#include <imgui.h>
-
-#endif // _DEBUG
+#include <Input.h>
+#include <SceneManager.h>
+#include <Object3DCommon.h>
+#include <SpriteCommon.h>
+ 
 
 #include "Input.h"
 #include "SceneManager.h"
@@ -15,31 +12,33 @@
 void GameOverScene::Initialize()
 {
 
-	CameraManager::GetInstance()->Initialize();
+	//titeleの生成
+	sprite = new Sprite();
+	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameover.png");
+	//titleSprite->SetSize({ 1280,720 });
 
 }
 
 void GameOverScene::Finalize()
 {
+	delete sprite;
+	sprite = nullptr;
+
 }
 
 void GameOverScene::Update()
 {
-#ifdef _DEBUG
-	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Text("gameOverScene");
-		if (ImGui::Button("TitleScene"))
-		{
-			SceneManager::GetInstance()->ChangeScene("TITELE");
-		}
+
+
+	//スプライトの更新
+	sprite->Update();
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 
 
 
-
+		SceneManager::GetInstance()->ChangeScene("TITELE");
 	}
 
-#endif // _DEBUG
 
 
 }
@@ -58,7 +57,7 @@ void GameOverScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-
-#pragma endregion
+	//Spriteの描画
+	sprite->Draw();
 
 }

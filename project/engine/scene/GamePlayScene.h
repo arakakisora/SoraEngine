@@ -8,15 +8,23 @@
 #include "BaseScene.h"
 
 #include "SceneManager.h"
-#include "ParticleEmitter.h"
-#include "ParticleMnager.h"
-#include "Line.h"
-
-#include "SkyBox.h"
 #include "MapChipField.h"
+
+
+#include <vector>
+#include <Player.h>
+#include <Enemy.h>
+#include <ParticleEmitter.h>
+
+#include "EnemyManager.h"	
+#include <memory>
+#include "CollisionManager.h"
+
+
+#include "Goal.h"
+#include "SkyBox.h"
+
 #include "StageEditor.h"
-
-
 class GamePlayScene :public BaseScene
 {
 public:
@@ -38,41 +46,57 @@ public:
 	/// </summary>
 	void Draw()override;
 
-	void LoadModel();
-	void Loadparticle();
-	void LoadAudio();
+
 	/// ブロックの生成
 	void GenerateObject3D();
-	void StageEditer();
 
-private:
-	std::unique_ptr<Camera> camera1;
-	std::unique_ptr<Camera> camera2;
-	std::unique_ptr<Object3D> object3D;
-	std::unique_ptr<Object3D> terrain;
+	////当たり判定のまとまり
+	//void CheckAllCollisions();
 
-	//particle
-	std::unique_ptr<ParticleEmitter> particleEmitter;
-	std::unique_ptr<ParticleEmitter> particleEmitter2;
-	bool light = true;
-	bool directionLight = true;
-	bool pointLight = false;
-	bool spotLight = false;
-	std::unique_ptr<Sprite> sprite;
-	SoundData sampleSoundData;//サウンドデータ
+	void Imguidebug();
+
+	void Road();
+
+public:
+
 	
-	bool number = 0;
 
-	std::unique_ptr<Line> line;
 
-	Vector3 startline;
-	Vector3 endline;
+	//カメラのポインタ
+	Camera* camera = nullptr;
+	Camera* debugCamera = nullptr;
+	//スプライトの初期化
+	Object3D* object3D2nd = nullptr;
+	//player
+	Player* player = nullptr;
+	Goal* goal = nullptr; // ゴールオブジェクト
 
-	std::unique_ptr<SkyBox> skyBox;
-	
-	MapChipField* mapChipField_;
-	StageEditor editor;
+	//wvpData用のTransform変数を作る
+	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	//mapchip
+	//ブロック
 	std::vector<std::vector<Object3D*>> blockobject3D;
+	MapChipField* mapChipField_;
 
+	//エネミー
+	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
+
+
+	// SkyDome
+	Object3D* skydome_ = nullptr;
+
+	//当たり判定
+	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
+
+
+	StageEditor editor;
+	//debug用
+#ifdef _DEBUG
+	
+#endif // _DEBUG
+
+	
+	
 };
 
