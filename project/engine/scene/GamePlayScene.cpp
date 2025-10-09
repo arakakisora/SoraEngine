@@ -79,10 +79,6 @@ void GamePlayScene::Initialize()
 	goal = new Goal();
 	goal->Initialize(mapChipField_);
 
-	// MapChipFiled
-	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/stage1.csv");//testmap blocks.csv
-	GenerateObject3D();
 	
 
 
