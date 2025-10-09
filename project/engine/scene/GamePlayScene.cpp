@@ -102,14 +102,14 @@ void GamePlayScene::Finalize()
 	}
 	blockobject3D.clear();
 
-	//delete object3D;
-	delete object3D2nd;
+	
 	delete camera;
 	delete debugCamera;
 	delete mapChipField_;
 	delete player;
 	delete skydome_;
 	delete goal;
+	delete object3D2nd;
 	
 	
 }
@@ -167,7 +167,6 @@ void GamePlayScene::Draw()
 	//SkyDome
 	skydome_->Draw();
 	//goal->Draw();
-=======
 
 
 
@@ -248,19 +247,19 @@ void GamePlayScene::GenerateObject3D()
 	ImGui::Begin("kankyoumap");
 
 
-	float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
-	float toughness = object3D->GetoughnessforkankyouMap();
-	//環境マップ反射
-	// UI表示 & 値変更
-	if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
-		object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
-		terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
+	//float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+	//float toughness = object3D->GetoughnessforkankyouMap();
+	////環境マップ反射
+	//// UI表示 & 値変更
+	//if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+	//	object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+	//	terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
 
-	}
-	if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
-		object3D->SettoughnessforkankyouMap(toughness);
-		terrain->SettoughnessforkankyouMap(toughness);
-	}
+	//}
+	//if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+	//	object3D->SettoughnessforkankyouMap(toughness);
+	//	terrain->SettoughnessforkankyouMap(toughness);
+	//}
 
 
 
