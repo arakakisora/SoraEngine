@@ -56,6 +56,7 @@ void TitleScene::Initialize() {
 void TitleScene::Finalize() {
 	delete titleObj_;
 	delete object3D_;
+	delete camera;
 	
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 }
