@@ -85,9 +85,9 @@ public:
 	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
 
 
+	StageEditor editor;
 	//debug用
 #ifdef _DEBUG
-	StageEditor editor;
 	
 #endif // _DEBUG
 

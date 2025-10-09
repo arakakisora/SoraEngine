@@ -198,24 +198,50 @@
     <ClCompile Include="engine\scene\TitleScene.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
-    <ClCompile Include="application\enemy\Enemy.cpp" />
-    <ClCompile Include="application\enemy\EnemyBase.cpp" />
-    <ClCompile Include="application\enemy\EnemyManager.cpp" />
-    <ClCompile Include="application\map\MapChipField.cpp" />
-    <ClCompile Include="application\map\StageEditor.cpp" />
-    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
-    <ClCompile Include="application\particle\CollisionManager.cpp" />
-    <ClCompile Include="application\enemy\Enemy2.cpp" />
-    <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
-    <ClCompile Include="engine\fade\FadeManager.cpp" />
-    <ClCompile Include="application\gaol\Goal.cpp" />
-    <ClCompile Include="application\player\Player.cpp" />
-    <ClCompile Include="application\player\PlayerBullet.cpp" />
     <ClCompile Include="engine\Line\Line.cpp">
       <Filter>engine\ソースファイルcpp\Line</Filter>
     </ClCompile>
     <ClCompile Include="engine\Line\LineCommon.cpp">
       <Filter>engine\ソースファイルcpp\Line</Filter>
+    </ClCompile>
+    <ClCompile Include="application\enemy\Enemy.cpp">
+      <Filter>application\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\enemy\Enemy2.cpp">
+      <Filter>application\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\enemy\EnemyBase.cpp">
+      <Filter>application\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\enemy\EnemyManager.cpp">
+      <Filter>application\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="application\player\PlayerBullet.cpp">
+      <Filter>application\player</Filter>
+    </ClCompile>
+    <ClCompile Include="application\player\Player.cpp">
+      <Filter>application\player</Filter>
+    </ClCompile>
+    <ClCompile Include="application\map\MapChipField.cpp">
+      <Filter>application\map</Filter>
+    </ClCompile>
+    <ClCompile Include="application\map\StageEditor.cpp">
+      <Filter>application\map</Filter>
+    </ClCompile>
+    <ClCompile Include="application\particle\ChargeBehabiaor.cpp">
+      <Filter>application\particle</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp">
+      <Filter>application\particle</Filter>
+    </ClCompile>
+    <ClCompile Include="application\gaol\Goal.cpp">
+      <Filter>application\colition</Filter>
+    </ClCompile>
+    <ClCompile Include="application\particle\CollisionManager.cpp">
+      <Filter>application\colition</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\fade\FadeManager.cpp">
+      <Filter>engine\ソースファイルcpp\fade</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -363,21 +389,49 @@
     <ClInclude Include="engine\skybox\SkyBoxCommon.h">
       <Filter>engine\ヘッダーファイル\skybox</Filter>
     </ClInclude>
-    <ClInclude Include="application\enemy\Enemy.h" />
-    <ClInclude Include="application\enemy\EnemyBase.h" />
-    <ClInclude Include="application\enemy\EnemyManager.h" />
-    <ClInclude Include="application\map\MapChipField.h" />
-    <ClInclude Include="application\map\StageEditor.h" />
-    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
-    <ClInclude Include="application\particle\CollisionManager.h" />
-    <ClInclude Include="application\enemy\Enemy2.h" />
-    <ClInclude Include="engine\particle\plyerpaticleBehavior.h" />
-    <ClInclude Include="engine\fade\FadeManager.h" />
-    <ClInclude Include="application\gaol\Goal.h" />
     <ClInclude Include="application\map\GridCell.h" />
-    <ClInclude Include="application\map\MapType.h" />
-    <ClInclude Include="application\player\Player.h" />
-    <ClInclude Include="application\player\PlayerBullet.h" />
+    <ClInclude Include="application\enemy\Enemy.h">
+      <Filter>application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\enemy\Enemy2.h">
+      <Filter>application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\enemy\EnemyBase.h">
+      <Filter>application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\enemy\EnemyManager.h">
+      <Filter>application\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="application\player\PlayerBullet.h">
+      <Filter>application\player</Filter>
+    </ClInclude>
+    <ClInclude Include="application\player\Player.h">
+      <Filter>application\player</Filter>
+    </ClInclude>
+    <ClInclude Include="application\map\MapChipField.h">
+      <Filter>application\map</Filter>
+    </ClInclude>
+    <ClInclude Include="application\map\MapType.h">
+      <Filter>application\map</Filter>
+    </ClInclude>
+    <ClInclude Include="application\map\StageEditor.h">
+      <Filter>application\map</Filter>
+    </ClInclude>
+    <ClInclude Include="application\particle\ChargeBehabiaor.h">
+      <Filter>application\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\particle\plyerpaticleBehavior.h">
+      <Filter>application\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="application\gaol\Goal.h">
+      <Filter>application\gaol</Filter>
+    </ClInclude>
+    <ClInclude Include="application\particle\CollisionManager.h">
+      <Filter>application\colition</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\fade\FadeManager.h">
+      <Filter>engine\ヘッダーファイル\fade</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
@@ -435,9 +489,6 @@
     </Filter>
     <Filter Include="Resources\Shaders">
       <UniqueIdentifier>{8fa53334-ede0-4695-bddd-0601f0b37cd6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソースファイルcpp\skybox">
-      <UniqueIdentifier>{6f71c67f-02b3-44ad-a06f-d3dd7c6a32df}</UniqueIdentifier>
     </Filter>
     <Filter Include="engine">
       <UniqueIdentifier>{5db85435-4c34-4176-9e9d-7d5442c47ea4}</UniqueIdentifier>
@@ -517,15 +568,6 @@
     <Filter Include="application">
       <UniqueIdentifier>{0ebb6113-e1aa-4fff-96b0-e09ef70726aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="application\NewFilter4">
-      <UniqueIdentifier>{d7e5402f-9854-4507-9a1f-439afcf247dd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\NewFilter5">
-      <UniqueIdentifier>{84608be8-4a76-4651-84c3-8f3765b17c04}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="application\NewFilter6">
-      <UniqueIdentifier>{33a01d31-0352-4035-b1be-a65f921dbed7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="application\enemy">
       <UniqueIdentifier>{c20054c7-d027-4fe1-a34d-53e496737964}</UniqueIdentifier>
     </Filter>
@@ -534,6 +576,21 @@
     </Filter>
     <Filter Include="application\map">
       <UniqueIdentifier>{8f24b6b8-edaa-4d85-842a-eb552ae0f2ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\player">
+      <UniqueIdentifier>{d7e5402f-9854-4507-9a1f-439afcf247dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\particle">
+      <UniqueIdentifier>{84608be8-4a76-4651-84c3-8f3765b17c04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="application\colition">
+      <UniqueIdentifier>{33a01d31-0352-4035-b1be-a65f921dbed7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine\ソースファイルcpp\fade">
+      <UniqueIdentifier>{fe6ea16e-dd54-4ad4-ae61-aa46a78c3ab5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engine\ヘッダーファイル\fade">
+      <UniqueIdentifier>{b472f11b-eb62-41f3-8977-60ed99325a7c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
