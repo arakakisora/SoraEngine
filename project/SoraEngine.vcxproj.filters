@@ -243,6 +243,8 @@
     <ClCompile Include="engine\fade\FadeManager.cpp">
       <Filter>engine\ソースファイルcpp\fade</Filter>
     </ClCompile>
+    <ClCompile Include="StageEditor.cpp" />
+    <ClCompile Include="MapChipField.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -432,6 +434,8 @@
     <ClInclude Include="engine\fade\FadeManager.h">
       <Filter>engine\ヘッダーファイル\fade</Filter>
     </ClInclude>
+    <ClInclude Include="StageEditor.h" />
+    <ClInclude Include="MapChipField.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

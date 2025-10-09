@@ -66,7 +66,9 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	TextureManager::GetInstance()->LoadTexture(defaultEnvMapPath_);
 	environmentReflectionSettingResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(EnvironmentReflectionSetting));
 	environmentReflectionSettingResource->Map(0, nullptr, reinterpret_cast<void**>(&environmentReflectionSettingData));
+
 	environmentReflectionSettingData->reflectionStrength =0.0f; //反射率
+
 	environmentReflectionSettingData->roughness = 0.0f; //ぼかし率
 
 
@@ -93,7 +95,7 @@ void Object3D::Update()
 		SkeletonUpdate(model_->GetSkeleton());
 		SkinClusterUpdate(model_->GetSkinCluster(), model_->GetSkeleton());
 
-		
+
 
 		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
 		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
@@ -124,7 +126,7 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
 		cameraForGpu->worldPosition = cameraPosition;
-		
+
 
 
 
@@ -134,7 +136,7 @@ void Object3D::Update()
 		transformaitionMatrixData->World = worldMatrix;
 	}
 
-	
+
 }
 
 void Object3D::SkeletonUpdate(Skeleton& skeleton)
@@ -160,7 +162,7 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 		}
 		skeletonPose_[joint.index] = joint.skeletonSpaceMatrix;
 	}
-	
+
 }
 
 void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)

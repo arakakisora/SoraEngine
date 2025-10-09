@@ -10,6 +10,7 @@
 #include "SceneManager.h"
 #include "MapChipField.h"
 
+
 #include <vector>
 #include <Player.h>
 #include <Enemy.h>
@@ -18,6 +19,7 @@
 #include "EnemyManager.h"	
 #include <memory>
 #include "CollisionManager.h"
+
 
 #include "Goal.h"
 #include "SkyBox.h"
@@ -44,6 +46,7 @@ public:
 	/// </summary>
 	void Draw()override;
 
+
 	/// ブロックの生成
 	void GenerateObject3D();
 
@@ -57,6 +60,7 @@ public:
 public:
 
 	
+
 
 	//カメラのポインタ
 	Camera* camera = nullptr;
@@ -77,6 +81,7 @@ public:
 
 	//エネミー
 	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
+
 
 	// SkyDome
 	Object3D* skydome_ = nullptr;

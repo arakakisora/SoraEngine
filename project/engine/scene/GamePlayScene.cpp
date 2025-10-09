@@ -15,6 +15,7 @@
 void GamePlayScene::Initialize()
 {
 
+
 	//カメラの生成	
 	camera = new Camera();
 	camera->SetRotate({ 0,0,0, });
@@ -31,6 +32,7 @@ void GamePlayScene::Initialize()
 
 	//モデルの読み込み
 	Road();
+
 
 
 	// MapChipFiled
@@ -77,12 +79,18 @@ void GamePlayScene::Initialize()
 	goal = new Goal();
 	goal->Initialize(mapChipField_);
 
+	// MapChipFiled
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/stage1.csv");//testmap blocks.csv
+	GenerateObject3D();
+	
 
 
 }
 
 void GamePlayScene::Finalize()
 {
+
 	//object3Dの解放
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
@@ -110,6 +118,7 @@ void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
 
 	skydome_->Update();
 	goal->Update(player->GetGoal());
@@ -158,6 +167,9 @@ void GamePlayScene::Draw()
 	//SkyDome
 	skydome_->Draw();
 	//goal->Draw();
+=======
+
+
 
 	//Playerの描画
 	if (player->GetIsDead_() == false) {
@@ -171,6 +183,7 @@ void GamePlayScene::Draw()
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{
+
 		for (Object3D* obj : objext3dLine)
 		{
 			if (!obj) {
@@ -178,6 +191,7 @@ void GamePlayScene::Draw()
 			}
 			obj->Draw();
 		}
+
 	}
 
 
@@ -231,8 +245,32 @@ void GamePlayScene::GenerateObject3D()
 		}
 	}
 
+	ImGui::Begin("kankyoumap");
+
+
+	float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+	float toughness = object3D->GetoughnessforkankyouMap();
+	//環境マップ反射
+	// UI表示 & 値変更
+	if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+		object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+		terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
+
+	}
+	if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+		object3D->SettoughnessforkankyouMap(toughness);
+		terrain->SettoughnessforkankyouMap(toughness);
+	}
+
+
+
+
+	ImGui::End();
+
+
 
 }
+
 
 
 
@@ -240,6 +278,7 @@ void GamePlayScene::Imguidebug()
 {
 	//マップ作製エディタ
 	editor.Run();
+
 
 	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
 	if (editor.GetReloadRequested()==true) {
@@ -261,13 +300,16 @@ void GamePlayScene::Imguidebug()
 		// 再生成
 		GenerateObject3D();
 
+
 		enemyManager_.reset();
 		enemyManager_ = std::make_unique<EnemyManager>();
 		enemyManager_->Initialize(mapChipField_);
 
 
+
 		collitionManager_->Initialize(player, enemyManager_.get());
 	}
+
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
@@ -297,3 +339,4 @@ void GamePlayScene::Road()
 	ModelManager::GetInstans()->LoadModel("bullet.obj");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
 }
+
