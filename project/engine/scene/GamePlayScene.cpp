@@ -14,7 +14,8 @@
 
 void GamePlayScene::Initialize()
 {
-
+	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.StartFadeIn();
 
 	//カメラの生成	
 	camera = new Camera();
@@ -114,7 +115,7 @@ void GamePlayScene::Update()
 {
 	//カメラの更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
-
+	fadeManager_.Update();
 
 	skydome_->Update();
 	goal->Update(player->GetGoal());
@@ -200,7 +201,7 @@ void GamePlayScene::Draw()
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
 	/*sprite->Draw();*/
-
+	fadeManager_.Draw();
 }
 
 void GamePlayScene::GenerateObject3D()
