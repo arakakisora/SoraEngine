@@ -30,7 +30,22 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	graphicsPipeline_->Initialize(dxCommon_);
 
 	graphicsPipeline_->RootSignatureCopyImageCreate();
-	graphicsPipeline_->CreateAllPostEffects(); // ←これだけ！
+	graphicsPipeline_->CreateAllPostEffects(); 
+
+
+
+	// 前シーン保存用テクスチャ（ofscreenと同サイズ・同フォーマット）
+	prevTex_ = CreateRenderTargetTextureResource(
+		WinApp::kClientWindth, WinApp::kClientHeight,
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, clearColor);
+
+	// SRV確保（t0用）
+	prevSrvIndex_ = srvManager_->Allocate();
+	srvManager_->CreateSRVforTexture2D(prevSrvIndex_, prevTex_.Get(),
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, renderTargetMetadata_);
+
+	// CB作成（アップロードヒープ）
+	trailCB_ = dxCommon_->CreateUploadBuffer(sizeof(TrailParamsCPU));
 }
 
 void OfscreenRenderManager::Begin()
@@ -156,6 +171,7 @@ void OfscreenRenderManager::DrawImGui()
 	   "BoxFilter",
 	   "LuminanceOutline",
 	   "RadialBlur"
+	   "LightTrail"
 	};
 
 	// 現在の enum を int に変換
