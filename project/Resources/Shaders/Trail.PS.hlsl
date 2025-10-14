@@ -57,8 +57,8 @@ struct PixelShaderOutput
 
 PixelShaderOutput main(VertexShaderOutput input)
 {
-    float prevColor = gprev.Sample(gSamp, input.texcoord).rgb;
-    float nextColor = gNext.Sample(gSamp, input.texcoord).rgb;
+    float3 prevColor = gprev.Sample(gSamp, input.texcoord).rgb;
+    float3 nextColor = gNext.Sample(gSamp, input.texcoord).rgb;
     
     float m = mainMask(input.texcoord); //0=prev, 1=next
     float shift = (direction > 0 ? 1 : -1) * 0.0015 * (1.0 - m);
@@ -69,6 +69,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     float3 color = lerp(prevColor, nextCA, m);
     
-    return float4(color, 1.0f);
+    PixelShaderOutput output;
+    output.color = float4(color, 1.0f);
+    return output;
     
 }

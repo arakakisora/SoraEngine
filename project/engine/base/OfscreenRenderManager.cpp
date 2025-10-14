@@ -31,21 +31,14 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 
 	graphicsPipeline_->RootSignatureCopyImageCreate();
 	graphicsPipeline_->CreateAllPostEffects(); 
+	graphicsPipeline_->CreateLightTrail();
 
+	// ライトトレイルパス
+	trail_ = std::make_unique<LightTrail>();
+	trail_->Initialize(dxCommon_, srvManager_, graphicsPipeline_.get(),
+		WinApp::kClientWindth, WinApp::kClientHeight);
 
-
-	// 前シーン保存用テクスチャ（ofscreenと同サイズ・同フォーマット）
-	prevTex_ = CreateRenderTargetTextureResource(
-		WinApp::kClientWindth, WinApp::kClientHeight,
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, clearColor);
-
-	// SRV確保（t0用）
-	prevSrvIndex_ = srvManager_->Allocate();
-	srvManager_->CreateSRVforTexture2D(prevSrvIndex_, prevTex_.Get(),
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 1, renderTargetMetadata_);
-
-	// CB作成（アップロードヒープ）
-	trailCB_ = dxCommon_->CreateUploadBuffer(sizeof(TrailParamsCPU));
+	
 }
 
 void OfscreenRenderManager::Begin()
@@ -104,6 +97,13 @@ void OfscreenRenderManager::End()
 
 void OfscreenRenderManager::Draw()
 {
+	
+	if (currentEffectType_ == PostEffectType::LightTrail && trail_ && trail_->IsActive()) {
+		// ofscreen の SRV とリソース本体を渡す
+		trail_->Render(srvIndex, renderTargetTextureResource.Get());
+		return; // LightTrail のみで終了（下の通常描画はスキップ）
+	}
+
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateCopyImage(currentEffectType_));
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureCopyImage());
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -170,7 +170,7 @@ void OfscreenRenderManager::DrawImGui()
 	   "Vignette",
 	   "BoxFilter",
 	   "LuminanceOutline",
-	   "RadialBlur"
+	   "RadialBlur",
 	   "LightTrail"
 	};
 

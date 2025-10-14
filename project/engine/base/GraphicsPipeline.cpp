@@ -1013,24 +1013,28 @@ void GraphicsPipeline::CreateLightTrail()
 	RootSignatureTrailCreate();
 
 	IDxcBlob* vs = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
-	IDxcBlob* ps = dxCommon_->CompileShader(L"Resources/Shaders/LightTrail.PS.hlsl", L"ps_6_0");
+	IDxcBlob* ps = dxCommon_->CompileShader(L"Resources/Shaders/Trail.PS.hlsl", L"ps_6_0");
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.pRootSignature = rootSignatureTrail.Get();
-	desc.InputLayout = { nullptr, 0 };
+	desc.InputLayout = { nullptr, 0 };                              // フルスクリーントライアングル
 	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
 	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
-	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);               // 不透明でOK（合成はPS内）
+	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);       // 不透明でOK（合成はPS内）
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	desc.DepthStencilState.DepthEnable = FALSE;
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	desc.NumRenderTargets = 1;
 	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	desc.SampleDesc.Count = 1;
-	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc,
-		IID_PPV_ARGS(&graphicsPipelineStateTrail));
+
+	
+	desc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; // (= 0xFFFFFFFF)
+
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
+		&desc, IID_PPV_ARGS(&graphicsPipelineStateTrail));
 	assert(SUCCEEDED(hr));
 
 
