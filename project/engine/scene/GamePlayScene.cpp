@@ -318,6 +318,10 @@ void GamePlayScene::Imguidebug()
 		}
 	}
 	
+	if (ImGui::Button("TITELEScene"))
+	{
+		SceneManager::GetInstance()->ChangeScene("TITELE");
+	}
 
 }
 
