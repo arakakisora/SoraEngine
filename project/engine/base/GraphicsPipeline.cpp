@@ -1008,6 +1008,86 @@ void GraphicsPipeline::RootSignatureCopyImageCreate()
 
 }
 
+void GraphicsPipeline::CreateLightTrail()
+{
+	RootSignatureTrailCreate();
+
+	IDxcBlob* vs = dxCommon_->CompileShader(L"Resources/Shaders/Fullscreen.VS.hlsl", L"vs_6_0");
+	IDxcBlob* ps = dxCommon_->CompileShader(L"Resources/Shaders/LightTrail.PS.hlsl", L"ps_6_0");
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
+	desc.pRootSignature = rootSignatureTrail.Get();
+	desc.InputLayout = { nullptr, 0 };
+	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
+	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
+	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);               // 不透明でOK（合成はPS内）
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	desc.DepthStencilState.DepthEnable = FALSE;
+	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	desc.NumRenderTargets = 1;
+	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	desc.SampleDesc.Count = 1;
+	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&desc,
+		IID_PPV_ARGS(&graphicsPipelineStateTrail));
+	assert(SUCCEEDED(hr));
+
+
+
+}
+
+void GraphicsPipeline::RootSignatureTrailCreate()
+{
+	D3D12_ROOT_SIGNATURE_DESC desc{};
+	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	// t0, t1 を1テーブルでまとめて取る
+	D3D12_DESCRIPTOR_RANGE rangeSRV{};
+	rangeSRV.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	rangeSRV.BaseShaderRegister = 0;        // t0 開始
+	rangeSRV.NumDescriptors = 2;            // t0, t1 の2枚
+	rangeSRV.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// b0: トレイル用定数バッファ
+	D3D12_ROOT_PARAMETER params[2] = {};
+
+	// [0] CBV b0
+	params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	params[0].Descriptor.ShaderRegister = 0; // b0
+
+	// [1] SRV table (t0..t1)
+	params[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	params[1].DescriptorTable.NumDescriptorRanges = 1;
+	params[1].DescriptorTable.pDescriptorRanges = &rangeSRV;
+
+	desc.pParameters = params;
+	desc.NumParameters = _countof(params);
+
+	// Sampler（リニア・Clamp 推奨）
+	D3D12_STATIC_SAMPLER_DESC samp{};
+	samp.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	samp.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samp.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samp.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	samp.ShaderRegister = 0;
+	samp.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	desc.pStaticSamplers = &samp;
+	desc.NumStaticSamplers = 1;
+
+	ID3DBlob* sig = nullptr; ID3DBlob* err = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &sig, &err);
+	if (FAILED(hr)) { Logger::Log((char*)err->GetBufferPointer()); assert(false); }
+
+	hr = dxCommon_->GetDevice()->CreateRootSignature(0, sig->GetBufferPointer(), sig->GetBufferSize(),
+		IID_PPV_ARGS(&rootSignatureTrail));
+	assert(SUCCEEDED(hr));
+	
+
+}
+
 
 
 

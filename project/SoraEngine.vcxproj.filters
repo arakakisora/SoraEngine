@@ -76,6 +76,7 @@
     <FxCompile Include="Resources\Shaders\Vignette.VS.hlsl">
       <Filter>Resources\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\Trail.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

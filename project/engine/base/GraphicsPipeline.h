@@ -24,9 +24,11 @@ public:
 	void CreateSprite();//スプライト用
 	void RootSignatureSpriteCreate();//スプライト用
 
-	void CreateCopyImage(PostEffectType type, const std::wstring& psFilename); // ← 従来通りの単一バージョン
-	void CreateAllPostEffects(); // ← 新：複数ポストエフェクト用
+	void CreateCopyImage(PostEffectType type, const std::wstring& psFilename);
+	void CreateAllPostEffects(); 
 	void RootSignatureCopyImageCreate();
+	void CreateLightTrail(); //ライトトレイル用PSO作成
+	void RootSignatureTrailCreate();
 	
 
 	void CreateLine();//ライン用
@@ -67,6 +69,9 @@ public:
 	ID3D12RootSignature* GetRootSignatureSkybox()const { return rootSignatureSkybox.Get(); }
 	ID3D12PipelineState* GetGraphicsPipelineStateSkybox()const { return graphicsPipelineStateSkybox.Get(); }
 
+	//ライトトレイル用のPSO
+	ID3D12RootSignature* GetRootSignatureTrail()const { return rootSignatureTrail.Get(); }
+	ID3D12PipelineState* GetGraphicsPipelineStateTrail()const { return graphicsPipelineStateTrail.Get(); }
 private:
 	DirectXCommon* dxCommon_ = nullptr;
 
@@ -101,7 +106,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkybox = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkybox = nullptr;
 
-
+	//ライトトレイル用
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureTrail = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateTrail = nullptr;
 
 };
 
