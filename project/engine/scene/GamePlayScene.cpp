@@ -49,6 +49,15 @@ void GamePlayScene::Initialize()
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ playerPostion.x,playerPostion.y,-10, });
+	;
+	
+
+	// スタート演出生成
+	stageStartEffect_ = std::make_unique<StageStartEffect>();
+	stageStartEffect_->Initialize(player->GetObject3D(), playerPostion);
+	stageStartEffect_->Begin();
+	isStageStartPlaying_ = true;
 
 	//エネミー
 	enemyManager_ = std::make_unique<EnemyManager>();
@@ -56,7 +65,7 @@ void GamePlayScene::Initialize()
 
 	//当たり判定の初期化
 	collitionManager_ = std::make_unique<CollisionManager>();
-	collitionManager_->Initialize(player,enemyManager_.get());
+	collitionManager_->Initialize(player, enemyManager_.get());
 
 	//3Dオブジェクトの初期化
 	object3D2nd = new Object3D();
@@ -72,15 +81,15 @@ void GamePlayScene::Initialize()
 	skydome_->SetLighting(false);
 
 	//フォローカメラ設定
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), {0, 0, -15});
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 0, -15 });
 
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 
 	//ゴールの初期化
 	goal = new Goal();
 	goal->Initialize(mapChipField_);
 
-	
+
 
 
 }
@@ -99,7 +108,7 @@ void GamePlayScene::Finalize()
 	}
 	blockobject3D.clear();
 
-	
+
 	delete camera;
 	delete debugCamera;
 	delete mapChipField_;
@@ -107,8 +116,8 @@ void GamePlayScene::Finalize()
 	delete skydome_;
 	delete goal;
 	delete object3D2nd;
-	
-	
+
+
 }
 
 void GamePlayScene::Update()
@@ -120,9 +129,21 @@ void GamePlayScene::Update()
 	skydome_->Update();
 	goal->Update(player->GetGoal());
 
+	if (isStageStartPlaying_) {
+		
+		stageStartEffect_->Update(1.0f / 60.0f);
+		if (stageStartEffect_->IsFinished()) {
+			isStageStartPlaying_ = false;
+			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+		}
+		player->GetObject3D()->Update();
+	}
+	else {
+		//player->Update();
+		////プレイヤーの更新
+		player->Update();
 
-	//プレイヤーの更新
-	player->Update();
+	}
 	//エネミーの更新
 	enemyManager_->Update();
 	collitionManager_->Update();
@@ -144,38 +165,45 @@ void GamePlayScene::Update()
 			obj->Update();
 		}
 	}
-	
+
 
 
 #ifdef _DEBUG
 	Imguidebug();
-	
+
 #endif // _DEBUG
 }
 
 void GamePlayScene::Draw()
 {
-	
+
 
 	Object3DCommon::GetInstance()->SkinNingCommonDraw();
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
 	//SkyDome
-	skydome_->Draw();
+	//skydome_->Draw();
 	//goal->Draw();
 
 
+	if (isStageStartPlaying_) {
+		stageStartEffect_->Draw(); // ←ゲートのみ描画
+		player->Draw();            // ←プレイヤーを別に描画
+	}
+	else {
+		
+		//Playerの描画
+		if (player->GetIsDead_() == false) {
+			player->Draw();
 
-	//Playerの描画
-	if (player->GetIsDead_() == false) {
-		player->Draw();
+		}
 
 	}
 	//エネミーの描画o 
 	enemyManager_->Draw();
-	
-	
+
+
 
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{
@@ -234,34 +262,34 @@ void GamePlayScene::GenerateObject3D()
 				object3D_->SetLighting(true);
 				object3D_->SetDirectionalLightEnable(true);
 				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-				
+
 
 
 			}
 		}
 	}
 
-	ImGui::Begin("kankyoumap");
+	//ImGui::Begin("kankyoumap");
 
 
-	//float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
-	//float toughness = object3D->GetoughnessforkankyouMap();
-	////環境マップ反射
-	//// UI表示 & 値変更
-	//if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
-	//	object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
-	//	terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
+	////float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
+	////float toughness = object3D->GetoughnessforkankyouMap();
+	//////環境マップ反射
+	////// UI表示 & 値変更
+	////if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
+	////	object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
+	////	terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
 
-	//}
-	//if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
-	//	object3D->SettoughnessforkankyouMap(toughness);
-	//	terrain->SettoughnessforkankyouMap(toughness);
-	//}
-
-
+	////}
+	////if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
+	////	object3D->SettoughnessforkankyouMap(toughness);
+	////	terrain->SettoughnessforkankyouMap(toughness);
+	////}
 
 
-	ImGui::End();
+
+
+	//ImGui::End();
 
 
 
@@ -277,7 +305,7 @@ void GamePlayScene::Imguidebug()
 
 
 	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
-	if (editor.GetReloadRequested()==true) {
+	if (editor.GetReloadRequested() == true) {
 		editor.SetReloadRequested(false);
 
 		std::string filePath = "Resources/Mapdata/";
@@ -317,7 +345,7 @@ void GamePlayScene::Imguidebug()
 			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
 		}
 	}
-	
+
 	if (ImGui::Button("TITELEScene"))
 	{
 		SceneManager::GetInstance()->ChangeScene("TITELE");

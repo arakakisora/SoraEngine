@@ -29,6 +29,9 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 
+	
+	
+	
 
 
 }
@@ -72,11 +75,16 @@ void Player::Update() {
 		ImGui::DragFloat3("*LightDirection", &lightDirection.x, 0.01f);
 		object3D_->SetDirectionalLightDirection(lightDirection);
 
+		
+
 	}
 #endif // DEBUG_
 
 
 	PrayerMove();
+
+	
+	
 
 	if (Input::GetInstance()->TriggerKey(DIK_1)) {
 		currentWeaponType_ = WeaponType::Gatling;
@@ -133,6 +141,7 @@ void Player::Update() {
 
 void Player::Draw() {
 	object3D_->Draw();
+	
 
 	for (PlayerBullet* bullet : bullets_) {
 		bullet->Draw();

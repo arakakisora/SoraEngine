@@ -12,7 +12,7 @@
 #include "Object3D.h"
 #include <PlayerBullet.h>
 #include <ParticleEmitter.h>
-
+#include "StageStartEffect.h"
 enum class LRDirecion {
 	kright,
 	kLeft,
@@ -161,7 +161,7 @@ private:
 	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
 	
 	//Start演出
-	std::unique_ptr<Object3D> leftstartObject3D_ = nullptr;
-	std::unique_ptr<Object3D> rightstartObject3D_ = nullptr;
+
+
 
 };

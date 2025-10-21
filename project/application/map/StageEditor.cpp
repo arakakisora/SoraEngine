@@ -80,6 +80,7 @@ void StageEditor::RenderUI() {
     ImGui::RadioButton("Block", &selectedType_, 1); // ブロック
     ImGui::RadioButton("Enemy", &selectedType_, 2); // 敵
     ImGui::RadioButton("Player", &selectedType_, 3);// プレイヤー
+	ImGui::RadioButton("Goal", &selectedType_, 4);  // ゴール
 
     ImGui::End();
 

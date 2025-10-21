@@ -10,8 +10,8 @@
 		kBlank, // 空白
 		kBlock, // ブロック
 		kEnemy, // 敵
-		kGoal,  // ゴール
 		kEnemy2, // 2種類目の敵
+		kGoal,  // ゴール
 
 	};
 	struct MapChipData {

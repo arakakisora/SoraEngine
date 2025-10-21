@@ -26,6 +26,8 @@
 
 #include "StageEditor.h"
 #include "FadeManager.h"
+
+#include "StageStartEffect.h"
 class GamePlayScene :public BaseScene
 {
 public:
@@ -94,6 +96,9 @@ public:
 	StageEditor editor;
 
 	FadeManager fadeManager_;
+
+	std::unique_ptr<StageStartEffect> stageStartEffect_;
+	bool isStageStartPlaying_ = false;
 
 	//debug用
 #ifdef _DEBUG

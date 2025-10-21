@@ -12,6 +12,7 @@ enum class MapChipType {
 	kBlock, // ブロック
 	kEnemy, // 敵
 	kEnemy2, // 2種類目の敵
+	kGoal,  // ゴール
 
 };
 
@@ -26,7 +27,8 @@ inline const std::vector<MapChipInfo>& GetMapChipInfoList() {
 		{ MapChipType::kBlank, "Empty", Vector4(0.10f,0.10f,0.10f,1.0f) },
 		{ MapChipType::kBlock, "Block", Vector4(0.20f,0.80f,0.20f,1.0f) },
 		{ MapChipType::kEnemy, "Enemy", Vector4(0.90f,0.20f,0.20f,1.0f) },
-		{ MapChipType::kEnemy2,"Enemy2",Vector4(0.95f,0.85f,0.20f,1.0f) }
+		{ MapChipType::kEnemy2,"Enemy2",Vector4(0.95f,0.85f,0.20f,1.0f) },
+		{ MapChipType::kGoal,  "Goal",  Vector4(0.20f,0.20f,0.90f,1.0f) },
 
 	};
 	return kList;
@@ -69,7 +71,8 @@ namespace {
 		{"0", MapChipType::kBlank},
 		{"1", MapChipType::kBlock},
 		{"2", MapChipType::kEnemy},
-		{"3",MapChipType::kEnemy2}
+		{"3",MapChipType::kEnemy2},
+		{"4", MapChipType::kGoal}
 	
 
 	};
