@@ -243,6 +243,7 @@
     <ClCompile Include="engine\fade\FadeManager.cpp">
       <Filter>engine\ソースファイルcpp\fade</Filter>
     </ClCompile>
+    <ClCompile Include="StageStartEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -432,6 +433,7 @@
     <ClInclude Include="engine\fade\FadeManager.h">
       <Filter>engine\ヘッダーファイル\fade</Filter>
     </ClInclude>
+    <ClInclude Include="StageStartEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
