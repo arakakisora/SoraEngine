@@ -103,12 +103,13 @@ public:
 	// ゴールに到達したかどうか
 	bool GetGoal() const { return goal_; }
 
-	//get足らんスレート
-	//const Vector3& GetTranslate() const { return object3D_->GetTransform().translate; }
+	void StartDirection();
+
 private:
 	
 	//objec3D
 	Object3D *object3D_=nullptr;
+	Vector3 playerposition_ = {};
 
 	//バレットオブジェクト
 	Object3D* object3DBullet_ = nullptr;
@@ -159,4 +160,8 @@ private:
 	ParticleEmitter* dashparticleEmitter_ = nullptr; // プレイヤーのパーティクルエミッター
 	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
 	
+	//Start演出
+	std::unique_ptr<Object3D> leftstartObject3D_ = nullptr;
+	std::unique_ptr<Object3D> rightstartObject3D_ = nullptr;
+
 };
