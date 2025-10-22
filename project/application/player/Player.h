@@ -12,7 +12,7 @@
 #include "Object3D.h"
 #include <PlayerBullet.h>
 #include <ParticleEmitter.h>
-
+#include "StageStartEffect.h"
 enum class LRDirecion {
 	kright,
 	kLeft,
@@ -42,73 +42,199 @@ enum class WeaponType {
 
 class Enemy;
 class MapChipField;
+/// <summary>
+/// Playerクラス
+/// </summary>
 class Player {
 
 public:
+	~Player();
+	
+	/// <summary>
 	// 初期化
+	/// </summary>
 	void Initialize( const Vector3& position);
 
-	~Player();
-
+	/// <summary>
 	// 更新
+	/// </summary>
 	void Update();
 
+	/// <summary>
 	// 描画
+	/// </summary>
 	void Draw();
-
+	/// <summary>
+	/// 自機の動き
+	/// </summary>
 	void PrayerMove(); // 自機の動き
+
+	/// <summary>
+	// 自機の振り向き
+	/// </summary>
 	void PrayerTurn(); // 自機の振り向き
 
+	/// <summary>
 	//攻撃
+	/// </summary>
 	void Attack();
 
+	/// <summary>
+	/// イーズアウトサイン関数
+	/// </summary>
+	/// <param name="x"></param>
+	/// <returns></returns>
 	float EaseOutSine(float x);
+
+	/// <summary>
+	// トランスフォーム取得
+	///< / summary>
+	///<returns>トランスフォームを返す</returns>
 	const EulerTransform& GetTransform() { return object3D_->GetTransform(); }
+
+	/// <summary>
+	// 速度取得
+	///< summary>
 	const Vector3& GetVelocity() const { return velocity_; }
+
+	/// <summary>
+	// 速度設定
+	/// </summary>
 	void SetMapChipField(MapChipField* mapChipFild) { mapChipFild_ = mapChipFild; }
 
+	/// <summary>
 	// map衝突判定
+	/// </summary>
 	void MapCollision(CollisionMapInfo& info);
+	/// <summary>
+	/// コーナーのワールド座標を取得
+	/// </summary>
+	/// <param name="centor"></param>
+	/// <param name="corner"></param>
+	/// <returns></returns>
 	Vector3 CornerPosition(const Vector3& centor, Corner corner);
+
+	/// <summary>
+	// プレイヤーの移動処理
+	/// </summary>
 	void PlayerCollisionMove(const CollisionMapInfo& inffo);
+	/// <summary>
+	/// 天井衝突時の移動処理
+	/// </summary>
+	/// <param name="info"></param>
 	void CeilingCollisionMove(const CollisionMapInfo& info);
+	/// <summary>
+	// 着地時の移動処理
+	/// </summary>
+	/// <param name="info"></param>
 	void OnGroundSwitching(const CollisionMapInfo& info);
+	/// <summary>
+	// 壁衝突時の移動処理
+	/// </summary>
+	/// <param name="info"></param>
 	void HitWallCollisionMove(const CollisionMapInfo& info);
 
 	// 当たり判定
+	/// <summary>
+	/// 上衝突時の当たり判定
+	/// </summary>
+	/// <param name="info"></param>
 	void CollisionMapInfoTop(CollisionMapInfo& info);
+
+	/// <summary>
+	/// 底衝突時の当たり判定
+	/// </summary>
+	/// <param name="info"></param>
 	void CollisionMapInfoBootm(CollisionMapInfo& info);
+
+	/// <summary>
+	/// 右衝突時の当たり判定
+	/// </summary>
+	/// <param name="info"></param>
 	void CollisionMapInfoRight(CollisionMapInfo& info);
+
+	/// <summary>
+	/// 左衝突時の当たり判定
+	/// </summary>
+	/// <param name="info"></param>
 	void CollisionMapInfoLeft(CollisionMapInfo& info);
 
+	/// <summary>
+	/// warld座標を取得します
+	/// </summary>
 	Vector3 GetWorldPosition();
+
+	/// <summary>
+	/// AABBを取得します
+	/// </summary>
 	AABB GetAABB();
 	//void OnCollision(const Enemy*enemy);
 
+	/// <summary>
+	// 死亡しているかどうかを取得
+	/// </summary>
+	/// <returns></returns>
 	bool GetIsDead_() const { return isDead_; }
+
+	/// <summary>
+	/// 死亡しているかどうかを設定
+	/// </summary>
+	/// <param name="isDead"></param>
 	void SetIsDead(bool isDead) { isDead_ = isDead; }
 
+	/// <summary>
 	// 落下死の高さを設定
+	/// </summary>
 	void SetDeathHeight(float height) { deathHeight_ = height; }
 
 	// Getter
+
+	/// <summary>
+	/// 現在の武器タイプを取得します
+	/// </summary>
+	/// <returns> </returns>
 	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
+
+	/// <summary>
+	/// Object3Dを取得します
+	/// </summary>
 	Object3D* GetObject3D() const { return object3D_; }
 
+	/// <summary>
+	/// 右移動フラグを取得します
+	/// </summary>
+	/// <returns></returns>
 	bool GetPrayerMoveRight() { return playermoveright; }
+	/// <summary>
+	/// 左移動フラグを取得します
+	/// </summary>
+	/// <returns></returns>
 	bool GetPrayerMoveLeft() { return playermoveleft; }
+	/// <summary>
+	/// 右移動フラグを設定します
+	/// </summary>
+	/// <param name="right"></param>
 	void SetPrayerMoveRight(bool right) { playermoveright = right; }
+	/// <summary>
+	/// 左移動フラグを設定します
+	/// </summary>
+	/// <param name="left"></param>
 	void SetPrayerMoveLeft(bool left) { playermoveleft = left; }
-
+	/// <summary>
 	// ゴールに到達したかどうか
+	/// </summary>
 	bool GetGoal() const { return goal_; }
 
-	//get足らんスレート
-	//const Vector3& GetTranslate() const { return object3D_->GetTransform().translate; }
+	/// <summary>
+	// ゴールに到達したかどうかを設定します
+	/// </summary>
+	void StartDirection();
+
 private:
 	
 	//objec3D
 	Object3D *object3D_=nullptr;
+	Vector3 playerposition_ = {};
 
 	//バレットオブジェクト
 	Object3D* object3DBullet_ = nullptr;
@@ -159,4 +285,8 @@ private:
 	ParticleEmitter* dashparticleEmitter_ = nullptr; // プレイヤーのパーティクルエミッター
 	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
 	
+	//Start演出
+
+
+
 };

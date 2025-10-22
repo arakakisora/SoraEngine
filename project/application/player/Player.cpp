@@ -14,9 +14,9 @@
 
 void Player::Initialize(const Vector3& position) {
 
-	
-	
 
+
+	playerposition_ = position;
 	object3D_ = new Object3D();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player.obj");
@@ -29,10 +29,18 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 
-	////パーティクル
-	//ParticleMnager::GetInstance()->CreateParticleGroup("dash", "Resources/uvChecker_png.png", VerticesType::Quad, std::make_unique<ExhaustGasBehavior>());
-	//dashparticleEmitter_ = new ParticleEmitter(object3D_->GetTransform(), 1.5f, 0.0f, 1, "dash");
-	//
+	
+	
+	
+
+
+}
+
+void Player::StartDirection()
+{
+	
+	
+
 }
 
 Player::~Player()
@@ -67,11 +75,16 @@ void Player::Update() {
 		ImGui::DragFloat3("*LightDirection", &lightDirection.x, 0.01f);
 		object3D_->SetDirectionalLightDirection(lightDirection);
 
+		
+
 	}
 #endif // DEBUG_
 
 
 	PrayerMove();
+
+	
+	
 
 	if (Input::GetInstance()->TriggerKey(DIK_1)) {
 		currentWeaponType_ = WeaponType::Gatling;
@@ -80,7 +93,7 @@ void Player::Update() {
 	if (Input::GetInstance()->TriggerKey(DIK_2)) {
 		currentWeaponType_ = WeaponType::Cannon;
 		//弾のサイズを大きくする
-		
+
 	}
 
 	Attack();
@@ -128,6 +141,7 @@ void Player::Update() {
 
 void Player::Draw() {
 	object3D_->Draw();
+	
 
 	for (PlayerBullet* bullet : bullets_) {
 		bullet->Draw();
@@ -136,7 +150,7 @@ void Player::Draw() {
 
 void Player::PrayerMove() {
 
-		
+
 	if (onGround_) {
 		// 移動入力
 		// 左右移動操作
@@ -160,9 +174,8 @@ void Player::PrayerMove() {
 				accceleration.x += kAccleration;
 				playermoveright = true;
 				playermoveleft = false;
-				
-			}
-			else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+
+			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 
 				if (velocity_.x > 0.0f) {
 					velocity_.x *= (1.0f - kAttenuation);
@@ -176,7 +189,7 @@ void Player::PrayerMove() {
 				accceleration.x -= kAccleration;
 				playermoveleft = true;
 				playermoveright = false;
-				
+
 			}
 			velocity_.x += accceleration.x;
 			velocity_.y += accceleration.y;
@@ -184,8 +197,7 @@ void Player::PrayerMove() {
 
 			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 
-		}
-		else {
+		} else {
 
 			velocity_.x *= (1.0f - kAttenuation);
 			velocity_.y *= (1.0f - kAttenuation);
@@ -202,8 +214,7 @@ void Player::PrayerMove() {
 			velocity_.z += 0;
 		}
 
-	}
-	else {
+	} else {
 		// 落下速度
 		velocity_.x += 0;
 		velocity_.y += -kGravityAccleration;
@@ -326,8 +337,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 
 			onGround_ = false;
 
-		}
-		else {
+		} else {
 			// 移動後4つの計算
 			std::array<Vector3, kNumCorner> positionsNew;
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -346,8 +356,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 			if (mapChipType == MapChipType::kBlock) {
 				hit = true;
-			}
-			else if (mapChipType == MapChipType::kGoal) {
+			} else if (mapChipType == MapChipType::kGoal) {
 				goal_ = true;
 			}
 			// 右点の判定
@@ -355,8 +364,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 			if (mapChipType == MapChipType::kBlock) {
 				hit = true;
-			}
-			else if (mapChipType == MapChipType::kGoal) {
+			} else if (mapChipType == MapChipType::kGoal) {
 				goal_ = true;
 			}
 
@@ -366,8 +374,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			}
 		}
 
-	}
-	else {
+	} else {
 
 		if (info.landing) {
 
@@ -412,8 +419,7 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 	// 右点の判定
@@ -423,8 +429,7 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 	// hit
@@ -471,8 +476,7 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 
@@ -514,8 +518,7 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 
@@ -525,8 +528,7 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 	// hit
@@ -568,8 +570,7 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 
@@ -579,8 +580,7 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == MapChipType::kBlock) {
 		hit = true;
-	}
-	else if (mapChipType == MapChipType::kGoal) {
+	} else if (mapChipType == MapChipType::kGoal) {
 		goal_ = true;
 	}
 	// hit
@@ -618,9 +618,11 @@ AABB Player::GetAABB() {
 }
 
 
+
+
 void Player::Attack()
 {
-	
+
 	if (turnTimer_ > 0.0f) return;
 
 	// 武器ごとの設定
