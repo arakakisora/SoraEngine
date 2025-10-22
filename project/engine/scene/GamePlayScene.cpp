@@ -366,5 +366,6 @@ void GamePlayScene::Road()
 	ModelManager::GetInstans()->LoadModel("gool.obj");
 	ModelManager::GetInstans()->LoadModel("bullet.obj");
 	ModelManager::GetInstans()->LoadModel("sphere.obj");
+	ModelManager::GetInstans()->LoadModel("gate.obj");
 }
 
