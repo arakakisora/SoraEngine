@@ -11,8 +11,10 @@ void StageStartEffect::Initialize(Object3D* player, const Vector3& basePos) {
     gateRight_ = std::make_unique<Object3D>();
     gateLeft_->Initialize(Object3DCommon::GetInstance());
     gateRight_->Initialize(Object3DCommon::GetInstance());
-    gateLeft_->SetModel("plane.obj");
-    gateRight_->SetModel("plane.obj");
+    gateLeft_->SetModel("gate.obj");
+    gateLeft_->SetLighting(false);
+    gateRight_->SetModel("gate.obj");
+	gateRight_->SetLighting(false);
 
     // 基準位置から相対配置（左右対称）
     gateLeft_->SetTranslate({ basePos_.x - 1.0f, basePos_.y, basePos_.z - 0.5f });
