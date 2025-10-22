@@ -28,6 +28,11 @@
 #include "FadeManager.h"
 
 #include "StageStartEffect.h"
+
+/// <summary>
+/// ゲームプレイシーン
+/// メインシーン
+/// </summary>
 class GamePlayScene :public BaseScene
 {
 public:
@@ -51,18 +56,28 @@ public:
 
 
 	/// ブロックの生成
+
+	/// <summary>
+	/// マップのブロックを配置します
+	/// </summary>
 	void GenerateObject3D();
 
 	////当たり判定のまとまり
 	//void CheckAllCollisions();
 
+	/// <summary>
+	/// デバッグ用ImGui
+	/// </summary>
 	void Imguidebug();
 
+	/// <summary>
+	/// モデルをロードする
+	/// </summary>
 	void Road();
 
 public:
 
-	
+
 
 
 	//カメラのポインタ
@@ -102,10 +117,10 @@ public:
 
 	//debug用
 #ifdef _DEBUG
-	
+
 #endif // _DEBUG
 
-	
-	
+
+
 };
 

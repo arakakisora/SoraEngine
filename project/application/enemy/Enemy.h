@@ -11,6 +11,11 @@
 
 class Player;
 class PlayerBullet;
+
+/// <summary>
+/// Enemyクラス
+/// 敵の細かい部分を管理するクラス
+/// </summary>
 class Enemy {
 public:
 	~Enemy();
@@ -29,20 +34,47 @@ public:
 	/// </summary>
 	void Draw();
 
+	/// <summary>
+	/// ワールド座標を取得します
+	/// </summary>
+	/// <returns>vector3、ワールドポジションを返す</returns>
 	Vector3 GetWorldPosition();
+
+	/// <summary>
+	/// AABBを取得します
+	/// </summary>
 	AABB GetAABB();
 	
-
+	/// <summary>
+	/// 目の前にブロックがあるかどうか
+	/// </summary>
+	/// <returns>エネミー目の前にレイを出す向きに応じて代わる</returns>
 	Vector3 GetRayEndPosition();
+
+	/// <summary>
+	/// レイの先のマップチップ番号を取得
+	/// </summary>
+	/// <returns>レイに当たってるマップチップ番号</returns>
 	int GetRayMapChipNumber(MapChipField* mapChipField);
 
+	/// <summary>
 	// Object3D解放用のメソッド
+	/// </summary>
 	void ReleaseObject3D() {
 		delete object3D_;
 		object3D_ = nullptr;
 	}
+
+	/// <summary>
 	// 当たり判定
+	/// </summary>
+	/// <param name="bullet">プレイヤーの弾</param>
 	void OnCollision(const PlayerBullet* bullet);
+
+	/// <summary>
+	/// 死亡しているかどうか
+	/// </summary>
+	/// <returns></returns>
 	bool IsDead() const { return isDead_; }
 
 
