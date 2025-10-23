@@ -34,6 +34,7 @@
 class Framework
 {
 public:
+	virtual ~Framework() = default;
 	//ゲームの初期化
 	virtual void Initialize();
 	//終了
