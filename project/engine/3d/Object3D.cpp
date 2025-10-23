@@ -165,7 +165,7 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 
 }
 
-void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
+void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float time)
 {
 	//アニメーションがない場合
 	if (animation.nodeAnimations.empty()) {
@@ -178,9 +178,9 @@ void Object3D::ApplyAnimation(Skeleton& skeleton, const Animation& animation, fl
 		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end()) {
 			const NodeAnimation& nodeAnimation = it->second;
 
-			joint.transform.translate = CalculateValue(nodeAnimation.translate, animationTime);
-			joint.transform.rotate = CalculateValue(nodeAnimation.rotate, animationTime);
-			joint.transform.scale = CalculateValue(nodeAnimation.scale, animationTime);
+			joint.transform.translate = CalculateValue(nodeAnimation.translate, time);
+			joint.transform.rotate = CalculateValue(nodeAnimation.rotate, time);
+			joint.transform.scale = CalculateValue(nodeAnimation.scale,time);
 		}
 	}
 }

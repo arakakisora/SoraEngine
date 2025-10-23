@@ -30,12 +30,12 @@ public:
 	const std::string& GetName() const { return name_; }
 
 	//setter
-	void SetPosition(const Vector3& position) { this->transform_.translate = position; }
-	void SetTransform(const EulerTransform& transform) { this->transform_ = transform; }
-	void SetFrequency(const float frequency) { this->frequency = frequency; }
-	void SetFrequencyTime(const float frequencyTime) { this->frequencyTime = frequencyTime; }
-	void SetCount(const uint32_t count) { this->count = count; }
-	void SetName(const std::string& name) { name_ = name; }
+	void SetPosition(const Vector3& positionvalue) { this->transform_.translate = positionvalue; }
+	void SetTransform(const EulerTransform& transformvalue) { this->transform_ = transformvalue; }
+	void SetFrequency(const float frequencyvalue) { this->frequency = frequencyvalue; }
+	void SetFrequencyTime(const float frequencyTimevalue) { this->frequencyTime = frequencyTimevalue; }
+	void SetCount(const uint32_t countvalue) { this->count = countvalue; }
+	void SetName(const std::string& namevalue) { name_ = namevalue; }
 
 
 

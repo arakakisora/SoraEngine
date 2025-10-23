@@ -10,7 +10,7 @@ public:
 	//シーンの設定
 
 	//現在のシーンを取得
-	void SetNextScene(BaseScene* nextScene) { this ->nextScene = nextScene; };
+	void SetNextScene(BaseScene* nextSceneValue) { this ->nextScene = nextSceneValue; };
 	//シーンの更新
 	void Update();
 	//シーンの描画
@@ -19,7 +19,7 @@ public:
 	void Finalize();
 
 	//sceneFactoryの設定
-	void SetSceneFactory(AbstractSceneFactory* sceneFactory) { this->sceneFactory = sceneFactory; }
+	void SetSceneFactory(AbstractSceneFactory* sceneFactoryValue) { this->sceneFactory = sceneFactoryValue; }
 
 	void ChangeScene(const std::string &sceneName);
 	

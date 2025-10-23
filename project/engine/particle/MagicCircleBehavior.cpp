@@ -7,6 +7,7 @@
 Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
 	Particle particle;
+	rng = rng;
 
 	particle.transform.scale = initScale_;
 	particle.transform.rotate = initRotate_;
@@ -20,6 +21,7 @@ Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform tra
 
 void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materialData,float alpha)
 {
+	alpha = alpha;
 	// UVスクロール
 	materialData->uvTransform.m[3][0] += 0.01f;
 	materialData->uvTransform.m[3][0] = std::fmod(materialData->uvTransform.m[3][0], 1.0f);

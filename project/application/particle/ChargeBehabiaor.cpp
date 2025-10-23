@@ -8,7 +8,7 @@
 
 Particle ChargeBehabiaor::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
 {
-
+	rng = rng;
 	Particle particle;
 
 	particle.transform.translate = transform.translate;
@@ -28,6 +28,9 @@ Particle ChargeBehabiaor::Create(std::mt19937& rng, const EulerTransform transfo
 
 void ChargeBehabiaor::Update(Particle& particle, float dt, Material* matelialData, float alpha)
 {
+	matelialData = matelialData;
+	alpha = alpha;
+
 	particle.currentTime += dt;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
@@ -80,7 +83,9 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 
 void ExplosionBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
 {
+	alpha = alpha;
 	particle.currentTime += dt;
+	matelialData = matelialData;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 

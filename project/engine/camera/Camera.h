@@ -22,7 +22,7 @@ public:
 	void SetFovY(const float& fovy) { this->fovY = fovy; }
 	void SetAspectRatio(const float& aspectRation) { this->aspectRatio = aspectRation; }
 	void SetNearClip(const float& nearClip) { this->nearCilp = nearClip; }
-	void SetFarClip(const float& farClip) { this->farClip = farClip; }
+	void SetFarClip(const float& farClipValue) { this->farClip = farClipValue; }
 
 	const Matrix4x4& GetWorldMatrix()const { return worldMatrix; }
 	const Matrix4x4& GetViewMatrix()const { return viewMatrix; }

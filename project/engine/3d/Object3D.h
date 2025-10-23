@@ -51,7 +51,7 @@ public:
 	float GetoughnessforkankyouMap() { return environmentReflectionSettingData->roughness; }
 
 	//transrat
-	void SetTransform(const EulerTransform& transform) { this->transform = transform; }
+	void SetTransform(const EulerTransform& transformValue) { this->transform = transformValue; }
 	EulerTransform GetTransform() { return transform; }
 
 	

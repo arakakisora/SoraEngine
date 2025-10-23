@@ -30,7 +30,7 @@ void DirectXCommon::DeviceInitialize()
 #pragma region DxgiFactory
 	//DXGIファクターの生成
 
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
+	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
@@ -329,7 +329,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	DepthBufferInitialize();
 	DescriptorHeepInitialize();
 	RTVInitialize();
-	
+
 	DSVInitialize();
 	FenceInitialize();
 	ViewportInitialize();
@@ -358,10 +358,10 @@ void DirectXCommon::Begin()
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	//Transition Barrierを張る
 	commandList->ResourceBarrier(1, &barrier);
-	
+
 	//描画先のRTVとDSVを設定する
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-	
+
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -381,8 +381,7 @@ void DirectXCommon::Begin()
 
 void DirectXCommon::End()
 {
-	//バックバッファのインデックスを取得する
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
 	//画面に描く処理はすべて終わり、画面に映すので、状態遷移
 		//今回はRenderTragetからPresentにする
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -449,7 +448,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap
 	descriptorHeapDesc.Type = heaptype;//レンダーターゲットビュー用
 	descriptorHeapDesc.NumDescriptors = numDescriptrs;
 	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;//ダブルバッファ用に2つ。多くても別に構わない
-	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
+	hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
 	//ディスクリプトひーぷが作れなかったので起動できない
 	assert(SUCCEEDED(hr));
 	return descriptorHeap;
@@ -514,7 +513,7 @@ IDxcBlob* DirectXCommon::CompileShader(const std::wstring& filePath, const wchar
 	Log(ConvertString(std::format(L"Begin CompileShader,path:{},profile:{}\n", filePath, profile)));
 	//hlslファイルを読む
 	IDxcBlobEncoding* shaderSource = nullptr;
-	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 	//読めなかったら止める
 	assert(SUCCEEDED(hr));
 	//読み込んだファイルの内容を設定する
@@ -589,7 +588,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 
 	//実際に頂点リソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
+	hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE,
 		&vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 
@@ -615,7 +614,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(cons
 	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
 	//Resouceの作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
+	hr = device->CreateCommittedResource(
 		&heapProperties,//Heapの設定
 		D3D12_HEAP_FLAG_NONE,//Heapの特殊設定。特になし
 		&resouceDesc,//Resourceの設定
@@ -641,7 +640,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource(intermediateSize);
 	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresouces.size()), subresouces.data());
 
-	D3D12_RESOURCE_BARRIER barrier{};
+	//D3D12_RESOURCE_BARRIER provisionalbarrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	barrier.Transition.pResource = texture.Get();
@@ -685,13 +684,7 @@ void DirectXCommon::CommandKick()
 
 }
 
-void DirectXCommon::TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
-{
 
-
-
-
-}
 
 
 

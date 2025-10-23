@@ -4,10 +4,10 @@
 #include "PlayerBullet.h"
 #include "MyMath.h"
 
-void CollisionManager::Initialize(Player* player, EnemyManager* enemy)
+void CollisionManager::Initialize(Player* playerValue, EnemyManager* enemyValue)
 {
-	this->player = player;
-	this->enemy = enemy;
+	this->player = playerValue;
+	this->enemy = enemyValue;
 
 }
 
@@ -15,9 +15,9 @@ void CollisionManager::Update()
 {
 	AABB aabb1, aabb2;
 	aabb1 = player->GetAABB();
-	for (Enemy* enemy :enemy->GetEnemies()) {
+	for (Enemy* provisionalenemy :enemy->GetEnemies()) {
 
-		aabb2 = enemy->GetAABB();
+		aabb2 = provisionalenemy->GetAABB();
 		
 		if (MyMath::IsCollision(aabb1, aabb2)) {
 
@@ -29,11 +29,11 @@ void CollisionManager::Update()
 	// 弾と敵の衝突
 	for (PlayerBullet* bullet : player->GetBullets()) { // GetBullets を追加で実装
 		AABB bulletAABB = bullet->GetAABB();
-		for (Enemy* enemy : enemy->GetEnemies()) {
-			aabb2 = enemy->GetAABB();
+		for (Enemy* provisionalenemy : enemy->GetEnemies()) {
+			aabb2 = provisionalenemy->GetAABB();
 			if (MyMath::IsCollision(bulletAABB, aabb2)) {
 				bullet->OnCollison();  // 弾を削除
-				enemy->OnCollision(bullet); // 敵の処理
+				provisionalenemy->OnCollision(bullet); // 敵の処理
 				break; // 弾が消滅するので、これ以上判定を行わない
 			}
 		}

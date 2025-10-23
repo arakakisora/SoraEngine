@@ -11,8 +11,7 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	renderTargetTextureResource = CreateRenderTargetTextureResource(
 		WinApp::kClientWindth,
 		WinApp::kClientHeight,
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
-		clearColor
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
 	);
 	renderTargetTextureHandle = dxCommon_->GetRTVCPUDescriputorHandole(2);
 
@@ -106,7 +105,7 @@ void OfscreenRenderManager::Draw()
 
 
 
-Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& ClearColor)
+Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format)
 {
 	D3D12_RESOURCE_DESC resouceDesc{ };
 	resouceDesc.Width = width;//Textureの幅

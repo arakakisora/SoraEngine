@@ -4,6 +4,7 @@
 
 Particle AttackBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
+	lifetime = lifetime;
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
@@ -31,9 +32,9 @@ Particle AttackBehavior::Create(std::mt19937& randomEngine, const EulerTransform
 
 void AttackBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
 {
-
+	alpha = alpha;
 	matelialData= matelialData; // X方向スクロール
-	
+	dt = dt;
 	//パーティクルの位置を更新
 	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
 	//パーティクルの寿命を減らす
