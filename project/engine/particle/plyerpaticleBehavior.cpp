@@ -33,7 +33,8 @@ void plyerpaticleBehavior::Update(Particle& particle, float dt, Material* mateli
 {
 
 	matelialData= matelialData; // X方向スクロール
-	
+
+	alpha = alpha;
 	//パーティクルの位置を更新
 	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
 	//パーティクルの寿命を減らす
@@ -72,13 +73,10 @@ void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* material
 
 	// 時間と共に拡大していく（少し縦長）
 	float scale = 0.2f + 0.6f * t;
-	//particle.transform.scale = Vector3(scale, scale * 1.2f, scale); // Y方向に少し広げる
-
+	
+	alpha = alpha;
 	// 上昇
 	particle.transform.translate += particle.Velocity;
-
-	// フェードアウト
-	//particle.color.w = 0.6f * (1.0f - t);
 
 	// 時間更新
 	particle.currentTime += dt;

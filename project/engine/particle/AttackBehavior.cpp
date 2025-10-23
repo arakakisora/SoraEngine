@@ -31,7 +31,7 @@ Particle AttackBehavior::Create(std::mt19937& randomEngine, const EulerTransform
 
 void AttackBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
 {
-
+	alpha = alpha;
 	matelialData= matelialData; // X方向スクロール
 	
 	//パーティクルの位置を更新

@@ -260,21 +260,21 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 
 Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::string& filename)
 {
-	Animation animation;
+	Animation provisionalanimation;
 	Assimp::Importer importer;
 	std::string filepath = directoryPath + "/" + "models" + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filepath.c_str(), 0);
 	// アニメーションがない場合、空のAnimationを返す
 	if (scene->mNumAnimations == 0) {
-		return animation;
+		return provisionalanimation;
 	}
 	aiAnimation* animationAssimp = scene->mAnimations[0];//最初のアニメーションだけ採用
-	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
+	provisionalanimation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);//時間単位を秒に変換
 
 	for (uint32_t channelIndex = 0; channelIndex < animationAssimp->mNumChannels; ++channelIndex) {
 
 		aiNodeAnim* nodeAnimationAssimp = animationAssimp->mChannels[channelIndex];
-		NodeAnimation& nodeAnimation = animation.nodeAnimations[nodeAnimationAssimp->mNodeName.C_Str()];
+		NodeAnimation& nodeAnimation = provisionalanimation.nodeAnimations[nodeAnimationAssimp->mNodeName.C_Str()];
 
 		//アニメーションのキーフレームを取得
 		//位置
@@ -303,7 +303,7 @@ Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::
 		}
 
 	}
-	return animation;
+	return provisionalanimation;
 
 }
 

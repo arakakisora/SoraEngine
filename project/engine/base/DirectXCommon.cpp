@@ -381,8 +381,7 @@ void DirectXCommon::Begin()
 
 void DirectXCommon::End()
 {
-	//バックバッファのインデックスを取得する
-	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	
 	//画面に描く処理はすべて終わり、画面に映すので、状態遷移
 		//今回はRenderTragetからPresentにする
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -641,7 +640,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource(intermediateSize);
 	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subresouces.size()), subresouces.data());
 
-	D3D12_RESOURCE_BARRIER barrier{};
+	//D3D12_RESOURCE_BARRIER provisionalbarrier{};
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	barrier.Transition.pResource = texture.Get();
@@ -685,13 +684,7 @@ void DirectXCommon::CommandKick()
 
 }
 
-void DirectXCommon::TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
-{
 
-
-
-
-}
 
 
 

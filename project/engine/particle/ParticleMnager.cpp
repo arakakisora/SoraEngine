@@ -95,11 +95,11 @@ void ParticleMnager::Update()
 				continue;
 			}
 			float alpha1 =0.5;
-			float alpha=1.0f;
+			
 			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha1);
 			
 			
-			/*float alpha = 1.0f;*/
+			
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 			//ワールド行列を計算
