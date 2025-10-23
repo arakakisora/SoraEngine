@@ -13,7 +13,7 @@ public:
 	//初期化
 	/// </summary>
 	///<param name="player"></param> 
-	void Initialize(Player* player, EnemyManager* enemy);
+	void Initialize(Player* player, EnemyManager* enemyValue);
 	/// <summary>
 	//更新
 	/// </summary>

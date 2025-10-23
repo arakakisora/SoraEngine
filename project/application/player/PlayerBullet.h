@@ -66,6 +66,8 @@ public:
 	/// </summary>
 	void SetPower(int p) { power_ = p; }
 
+	Object3D* Getobject3DBullet_() { return object3D_; }
+
 
 private:
 

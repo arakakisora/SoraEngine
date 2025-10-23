@@ -36,7 +36,7 @@ public:
 	void Draw();
 	
 	//RenderTargetTextureの生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format, const Vector4& ClearColor);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format);
 
 	void SetPostEffectType(PostEffectType type) {
 		currentEffectType_ = type;

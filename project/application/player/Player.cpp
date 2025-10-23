@@ -634,14 +634,14 @@ void Player::Attack()
 		kFireInterval = 10; // 高速連射
 		damage = 1;
 		for (PlayerBullet* bullet : bullets_) {
-			bullet->Getobject3DBullet_->SetScale(Vector3{ 0.4f,0.4f,0.4f });
+			bullet->Getobject3DBullet_()->SetScale(Vector3{ 0.4f,0.4f,0.4f });
 		}
 		break;
 	case WeaponType::Cannon:
 		kFireInterval = 60; // リロード長い
 		damage = 3;
 		for (PlayerBullet* bullet : bullets_) {
-			object3DBullet_->SetScale(Vector3{ 1.5f,1.5f,1.5f });
+			bullet->Getobject3DBullet_()->SetScale(Vector3{ 1.5f,1.5f,1.5f });
 		}
 		break;
 	}

@@ -24,10 +24,10 @@ void TextureManager::Finalize()
 
 }
 
-void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanager)
+void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* provisionalsrvmanager)
 {
 	dxCommon_ = dxCommon;
-	this->srvmanager = srvmanager;
+	this->srvmanager = provisionalsrvmanager;
 	textureDatas.reserve(DirectXCommon::kMaxSRVCount);
 
 }

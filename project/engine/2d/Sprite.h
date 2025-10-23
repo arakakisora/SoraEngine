@@ -37,16 +37,16 @@ public:
 
 	//大きさ
 	const Vector2& GetSize()const { return size; }
-	void SetSize(const Vector2& size) { this->size = size; }
+	void SetSize(const Vector2& sizeValue) { this->size = sizeValue; }
 	//位置
 	const Vector2& GetPosition()const { return position; }
-	void SetPosition(const Vector2& position) { this->position = position; }
+	void SetPosition(const Vector2& positionValue) { this->position = positionValue; }
 	//回転
 	const float& GetRotation()const { return rotation; }
-	void SetRotation(const float& rotation) { this->rotation = rotation; }
+	void SetRotation(const float& rotationValue) { this->rotation = rotationValue; }
 	//色
 	const Vector4& GetColor()const { return materialData->color; }
-	void setColor(const Vector4& color) { materialData->color = color; }
+	void setColor(const Vector4& colorValue) { materialData->color = colorValue; }
 	//アンカー_画像の中心
 
 	const Vector2& GetAnchorPoint()const { return anchorPoint_; }

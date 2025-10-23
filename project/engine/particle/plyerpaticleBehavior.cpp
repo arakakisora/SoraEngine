@@ -4,6 +4,7 @@
 
 Particle plyerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
+	lifetime = lifetime;
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
@@ -33,7 +34,7 @@ void plyerpaticleBehavior::Update(Particle& particle, float dt, Material* mateli
 {
 
 	matelialData= matelialData; // X方向スクロール
-
+	dt = dt;
 	alpha = alpha;
 	//パーティクルの位置を更新
 	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
@@ -48,6 +49,9 @@ void plyerpaticleBehavior::Update(Particle& particle, float dt, Material* mateli
 #include "MyMath.h"
 
 Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime) {
+	
+	lifetime = lifetime;
+	
 	std::uniform_real_distribution<float> distOffset(-0.1f, 0.1f);
 	std::uniform_real_distribution<float> distScale(0.2f, 0.4f);
 	std::uniform_real_distribution<float> distRotate(-0.1f, 0.1f);
@@ -69,10 +73,11 @@ Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform tran
 }
 
 void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha) {
-	float t = particle.currentTime / particle.lifetime;
+	//float t = particle.currentTime / particle.lifetime;
+	materialData = materialData;
 
 	// 時間と共に拡大していく（少し縦長）
-	float scale = 0.2f + 0.6f * t;
+	//float scale = 0.2f + 0.6f * t;
 	
 	alpha = alpha;
 	// 上昇

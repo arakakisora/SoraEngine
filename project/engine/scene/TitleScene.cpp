@@ -139,15 +139,15 @@ void TitleScene::Update() {
 	} break;
 
 	case TitleAnimState::ReturnUnderTitle: {
-		const EulerTransform camTr =
+		const EulerTransform provisionalcamTr =
 			CameraManager::GetInstance()->GetActiveCamera()->GetTransform();
-		const float targetX = camTr.translate.x;
+		const float provisionaltargetX = provisionalcamTr.translate.x;
 
-		if (std::abs(playerX_ - targetX) > 0.001f) {
-			float dir = (playerX_ < targetX) ? 1.0f : -1.0f; // 右へ=+1, 左へ=-1
+		if (std::abs(playerX_ - provisionaltargetX) > 0.001f) {
+			float dir = (playerX_ < provisionaltargetX) ? 1.0f : -1.0f; // 右へ=+1, 左へ=-1
 			playerX_ += dir * playerReturnSpeed_;
-			if ((dir > 0 && playerX_ > targetX) || (dir < 0 && playerX_ < targetX)) {
-				playerX_ = targetX;
+			if ((dir > 0 && playerX_ > provisionaltargetX) || (dir < 0 && playerX_ < provisionaltargetX)) {
+				playerX_ = provisionaltargetX;
 			}
 
 			// ← ここ変更：移動方向に応じて左右

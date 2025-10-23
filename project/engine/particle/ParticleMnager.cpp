@@ -103,14 +103,14 @@ void ParticleMnager::Update()
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 			//ワールド行列を計算
-			Matrix4x4 worldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
+			Matrix4x4 provisionalworldMatrix = MyMath::MakeScaleMatrix((*particleIterator).transform.scale) * rotateMatrix * MyMath::MakeTranslateMatrix((*particleIterator).transform.translate);
 			//waorldViewProjection行列を計算
-			Matrix4x4 worldViewProjetionMatrix = worldMatrix * viewMatrix * projectionMatrix;
+			Matrix4x4 worldViewProjetionMatrix = provisionalworldMatrix * viewMatrix * projectionMatrix;
 
 
 			if (counter < particleGroup.instanceCount) {
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
-				particleGroup.instanceData[counter].World = worldMatrix;
+				particleGroup.instanceData[counter].World = provisionalworldMatrix;
 				particleGroup.instanceData[counter].color = particleIterator->color;
 				//particleGroup.instanceData[counter].color.w = alpha1;
 				++counter;
@@ -174,7 +174,7 @@ void ParticleMnager::Draw()
 
 }
 
-void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesType, std::unique_ptr<IParticleBehavior> behavior)
+void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesTypeValue, std::unique_ptr<IParticleBehavior> behavior)
 {
 
 
@@ -201,7 +201,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 	//頂点データを作成
 	std::vector<VertexData>vertices = MakeCylinderVertices();
-	switch (verticesType) {
+	switch (verticesTypeValue) {
 	case VerticesType::Quad:
 		vertices = MakeQuadVertices();
 		break;
@@ -266,7 +266,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime)
+void ParticleMnager::Emit(const std::string& name, const EulerTransform transformValue, uint32_t count, float lifetime)
 {
 
 
@@ -278,7 +278,7 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 
 
 		
-		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, transform,lifetime));
+		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, transformValue,lifetime));
 
 	}
 

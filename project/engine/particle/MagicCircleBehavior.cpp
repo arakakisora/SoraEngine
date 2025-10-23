@@ -7,6 +7,7 @@
 Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
 	Particle particle;
+	rng = rng;
 
 	particle.transform.scale = initScale_;
 	particle.transform.rotate = initRotate_;
