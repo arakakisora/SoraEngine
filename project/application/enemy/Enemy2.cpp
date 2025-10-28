@@ -16,9 +16,8 @@ Enemy2::~Enemy2()
 void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 
 
-	// texthureHandle_ = textureHandle;
 	object3D_ = obj;
-	// プレイヤーの初期位置
+	//エネミーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 	object3D_->SetScale({ 1.5f,1.5f,1.5f });
@@ -27,7 +26,7 @@ void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 	walkTimer_ = 0.0f;
 	rotateY = std::numbers::pi_v<float> / 2.0f;
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
-	//object3D_->SetColor({1.0f,0.0f,0.0f,1.0f}); // 初期色を設定
+	
 
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());

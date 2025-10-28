@@ -1,6 +1,9 @@
 #pragma once
 #include "DirectXCommon.h"
 #include "GraphicsPipeline.h"
+/// <summary>
+/// スプライト共通クラス
+/// </summary>
 class SpriteCommon
 {
 public:
