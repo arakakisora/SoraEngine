@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseScene.h"
 #include "Sprite.h"
+#include "FadeManager.h"
 class GameOverScene:public BaseScene
 {
 
@@ -27,6 +28,8 @@ public:
 
 	//taitorusprite
 	Sprite* sprite = nullptr;
+	//fade
+	FadeManager fadeManager_;
 
 };
 

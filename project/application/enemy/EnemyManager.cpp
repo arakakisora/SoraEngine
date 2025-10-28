@@ -108,3 +108,21 @@ void EnemyManager::Draw() {
 	}
 }
 
+void EnemyManager::EnemyObjectUpdate()
+{
+
+	
+	for (Enemy* enemy : enemies_) {
+		if (!nullptr) {
+			enemy->GetObject3D()->Update();
+		}
+	}
+	//Enemy2の描画
+	for (Enemy2* enemy2 : enemies2_) {
+		if (!nullptr) {
+			enemy2->GetObject3D()->Update();
+		}
+	}
+
+}
+

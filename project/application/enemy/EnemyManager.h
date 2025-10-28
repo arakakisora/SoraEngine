@@ -33,6 +33,8 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	inline const std::list<Enemy2*>& GetEnemies2() const { return enemies2_; }
+
+	void EnemyObjectUpdate();
 private:
 	std::vector<int> Enemynumber;
 	//Enemy

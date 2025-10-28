@@ -122,6 +122,8 @@ void Player::Update() {
 	CollisionMapInfo collisionMapInfo;
 	// 移動量に速度の値をコピー
 	collisionMapInfo.move = velocity_;
+
+
 	// マップ衝突チェック
 	MapCollision(collisionMapInfo);
 	// 移動

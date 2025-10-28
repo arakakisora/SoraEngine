@@ -77,6 +77,7 @@ public:
 	/// <returns></returns>
 	bool IsDead() const { return isDead_; }
 
+	Object3D* GetObject3D() const { return object3D_; }
 
 
 private:

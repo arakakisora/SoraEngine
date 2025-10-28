@@ -50,14 +50,17 @@ void GamePlayScene::Initialize()
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
 	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ playerPostion.x,playerPostion.y,-10, });
-	;
-	
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
 	stageStartEffect_->Initialize(player->GetObject3D(), playerPostion);
 	stageStartEffect_->Begin();
 	isStageStartPlaying_ = true;
+
+	//ゲームオーバー演出生成
+	gameOverEffect_ = std::make_unique<GameOverEffect>();
+	gameOverEffect_->Initialize(player->GetObject3D());
+
 
 	//エネミー
 	enemyManager_ = std::make_unique<EnemyManager>();
@@ -128,31 +131,40 @@ void GamePlayScene::Update()
 
 	skydome_->Update();
 	goal->Update(player->GetGoal());
-
+	const float dt = 1.0f / 60.0f;
 	if (isStageStartPlaying_) {
-		
+
 		stageStartEffect_->Update(1.0f / 60.0f);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
 			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 		}
 		player->GetObject3D()->Update();
-	}
-	else {
+		enemyManager_->EnemyObjectUpdate();
+	} else {
 		//player->Update();
 		////プレイヤーの更新
-		player->Update();
-
+		if (!player->GetIsDead_()) {
+			player->Update();
+		}
+		enemyManager_->Update();
 	}
-	//エネミーの更新
-	enemyManager_->Update();
-	collitionManager_->Update();
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
 
-		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+		gameOverEffect_->Update(dt);
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+		
 
 	}
+	if (!gameOverEffect_->IsPlaying()) {
+		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
+	}
+
+
+	//エネミーの更新
+	
+	collitionManager_->Update();
 
 
 	//3Dオブジェクトの更新
@@ -190,14 +202,9 @@ void GamePlayScene::Draw()
 	if (isStageStartPlaying_) {
 		stageStartEffect_->Draw(); // ←ゲートのみ描画
 		player->Draw();            // ←プレイヤーを別に描画
-	}
-	else {
-		
-		//Playerの描画
-		if (player->GetIsDead_() == false) {
-			player->Draw();
+	} else {
 
-		}
+		player->Draw();
 
 	}
 	//エネミーの描画o 

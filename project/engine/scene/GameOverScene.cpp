@@ -17,6 +17,9 @@ void GameOverScene::Initialize()
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameover.png");
 	//titleSprite->SetSize({ 1280,720 });
 
+	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.StartFadeIn();
+
 }
 
 void GameOverScene::Finalize()
@@ -28,7 +31,7 @@ void GameOverScene::Finalize()
 
 void GameOverScene::Update()
 {
-
+	fadeManager_.Update();
 
 	//スプライトの更新
 	sprite->Update();
@@ -59,5 +62,6 @@ void GameOverScene::Draw()
 	SpriteCommon::GetInstance()->CommonDraw();
 	//Spriteの描画
 	sprite->Draw();
+	fadeManager_.Draw();
 
 }

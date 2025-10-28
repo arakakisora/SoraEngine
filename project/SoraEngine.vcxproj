@@ -144,6 +144,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\fade\FadeManager.cpp" />
     <ClCompile Include="application\gaol\Goal.cpp" />
+    <ClCompile Include="GameOverEffect.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -347,6 +348,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
+    <ClInclude Include="GameOverEffect.h" />
     <ClInclude Include="StageStartEffect.h" />
   </ItemGroup>
   <ItemGroup>
