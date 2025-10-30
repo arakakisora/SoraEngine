@@ -36,13 +36,14 @@ void GameOverEffect::Update(float dt)
 	pos.y += jumpPower_;
 	jumpPower_ -= gravity_; // 重力を加える（だんだん落ちる）
 
+	float subway = -5.0f; // 地面の高さ
 	// 下限を超えたら停止
-	if (pos.y <= -10.0f) { // 地面より下まで落ちたら終了
-		pos.y = -10.0f;
+	if (pos.y <= subway) { // 地面より下まで落ちたら終了
+		pos.y = subway;
 		isPlaying_ = false;
 	}
 
-	playerobject3D_->SetRotate({ 0.0f, timer_ * 10.0f, 0.0f }); // 回転アニメーション
+	playerobject3D_->SetRotate({ 3.0f, timer_ * 10.0f, 0.0f }); // 回転アニメーション
 	playerobject3D_->SetTranslate(pos);
 	playerobject3D_->Update();
 
