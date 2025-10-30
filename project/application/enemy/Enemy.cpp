@@ -37,13 +37,13 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 }
 
 void Enemy::Update(MapChipField* mapChipField) {
-
+	// 歩行タイマーの更新
 	walkTimer_ += 1.0f / 60.0f;
-
+	// 歩行モーションの計算
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-
+	// 位置の更新
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 
@@ -67,6 +67,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 		}
 	}
 
+	// ダメージ表示タイマーの更新
 	if (damageTimer_ > 0.0f) {
 		damageTimer_ -= 1.0f / 60.0f;
 		if (damageTimer_ <= 0.0f) {
@@ -80,7 +81,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 	//deatheEffect->Update();
 
 
-	//imgui	
+	
 
 	//HPの表示
 #ifdef _DEBUG

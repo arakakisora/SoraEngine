@@ -38,9 +38,9 @@ void CameraManager::Initialize()
 void CameraManager::AddCamera(const std::string& name, const Camera* camera)
 {
 
-   // assert(cameras.find(name) == cameras.end() && "Camera with the same name already exists!");
+   
 
-    cameras[name] = *camera; // Dereference the pointer to store the Camera object
+    cameras[name] = *camera;
     // 最初のカメラをアクティブに設定
     if (activeCameraName.empty()) {
         activeCameraName = name;

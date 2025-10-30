@@ -9,7 +9,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <string>
-//#include <Windows.h>
+
 #include <wrl/client.h>
 #include <d3d12.h>
 #include <Camera.h>

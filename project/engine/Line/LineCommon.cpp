@@ -19,11 +19,7 @@ void LineCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 	graphicsPipeline_ = std::make_unique<GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateLine();
-
-
-
-
-
+	//頂点データ
 	vertexResource_ = dxCommon_->CreateBufferResource(sizeof(VertexDataLine) * linevertices.size());
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexDataLine) * linevertices.size());
@@ -55,7 +51,7 @@ void LineCommon::CommonDraw()
 void LineCommon::Update()
 {
 
-	 
+	// カメラ情報更新
 	camerabuffer->projection = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
 	camerabuffer->view = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 
@@ -108,7 +104,7 @@ void LineCommon::Draw()
 	srvManager_->SetGraficsRootDescriptorTable(1, instanceSrvIndex_);
 	dxCommon_->GetCommandList()->DrawInstanced(2, static_cast<UINT>(instances_.size()), 0, 0);
 
-	instances_.clear(); // ← 正しい変数名
+	instances_.clear();
 
 
 

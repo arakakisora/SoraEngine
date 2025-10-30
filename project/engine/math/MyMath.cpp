@@ -13,7 +13,7 @@ Matrix4x4 MyMath::MakeTranslateMatrix(const Vector3& translate)
 
 {
 	Matrix4x4 ans;
-
+	// 単位行列に初期化
 	ans.m[0][0] = 1;
 	ans.m[0][1] = 0;
 	ans.m[0][2] = 0;
@@ -43,7 +43,7 @@ Matrix4x4 MyMath::MakeScaleMatrix(const Vector3& scale)
 
 {
 	Matrix4x4 ans;
-
+	// 単位行列に初期化
 	ans.m[0][0] = scale.x;
 	ans.m[0][1] = 0;
 	ans.m[0][2] = 0;
@@ -73,13 +73,14 @@ Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 {
 
 	Vector3 ans;
-
+	// 行列とベクトルの掛け算
 	ans.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
 	ans.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
 	ans.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + 1.0f * matrix.m[3][2];
 	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + 1.0f * matrix.m[3][3];
-
+	// 0除算防止
 	assert(w != 0.0f);
+	// wで割る
 	ans.x /= w;
 	ans.y /= w;
 	ans.z /= w;
@@ -89,7 +90,7 @@ Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 
 Vector3 MyMath::Normlize(const Vector3& vector)
 {
-
+	// ベクトルの長さを計算
 	float length = std::sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 	return Vector3(vector.x / length, vector.y / length, vector.z / length);
 }
@@ -105,6 +106,7 @@ Vector3 MyMath::Add(const Vector3& v1, const Vector3& v2) {
 Vector3 MyMath::Cross(const Vector3& v1, const Vector3& v2)
 {
 	Vector3 ans;
+	// 外積の計算
 	ans.x = v1.y * v2.z - v1.z * v2.y;
 	ans.y = v1.z * v2.x - v1.x * v2.z;
 	ans.z = v1.x * v2.y - v1.y * v2.x;
@@ -118,21 +120,22 @@ Matrix4x4 MyMath::MakeRotateXMatrix(float radian)
 {
 
 	Matrix4x4 ans;
+	// 単位行列に初期化
 	ans.m[0][0] = 1;
 	ans.m[0][1] = 0;
 	ans.m[0][2] = 0;
 	ans.m[0][3] = 0;
-
+	// 回転行列の要素を設定
 	ans.m[1][0] = 0;
 	ans.m[1][1] = std::cos(radian);;
 	ans.m[1][2] = std::sin(radian);;
 	ans.m[1][3] = 0;
-
+	// 回転行列の要素を設定
 	ans.m[2][0] = 0;
 	ans.m[2][1] = -std::sin(radian);;
 	ans.m[2][2] = std::cos(radian);;
 	ans.m[2][3] = 0;
-
+	// 回転行列の要素を設定
 	ans.m[3][0] = 0;
 	ans.m[3][1] = 0;
 	ans.m[3][2] = 0;
@@ -146,7 +149,7 @@ Matrix4x4 MyMath::MakeRotateXMatrix(float radian)
 Matrix4x4 MyMath::MakeRotateYMatrix(float radian)
 
 {
-
+	// 単位行列に初期化
 	Matrix4x4 ans;
 	ans.m[0][0] = std::cos(radian);
 	ans.m[0][1] = 0;
@@ -174,8 +177,8 @@ Matrix4x4 MyMath::MakeRotateYMatrix(float radian)
 
 
 Matrix4x4 MyMath::MakeRotateZMatrix(float radian)
-
 {
+	// 単位行列に初期化
 	Matrix4x4 ans;
 	ans.m[0][0] = std::cos(radian);
 	ans.m[0][1] = std::sin(radian);
@@ -205,7 +208,7 @@ Matrix4x4 MyMath::MakeRotateZMatrix(float radian)
 
 Matrix4x4 MyMath::MakeRotateMatrix(const Vector3& rotate)
 {
-
+	// XYZ回転行列の合成
 	Matrix4x4 rotateX = MakeRotateXMatrix(rotate.x);
 	Matrix4x4 rotateY = MakeRotateYMatrix(rotate.y);
 	Matrix4x4 rotateZ = MakeRotateZMatrix(rotate.z);
@@ -214,7 +217,7 @@ Matrix4x4 MyMath::MakeRotateMatrix(const Vector3& rotate)
 
 Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
 {
-
+	// XYZ回転行列の合成
 	Matrix4x4 rotateXYZ = MakeRotateXMatrix(rotate.x) * MakeRotateYMatrix(rotate.y) * MakeRotateZMatrix(rotate.z);
 	return MakeScaleMatrix(scale) * rotateXYZ * MakeTranslateMatrix(translate);
 
@@ -222,6 +225,7 @@ Matrix4x4 MyMath::MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, 
 
 float MyMath::Cot(float theta)
 {
+
 	return 1 / std::tan(theta);
 }
 
@@ -262,6 +266,7 @@ Vector3 MyMath::Lerp(const Vector3& v1, const Vector3& v2, float t)
 
 Vector3 MyMath::Slerp(const Vector3& v1, const Vector3& v2, float t)
 {
+	// コサイン類似度を計算
 	float dot = Dot(v1, v2);
 	if (dot < -1.0f) { dot = -1.0f; }
 	if (dot > 1.0f) { dot = 1.0f; }
@@ -270,6 +275,7 @@ Vector3 MyMath::Slerp(const Vector3& v1, const Vector3& v2, float t)
 	if (sinTheta < 0.001f) {
 		return Lerp(v1, v2, t);
 	}
+	// スラーp補間の計算
 	float a = std::sin((1 - t) * theta) / sinTheta;
 	float b = std::sin(t * theta) / sinTheta;
 	return v1 * a + v2 * b;

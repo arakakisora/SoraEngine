@@ -26,7 +26,9 @@ struct SoundData {
     BYTE* PBuffer; // バッファの先頭アドレス
     unsigned int bufferSize; // バッファのサイズ
 };
-
+/// <summary>
+/// オーディオ管理クラス
+/// </summary>
 class Audio {
     static Audio* instance_;
     Audio() = default;

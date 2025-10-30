@@ -4,16 +4,18 @@
 
 EnemyManager::~EnemyManager()
 {
+	// Enemyの解放
+	///enemy
 	for (auto& enemy : enemies_) {
 		if (enemy) {
-			//enemy->ReleaseObject3D();
+			
 			delete enemy; // Enemy自体を解放
 		}
 	}
 	//enemy2
 	for (auto& enemy2 : enemies2_) {
 		if (enemy2) {
-			//enemy2->ReleaseObject3D();
+			
 			delete enemy2; // Enemy2自体を解放
 		}
 	}
@@ -30,23 +32,26 @@ void EnemyManager::Initialize(MapChipField* map) {
 	for (int i = 0; const Vector3 & enemyPos : enemyPositions) {
 
 		if (Enemynumber[i] == 1) {
-
+			//Enemy
+			// Object3Dの生成と初期化
 			Object3D* object3DEnemy = new Object3D();
 			object3DEnemy->Initialize(Object3DCommon::GetInstance());
 			object3DEnemy->SetModel("enemy.obj");
-			//object3DEnemy->setskyboxfilepath("Resources/skyBox.dds");
+			// Enemyの生成と初期化
 			Enemy* newEnemy = new Enemy();
-			newEnemy->Initialize(object3DEnemy, enemyPos); // ← これだけでOK
+			newEnemy->Initialize(object3DEnemy, enemyPos); 
 			enemies_.push_back(newEnemy);
 
 		}
 		else if (Enemynumber[i] == 2) {
+			//Enemy2]
+			// Object3Dの生成と初期化
 			Object3D* object3DEnemy2 = new Object3D();
 			object3DEnemy2->Initialize(Object3DCommon::GetInstance());
 			object3DEnemy2->SetModel("enemy.obj");
-			//object3DEnemy2->setskyboxfilepath("Resources/skyBox.dds");
+			// Enemy2の生成と初期化
 			Enemy2* newEnemy2 = new Enemy2();
-			newEnemy2->Initialize(object3DEnemy2, enemyPos); // ← これだけでOK
+			newEnemy2->Initialize(object3DEnemy2, enemyPos); 
 			enemies2_.push_back(newEnemy2);
 		}
 

@@ -16,6 +16,9 @@ struct EnvironmentReflectionSetting {
 };
 
 class Object3DCommon;
+/// <summary>
+/// 3Dオブジェクト
+/// </summary>
 class Object3D
 {
 public:
@@ -23,38 +26,85 @@ public:
 	/// 初期化
 	/// </summary>
 	void Initialize(Object3DCommon* object3DCommon);
-
 	/// <summary>
 	/// 更新
 	/// </summary>
 	void Update();
-
+	/// <summary>
+	/// スケルトン更新
+	/// </summary>
+	/// <param name="skeleton"></param>
 	void SkeletonUpdate( Skeleton& skeleton);
+	/// <summary>
+	/// アニメーション適用
+	/// </summary>
+	/// <param name="skeleton"></param>
 	void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+	/// <summary>
+	/// スキンクラスター更新
+	/// </summary>
+	/// <param name="skinCluster"></param>
 	void SkinClusterUpdate(SkinCluster&skinCluster,const Skeleton&skeleton);
 	/// <summary>
 	/// 描画
 	/// </summary>
 	void Draw();
+	/// <summary>
+	/// スキニング描画
+	/// </summary>
 	void DrawSkinning();
 
 
+	//アクセッサ
 
+	/// <summary>
+	/// モデルセット
+	/// </summary>
+	/// <param name="model"></param>
 	void SetModel(Model* model) { model_ = model; }
+	/// <summary>
+	/// モデルセット(ファイルパスから)
+	/// </summary>
 	void SetModel(const std::string& filepath);
-
+	/// <summary>
 	//環境マップ
+	/// </summary>
+	/// <param name="filepath"></param>
 	void setskyboxfilepath(const std::string& filepath) { skyboxFilePath_=filepath; }
+	/// <summary>
+	/// 環境マップの反射強度設定
+	/// </summary>
+	/// <param name="reflectionStrength"></param>
 	void SetreflectionStrengthforkankyouMap(float reflectionStrength) { environmentReflectionSettingData->reflectionStrength = reflectionStrength; }
+	/// <summary>
+	/// 環境マップの粗さ設定
+	/// </summary>
+	/// <param name="roughness"></param>
 	void SettoughnessforkankyouMap(float roughness) { environmentReflectionSettingData->roughness = roughness; }
+	/// <summary>
+	/// 環境マップの反射強度取得
+	/// </summary>
+	/// <returns></returns>
 	float GetreflectionStrengthforkankyouMap() { return environmentReflectionSettingData->reflectionStrength; }
+	/// <summary>
+	/// 環境マップの粗さ取得
+	/// </summary>
+	/// <returns></returns>
 	float GetoughnessforkankyouMap() { return environmentReflectionSettingData->roughness; }
 
-	//transrat
+	/// <summary>
+	/// トランスフォームセット
+	/// </summary>
+	/// <param name="transformValue"></param>
+	/// <returns></returns>
 	void SetTransform(const EulerTransform& transformValue) { this->transform = transformValue; }
+	/// <summary>
+	/// トランスフォーム取得
+	/// </summary>
+	/// <returns></returns>
 	EulerTransform GetTransform() { return transform; }
 
-	
+	//アクセッサ
 
 	//スケール
 	void SetScale(const Vector3& scale) { transform.scale = scale; }

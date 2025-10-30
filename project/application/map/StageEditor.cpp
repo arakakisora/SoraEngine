@@ -9,8 +9,10 @@ namespace fs = std::filesystem;
 void StageEditor::Run() {
     // 初期化
     if (grid_.empty()) {
+		// グリッドの初期化
         constexpr int kGridWidth = 100;
         constexpr int kGridHeight = 25;
+		// 2Dグリッドを指定サイズで初期化
         grid_.resize(kGridHeight, std::vector<GridCell>(kGridWidth));
     }
     RenderUI();
@@ -19,7 +21,6 @@ void StageEditor::Run() {
 void StageEditor::RenderUI() {
     ImGui::Begin("Stage Editor");
 
- 
     // 新規作成
     ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
     if (ImGui::Button("New")) {
@@ -32,14 +33,17 @@ void StageEditor::RenderUI() {
 
     // セーブ
     if (ImGui::Button("Save CSV")) {
+		// ファイルパスの生成
         std::string fullPath = "Resources/Mapdata/" + std::string(fileNameBuffer);
         SaveCSV(fullPath);
     }
 
     // ステージリスト（ドロップダウン）
     if (!availableStages.empty()) {
+		// ドロップダウンメニューの表示
         if (ImGui::BeginCombo("Stage List", availableStages[selectedStageIndex].c_str())) {
             for (int i = 0; i < availableStages.size(); ++i) {
+				// 各ステージ名を選択肢として表示
                 const bool isSelected = (i == selectedStageIndex);
                 if (ImGui::Selectable(availableStages[i].c_str(), isSelected)) {
                     selectedStageIndex = i;
@@ -58,6 +62,7 @@ void StageEditor::RenderUI() {
         availableStages.clear();
         for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
             if (entry.path().extension() == ".csv") {
+				// ステージ名をリストに追加
                 availableStages.push_back(entry.path().filename().string());
             }
         }
@@ -66,6 +71,7 @@ void StageEditor::RenderUI() {
     // ロード（選択中のファイル）
     if (ImGui::Button("Load Selected Stage")) {
         if (!availableStages.empty()) {
+			// 選択中のステージをロード
             std::string selectedPath = "Resources/Mapdata/" + availableStages[selectedStageIndex];
             LoadCSV(selectedPath);
         }
@@ -122,9 +128,12 @@ void StageEditor::SaveCSV(const std::string& filename) {
 }
 
 void StageEditor::LoadCSV(const std::string& filename) {
+	// ファイルを開く
     std::ifstream file(filename);
     std::string line;
     int y = 0;
+	// 1行ずつ読み込み
+    //ホットリロード
     while (std::getline(file, line)) {
         int x = 0;
         size_t start = 0;

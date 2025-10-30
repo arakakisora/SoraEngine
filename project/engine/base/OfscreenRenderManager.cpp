@@ -29,7 +29,7 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	graphicsPipeline_->Initialize(dxCommon_);
 
 	graphicsPipeline_->RootSignatureCopyImageCreate();
-	graphicsPipeline_->CreateAllPostEffects(); // ←これだけ！
+	graphicsPipeline_->CreateAllPostEffects(); 
 }
 
 void OfscreenRenderManager::Begin()
