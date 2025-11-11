@@ -196,7 +196,7 @@ void GamePlayScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 	//SkyDome
 	//skydome_->Draw();
-	//goal->Draw();
+	goal->Draw();
 
 
 	if (isStageStartPlaying_) {

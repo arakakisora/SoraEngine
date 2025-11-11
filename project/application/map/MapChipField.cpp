@@ -9,8 +9,8 @@ namespace {
 		{"0", MapChipType::kBlank},
 		{"1", MapChipType::kBlock},
 		{"2", MapChipType::kEnemy},
-		{"3", MapChipType::kGoal},
-		{"4",MapChipType::kEnemy2}
+		{"3",MapChipType::kEnemy2},
+		{"4", MapChipType::kGoal}
 
 	};
 
