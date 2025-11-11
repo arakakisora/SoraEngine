@@ -20,6 +20,7 @@ void StageEditor::Run() {
 
 void StageEditor::RenderUI() {
     ImGui::Begin("Stage Editor");
+    ImGuiIO& io = ImGui::GetIO();
 
     // 新規作成
     ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
@@ -91,7 +92,7 @@ void StageEditor::RenderUI() {
     ImGui::End();
 
     ImGui::Begin("Stage");
-
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     // マップ描画エリア
     for (int y = 0; y < grid_.size(); ++y) {
         for (int x = 0; x < grid_[y].size(); ++x) {
@@ -103,15 +104,35 @@ void StageEditor::RenderUI() {
             case 3: color = ImVec4(0, 0, 1, 1); break;
             default: color = ImVec4(1, 1, 1, 1); break;
             }
-            constexpr float kCellSize = 12.0f; // ← 10〜16 あたりがオススメ
-            if (ImGui::ColorButton(("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(), color, 0, ImVec2(kCellSize, kCellSize))) {
+            constexpr float kCellSize = 12.0f; 
+            // 普通のクリックでも反応させる（既存動作）
+            if (ImGui::ColorButton(("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(),
+                color, 0, ImVec2(kCellSize, kCellSize))) {
                 grid_[y][x].type = selectedType_;
             }
+
+
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
+                ImGuiHoveredFlags_RectOnly)) {
+                // 左ドラッグで現在選択タイルを塗る
+                if (io.MouseDown[ImGuiMouseButton_Left]) {
+                    grid_[y][x].type = selectedType_;
+                }
+                // 右ドラッグで消しゴム（Empty=0）
+                if (io.MouseDown[ImGuiMouseButton_Right]) {
+                    grid_[y][x].type = 0;
+                }
+                // 中クリックでスポイト（そのセルの種類を選択状態に）
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle)) {
+                    selectedType_ = grid_[y][x].type;
+                }
+            }
+
             ImGui::SameLine();
         }
         ImGui::NewLine();
     }
-
+    ImGui::PopStyleVar();
     ImGui::End();
 }
 
