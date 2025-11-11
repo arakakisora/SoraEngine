@@ -120,6 +120,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
     <ClCompile Include="application\particle\CollisionManager.cpp" />
     <ClCompile Include="application\enemy\Enemy2.cpp" />
+    <ClCompile Include="BaceCharacter.cpp" />
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
@@ -293,6 +295,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\ChargeBehabiaor.h" />
     <ClInclude Include="application\particle\CollisionManager.h" />
     <ClInclude Include="application\enemy\Enemy2.h" />
+    <ClInclude Include="BaceCharacter.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />

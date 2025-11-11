@@ -245,6 +245,12 @@
     </ClCompile>
     <ClCompile Include="StageStartEffect.cpp" />
     <ClCompile Include="GameOverEffect.cpp" />
+    <ClCompile Include="Collider.cpp">
+      <Filter>application\colition</Filter>
+    </ClCompile>
+    <ClCompile Include="BaceCharacter.cpp">
+      <Filter>application\colition</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -436,6 +442,12 @@
     </ClInclude>
     <ClInclude Include="StageStartEffect.h" />
     <ClInclude Include="GameOverEffect.h" />
+    <ClInclude Include="Collider.h">
+      <Filter>application\colition</Filter>
+    </ClInclude>
+    <ClInclude Include="BaceCharacter.h">
+      <Filter>application\colition</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
