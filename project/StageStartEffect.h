@@ -17,4 +17,9 @@ private:
     Vector3 basePos_{};            // プレイヤー基準位置
     float timer_ = 0.0f;
     bool isFinished_ = false;
+   
+    Vector3 playerStartPos_{};
+    float   baseY_ = 0.0f;      // Y固定用
+    float   moveDistZ_ = 2.0f;  // 奥→手前の距離
+
 };

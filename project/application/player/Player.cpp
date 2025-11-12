@@ -65,7 +65,7 @@ void Player::Update() {
 	{
 		EulerTransform transform = object3D_->GetTransform();
 
-		//ImGui::DragFloat3("*ModelScale", &transform.scale.x, 0.01f);
+		
 		ImGui::DragFloat3("*PlayerRotate", &transform.rotate.x, 0.01f);
 		ImGui::DragFloat3("*PlayerTransrate", &transform.translate.x, 0.01f);
 		object3D_->SetTransform(transform);
@@ -122,6 +122,8 @@ void Player::Update() {
 	CollisionMapInfo collisionMapInfo;
 	// 移動量に速度の値をコピー
 	collisionMapInfo.move = velocity_;
+
+
 	// マップ衝突チェック
 	MapCollision(collisionMapInfo);
 	// 移動
@@ -154,8 +156,7 @@ void Player::PrayerMove() {
 	if (onGround_) {
 		// 移動入力
 		// 左右移動操作
-		/*dashparticleEmitter_->SetPosition(object3D_->GetTransform().translate);
-		dashparticleEmitter_->Update();*/
+		
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
 			// 左右加速
 			Vector3 accceleration = {};
@@ -170,7 +171,7 @@ void Player::PrayerMove() {
 					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
 					turnTimer_ = kLimitRunSpeed;
 				}
-
+				// 右移動
 				accceleration.x += kAccleration;
 				playermoveright = true;
 				playermoveleft = false;
@@ -185,7 +186,7 @@ void Player::PrayerMove() {
 					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
 					turnTimer_ = kLimitRunSpeed;
 				}
-
+				// 左移動
 				accceleration.x -= kAccleration;
 				playermoveleft = true;
 				playermoveright = false;
@@ -244,40 +245,6 @@ void Player::PrayerTurn() {
 	}
 }
 
-
-//void Player::PrayerTurn() {
-//    if (turnTimer_ > 0.0f) {
-//        turnTimer_ -= 1.0f / 30.0f;
-//
-//        // 左右の目標角度テーブル
-//        float destinationRotationYTable[] = {
-//            std::numbers::pi_v<float> / 2.0f,           // 右回転
-//            3.0f * std::numbers::pi_v<float> / 2.0f    // 左回転（ここを変更）
-//        };
-//
-//        // 現在の回転角度
-//        float currentRotationY = turnFirstRotationY_;
-//
-//        // 目標角度を取得
-//        float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-//
-//        // 差分を計算し、範囲を 0 ～ 2π に正規化
-//        float angleDifference = destinationRotationY - currentRotationY;
-//        if (angleDifference > std::numbers::pi_v<float>) {
-//            angleDifference -= 2.0f * std::numbers::pi_v<float>;
-//        } else if (angleDifference < -std::numbers::pi_v<float>) {
-//            angleDifference += 2.0f * std::numbers::pi_v<float>;
-//        }
-//
-//        // EaseOutSine を用いて補間
-//        float easedRotationY = currentRotationY + angleDifference * EaseOutSine(1.0f - turnTimer_);
-//
-//        // 回転角度を設定
-//        object3D_->SetRotate({0, easedRotationY, 0});
-//    }
-//}
-
-
 void Player::MapCollision(CollisionMapInfo& info) {
 
 	CollisionMapInfoTop(info);
@@ -298,15 +265,6 @@ Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 
 	return center + offseetTable[static_cast<uint32_t>(corner)];
 
-	/*if (corner == kRightBottom) {
-		return center + Vector3{+kWidth / 2.0f, -kHeight / 2.0f, 0};
-	} else if (corner == kLeftBottom){
-		return center + Vector3{-kWidth / 2.0f, -kHeight / 2.0f, 0};
-	} else if (corner == kRightTop) {
-		return center + Vector3{+kWidth / 2.0f, +kHeight / 2.0f, 0};
-	} else {
-		return center + Vector3{-kWidth / 2.0f, +kHeight / 2.0f, 0};
-	}*/
 }
 
 void Player::PlayerCollisionMove(const CollisionMapInfo& info) {
@@ -407,7 +365,6 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 		position += info.move;
 		positionsNew[i] = CornerPosition(position, static_cast<Corner>(i));
 
-		//positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
 	}
 
 	MapChipType mapChipType;
@@ -458,7 +415,7 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 		Vector3 position = object3D_->GetTransform().translate;
 		position += info.move;
 		positionsNew[i] = CornerPosition(position, static_cast<Corner>(i));
-		//positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
+		
 	}
 	MapChipType mapChipType;
 	// 真下の当たり判定
@@ -506,7 +463,6 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 		position += info.move;
 		positionsNew[i] = CornerPosition(position, static_cast<Corner>(i));
 
-		//positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
 	}
 
 	MapChipType mapChipType;
@@ -534,7 +490,6 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	// hit
 	if (hit) {
 		// めり込みを排除する方向に移動量を設定する
-		//DebugText::GetInstance()->ConsolePrintf("hit hitwall\n");
 
 		Logger::Log("hit hitwall\n");
 
@@ -558,7 +513,7 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 		Vector3 position = object3D_->GetTransform().translate;
 		position += info.move;
 		positionsNew[i] = CornerPosition(position, static_cast<Corner>(i));
-		//positionsNew[i] = CornerPosition(worldTransform_.translation_ + info.move, static_cast<Corner>(i));
+		
 	}
 
 	MapChipType mapChipType;
@@ -586,7 +541,6 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	// hit
 	if (hit) {
 		// めり込みを排除する方向に移動量を設定する
-		//DebugText::GetInstance()->ConsolePrintf("hit hitwall\n");
 		Vector3 position = object3D_->GetTransform().translate;
 		Logger::Log("hit hitwall\n");
 		indexSet = mapChipFild_->GetMapChipIndexSetByPosition(position + Vector3(+kWidth / 2.0f, 0, 0));
@@ -674,7 +628,7 @@ void Player::Attack()
 
 		PlayerBullet* newBullet = new PlayerBullet();
 		newBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity, mapChipFild_);
-		newBullet->SetPower(damage); // ← ダメージを設定（次のステップで追加）
+		newBullet->SetPower(damage); 
 
 		bullets_.push_back(newBullet);
 

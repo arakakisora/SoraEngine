@@ -456,6 +456,7 @@ void GraphicsPipeline::CreateSprite()
 	//実際に生成
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineStateSprite));
+
 	assert(SUCCEEDED(hr));
 
 

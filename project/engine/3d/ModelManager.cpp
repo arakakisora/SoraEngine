@@ -20,6 +20,7 @@ void ModelManager::Finalize()
 
 void ModelManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager)
 {
+	//SRVManagerのポインタを保存
 	srvmnager_ = srvmnager;
 	modelCommon = std::make_unique<ModelCommon>();
 	modelCommon->Initialize(dxcommon, srvmnager_);

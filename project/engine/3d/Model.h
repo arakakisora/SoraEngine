@@ -34,7 +34,9 @@ struct SkinCluster {
 
 
 };
-
+/// <summary>
+/// モデル
+/// </summary>
 class Model
 {
 public:
@@ -48,32 +50,79 @@ public:
 	/// </summary>
 	void Draw();
 
-	
-
+	/// <summary>
 	//ノードを読む
+	/// </summary>
 	Node ReadNode(aiNode* node);
+	/// <summary>
+	/// スケルトンを作成
+	/// </summary>
+	/// <param name="rootNode"></param>
+	/// <returns></returns>
 	Skeleton CreateSkeleton(const Node& rootNode);
+	/// <summary>
+	/// ジョイントを作成
+	/// </summary>
 	int32_t CreateJoint(const Node& node, std::optional<int32_t> parent, std::vector<Joint>& joints);
-
-
+	/// <summary>
+	/// 頂点バッファビューを取得
+	/// </summary>
 	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const { return vertexBufferView; }//頂点バッファビューを取得
-	ModelData &GetModelData() { return modelData; }//モデルデータを取得
+
+	//アクセッサ―
+	/// <summary>
+	/// モデルデータを取得
+	/// </summary>
+	/// <returns></returns>
+	ModelData& GetModelData() { return modelData; }//モデルデータを取得
+	/// <summary>
+	/// アニメーションデータを取得
+	/// </summary>
 	Animation& GetAnimation() { return animation; }//アニメーションデータを取得
+	/// <summary>
+	/// スケルトンデータを取得
+	/// </summary>
+	/// <returns></returns>
 	Skeleton& GetSkeleton() { return skeleton; }//スケルトンデータを取得
+	/// <summary>
+	/// スキンクラスターを取得
+	/// </summary>
 	SkinCluster& GetSkinCluster() { return skinCluster; }//スキンクラスターを取得
 
-
+	/// <summary>
 	//ライトのオンオフ
+	/// </summary>	
 	void SetEnableLighting(bool enable) { materialData->enableLighting = enable; }
+	/// <summary>
 	//色の設定
+	/// </summary>
+	// <param name="color"></param>
 	void SetColor(const Vector4& color) { materialData->color = color; }
+	/// <summary>
 	//マテリアルファイルの読み込み
+	/// </summary>
+	/// <param name="directorypath"></param>
+	/// <param name="filename"></param>
+	/// <returns></returns>
 	MaterialData LoadMaterialTemplateFile(const std::string& directorypath, const std::string& filename);
+	/// <summary>
 	//モデルファイルの読み込み
+	/// </summary>
+	/// <param name="ditrectoryPath"></param>
+	/// <param name="filename"></param>
+	/// <returns></returns>
 	ModelData LoadModelFile(const std::string& ditrectoryPath, const std::string& filename);
+	/// <summary>
 	//アニメーションファイルの読み込み	
+	/// </summary>
+	/// <param name="directoryPath"></param>
+	/// <param name="filename"></param>
+	/// <returns></returns>
 	Animation LoadAnimationFile(const std::string& directoryPath, const std::string& filename);
-
+	/// <summary>
+	/// スキンクラスターの作成
+	/// </summary>
+	/// <returns></returns>
 	SkinCluster CreateSkinCluster();
 private:
 	//モデル共通部のポインタ
@@ -101,9 +150,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	//マテリアルにデータを書き込む	
 	Material* materialData = nullptr;
-	//std::string textureFilePath_;
-
-
+	
 	//index描画
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;//インデックスバッファリソース
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;//インデックスバッファビュー

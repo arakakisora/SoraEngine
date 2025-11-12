@@ -6,6 +6,9 @@
 
 
 enum class PostEffectType;
+/// <summary>
+/// グラフィックスパイプライン
+/// </summary>
 class GraphicsPipeline
 {
 public:
@@ -14,31 +17,71 @@ public:
 	/// </summary>
 	void Initialize(DirectXCommon* dxCommon);
 
-
+	/// <summary>
+	/// 作成
+	/// </summary>
 	void Create();//3dオブジェクト用
+	/// <summary>
+	/// ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureCreate();//3dオブジェクト用
 
+	/// <summary>
+	/// パーティクル作成
+	/// </summary>
 	void CreateParticle();//パーティクル用
+	/// <summary>
+	/// パーティクル用ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureParticleCreate();//パーティクル用
-
+	/// <summary>
+	/// スプライト作成
+	/// </summary>
 	void CreateSprite();//スプライト用
+	/// <summary>
+	/// スプライト用ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureSpriteCreate();//スプライト用
-
-	void CreateCopyImage(PostEffectType type, const std::wstring& psFilename); // ← 従来通りの単一バージョン
-	void CreateAllPostEffects(); // ← 新：複数ポストエフェクト用
+	/// <summary>
+	/// コピーイメージ作成
+	/// </summary>
+	/// <param name="type"></param>
+	/// <param name="psFilename"></param>
+	void CreateCopyImage(PostEffectType type, const std::wstring& psFilename);
+	/// <summary>
+	/// コピーイメージ用ルートシグネチャ作成
+	/// </summary>
+	void CreateAllPostEffects();
+	/// <summary>
+	/// コピーイメージ用ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureCopyImageCreate();
-	
-
+	/// <summary>
+	/// ライン作成
+	/// </summary>
 	void CreateLine();//ライン用
+	/// <summary>
+	/// ライン用ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureLineCreate();//ライン用
-
+	/// <summary>
+	/// スキニング作成
+	/// </summary>
 	void CreateSkinning();//スキニング用
+	/// <summary>
+	/// スキニング用ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureSkinningCreate();//スキニング用
-
+	/// <summary>
+	/// Skybox作成
+	/// </summary>
 	void CreateSkybox();//Skybox用
+	/// <summary>
+	/// Skybox用ルートシグネチャ作成
+	/// </summary>
 	void RootSignatureSkyboxCreate();//Skybox用
 
-
+	//アクセッサ
 
 	//ゲッター
 	ID3D12RootSignature* GetRootSignature()const { return rootSignature.Get(); }

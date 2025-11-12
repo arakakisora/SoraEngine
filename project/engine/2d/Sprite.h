@@ -9,7 +9,7 @@
 #include <cmath>
 #include <stdio.h>
 #include <string>
-//#include <Windows.h>
+
 #include <wrl/client.h>
 #include <d3d12.h>
 #include <Camera.h>
@@ -17,6 +17,9 @@
 
 
 class SpriteCommon;
+/// <summary>
+/// スプライト
+/// </summary>
 class Sprite
 {
 
@@ -34,36 +37,91 @@ public:
 	/// </summary>
 	void Draw();
 
-
+	/// <summary>
 	//大きさ
+	/// </summary>
+	/// <returns></returns>
 	const Vector2& GetSize()const { return size; }
+	/// <summary>
+	/// 大きさセット
+	/// </summary>
+	/// <param name="sizeValue"></param>
 	void SetSize(const Vector2& sizeValue) { this->size = sizeValue; }
+	///<summary>
 	//位置
+	///</summary>
+	///<returns></returns>
 	const Vector2& GetPosition()const { return position; }
+	/// <summary>
+	/// 位置セット
+	/// </summary>
+	/// <param name="positionValue"></param>
 	void SetPosition(const Vector2& positionValue) { this->position = positionValue; }
+	///<summary>
 	//回転
+	///</summary>
+	///<returns></returns>
 	const float& GetRotation()const { return rotation; }
+	/// <summary>
+	/// 回転セット
+	/// </summary>
+	/// <param name="rotationValue"></param>
 	void SetRotation(const float& rotationValue) { this->rotation = rotationValue; }
+	///<summary>
 	//色
+	///</summary>
+	///<returns></returns>
 	const Vector4& GetColor()const { return materialData->color; }
+	/// <summary>
+	/// 色セット
+	/// </summary>
+	/// <param name="colorValue"></param>
 	void setColor(const Vector4& colorValue) { materialData->color = colorValue; }
-	//アンカー_画像の中心
-
+	/// <summary>
+	/// アンカーポイント取得
+	/// </summary>
+	/// <returns></returns>
 	const Vector2& GetAnchorPoint()const { return anchorPoint_; }
-
+	/// <summary>
+	/// アンカーポイントセット
+	/// </summary>
+	/// <param name="anchorPoint"></param>
 	void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
+	/// <summary>
 	//左右フリップ
+	/// </summary>
+	/// <returns></returns>
 	const bool& GetIsFlipX()const { return isFlipX_; }
+	/// <summary>
+	/// 左右フリップセット
+	/// </summary>
+	/// <param name="isFlipX"></param>
 	void SetIsFlipX(const bool& isFlipX) { isFlipX_ = isFlipX; }
+	/// <summary>
 	//上下フリップ
+	/// </summary>
 	const bool& GetIsFlipY()const { return isFlipY_; }
+	/// <summary>
+	/// 上下フリップセット
+	/// </summary>
 	void SetIsFlipY(const bool& isFlipY) { isFlipY_ = isFlipY; }
+	/// <summary>
 	//テクスチャ左上
+	/// </summary>
 	const Vector2& GetTextureLeftTop()const { return textureLeftTop_; }
-
+	/// <summary>
+	/// テクスチャ左上セット
+	/// </summary>
+	/// <param name="textureLeftTop"></param>
 	void SetTextureLeftTop(const Vector2& textureLeftTop) { textureLeftTop_ = textureLeftTop; }
+	/// <summary>
 	//テクスチャサイズ
+	/// </summary>
 	const Vector2& GetTextureSize()const { return textureSize_; }
+	/// <summary>
+	/// テクスチャサイズセット
+	/// </summary>
+	/// <param name="textureSize"></param>
 	void SetTextureSize(const Vector2& textureSize) { textureSize_ = textureSize; }
 
 private:

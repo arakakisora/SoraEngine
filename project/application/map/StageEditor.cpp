@@ -9,8 +9,10 @@ namespace fs = std::filesystem;
 void StageEditor::Run() {
     // 初期化
     if (grid_.empty()) {
+		// グリッドの初期化
         constexpr int kGridWidth = 100;
         constexpr int kGridHeight = 25;
+		// 2Dグリッドを指定サイズで初期化
         grid_.resize(kGridHeight, std::vector<GridCell>(kGridWidth));
     }
     RenderUI();
@@ -18,8 +20,8 @@ void StageEditor::Run() {
 
 void StageEditor::RenderUI() {
     ImGui::Begin("Stage Editor");
+    ImGuiIO& io = ImGui::GetIO();
 
- 
     // 新規作成
     ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
     if (ImGui::Button("New")) {
@@ -32,14 +34,17 @@ void StageEditor::RenderUI() {
 
     // セーブ
     if (ImGui::Button("Save CSV")) {
+		// ファイルパスの生成
         std::string fullPath = "Resources/Mapdata/" + std::string(fileNameBuffer);
         SaveCSV(fullPath);
     }
 
     // ステージリスト（ドロップダウン）
     if (!availableStages.empty()) {
+		// ドロップダウンメニューの表示
         if (ImGui::BeginCombo("Stage List", availableStages[selectedStageIndex].c_str())) {
             for (int i = 0; i < availableStages.size(); ++i) {
+				// 各ステージ名を選択肢として表示
                 const bool isSelected = (i == selectedStageIndex);
                 if (ImGui::Selectable(availableStages[i].c_str(), isSelected)) {
                     selectedStageIndex = i;
@@ -58,6 +63,7 @@ void StageEditor::RenderUI() {
         availableStages.clear();
         for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
             if (entry.path().extension() == ".csv") {
+				// ステージ名をリストに追加
                 availableStages.push_back(entry.path().filename().string());
             }
         }
@@ -66,6 +72,7 @@ void StageEditor::RenderUI() {
     // ロード（選択中のファイル）
     if (ImGui::Button("Load Selected Stage")) {
         if (!availableStages.empty()) {
+			// 選択中のステージをロード
             std::string selectedPath = "Resources/Mapdata/" + availableStages[selectedStageIndex];
             LoadCSV(selectedPath);
         }
@@ -85,7 +92,7 @@ void StageEditor::RenderUI() {
     ImGui::End();
 
     ImGui::Begin("Stage");
-
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     // マップ描画エリア
     for (int y = 0; y < grid_.size(); ++y) {
         for (int x = 0; x < grid_[y].size(); ++x) {
@@ -97,15 +104,35 @@ void StageEditor::RenderUI() {
             case 3: color = ImVec4(0, 0, 1, 1); break;
             default: color = ImVec4(1, 1, 1, 1); break;
             }
-            constexpr float kCellSize = 12.0f; // ← 10〜16 あたりがオススメ
-            if (ImGui::ColorButton(("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(), color, 0, ImVec2(kCellSize, kCellSize))) {
+            constexpr float kCellSize = 12.0f; 
+            // 普通のクリックでも反応させる（既存動作）
+            if (ImGui::ColorButton(("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(),
+                color, 0, ImVec2(kCellSize, kCellSize))) {
                 grid_[y][x].type = selectedType_;
             }
+
+
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
+                ImGuiHoveredFlags_RectOnly)) {
+                // 左ドラッグで現在選択タイルを塗る
+                if (io.MouseDown[ImGuiMouseButton_Left]) {
+                    grid_[y][x].type = selectedType_;
+                }
+                // 右ドラッグで消しゴム（Empty=0）
+                if (io.MouseDown[ImGuiMouseButton_Right]) {
+                    grid_[y][x].type = 0;
+                }
+                // 中クリックでスポイト（そのセルの種類を選択状態に）
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle)) {
+                    selectedType_ = grid_[y][x].type;
+                }
+            }
+
             ImGui::SameLine();
         }
         ImGui::NewLine();
     }
-
+    ImGui::PopStyleVar();
     ImGui::End();
 }
 
@@ -122,9 +149,12 @@ void StageEditor::SaveCSV(const std::string& filename) {
 }
 
 void StageEditor::LoadCSV(const std::string& filename) {
+	// ファイルを開く
     std::ifstream file(filename);
     std::string line;
     int y = 0;
+	// 1行ずつ読み込み
+    //ホットリロード
     while (std::getline(file, line)) {
         int x = 0;
         size_t start = 0;

@@ -15,7 +15,13 @@ void TitleScene::Initialize() {
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
-	
+	titleSprite = new Sprite();
+	titleSprite->Initialize(SpriteCommon::GetInstance(),"Resources/space.png");
+	titleSprite->SetPosition({ 490.0f,600.0f });
+	titleSprite->SetSize({ 300.0f,100.0f });
+
+
+
 
 	// プレイヤー生成
 	object3D_ = new Object3D();
@@ -57,6 +63,7 @@ void TitleScene::Finalize() {
 	delete titleObj_;
 	delete object3D_;
 	delete camera;
+	delete titleSprite;
 	
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 }
@@ -67,6 +74,7 @@ void TitleScene::Update() {
 	
 	object3D_->Update();
 	titleObj_->Update();
+	titleSprite->Update();
 
 	if (state_ == TitleAnimState::IntroRun ||
 		state_ == TitleAnimState::DragTitle ||
@@ -187,6 +195,7 @@ void TitleScene::Update() {
 	if (fadeManager_.IsFadeOutFinished()) {
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 	}
+	ImguiDraw();
 }
 
 void TitleScene::Draw() {
@@ -195,6 +204,7 @@ void TitleScene::Draw() {
 	if (object3D_) object3D_->Draw();
 
 	SpriteCommon::GetInstance()->CommonDraw();
+	titleSprite->Draw();
 	fadeManager_.Draw();
 }
 
@@ -226,5 +236,28 @@ void TitleScene::ResetTitleAnimation()
 		p.rotate.y = 3.1f;
 		object3D_->SetTransform(p);
 	}
+}
+
+void TitleScene::ImguiDraw()
+{
+#ifdef _DEBUG
+
+	ImGui::Begin("TitleScene Debug");
+
+
+	//タイトルスプライト
+	Vector2 titlePos2_ = titleSprite->GetPosition();
+	ImGui::DragFloat2("titlePos2_", &titlePos2_.x, 0.1f);
+	titleSprite->SetPosition(titlePos2_);
+	//サイズ
+	Vector2 titleScale2_ = titleSprite->GetSize();
+	ImGui::DragFloat2("titleScale2_", &titleScale2_.x, 0.1f);
+	titleSprite->SetSize(titleScale2_);	
+
+	
+
+
+	ImGui::End();
+#endif // _DEBUG
 }
 

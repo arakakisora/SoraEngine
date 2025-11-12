@@ -31,22 +31,41 @@
 
 #include "SkyBoxCommon.h"
 
+/// <summary>
+/// フレームワーク基底クラス
+/// </summary>
 class Framework
 {
 public:
+	/// <summary>
+	/// デストラクタ
+	/// </summary>
 	virtual ~Framework() = default;
-	//ゲームの初期化
+
+	/// <summary>
+	/// ゲームの初期化
+	/// </summary>
 	virtual void Initialize();
-	//終了
+	/// <summary>
+	/// 終了
+	/// </summary>
 	virtual void Finalize();
-	//更新
+	/// <summary>
+	/// 更新
+	/// </summary>
 	virtual void Update();
-	//描画
-	virtual void Draw()=0;
-
+	/// <summary>
+	/// 描画
+	/// </summary>
+	virtual void Draw() = 0;
+	/// <summary>
+	/// ゲームの実行
+	/// </summary>
 	void Run();
-
+	/// <summary>
 	//ゲーム終了フラグの取得
+	/// </summary>
+	/// <returns>ゲーム終了フラグ</returns>
 	virtual bool IsEndRequest()const { return endRequst_; }
 
 public:
@@ -66,6 +85,6 @@ public:
 	std::unique_ptr<AbstractSceneFactory> sceneFactory;
 	std::unique_ptr<OfscreenRenderManager> ofscreenRenderManager;
 
-	
+
 };
 

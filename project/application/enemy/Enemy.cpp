@@ -16,9 +16,9 @@ Enemy::~Enemy()
 void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 
 
-	// texthureHandle_ = textureHandle;
+	
 	object3D_ = obj;
-	// プレイヤーの初期位置
+	//エネミーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 	object3D_->SetScale({ 1.0f,1.0f,1.0f });
@@ -27,7 +27,7 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	walkTimer_ = 0.0f;
 	rotateY = std::numbers::pi_v<float> / 2.0f;
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
-	//object3D_->SetColor({1.0f,0.0f,0.0f,1.0f}); // 初期色を設定
+	
 
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
@@ -37,14 +37,13 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 }
 
 void Enemy::Update(MapChipField* mapChipField) {
-
+	// 歩行タイマーの更新
 	walkTimer_ += 1.0f / 60.0f;
-
+	// 歩行モーションの計算
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
-	//worldTransform_.rotation_.x = fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian);
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-
+	// 位置の更新
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 
@@ -68,6 +67,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 		}
 	}
 
+	// ダメージ表示タイマーの更新
 	if (damageTimer_ > 0.0f) {
 		damageTimer_ -= 1.0f / 60.0f;
 		if (damageTimer_ <= 0.0f) {
@@ -81,7 +81,7 @@ void Enemy::Update(MapChipField* mapChipField) {
 	//deatheEffect->Update();
 
 
-	//imgui	
+	
 
 	//HPの表示
 #ifdef _DEBUG
@@ -102,7 +102,7 @@ void Enemy::Draw() { object3D_->Draw();
 Vector3 Enemy::GetWorldPosition() {
 
 	Vector3 worldPos;
-
+	/// ワールド座標を取得
 	worldPos.x = object3D_->GetWorldMatrix().m[3][0];;
 	worldPos.y = object3D_->GetWorldMatrix().m[3][1];;
 	worldPos.z = object3D_->GetWorldMatrix().m[3][2];;
@@ -110,8 +110,10 @@ Vector3 Enemy::GetWorldPosition() {
 }
 
 AABB Enemy::GetAABB() {
+	// エネミーのワールド座標を取得
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;
+	// AABBの最小点と最大点を計算
 	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
 	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
 
@@ -122,7 +124,9 @@ AABB Enemy::GetAABB() {
 
 void Enemy::OnCollision(const PlayerBullet* bullet)
 {
+	// 弾と衝突した場合の処理
 	if (bullet) {
+		// ダメージ処理
 		HP -= bullet->GetPower(); // 弾の攻撃力に応じてHPを減らす
 		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
 		damageTimer_ = kDamageDisplayTime;

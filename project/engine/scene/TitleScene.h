@@ -44,6 +44,8 @@ public:
 	// 1周分の初期化
 	void ResetTitleAnimation();
 
+	void ImguiDraw();
+
 public:
 
 

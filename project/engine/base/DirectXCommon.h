@@ -13,29 +13,68 @@
 #include <thread>  // std::this_thread
 #include <Vector4.h>
 
+/// <summary>
+/// DirectX共通処理
+/// </summary>
 class DirectXCommon
 {
+	/// <summary>
+	/// デバイス初期化
+	/// </summary>
 	void DeviceInitialize();
+	/// <summary>
+	/// コマンド初期化
+	/// </summary>
 	void CommandInitialize();
+	/// <summary>
+	/// スワップチェーン初期化
+	///	</summary>
 	void SwapChainInitialize();
+	/// <summary>
+	/// RTV初期化
+	/// </summary>
 	void DepthBufferInitialize();
+	/// <summary>
+	/// デスクリプタヒープ初期化
+	/// </summary>
 	void DescriptorHeepInitialize();
+	/// <summary>
+	/// RTV初期化
+	/// </summary>
 	void RTVInitialize();
+	/// <summary>
+	/// DSV初期化
+	/// </summary>
 	void DSVInitialize();
+	/// <summary>
+	/// フェンス初期化
+	/// </summary>
 	void FenceInitialize();
+	/// <summary>
+	/// ビューポート初期化
+	/// </summary>
 	void ViewportInitialize();
+	/// <summary>
+	/// シザー矩形初期化
+	/// </summary>
 	void ScissorInitialize();
+	/// <summary>
+	/// DxcCompiler初期化
+	/// </summary>
 	void DxcCompilerInitialize();
-	void ImguiInitialize();
 
 public:
-	//初期化
+	/// <summary>
+	/// 初期化
+	/// </summary>
 	void Initialize(WinApp* winApp);
-	//描画前処理
-	
+	/// <summary>
+	/// 描画前処理
+	/// </summary>
 	void Begin();
-	//描画後処理
-	
+	/// <summary>
+	/// 描画後処理
+	/// </summary>
 	void End();
 
 	//<summary>
@@ -65,56 +104,104 @@ public:
 	//</summary>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetDSVGPUDescriputorHandole(uint32_t index);
 
-
+	/// <summary>
+	/// 指定したデスクリプタヒープのCPUデスクリプタハンドルを取得
+	/// </summary>
+	/// <param name="descriptorHeap"></param>
+	/// <param name="descriptorSize"></param>
+	/// <param name="index"></param>
+	/// <returns></returns>
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
-
+	/// <summary>
+	/// 指定したデスクリプタヒープのGPUデスクリプタハンドルを取得
+	/// </summary>
+	/// <param name="descriptorHeap"></param>
+	/// <param name="descriptorSize"></param>
+	/// <param name="index"></param>
+	/// <returns></returns>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDesctiptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap,
 		uint32_t descriptorSize, uint32_t index);
-
+	/// <summary>
+	/// デバイスを取得する
+	/// </summary>
+	/// <returns></returns>
 	ID3D12Device* GetDevice() const { return device.Get(); }//デバイスを取得する
+	/// <summary>
+	/// コマンドリストを取得する
+	/// </summary>
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }//コマンドリストを取得する
-
-	// RTVのビュー記述子を取得する
+	/// <summary>
+	/// RTVのビュー記述子を取得する
+	/// </summary>
 	const D3D12_RENDER_TARGET_VIEW_DESC& GetRTVDesc() const { return rtvDesc; }
-	//getdsvDescriptorHeap
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDSVDescriptorHeap() { return dsvDescriptorHeap; }
-	//getviewport
-	D3D12_VIEWPORT GetViewport() const { return viewport; }
-	//getscissorRect
-	D3D12_RECT GetScissorRect() const { return scissorRect; }
 
-	//CompileShader関数の作成
+	/// <summary>
+	/// getdsvDescriptorHeap
+	/// </summary>
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDSVDescriptorHeap() { return dsvDescriptorHeap; }
+	/// <summary>
+	/// getviewport
+	/// </summary>
+	D3D12_VIEWPORT GetViewport() const { return viewport; }
+	/// <summary>
+	/// getscissorRect
+	/// </summary>
+	D3D12_RECT GetScissorRect() const { return scissorRect; }
+	/// <summary>
+	/// CompileShader関数の作成
+	/// </summary>
+	/// <param name="filePath">ComilerするSahaderファイルへのパス</param>
+	/// <param name="profile">compilerに使用するProfile</param>
+	/// <returns></returns>
 	IDxcBlob* CompileShader(
 		//ComilerするSahaderファイルへのパス
 		const std::wstring& filePath,
 		//compilerに使用するProfile
 		const wchar_t* profile);
-
+	/// <summary>
 	//デスクリプタヒープを生成する
+	/// </summary>
+	///<param name="heaptype">ヒープの種類</param>
+	/// <param name="numDescriptrs">デスクリプタの数</param>
+	/// <param name="shaderVisible">シェーダーから見えるかどうか</param>
+	/// <returns></returns>
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heaptype,
 		UINT numDescriptrs, bool shaderVisible);
-
-	//バッファーリソースの生成
+	/// <summary>
+	/// バッファーリソースの生成
+	/// </summary>
+	/// <param name="sizeInBytes">バッファーサイズ</param>
+	/// <returns></returns>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
-
+	/// <summary>
 	//テクスチャリソースの生成
+	/// </summary>
+	/// <param name="metadata">テクスチャメタデータ</param>
+	/// <returns></returns>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
-
-	//テクスチャデータの転送
+	/// <summary>
+	/// テクスチャデータの転送
+	/// </summary>
+	/// <param name="texture">テクスチャリソース</param>
+	/// <param name="mipImages">テクスチャイメージ群</param>
+	/// <returns></returns>
 	[[nodiscard]]
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource>texture, const DirectX::ScratchImage& mipImages);
-
-	//バックバッファの数を取得
+	/// <summary>
+	/// バックバッファの数を取得
+	/// </summary>
+	/// <returns></returns>
 	size_t GetBackBufferCount()const { return swapChainResources.size(); }
-
+	/// <summary>
+	/// コマンドキューを実行しキックする
+	/// </summary>
+	/// <returns></returns>
 	void CommandKick();
-
-	
-	void TransitionResource(ID3D12Resource* resource,D3D12_RESOURCE_STATES before,D3D12_RESOURCE_STATES after);
-
-	
-	//最大SRV数(最大テクスチャ枚数)
+	/// <summary>
+	/// 最大SRV数(最大テクスチャ枚数)
+	/// </summary>
+	/// <returns></returns>
 	static const uint32_t kMaxSRVCount;
 private:
 
@@ -165,7 +252,7 @@ private:
 	//記録時間(FPS固定用)
 	std::chrono::steady_clock::time_point reference_;
 
-	
+
 
 private:
 

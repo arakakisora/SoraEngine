@@ -89,11 +89,13 @@ void SrvManager::PreDraw()
 
 void SrvManager::SetGraficsRootDescriptorTable(UINT RootprameterIndex, uint32_t srvIndex)
 {
+	//グラフィックスコマンドリストに設定
 	directXCommon->GetCommandList()->SetGraphicsRootDescriptorTable(RootprameterIndex, GetGPUDescriptorHandle(srvIndex));
 }
 
 bool SrvManager::CheckTexturesNumber()
 {
+	//SRVの使用数が最大数を超えていないか確認
 	if (kMaxSRVCount <= useIndex) {
 		return false;
 	};

@@ -72,8 +72,6 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	environmentReflectionSettingData->roughness = 0.0f; //ぼかし率
 
 
-
-
 	//カメラとモデルのTrandform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 
@@ -81,7 +79,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	//カメラforGPU
 	cameraResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(CaMeraForGpu));
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
-	/*cameraForGpu->worldPosition = { 0.0f,0.0f,0.0f };*/
+	
 
 
 }
@@ -89,21 +87,15 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 void Object3D::Update()
 {
 
-
+	//アニメーションの更新
 	if (enableAnimation_ && model_ && model_->GetAnimation().nodeAnimations.size() > 0) {
 		ApplyAnimation(model_->GetSkeleton(), model_->GetAnimation(), animationTime);
 		SkeletonUpdate(model_->GetSkeleton());
 		SkinClusterUpdate(model_->GetSkinCluster(), model_->GetSkeleton());
 
-
-
 		animationTime += 1.0f / 60.0f;//アニメーションの時間を加算
 		animationTime = std::fmod(animationTime, model_->GetAnimation().duration);//アニメーションの時間をループさせる
 	}
-
-
-
-
 
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
@@ -116,10 +108,7 @@ void Object3D::Update()
 	}
 
 	if (activeCamera) {
-
-
-
-
+		//ビュー射影行列を掛け算して、ワールドビュープロジェクション行列を計算する
 		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
 		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
@@ -146,7 +135,7 @@ void Object3D::SkeletonUpdate(Skeleton& skeleton)
 		return;
 	}
 
-	// ← ここでサイズを合わせるのが絶対必要！！
+	
 	skeletonPose_.resize(skeleton.joints.size());
 	//すべてのjointを更新。親が若いので通常ループで処理可能になっている
 	for (Joint& joint : skeleton.joints)
@@ -219,7 +208,6 @@ void Object3D::Draw()
 	const std::string& envPath = skyboxFilePath_.empty() ? defaultEnvMapPath_ : skyboxFilePath_;
 	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7,
 		TextureManager::GetInstance()->GetTextureIndexByFilePath(envPath));
-	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(7, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(8, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する
@@ -249,7 +237,6 @@ void Object3D::DrawSkinning()
 	const std::string& envPath = skyboxFilePath_.empty() ? defaultEnvMapPath_ : skyboxFilePath_;
 	object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8,
 		TextureManager::GetInstance()->GetTextureIndexByFilePath(envPath));
-	//object3DCommon_->GetSrvManager()->SetGraficsRootDescriptorTable(8, TextureManager::GetInstance()->GetTextureIndexByFilePath(skyboxFilePath_));
 	//環境マップの反射率ぼかし
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(9, environmentReflectionSettingResource->GetGPUVirtualAddress());
 	//3Dモデルが割り当てられているなら描画する

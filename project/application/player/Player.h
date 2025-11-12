@@ -230,6 +230,7 @@ public:
 	/// </summary>
 	void StartDirection();
 
+	void SetOnGround(bool onground) { onGround_ = onground; }
 private:
 	
 	//objec3D

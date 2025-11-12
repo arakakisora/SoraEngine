@@ -34,7 +34,9 @@ void TextureManager::Initialize(DirectXCommon* dxCommon, SrvManager* provisional
 
 const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& filepath)
 {
+	
 	assert(textureDatas.size() + kSRVIndexTop < DirectXCommon::kMaxSRVCount);
+	//テクスチャデータを取得
 	TexturData& textureData = textureDatas[filepath];
 	return textureData.metadata;
 }
@@ -63,6 +65,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 		//DDSファイルの場合はLoadFromDDSFileを使用
 		hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
 	} else {
+		//WIC対応ファイルの場合はLoadFromWICFileを使用
 		hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 	}
 	assert(SUCCEEDED(hr));
@@ -79,8 +82,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	
 	assert(SUCCEEDED(hr));
 
-	////テクスチャデータを追加
-	//textureDatas.resize(textureDatas.size() + 1);
+	
 	//追加したデータの参照を取得する
 	TexturData& textureData = textureDatas[filePath];
 
@@ -91,9 +93,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	Microsoft::WRL::ComPtr<ID3D12Resource>  intermediateResource = dxCommon_->UploadTextureData(textureData.resource, mipImages);
 	dxCommon_->CommandKick();
 
-	////テクスチャデータの要素番号をSRVのインデックスとする
-	//uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size()-1)+kSRVIndexTop;
-
+	//SRVの作成
 	textureData.srvIndex = srvmanager->Allocate();
 	textureData.srvHandleCPU = srvmanager->GetCPUDescriptorHandle(textureData.srvIndex);
 	textureData.srvHandleGPU = srvmanager->GetGPUDescriptorHandle(textureData.srvIndex);
@@ -108,8 +108,6 @@ uint32_t TextureManager::GetTextureIndexByFilePath(const std::string& filepath)
 	if (textureDatas.contains(filepath)) {
 
 		return textureDatas[filepath].srvIndex;
-
-
 
 	}
 

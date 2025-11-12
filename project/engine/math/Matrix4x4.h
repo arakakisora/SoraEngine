@@ -3,7 +3,6 @@
 /// <summary>
 /// 4x4行列
 /// </summary>
-
 struct Matrix4x4 {
 	float m[4][4];
 
@@ -27,6 +26,11 @@ struct Matrix4x4 {
 			m[3][3] + other.m[3][3]
 		};
 	}
+	/// <summary>
+	/// 引き算
+	/// </summary>
+	/// <param name="other"></param>
+	/// <returns></returns>
 	Matrix4x4 operator-(const Matrix4x4& other) const {
 		return Matrix4x4{
 			m[0][0] - other.m[0][0],
@@ -47,6 +51,11 @@ struct Matrix4x4 {
 			m[3][3] - other.m[3][3]
 		};
 	}
+	/// <summary>
+	/// 掛け算
+	/// </summary>
+	/// <param name="other"></param>
+	/// <returns></returns>
 	Matrix4x4 operator*(const float& other) const {
 		return Matrix4x4{
 			m[0][0] * other,
@@ -67,6 +76,11 @@ struct Matrix4x4 {
 			m[3][3] * other
 		};
 	}
+	/// <summary>
+	/// 行列の掛け算
+	/// </summary>
+	/// <param name="other"></param>
+	/// <returns></returns>
 	Matrix4x4 operator*(const Matrix4x4& other) const {
 		Matrix4x4 matrix{};
 		for (int i = 0; i < 4; ++i) {
@@ -78,6 +92,11 @@ struct Matrix4x4 {
 		}
 		return matrix;
 	}
+	/// <summary>
+	/// 割り算
+	/// </summary>
+	/// <param name="other"></param>
+	/// <returns></returns>
 	Matrix4x4 operator/(const float& other) const {
 		return Matrix4x4{
 			m[0][0] / other,
@@ -98,7 +117,10 @@ struct Matrix4x4 {
 			m[3][3] / other
 		};
 	}
-
+	/// <summary>
+	/// 逆行列の計算
+	/// </summary>
+	/// <returns></returns>
 	Matrix4x4 Inverse() const {
 
 		float determinant =
@@ -191,7 +213,10 @@ struct Matrix4x4 {
 		return result;
 
 	}
-
+	/// <summary>
+	/// 転置行列の計算
+	/// </summary>
+	/// <returns></returns>
 	Matrix4x4 Transpose()
 	{
 
@@ -222,8 +247,10 @@ struct Matrix4x4 {
 		return ans;
 
 	}
-
-	//0行列
+	/// <summary>
+	/// 単位行列の作成
+	/// </summary>
+	/// <returns></returns>
 	Matrix4x4 MakeIdentity4x4()
 	{
 

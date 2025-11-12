@@ -2,6 +2,9 @@
 #include <map>
 #include <string>
 #include "Model.h"
+/// <summary>
+/// モデルマネージャー
+/// </summary>
 class ModelManager
 {
 	static ModelManager* instance;

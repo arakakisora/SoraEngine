@@ -28,6 +28,7 @@
 #include "FadeManager.h"
 
 #include "StageStartEffect.h"
+#include "GameOverEffect.h"
 
 /// <summary>
 /// ゲームプレイシーン
@@ -112,8 +113,11 @@ public:
 
 	FadeManager fadeManager_;
 
+	//スタート演出
 	std::unique_ptr<StageStartEffect> stageStartEffect_;
 	bool isStageStartPlaying_ = false;
+	//ゲームオーバー演出
+	std::unique_ptr<GameOverEffect> gameOverEffect_;
 
 	//debug用
 #ifdef _DEBUG

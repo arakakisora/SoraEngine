@@ -9,7 +9,7 @@
 
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
 {
-	/*textureFilePath_ = filename;*/
+	
 
 	modelCommon_ = modeleCommon;
 

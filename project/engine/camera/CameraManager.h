@@ -3,8 +3,14 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+/// <summary>
+/// カメラマネージャークラス
+/// </summary>
 class CameraManager
 {
+	/// <summary>
+	/// シングルトンインスタンス
+	/// </summary>
 	static CameraManager* instance;
 	CameraManager() = default;
 	~CameraManager() = default;
@@ -12,30 +18,43 @@ class CameraManager
 	CameraManager& operator=(CameraManager&) = delete;
 
 public:
-	//シングルトンインスタンスの取得
+	/// <summary>
+	/// シングルトンインスタンスの取得
+	/// </summary>
 	static CameraManager* GetInstance();
-	//終了
+	/// <summary>
+	// 終了
+	/// </summary>
 	void Finalize();
-
+	/// <summary>
 	//初期化
+	/// </summary>
 	void Initialize();
-
-
-
+	/// <summary>
 	//カメラの追加
+	/// </summary>
+	/// <param name="name"></param>
+	/// <param name="camera"></param>
 	void AddCamera(const std::string& name, const Camera* camera);
-
+	/// <summary>
 	//カメラの削除
+	/// </summary>
+	/// <param name="name"></param>
 	void RemoveCamera(const std::string& name);
-
+	/// <summary>
 	//カメラの取得
+	/// </summary>
+	/// <param name="name"></param>
 	Camera* GetCamera(const std::string& name);
-
+	/// <summary>
 	// アクティブカメラの取得
+	/// </summary>
 	Camera* GetActiveCamera();
 
-
+	/// <summary>
 	// アクティブカメラの設定
+	/// </summary>
+	/// <param name="name"></param>
 	void SetActiveCamera(const std::string& name);
 
 
@@ -48,9 +67,9 @@ private:
 	std::string activeCameraName;
 
 	//デフォルトカメラ
-	
+
 	//デフォルトカメラ
-	Camera* defaultCamera=nullptr;
+	Camera* defaultCamera = nullptr;
 
 
 };

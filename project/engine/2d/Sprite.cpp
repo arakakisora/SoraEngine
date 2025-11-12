@@ -17,7 +17,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 	spriteCommon_ = spriteCommon;
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
-
+	//頂点リソースの作成
 	vetexResource = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(VertexData) * 4);
 	indexResource = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(uint32_t) * 6);
 	materialResource = spriteCommon->GetDxCommon()->CreateBufferResource(sizeof(MaterialSprite));
@@ -74,7 +74,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 void Sprite::Update()
 {
-
+	//カメラ情報取得
 	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
 	Vector3 cameraPosition = activeCamera->GetTransform().translate;
 	cameraForGpu->worldPosition = cameraPosition;

@@ -13,7 +13,6 @@
 #include <cmath>
 #include <stdio.h>
 #include <string>
-//#include <Windows.h>
 #include <wrl/client.h>
 #include <d3d12.h>
 #include <Camera.h>
@@ -36,33 +35,58 @@ struct CameraBufferforGpu {
 	Matrix4x4 projection;
 
 };
-
+/// <summary>
+/// ライン描画共通クラス
+/// </summary>
 class LineCommon
 {
 public:
+	/// <summary>
+	/// インスタンスの取得
+	/// </summary>
+	/// <returns></returns>
 	static LineCommon* GetInstance();
 	/// <summary>
 	/// 初期化
 	/// </summary>
 	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager);
-	//終了
+	/// <summary>
+	/// 終了
+	/// </summary>
 	void Finalize();
+	/// <summary>
 	//共通描画設定
+	/// </summary>
 	void CommonDraw();
-
+	/// <summary>
 	//更新
+	/// </summary>
 	void Update();
+	/// <summary>
 	//描画
+	/// </summary>
 	void Draw();
-
+	/// <summary>
+	/// ライン描画
+	/// </summary>
+	/// <param name="start"></param>
+	/// <param name="end"></param>
+	/// <param name="color"></param>
 	void DrawLine(const Vector3& start, const Vector3& end, const Vector4& color);
-	//DXCommon
+	/// <summary>
+	// DXCommon
+	/// </summary>
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
+	/// <summary>
 	//SrvMnager
+	/// </summary>
+	///<returns></returns>
 	SrvManager* GetSrvmanager()const { return srvManager_; }
 
-
 private:
+	/// <summary>
+	/// コンストラクタ
+	/// </summary>
 	LineCommon() = default;
 	~LineCommon() = default;
 	LineCommon(const LineCommon&) = delete;
@@ -92,7 +116,7 @@ private:
 		{{1.0f,0.0f,0.0f}},
 
 	};
-	std::vector<LineInstanceData> instances_; // ← 複数ライン用
+	std::vector<LineInstanceData> instances_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
 	CameraBufferforGpu* camerabuffer = nullptr;//カメラのデータをGPUに送るための構造体

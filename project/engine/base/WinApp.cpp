@@ -34,7 +34,6 @@ void WinApp::Initialize()
 {
 	timeBeginPeriod(1);
 
-	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 
 	//ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;

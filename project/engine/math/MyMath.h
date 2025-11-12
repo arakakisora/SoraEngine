@@ -13,37 +13,36 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+//球
 struct Sphere {
 	Vector3 center;
 	float radius;
 };
-
-
-
+//光線
 struct Ray {
 
 	Vector3 origin;
 	Vector3 diff;
 };
-
+//線分
 struct Segment {
 
 	Vector3 origin;
 	Vector3 diff;
 };
-
+//平面
 struct Plane {
 
 	Vector3 normal;
 	float distance;
 
 };
-
+//三角形
 struct Triangle {
 
 	Vector3 vertices[3];
 };
-
+//軸平行境界ボックス
 struct AABB {
 
 	Vector3 min;
@@ -51,37 +50,97 @@ struct AABB {
 };
 
 
-
+/// <summary>
+/// 独自数学ライブラリ
+/// </summary>
 namespace MyMath {
-	//回転
+	/// <summary>
+	/// 平行移動
+	/// </summary>
+	/// <param name="translate"></param>
+	/// <returns></returns>
 	Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
-	//拡大
+	/// <summary>
+	/// 拡縮
+	/// </summary>
+	/// <param name="scale"></param>
+	/// <returns></returns>
 	Matrix4x4 MakeScaleMatrix(const Vector3& scale);
-	//同時座標変換
+	/// <summary>
+	/// ベクトルの変換
+	/// </summary>
+	/// <param name="vector"></param>
+	/// <param name="matrix"></param>
+	/// <returns></returns>
 	Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
+	/// <summary>
+	/// ベクトルの正規化
+	/// </summary>
+	/// <param name="vector"></param>
+	/// <returns></returns>
 	Vector3 Normlize(const Vector3& vector);
-
-	//Add
+	/// <summary>
+	/// ベクトルの加算
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="scalar"></param>
+	/// <returns></returns>
 	Vector3 Add(const Vector3& v, float scalar);
+	/// <summary>
+	/// ベクトルの加算
+	/// </summary>
+	/// <param name="v1"></param>
+	/// <param name="v2"></param>
+	/// <returns></returns>
 	Vector3 Add(const Vector3& v1, const Vector3& v2);
-
-	//cross
+	/// <summary>
+	/// ベクトルの外積
+	/// </summary>
+	/// <param name="v1"></param>
+	/// <param name="v2"></param>
+	/// <returns></returns>
 	Vector3 Cross(const Vector3& v1, const Vector3& v2);
-
-	//回転X
+	/// <summary>
+	/// 回転X
+	/// </summary>
+	/// <param name="radian"></param>
+	/// <returns></returns>
 	Matrix4x4 MakeRotateXMatrix(float radian);
-	//回転Y
+	/// <summary>
+	/// 回転Y
+	/// </summary>
+	/// <param name="radian"></param>
+	/// <returns></returns>
 	Matrix4x4 MakeRotateYMatrix(float radian);
-	//回転Z
+	/// <summary>
+	/// 回転Z
+	/// </summary>
+	/// <param name="radian"></param>
+	/// <returns></returns>
 	Matrix4x4 MakeRotateZMatrix(float radian);
-
+	/// <summary>
 	//回転XYZ
+	/// </summary>
+	/// <param name="rotate"></param>
 	Matrix4x4 MakeRotateMatrix(const Vector3& rotate);
-
+	/// <summary>
+	/// アフィン変換行列の作成
+	/// </summary>
+	/// <param name="scale"></param>
+	/// <param name="rotate"></param>
+	/// <param name="translate"></param>
+	/// <returns></returns>
 	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
+	/// <summary>
+	/// コサイン
+	/// </summary>
+	/// <param name="theta"></param>
+	/// <returns></returns>
 	float Cot(float theta);
+	/// <summary>
 	//ドット積
+	/// </summary>
 	float Dot(const Vector3& v1, const Vector3& v2);
 	float Dot(const Vector3& v1, const float& num);
 	float Dot(const Quaternion& q1, const Quaternion& q2);

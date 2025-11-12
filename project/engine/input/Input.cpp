@@ -90,6 +90,7 @@ void Input::Update()
 
 bool Input::PushKey(BYTE keyNumber)
 {
+	//押してるとき
 	if (key[keyNumber]) {
 
 		return true;
@@ -100,6 +101,7 @@ bool Input::PushKey(BYTE keyNumber)
 
 bool Input::TriggerKey(BYTE keyNumber)
 {
+	///押したとき
 	if (key[keyNumber] && !preKey[keyNumber]) {
 
 		return true;
@@ -113,6 +115,7 @@ bool Input::TriggerKey(BYTE keyNumber)
 
 bool Input::PushMouse(int buttonNumber)
 {
+	///押してるとき
 	if (mouse.rgbButtons[buttonNumber]) {
 		return true;
 	}
@@ -121,6 +124,7 @@ bool Input::PushMouse(int buttonNumber)
 
 bool Input::TriggerMouse(int buttonNumber)
 {
+	///押したとき
 	if (mouse.rgbButtons[buttonNumber] && !preMouse.rgbButtons[buttonNumber]) {
 		return true;
 	}
@@ -129,16 +133,19 @@ bool Input::TriggerMouse(int buttonNumber)
 
 bool Input::PushGamePadButton(WORD button)
 {
+	// 押してるとき
 	return (gamepadConnected_ && (state_.Gamepad.wButtons & button));
 }
 
 bool Input::TriggerGamePadButton(WORD button)
 {
+	// 押したとき
 	return (gamepadConnected_ && (state_.Gamepad.wButtons & button) && !(prevState_.Gamepad.wButtons & button));
 }
 
 float Input::GetGamePadStickX(bool right)
 {
+	// もしゲームパッドが接続されていなければ0を返す
 	if (!gamepadConnected_) return 0.0f;
 
 	SHORT rawX = right ? state_.Gamepad.sThumbRX : state_.Gamepad.sThumbLX;
@@ -174,7 +181,7 @@ void Input::SetVibration(float leftMotor, float rightMotor)
 {
 
 	if (!gamepadConnected_) return;
-
+	// バイブレーションの強さを設定
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 	vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotor * 65535);

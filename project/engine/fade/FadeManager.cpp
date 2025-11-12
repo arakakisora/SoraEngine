@@ -5,6 +5,7 @@
 
 void FadeManager::Initialize(const std::string& texture)
 {
+	// フェード用スプライトの初期化
     fadeSprite_ = std::make_unique<Sprite>();
     fadeSprite_->Initialize(SpriteCommon::GetInstance(), texture);
     fadeSprite_->SetSize(Vector2(1280, 720));
@@ -34,14 +35,17 @@ void FadeManager::StartFadeOut(float duration)
 
 void FadeManager::Update()
 {
+	// フェード処理の更新
     if (!isFadeIn_ && !isFadeOut_) return;
-
-    timer_ += 1.0f / 60.0f;
+	// タイマー更新
+	const float kFrameRate = 1.0f / 60.0f;
+    timer_ += kFrameRate;
+	// フェード率計算
     float t = std::min(timer_ / duration_, 1.0f);
     float alpha = isFadeIn_ ? 1.0f - t : t;
-
+    //α値をセット
     fadeSprite_->setColor(Vector4(0, 0, 0, alpha));
-
+	// フェード完了判定
     if (t >= 1.0f) {
         if (isFadeOut_) {
             isFadeOut_ = false;
@@ -51,12 +55,13 @@ void FadeManager::Update()
             isFadeIn_ = false;
         }
     }
-
+	/// スプライト更新
     fadeSprite_->Update();
 }
 
 void FadeManager::Draw()
 {
+	// フェードスプライトの描画
     if (fadeSprite_) {
         fadeSprite_->Draw();
     }
