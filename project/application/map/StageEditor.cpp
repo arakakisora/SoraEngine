@@ -1,5 +1,7 @@
 #include "StageEditor.h"
+#ifdef USE_IMGUI
 #include "imgui.h"
+#endif // USE_IMGUI
 #include <fstream>
 #include <iostream>
 #include <filesystem>
@@ -19,6 +21,8 @@ void StageEditor::Run() {
 }
 
 void StageEditor::RenderUI() {
+#ifdef USE_IMGUI
+
     ImGui::Begin("Stage Editor");
     ImGuiIO& io = ImGui::GetIO();
 
@@ -134,6 +138,8 @@ void StageEditor::RenderUI() {
     }
     ImGui::PopStyleVar();
     ImGui::End();
+
+#endif // USE_IMGUI
 }
 
 void StageEditor::SaveCSV(const std::string& filename) {

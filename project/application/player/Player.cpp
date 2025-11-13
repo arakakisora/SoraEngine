@@ -4,7 +4,9 @@
 #include <cassert>
 #include "Input.h"
 #include "Logger.h"
-#include <imgui.h>
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 
 #include "Object3DCommon.h"
 #include "ParticleMnager.h"

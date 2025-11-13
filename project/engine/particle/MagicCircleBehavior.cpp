@@ -1,7 +1,9 @@
 #include "MagicCircleBehavior.h"
 #include "ParticleMnager.h"
 #include <Input.h>
-#include <imgui.h>
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 #include "MyMath.h"
 
 Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
@@ -45,12 +47,13 @@ void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materi
 		particle.transform.scale = endScale;
 		particle.color.w = 1.0f - (t - 0.8f) / 0.2f; // フェードアウト
 	}
-
+#ifdef USE_IMGUI
 	if (ImGui::CollapsingHeader("MagicCircleBehavior", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::DragFloat3("EmiterScale", &initScale_.x, 0.01f);
 		ImGui::DragFloat3("EmiterRotate", &initRotate_.x, 0.01f);
 		ImGui::DragFloat("Lifetime", &particle.lifetime, 0.01f);
 	}
+#endif // USE_IMGUI
 
 	
 

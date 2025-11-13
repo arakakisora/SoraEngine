@@ -65,7 +65,7 @@ private:
 
 private:
 	float scrollX_ = 0.0f;
-	float scrollSpeed_ = 0.2f; // ← ImGuiで変えられるようにする初期値
+	float scrollSpeed_ = 0.2f;
 
 
 
@@ -84,7 +84,7 @@ private:
 
 private:
 	float scrollX_ = 0.0f;
-	float scrollSpeed_ = 0.2f; // ← ImGuiで変えられるようにする初期値
+	float scrollSpeed_ = 0.2f; 
 
 
 };

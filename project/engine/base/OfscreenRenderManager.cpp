@@ -1,6 +1,7 @@
 #include "OfscreenRenderManager.h"
-#include <imgui.h>
-
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
 {
 	dxCommon_ = dxcommon;
@@ -147,6 +148,8 @@ Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTarget
 
 void OfscreenRenderManager::DrawImGui()
 {
+#ifdef USE_IMGUI
+
 	ImGui::Begin("OfscreenRenderManager");
 	const char* items[] = {
 	   "Fullscreen",
@@ -156,7 +159,6 @@ void OfscreenRenderManager::DrawImGui()
 	   "LuminanceOutline",
 	   "RadialBlur"
 	};
-
 	// 現在の enum を int に変換
 	int current = static_cast<int>(currentEffectType_);
 
@@ -165,4 +167,7 @@ void OfscreenRenderManager::DrawImGui()
 		SetPostEffectType(static_cast<PostEffectType>(current));
 	}
 	ImGui::End();
+#endif // USE_IMGUI
+
+
 }

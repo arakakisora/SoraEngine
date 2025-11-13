@@ -3,7 +3,9 @@
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
 #include "ImGuiManager.h"
-#include <imgui.h>
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
@@ -276,27 +278,7 @@ void GamePlayScene::GenerateObject3D()
 		}
 	}
 
-	//ImGui::Begin("kankyoumap");
-
-
-	////float reflectionStrength = object3D->GetreflectionStrengthforkankyouMap();
-	////float toughness = object3D->GetoughnessforkankyouMap();
-	//////環境マップ反射
-	////// UI表示 & 値変更
-	////if (ImGui::DragFloat("reflectionStrength", &reflectionStrength, 0.01f, 0.0f, 1.0f)) {
-	////	object3D->SetreflectionStrengthforkankyouMap(reflectionStrength);
-	////	terrain->SetreflectionStrengthforkankyouMap(reflectionStrength);
-
-	////}
-	////if (ImGui::DragFloat("toughness", &toughness, 0.01f, 0.0f, 1.0f)) {
-	////	object3D->SettoughnessforkankyouMap(toughness);
-	////	terrain->SettoughnessforkankyouMap(toughness);
-	////}
-
-
-
-
-	//ImGui::End();
+	
 
 
 
@@ -341,6 +323,7 @@ void GamePlayScene::Imguidebug()
 		collitionManager_->Initialize(player, enemyManager_.get());
 	}
 
+#ifdef USE_IMGUI
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
@@ -357,6 +340,7 @@ void GamePlayScene::Imguidebug()
 	{
 		SceneManager::GetInstance()->ChangeScene("TITELE");
 	}
+#endif // USE_IMGUI
 
 }
 

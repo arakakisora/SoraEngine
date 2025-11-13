@@ -4,7 +4,9 @@
 #include "CameraManager.h"
 #include <MyMath.h>
 #include <numbers>
-#include <imgui.h>
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 
 
 //シングルトンインスタンスの取得

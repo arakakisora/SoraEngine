@@ -1,5 +1,7 @@
 #include "Enemy2.h"
+#ifdef USE_IMGUI
 #include "imgui.h"
+#endif // USE_IMGUI
 #include "PlayerBullet.h"
 #include "ParticleMnager.h"
 #include "ChargeBehabiaor.h"

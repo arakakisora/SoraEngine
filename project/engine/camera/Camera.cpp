@@ -1,6 +1,8 @@
 #include "Camera.h"
 #include "MyMath.h"
+#ifdef _DEBUG
 #include <imgui.h>
+#endif // _DEBUG
 #include "Object3D.h"
 
 Camera::Camera()

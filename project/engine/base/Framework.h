@@ -19,7 +19,9 @@
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include"ImGuiManager.h"
-#include <imgui.h>
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 #include "Audio.h"
 #include "SrvManager.h"
 #include "SceneManager.h"
