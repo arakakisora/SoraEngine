@@ -5,8 +5,9 @@
 #include "SceneManager.h"
 #include <CameraManager.h>
 #include <ModelManager.h>
-#include <imgui.h>
-
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 void TitleScene::Initialize() {
 	// モデル読み込み
 	ModelManager::GetInstans()->LoadModel("player.obj");

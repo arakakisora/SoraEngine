@@ -3,7 +3,10 @@
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include <imgui.h>
+
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 #include <numbers>
 
 
@@ -709,6 +712,7 @@ Vector3 MyMath::GetTranslate(const Matrix4x4& matrix)
 
 void MyMath::MatrixImGuiText(const Matrix4x4& matrix, const char* label)
 {
+#ifdef USE_IMGUI
 
 	// ラベルを表示
 	ImGui::Text("%s", label);
@@ -716,11 +720,14 @@ void MyMath::MatrixImGuiText(const Matrix4x4& matrix, const char* label)
 	for (int i = 0; i < 4; i++) {
 		ImGui::Text("%.03f %.03f %.03f %.03f", matrix.m[i][0], matrix.m[i][1], matrix.m[i][2], matrix.m[i][3]);
 	}
+#endif // USE_IMGUI
 
 }
 
 void MyMath::QuaternionImGuiText(const Quaternion& quaternion, const char* label)
 {
+#ifdef USE_IMGUI
+
 	// クォータニオンの各成分を ImGui テキストで表示
 	ImGui::Text("x: %.02f", quaternion.x);
 	ImGui::SameLine();
@@ -733,10 +740,12 @@ void MyMath::QuaternionImGuiText(const Quaternion& quaternion, const char* label
 	// ラベルを表示
 	ImGui::SameLine();
 	ImGui::Text("%s", label);
+#endif // USE_IMGUI
 }
 
 void MyMath::Vector3ImGuiText(const Vector3& vector, const char* label)
 {
+#ifdef USE_IMGUI
 
 	// ラベルを表示
 	ImGui::Text("%s", label);
@@ -746,6 +755,7 @@ void MyMath::Vector3ImGuiText(const Vector3& vector, const char* label)
 	ImGui::Text("y: %.02f", vector.y);
 	ImGui::SameLine();
 	ImGui::Text("z: %.02f", vector.z);
+#endif // USE_IMGUI
 
 }
 

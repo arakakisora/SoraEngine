@@ -1,7 +1,9 @@
 #include "SkyBox.h"
 #include "TextureManager.h"
 #include "CameraManager.h"
-#include <imgui.h>
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 
 SkyBox::~SkyBox()
 {
@@ -165,7 +167,9 @@ void SkyBox::imguidebug()
 {
 #ifdef _DEBUG
 
-	// ImGuiのデバッグウィンドウを表示
+	// 
+	// 
+	// のデバッグウィンドウを表示
 	if (ImGui::Begin("SkyBox Debug")) {
 
 		//transformの調整

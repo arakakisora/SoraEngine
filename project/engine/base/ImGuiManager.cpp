@@ -1,7 +1,9 @@
 #include "ImGuiManager.h"
+#ifdef USE_IMGUI
 #include <imgui.h>
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
+#endif // USE_IMGUI
 
 void ImGuiManager::Initialize(DirectXCommon* dxCommon, WinApp* winapp)
 {

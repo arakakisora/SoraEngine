@@ -2,7 +2,9 @@
 #include "IParticleBehavior.h"
 #include "ParticleMnager.h"
 #include <Input.h>
+#ifdef USE_IMGUI
 #include <imgui.h>
+#endif // USE_IMGUI
 #include "MyMath.h"
 #include <numbers>
 
