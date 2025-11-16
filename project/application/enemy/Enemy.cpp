@@ -8,6 +8,8 @@
 #include "ChargeBehabiaor.h"
 
 
+
+
 Enemy::~Enemy()
 {
 	if (object3D_) {
@@ -19,7 +21,7 @@ Enemy::~Enemy()
 void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 
 
-	
+
 	object3D_ = obj;
 	//エネミーの初期位置
 	object3D_->SetTranslate(position);
@@ -30,16 +32,18 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	walkTimer_ = 0.0f;
 	rotateY = std::numbers::pi_v<float> / 2.0f;
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
-	
+
 
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
-
+	aabb_ = GetEnemyAABB();
 
 }
 
 void Enemy::Update(MapChipField* mapChipField) {
+	 aabb_ = GetEnemyAABB();
+
 	// 歩行タイマーの更新
 	walkTimer_ += 1.0f / 60.0f;
 	// 歩行モーションの計算
@@ -64,7 +68,8 @@ void Enemy::Update(MapChipField* mapChipField) {
 		if (velocity_.x > 0) {
 			//object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f, 0 });  // 右向き
 			rotateY = std::numbers::pi_v<float> / 2.0f;
-		} else {
+		}
+		else {
 			//object3D_->SetRotate({ 0, -std::numbers::pi_v<float> / 2.0f, 0 }); // 左向き
 			rotateY = -std::numbers::pi_v<float> / 2.0f;
 		}
@@ -79,12 +84,12 @@ void Enemy::Update(MapChipField* mapChipField) {
 	}
 
 	object3D_->Update();
-	effectPosition_ .translate= object3D_->GetTransform().translate;
+	effectPosition_.translate = object3D_->GetTransform().translate;
 	deatheEffect->SetPosition(effectPosition_.translate);
 	//deatheEffect->Update();
 
 
-	
+
 
 	//HPの表示
 #ifdef _DEBUG
@@ -97,7 +102,8 @@ void Enemy::Update(MapChipField* mapChipField) {
 
 }
 
-void Enemy::Draw() { object3D_->Draw();
+void Enemy::Draw() {
+	object3D_->Draw();
 
 
 }
@@ -112,7 +118,36 @@ Vector3 Enemy::GetWorldPosition() {
 	return worldPos;
 }
 
-AABB Enemy::GetAABB() {
+//AABB Enemy::GetAABB() {
+//	// エネミーのワールド座標を取得
+//	Vector3 worldPos = GetWorldPosition();
+//	AABB aabb;
+//	// AABBの最小点と最大点を計算
+//	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
+//	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
+//
+//	return aabb;
+//}
+
+void Enemy::OnCollision(Collider* other)
+{
+	if (other->GetLayer() == Layer::PlayerBullet) {
+
+		// ダメージ処理
+		HP -= bullet_->GetPower(); // 弾の攻撃力に応じてHPを減らす
+		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
+		damageTimer_ = kDamageDisplayTime;
+
+		if (HP <= 0) {
+			isDead_ = true;
+			deatheEffect->Emit();
+		}
+	}
+
+}
+
+AABB Enemy::GetEnemyAABB()
+{
 	// エネミーのワールド座標を取得
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;
@@ -123,23 +158,13 @@ AABB Enemy::GetAABB() {
 	return aabb;
 }
 
-
-
 void Enemy::OnCollision(const PlayerBullet* bullet)
 {
+
 	// 弾と衝突した場合の処理
 	if (bullet) {
-		// ダメージ処理
-		HP -= bullet->GetPower(); // 弾の攻撃力に応じてHPを減らす
-		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
-		damageTimer_ = kDamageDisplayTime;
 
-		if (HP <= 0) {
-			isDead_ = true;
-			deatheEffect->Emit();
-		}
 	}
-
 
 }
 

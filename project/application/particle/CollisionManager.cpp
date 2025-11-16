@@ -4,59 +4,45 @@
 #include "PlayerBullet.h"
 #include "MyMath.h"
 
-void CollisionManager::Initialize(Player* playerValue, EnemyManager* enemyValue)
-{
-	this->player = playerValue;
-	this->enemy = enemyValue;
 
+void CollisionManager::AddCollider(Collider* collider)
+{
+    colliders_.push_back(collider);
 }
 
 void CollisionManager::Update()
 {
-	AABB aabb1, aabb2;
-	aabb1 = player->GetAABB();
-	for (Enemy* provisionalenemy :enemy->GetEnemies()) {
+    const size_t n = colliders_.size();
+    for (size_t i = 0; i < n; ++i) {
+        for (size_t j = i + 1; j < n; ++j) {
+            Collider* a = colliders_[i];
+            Collider* b = colliders_[j];
 
-		aabb2 = provisionalenemy->GetAABB();
-		
-		if (MyMath::IsCollision(aabb1, aabb2)) {
+            if (!CanCollide(a->GetLayer(), b->GetLayer())) {
+                continue;
+            }
 
-			player->SetIsDead(true); // プレイヤーが死亡する処理を追加
-			
-		}
-	}
+            if (MyMath::IsCollision(a->GetAABB(), b->GetAABB())) {
+                // 両方に知らせる
+                a->OnCollision(b);
+                b->OnCollision(a);
+            }
+        }
+    }
+}
 
-	// 弾と敵の衝突
-	for (PlayerBullet* bullet : player->GetBullets()) { // GetBullets を追加で実装
-		AABB bulletAABB = bullet->GetAABB();
-		for (Enemy* provisionalenemy : enemy->GetEnemies()) {
-			aabb2 = provisionalenemy->GetAABB();
-			if (MyMath::IsCollision(bulletAABB, aabb2)) {
-				bullet->OnCollison();  // 弾を削除
-				provisionalenemy->OnCollision(bullet); // 敵の処理
-				break; // 弾が消滅するので、これ以上判定を行わない
-			}
-		}
-	}
+bool CollisionManager::CanCollide(Collider::Layer a, Collider::Layer b) const
+{
+    // 当たり判定を取りたい組み合わせだけ true にする
+    if (a == Collider::Layer::Player && b == Collider::Layer::Enemy) return true;
+    if (a == Collider::Layer::Enemy && b == Collider::Layer::Player) return true;
 
-	// 弾と敵2の衝突
-	for (PlayerBullet* bullet : player->GetBullets()) { // GetBullets を追加で実装
-		AABB bulletAABB = bullet->GetAABB();
-		for (Enemy2* enemy2 : enemy->GetEnemies2()) {
-			aabb2 = enemy2->GetAABB();
-			if (MyMath::IsCollision(bulletAABB, aabb2)) {
-				bullet->OnCollison();  // 弾を削除
-				enemy2->OnCollision(bullet); // 敵の処理
-				break; // 弾が消滅するので、これ以上判定を行わない
-			}
-		}
-	}
+    if (a == Collider::Layer::Player && b == Collider::Layer::EnemyBullet) return true;
+    if (a == Collider::Layer::EnemyBullet && b == Collider::Layer::Player) return true;
 
-	// プレイヤーと敵2の衝突
-	for (Enemy2* enemy2 : enemy->GetEnemies2()) {
-		aabb2 = enemy2->GetAABB();
-		if (MyMath::IsCollision(aabb1, aabb2)) {
-			player->SetIsDead(true); // プレイヤーが死亡する処理を追加
-		}
-	}
+    if (a == Collider::Layer::PlayerBullet && b == Collider::Layer::Enemy) return true;
+    if (a == Collider::Layer::Enemy && b == Collider::Layer::PlayerBullet) return true;
+
+
+    return false;
 }

@@ -1,27 +1,23 @@
 #pragma once
-
-class Player;
-class EnemyManager;
-
+#include "Collider.h"	
 /// <summary>
 /// 当たり判定管理クラス
 /// </summary>
 class CollisionManager
 {
 public:
-	/// <summary>
-	//初期化
-	/// </summary>
-	///<param name="player"></param> 
-	void Initialize(Player* player, EnemyManager* enemyValue);
-	/// <summary>
-	//更新
-	/// </summary>
+	void AddCollider(Collider* collider);
+
+    void Clear() {
+        colliders_.clear();
+    }
+
 	void Update();
+
 	
 private:
-	Player* player = nullptr;
-	EnemyManager* enemy = nullptr;
+	bool CanCollide(Collider::Layer a, Collider::Layer b) const ;
+	std::vector<Collider*> colliders_;
 
 };
 
