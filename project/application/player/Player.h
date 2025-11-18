@@ -13,6 +13,7 @@
 #include <PlayerBullet.h>
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
+#include "Collider.h"
 enum class LRDirecion {
 	kright,
 	kLeft,
@@ -45,9 +46,27 @@ class MapChipField;
 /// <summary>
 /// Playerクラス
 /// </summary>
-class Player {
+class Player :public Collider{
 
 public:
+
+	Player() : Collider(Layer::Player) {};
+
+	AABB GetAABB() const override {
+		return aabb_;   
+	}
+
+	void OnCollision(Collider* other) override {
+		switch (other->GetLayer()) {
+		case Layer::Enemy:
+			SetIsDead(true);
+			break;
+		default:
+			break;
+		}
+	}
+	AABB GetPlayerAABB();
+
 	~Player();
 	
 	/// <summary>
@@ -164,11 +183,7 @@ public:
 	/// </summary>
 	Vector3 GetWorldPosition();
 
-	/// <summary>
-	/// AABBを取得します
-	/// </summary>
-	AABB GetAABB();
-	//void OnCollision(const Enemy*enemy);
+	
 
 	/// <summary>
 	// 死亡しているかどうかを取得
@@ -286,7 +301,7 @@ private:
 	ParticleEmitter* dashparticleEmitter_ = nullptr; // プレイヤーのパーティクルエミッター
 	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
 	
-	//Start演出
+	AABB aabb_;
 
 
 

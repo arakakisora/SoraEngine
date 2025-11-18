@@ -70,7 +70,13 @@ void GamePlayScene::Initialize()
 
 	//当たり判定の初期化
 	collitionManager_ = std::make_unique<CollisionManager>();
-	collitionManager_->Initialize(player, enemyManager_.get());
+	collitionManager_->AddCollider(player);
+	
+	for (Enemy* e : enemyManager_.get()->GetEnemies()) {
+		collitionManager_->AddCollider(e);
+	}
+
+
 
 	//3Dオブジェクトの初期化
 	object3D2nd = new Object3D();
@@ -131,6 +137,7 @@ void GamePlayScene::Update()
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	fadeManager_.Update();
 
+
 	skydome_->Update();
 	goal->Update(player->GetGoal());
 	const float dt = 1.0f / 60.0f;
@@ -143,20 +150,44 @@ void GamePlayScene::Update()
 		}
 		player->GetObject3D()->Update();
 		enemyManager_->EnemyObjectUpdate();
-	} else {
+	}
+	else {
 		//player->Update();
 		////プレイヤーの更新
 		if (!player->GetIsDead_()) {
 			player->Update();
+			// プレイヤーの弾
+			
 		}
 		enemyManager_->Update();
+
+
+
+		collitionManager_->Clear();
+
+		// プレイヤー
+		collitionManager_->AddCollider(player);
+
+		// プレイヤーの弾
+		for (PlayerBullet* b : player->GetBullets()) {
+			collitionManager_->AddCollider(b);
+		}
+
+		
+		for (Enemy* e : enemyManager_->GetEnemies()) {
+			collitionManager_->AddCollider(e);
+			for (PlayerBullet* b : player->GetBullets()) {
+				e->Setbulelt(b);
+			}
+		}
+		collitionManager_->Update();
 	}
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
 
 		gameOverEffect_->Update(dt);
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
-		
+
 
 	}
 	if (!gameOverEffect_->IsPlaying()) {
@@ -165,8 +196,8 @@ void GamePlayScene::Update()
 
 
 	//エネミーの更新
-	
-	collitionManager_->Update();
+
+
 
 
 	//3Dオブジェクトの更新
@@ -204,7 +235,8 @@ void GamePlayScene::Draw()
 	if (isStageStartPlaying_) {
 		stageStartEffect_->Draw(); // ←ゲートのみ描画
 		player->Draw();            // ←プレイヤーを別に描画
-	} else {
+	}
+	else {
 
 		player->Draw();
 
@@ -278,7 +310,7 @@ void GamePlayScene::GenerateObject3D()
 		}
 	}
 
-	
+
 
 
 
@@ -320,7 +352,7 @@ void GamePlayScene::Imguidebug()
 
 
 
-		collitionManager_->Initialize(player, enemyManager_.get());
+
 	}
 
 #ifdef USE_IMGUI

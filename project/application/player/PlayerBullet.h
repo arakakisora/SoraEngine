@@ -2,15 +2,19 @@
 #include "Model.h"
 #include "Object3D.h"
 #include <MapChipField.h>
+#include "Collider.h"
 
 /// <summary>
 /// プレイヤーの弾クラス
 /// </summary>
-class PlayerBullet {
+class PlayerBullet : public Collider {
 
 public:
-
+	PlayerBullet() : Collider(Layer::PlayerBullet) {}
 	~PlayerBullet();  // デストラクタ
+
+	AABB GetAABB() const override { return aabb_; }
+	AABB GetBulletAABB();
 
 	/// <summary>
 	/// 初期化
@@ -29,8 +33,8 @@ public:
 
 	/// <summary>
 	// 当たったときコールバック
+	void OnCollision(Collider* other) override;
 	/// </summary>
-	void OnCollison();
 
 	//Getter
 	/// <summary>
@@ -47,7 +51,7 @@ public:
 	/// <summary>
 	/// AABBを取得します
 	/// </summary>
-	AABB GetAABB();
+	
 	/// <summary>
 	// レイを出してマップチップ番号を取得
 	/// </summary>
@@ -70,7 +74,7 @@ public:
 
 
 private:
-
+	AABB aabb_;
 	Object3D* object3D_ = nullptr;
 	// textureHandle
 	//uint32_t textureHandle_ = 0u;

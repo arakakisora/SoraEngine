@@ -10,6 +10,15 @@ PlayerBullet::~PlayerBullet()
 
 }
 
+AABB PlayerBullet::GetBulletAABB()
+{
+	Vector3 worldPos = GetWorldPosition();
+	AABB aabb;
+	aabb.min = { worldPos.x - 0.1f, worldPos.y - 0.1f, worldPos.z - 0.1f };
+	aabb.max = { worldPos.x + 0.1f, worldPos.y + 0.1f, worldPos.z + 0.1f };
+	return aabb;
+}
+
 void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField) {
 
 	// ポインタ参照
@@ -20,8 +29,8 @@ void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vect
 
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(pos);
-	
-	
+
+
 
 	// 速度
 	velocity_ = velocity;
@@ -37,7 +46,7 @@ void PlayerBullet::Update() {
 
 	//レイキャストを実行し、マップチップ番号を取得
 	if (GetRayMapChipNumber(mapChipField_) == 1) {
-		OnCollison();  // 壁 (1) に当たったら削除
+		isDead_ = true;
 	}
 
 	if (--deathTimer_ <= 0) {
@@ -46,11 +55,21 @@ void PlayerBullet::Update() {
 	}
 
 	object3D_->Update();
+	aabb_ = GetBulletAABB();
 }
 
 void PlayerBullet::Draw() { object3D_->Draw(); }
 
-void PlayerBullet::OnCollison() { isDead_ = true; }
+void PlayerBullet::OnCollision(Collider* other)
+{
+	if (other->GetLayer() == Layer::Enemy ||
+		other->GetLayer() == Layer::EnemyBullet) {
+		isDead_ = true;   // 消えるフラグ
+	}
+
+}
+
+//void PlayerBullet::OnCollison() { }
 
 Vector3 PlayerBullet::GetWorldPosition() {
 	Vector3 worldPos;
@@ -61,19 +80,15 @@ Vector3 PlayerBullet::GetWorldPosition() {
 	return worldPos;
 }
 
-AABB PlayerBullet::GetAABB()
-{
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	aabb.min = { worldPos.x - 0.1f, worldPos.y - 0.1f, worldPos.z - 0.1f };
-	aabb.max = { worldPos.x + 0.1f, worldPos.y + 0.1f, worldPos.z + 0.1f };
-	return aabb;
-}
+//AABB PlayerBullet::GetAABB()
+//{
+//	
+//}
 
 Vector3 PlayerBullet::GetRayEndPosition() {
-	
-		// 弾の現在位置
-		Vector3 currentPosition = GetWorldPosition();
+
+	// 弾の現在位置
+	Vector3 currentPosition = GetWorldPosition();
 
 	// レイの長さ
 	float rayLength = 0.5f; // 弾が進む小さい距離でチェック

@@ -245,6 +245,7 @@
     </ClCompile>
     <ClCompile Include="StageStartEffect.cpp" />
     <ClCompile Include="GameOverEffect.cpp" />
+    <ClCompile Include="Collider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -436,6 +437,7 @@
     </ClInclude>
     <ClInclude Include="StageStartEffect.h" />
     <ClInclude Include="GameOverEffect.h" />
+    <ClInclude Include="Collider.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
