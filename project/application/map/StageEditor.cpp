@@ -23,6 +23,27 @@ void StageEditor::Run() {
 void StageEditor::RenderUI() {
 #ifdef USE_IMGUI
 
+    if (fs::exists("Resources/Mapdata") && fs::is_directory("Resources/Mapdata")) {
+        std::vector<std::string> newList;
+        for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
+            if (entry.path().extension() == ".csv") {
+                newList.push_back(entry.path().filename().string());
+            }
+        }
+        std::sort(newList.begin(), newList.end());
+        if (newList != availableStages) {
+            availableStages = std::move(newList);
+            if (!availableStages.empty()) {
+                if (selectedStageIndex >= availableStages.size()) selectedStageIndex = 0;
+                strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[selectedStageIndex].c_str(), _TRUNCATE);
+                fileNameBuffer[sizeof(fileNameBuffer) - 1] = '\0';
+            } else {
+                selectedStageIndex = 0;
+                fileNameBuffer[0] = '\0';
+            }
+        }
+    }
+
     ImGui::Begin("Stage Editor");
     ImGuiIO& io = ImGui::GetIO();
 
@@ -43,12 +64,13 @@ void StageEditor::RenderUI() {
         SaveCSV(fullPath);
     }
 
-    // ステージリスト（ドロップダウン）
-    if (!availableStages.empty()) {
-		// ドロップダウンメニューの表示
-        if (ImGui::BeginCombo("Stage List", availableStages[selectedStageIndex].c_str())) {
-            for (int i = 0; i < availableStages.size(); ++i) {
-				// 各ステージ名を選択肢として表示
+    // ステージリスト（ドロップダウン） — 常に表示。空なら "No Stages"
+    const char* comboPreview = availableStages.empty() ? "No Stages" : availableStages[selectedStageIndex].c_str();
+    if (ImGui::BeginCombo("Stage List", comboPreview)) {
+        if (availableStages.empty()) {
+            ImGui::Selectable("No stages", false, ImGuiSelectableFlags_Disabled);
+        } else {
+            for (int i = 0; i < static_cast<int>(availableStages.size()); ++i) {
                 const bool isSelected = (i == selectedStageIndex);
                 if (ImGui::Selectable(availableStages[i].c_str(), isSelected)) {
                     selectedStageIndex = i;
@@ -59,19 +81,31 @@ void StageEditor::RenderUI() {
                     ImGui::SetItemDefaultFocus();
                 }
             }
-            ImGui::EndCombo();
         }
+        ImGui::EndCombo();
     }
-    // ステージ一覧の更新
-    if (ImGui::Button("Reload Stage List")) {
-        availableStages.clear();
-        for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
-            if (entry.path().extension() == ".csv") {
-				// ステージ名をリストに追加
-                availableStages.push_back(entry.path().filename().string());
-            }
-        }
-    }
+
+    //// ステージ一覧の手動更新（オプション）
+    //if (ImGui::Button("Reload Stage List")) {
+    //    // 手動でも即時更新する（自動で毎フレーム更新するため基本的には不要）
+    //    availableStages.clear();
+    //    if (fs::exists("Resources/Mapdata") && fs::is_directory("Resources/Mapdata")) {
+    //        for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
+    //            if (entry.path().extension() == ".csv") {
+    //                availableStages.push_back(entry.path().filename().string());
+    //            }
+    //        }
+    //        std::sort(availableStages.begin(), availableStages.end());
+    //        if (!availableStages.empty()) {
+    //            if (selectedStageIndex >= availableStages.size()) selectedStageIndex = 0;
+    //            strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[selectedStageIndex].c_str(), _TRUNCATE);
+    //            fileNameBuffer[sizeof(fileNameBuffer) - 1] = '\0';
+    //        } else {
+    //            selectedStageIndex = 0;
+    //            fileNameBuffer[0] = '\0';
+    //        }
+    //    }
+    //}
 
     // ロード（選択中のファイル）
     if (ImGui::Button("Load Selected Stage")) {
