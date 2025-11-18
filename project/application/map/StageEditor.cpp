@@ -85,28 +85,6 @@ void StageEditor::RenderUI() {
         ImGui::EndCombo();
     }
 
-    //// ステージ一覧の手動更新（オプション）
-    //if (ImGui::Button("Reload Stage List")) {
-    //    // 手動でも即時更新する（自動で毎フレーム更新するため基本的には不要）
-    //    availableStages.clear();
-    //    if (fs::exists("Resources/Mapdata") && fs::is_directory("Resources/Mapdata")) {
-    //        for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
-    //            if (entry.path().extension() == ".csv") {
-    //                availableStages.push_back(entry.path().filename().string());
-    //            }
-    //        }
-    //        std::sort(availableStages.begin(), availableStages.end());
-    //        if (!availableStages.empty()) {
-    //            if (selectedStageIndex >= availableStages.size()) selectedStageIndex = 0;
-    //            strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[selectedStageIndex].c_str(), _TRUNCATE);
-    //            fileNameBuffer[sizeof(fileNameBuffer) - 1] = '\0';
-    //        } else {
-    //            selectedStageIndex = 0;
-    //            fileNameBuffer[0] = '\0';
-    //        }
-    //    }
-    //}
-
     // ロード（選択中のファイル）
     if (ImGui::Button("Load Selected Stage")) {
         if (!availableStages.empty()) {
