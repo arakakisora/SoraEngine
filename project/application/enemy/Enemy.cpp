@@ -137,7 +137,7 @@ void Enemy::OnCollision(Collider* other)
 		HP -= bullet_->GetPower(); // 弾の攻撃力に応じてHPを減らす
 		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
 		damageTimer_ = kDamageDisplayTime;
-
+		object3D_->Update();
 		if (HP <= 0) {
 			isDead_ = true;
 			deatheEffect->Emit();
@@ -158,15 +158,6 @@ AABB Enemy::GetEnemyAABB()
 	return aabb;
 }
 
-void Enemy::OnCollision(const PlayerBullet* bullet)
-{
-
-	// 弾と衝突した場合の処理
-	if (bullet) {
-
-	}
-
-}
 
 Vector3 Enemy::GetRayEndPosition()
 {
