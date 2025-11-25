@@ -2,6 +2,7 @@
 #include <memory>
 #include "Object3D.h"
 
+
 class StageStartEffect {
 public:
     void Initialize(Object3D* player, const Vector3& basePos);

@@ -9,7 +9,7 @@
 
 #include "SceneManager.h"
 #include "MapChipField.h"
-
+#include "MapChipDatabase.h"
 
 #include <vector>
 #include <Player.h>
@@ -98,6 +98,7 @@ public:
 	//ブロック
 	std::vector<std::vector<Object3D*>> blockobject3D;
 	MapChipField* mapChipField_;
+	/*MapChipDatabase mapChipDatabase_;*/
 
 	//エネミー
 	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;

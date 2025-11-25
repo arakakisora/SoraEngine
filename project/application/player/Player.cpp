@@ -321,7 +321,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 				position += info.move;
 				positionsNew[i] = CornerPosition(position, static_cast<Corner>(i));
 			}
-			MapChipType mapChipType;
+			int mapChipType;
 			// 真下の当たり判定
 			bool hit = false;
 
@@ -329,19 +329,19 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			IndexSet indexSet;
 			indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(0, -kCollisionsmallnumber, 0));
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == MapChipType::kBlock) {
+			if (mapChipType == 4) {
 				hit = true;
 			}
-			else if (mapChipType == MapChipType::kGoal) {
+			else if (mapChipType == 4) {
 				goal_ = true;
 			}
 			// 右点の判定
 			indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(0, -kCollisionsmallnumber, 0));
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == MapChipType::kBlock) {
+			if (mapChipType == 1) {
 				hit = true;
 			}
-			else if (mapChipType == MapChipType::kGoal) {
+			else if (mapChipType == 4) {
 				goal_ = true;
 			}
 
@@ -387,17 +387,17 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 
 	}
 
-	MapChipType mapChipType;
+	int mapChipType;
 	// 真上の当たり判定
 	bool hit = false;
 	// 左点の判定
 	IndexSet indexSet;
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// 右点の判定
@@ -405,10 +405,10 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -439,7 +439,7 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 		positionsNew[i] = CornerPosition(position, static_cast<Corner>(i));
 
 	}
-	MapChipType mapChipType;
+	int mapChipType;
 	// 真下の当たり判定
 	bool hit = false;
 
@@ -447,16 +447,16 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
 	// 右点の判定
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -488,17 +488,17 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 
 	}
 
-	MapChipType mapChipType;
+	int mapChipType;
 	// 真上の当たり判定
 	bool hit = false;
 	// 右上点の判定
 	IndexSet indexSet;
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kRightTop] + Vector3(+kCollisionsmallnumber, 0, 0));
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType ==4) {
 		goal_ = true;
 	}
 
@@ -506,10 +506,10 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(+kCollisionsmallnumber, 0, 0));
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -541,17 +541,17 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 
 	}
 
-	MapChipType mapChipType;
+	int mapChipType;
 	// 真上の当たり判定
 	bool hit = false;
 	// hidari上点の判定
 	IndexSet indexSet;
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop] + Vector3(-kCollisionsmallnumber, 0, 0));
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -559,10 +559,10 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 
 	indexSet = mapChipFild_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kCollisionsmallnumber, 0, 0));
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == MapChipType::kBlock) {
+	if (mapChipType == 1) {
 		hit = true;
 	}
-	else if (mapChipType == MapChipType::kGoal) {
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit

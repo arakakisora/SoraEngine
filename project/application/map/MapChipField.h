@@ -4,33 +4,34 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "MapChipDatabase.h"
 
-	enum class MapChipType {
 
-		kBlank, // 空白
-		kBlock, // ブロック
-		kEnemy, // 敵
-		kEnemy2, // 2種類目の敵
-		kGoal,  // ゴール
 
-	};
-	struct MapChipData {
+/// <summary>
+/// マップチップのインデックス（配列上の位置）
+/// </summary>
+struct MapChipData {
 
-		std::vector<std::vector<MapChipType>> data;
-	};
+	std::vector<std::vector<int>> data;
+};
+/// <summary>
+/// マップチップのインデックス（配列上の位置）
+/// </summary>
+struct IndexSet {
+	uint32_t xIndex;
+	uint32_t yIndex;
+};
+/// <summary>
+/// マップチップ1マス分のワールド上の矩形
+/// </summary>
+struct Rect {
 
-	struct IndexSet {
-		uint32_t xIndex;
-		uint32_t yIndex;
-	};
-
-	struct Rect {
-
-	    float left ;
-	    float right ;
-	    float bottom ;
-	    float top  ;
-    };
+	float left;
+	float right;
+	float bottom;
+	float top;
+};
 /// <summary>
 /// マップチップフィールドクラス
 /// </summary>
@@ -47,9 +48,9 @@ public:
 	/// </summary>
 	void LoadMapChipCsv(const std::string& filePath);
 	/// <summary>
-	/// 指定したインデックスのマップチップタイプを取得
+	/// 指定したインデックスのマップチップID（= JSON の id）を取得
 	/// </summary>
-	MapChipType GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
+	int  GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
 	/// <summary>
 	/// 指定したインデックスのマップチップのワールド座標を取得
 	/// </summary>
@@ -85,6 +86,10 @@ public:
 	/// <returns>ゴールの座標を返す</returns>
 	Vector3 GetGoalPosition();
 
+	bool IsSolid(uint32_t xIndex,uint32_t yIndex);
+
+	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
+
 
 private:
 	// 1ブロックのサイズ
@@ -96,5 +101,5 @@ private:
 	MapChipData mapChipData_;
 
 	std::vector<int> Enemynumber;
-	
+
 };

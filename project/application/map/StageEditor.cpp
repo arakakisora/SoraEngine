@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include "MapChipDatabase.h"
 
 namespace fs = std::filesystem;
 
@@ -85,28 +86,6 @@ void StageEditor::RenderUI() {
         ImGui::EndCombo();
     }
 
-    //// ステージ一覧の手動更新（オプション）
-    //if (ImGui::Button("Reload Stage List")) {
-    //    // 手動でも即時更新する（自動で毎フレーム更新するため基本的には不要）
-    //    availableStages.clear();
-    //    if (fs::exists("Resources/Mapdata") && fs::is_directory("Resources/Mapdata")) {
-    //        for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
-    //            if (entry.path().extension() == ".csv") {
-    //                availableStages.push_back(entry.path().filename().string());
-    //            }
-    //        }
-    //        std::sort(availableStages.begin(), availableStages.end());
-    //        if (!availableStages.empty()) {
-    //            if (selectedStageIndex >= availableStages.size()) selectedStageIndex = 0;
-    //            strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[selectedStageIndex].c_str(), _TRUNCATE);
-    //            fileNameBuffer[sizeof(fileNameBuffer) - 1] = '\0';
-    //        } else {
-    //            selectedStageIndex = 0;
-    //            fileNameBuffer[0] = '\0';
-    //        }
-    //    }
-    //}
-
     // ロード（選択中のファイル）
     if (ImGui::Button("Load Selected Stage")) {
         if (!availableStages.empty()) {
@@ -120,49 +99,54 @@ void StageEditor::RenderUI() {
         isReloadRequested_ = true;
     }
 
-    // 選択タイル
-    ImGui::RadioButton("Empty", &selectedType_, 0); // 空白  
-    ImGui::RadioButton("Block", &selectedType_, 1); // ブロック
-    ImGui::RadioButton("Enemy", &selectedType_, 2); // 敵
-    ImGui::RadioButton("Player", &selectedType_, 3);// プレイヤー
-	ImGui::RadioButton("Goal", &selectedType_, 4);  // ゴール
+    for (const auto& info : MapChipDatabase::GetInstance()->GetAll()) {
+        ImGui::RadioButton(info.label.c_str(), &selectedType_, info.id);
+    }
 
     ImGui::End();
 
     ImGui::Begin("Stage");
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     // マップ描画エリア
-    for (int y = 0; y < grid_.size(); ++y) {
-        for (int x = 0; x < grid_[y].size(); ++x) {
-            ImVec4 color;
-            switch (grid_[y][x].type) {
-            case 0: color = ImVec4(0, 0, 0, 1); break;
-            case 1: color = ImVec4(0, 1, 0, 1); break;
-            case 2: color = ImVec4(1, 0, 0, 1); break;
-            case 3: color = ImVec4(0, 0, 1, 1); break;
-            default: color = ImVec4(1, 1, 1, 1); break;
+    // マップ描画エリア
+    for (int y = 0; y < static_cast<int>(grid_.size()); ++y) {
+        for (int x = 0; x < static_cast<int>(grid_[y].size()); ++x) {
+
+            // セルのタイプ（＝ JSON で定義した id）
+            int typeId = grid_[y][x].type;
+
+            // DB から色を取得
+            const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+
+            ImVec4 color(1, 1, 1, 1);
+            if (info) {
+                color = ImVec4(
+                    info->color.x,
+                    info->color.y,
+                    info->color.z,
+                    info->color.w
+                );
             }
-            constexpr float kCellSize = 12.0f; 
+
+            constexpr float kCellSize = 12.0f;
             // 普通のクリックでも反応させる（既存動作）
-            if (ImGui::ColorButton(("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(),
+            if (ImGui::ColorButton(
+                ("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(),
                 color, 0, ImVec2(kCellSize, kCellSize))) {
                 grid_[y][x].type = selectedType_;
             }
 
-
+            // ここから先のドラッグ塗り／消しゴム／スポイトは今のままでOK
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_RectOnly)) {
-                // 左ドラッグで現在選択タイルを塗る
                 if (io.MouseDown[ImGuiMouseButton_Left]) {
-                    grid_[y][x].type = selectedType_;
+                    grid_[y][x].type = selectedType_;     // 左ドラッグで塗る
                 }
-                // 右ドラッグで消しゴム（Empty=0）
                 if (io.MouseDown[ImGuiMouseButton_Right]) {
-                    grid_[y][x].type = 0;
+                    grid_[y][x].type = 0;                 // 右ドラッグで消しゴム（Empty=0）
                 }
-                // 中クリックでスポイト（そのセルの種類を選択状態に）
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle)) {
-                    selectedType_ = grid_[y][x].type;
+                    selectedType_ = grid_[y][x].type;     // 中クリックでスポイト
                 }
             }
 
@@ -170,6 +154,7 @@ void StageEditor::RenderUI() {
         }
         ImGui::NewLine();
     }
+
     ImGui::PopStyleVar();
     ImGui::End();
 

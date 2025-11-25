@@ -201,7 +201,7 @@ int Enemy::GetRayMapChipNumber(MapChipField* mapChipField)
 	IndexSet index = mapChipField->GetMapChipIndexSetByPosition(rayEndPosition);
 
 	// マップチップの種類を取得
-	MapChipType chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+	int chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
 
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);

@@ -13,7 +13,6 @@
 #include "ChargeBehabiaor.h"
 
 
-
 void GamePlayScene::Initialize()
 {
 	fadeManager_.Initialize("Resources/white.png");
@@ -36,8 +35,7 @@ void GamePlayScene::Initialize()
 	//モデルの読み込み
 	Road();
 
-
-
+	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap.csv");//testmap blocks.csv
@@ -71,7 +69,7 @@ void GamePlayScene::Initialize()
 	//当たり判定の初期化
 	collitionManager_ = std::make_unique<CollisionManager>();
 	collitionManager_->AddCollider(player);
-	
+
 	for (Enemy* e : enemyManager_.get()->GetEnemies()) {
 		collitionManager_->AddCollider(e);
 	}
@@ -150,14 +148,13 @@ void GamePlayScene::Update()
 		}
 		player->GetObject3D()->Update();
 		enemyManager_->EnemyObjectUpdate();
-	}
-	else {
+	} else {
 		//player->Update();
 		////プレイヤーの更新
 		if (!player->GetIsDead_()) {
 			player->Update();
 			// プレイヤーの弾
-			
+
 		}
 		enemyManager_->Update();
 
@@ -173,7 +170,7 @@ void GamePlayScene::Update()
 			collitionManager_->AddCollider(b);
 		}
 
-		
+
 		for (Enemy* e : enemyManager_->GetEnemies()) {
 			collitionManager_->AddCollider(e);
 			for (PlayerBullet* b : player->GetBullets()) {
@@ -235,8 +232,7 @@ void GamePlayScene::Draw()
 	if (isStageStartPlaying_) {
 		stageStartEffect_->Draw(); // ←ゲートのみ描画
 		player->Draw();            // ←プレイヤーを別に描画
-	}
-	else {
+	} else {
 
 		player->Draw();
 
@@ -292,7 +288,7 @@ void GamePlayScene::GenerateObject3D()
 	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
 		for (uint32_t j = 0; j < numBlokHorizontal; ++j) {
 
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == 1) {
 
 
 				Object3D* object3D_ = new Object3D();
