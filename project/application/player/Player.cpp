@@ -11,7 +11,7 @@
 #include "Object3DCommon.h"
 #include "ParticleMnager.h"
 #include "plyerpaticleBehavior.h"
-
+#include "ChargeBehabiaor.h"
 
 
 void Player::Initialize(const Vector3& position) {
@@ -32,7 +32,12 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 
 
-
+	ParticleMnager::GetInstance()->CreateParticleGroup(
+		"dash_smoke",
+		"Resources/smoke.png", // 使いたいテクスチャ
+		VerticesType::Quad,
+		std::make_unique<ExhaustGasBehavior>()
+	);
 
 
 
@@ -95,6 +100,7 @@ void Player::Update() {
 
 
 	PrayerMove();
+	
 
 	aabb_ = GetPlayerAABB();
 
@@ -146,6 +152,7 @@ void Player::Update() {
 	HitWallCollisionMove(collisionMapInfo);
 	PrayerTurn();
 	object3D_->Update();
+	PlayerParticle();
 
 	// 落下による死亡判定
 	if (object3D_->GetTransform().translate.y < deathHeight_) {
@@ -662,6 +669,46 @@ void Player::Attack()
 
 
 
+	}
+
+
+}
+
+void Player::PlayerParticle()
+{
+	// 地面にいて、左右どちらかに動いているときだけ排気ガス
+	bool isMoving = onGround_ && (playermoveright || playermoveleft);
+
+	const float dt = 1.0f / 60.0f; // 固定フレーム前提ならこれでOK
+
+	if (isMoving) {
+		exhaustTimer_ += dt;
+
+		// 一定間隔ごとにだけ煙を出す
+		if (exhaustTimer_ >= kExhaustInterval) {
+			exhaustTimer_ = 0.0f;
+
+			EulerTransform smokeTransform{};
+			smokeTransform.translate = object3D_->GetTransform().translate;
+
+			// 足元にオフセット
+			//smokeTransform.translate.y -= 0.25f;
+
+			// 進行方向のちょい後ろに出すと“排気”感が出る
+			if (lrDirection_ == LRDirecion::kright) {
+				smokeTransform.translate.x -= 0.15f;
+			}
+			else {
+				smokeTransform.translate.x += 0.15f;
+			}
+
+			// 1回に2粒くらい
+			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8);
+		}
+	}
+	else {
+		// 止まったらタイマーリセット
+		exhaustTimer_ = 0.0f;
 	}
 
 

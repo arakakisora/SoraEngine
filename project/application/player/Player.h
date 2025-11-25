@@ -98,6 +98,8 @@ public:
 	/// </summary>
 	void Attack();
 
+	void PlayerParticle();
+
 	/// <summary>
 	/// イーズアウトサイン関数
 	/// </summary>
@@ -294,6 +296,10 @@ private:
 	// プレイヤー移動フラグ
 	bool playermoveright = false;
 	bool playermoveleft = false;
+	// Player.h の private:
+	float exhaustTimer_ = 0.0f;
+	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
+
 
 	bool goal_ = false; // ゴールに到達したかどうか
 

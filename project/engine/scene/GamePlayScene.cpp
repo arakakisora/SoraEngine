@@ -38,7 +38,7 @@ void GamePlayScene::Initialize()
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/sage1.csv");//testmap blocks.csv
 	GenerateObject3D();
 
 

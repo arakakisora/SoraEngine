@@ -110,7 +110,7 @@ void ParticleMnager::Update()
 			Matrix4x4 worldViewProjetionMatrix = provisionalworldMatrix * viewMatrix * projectionMatrix;
 
 
-			if (counter < particleGroup.instanceCount) {
+			if (counter < kMaxInstanceCount) {
 				particleGroup.instanceData[counter].WVP = worldViewProjetionMatrix;
 				particleGroup.instanceData[counter].World = provisionalworldMatrix;
 				particleGroup.instanceData[counter].color = particleIterator->color;
@@ -238,7 +238,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	//SRVのインデックスを取得
 	particleGroups.at(name).materialdata.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);	//テクスチャ番号の取得
 	//最大インスタンスカウント
-	uint32_t MaxInstanceCount = 1000;
+	uint32_t MaxInstanceCount = kMaxInstanceCount;
 	//インスタンス数を初期化
 	particleGroups.at(name).instanceCount = 0;
 	//インスタンス用のリソースを作成
@@ -274,23 +274,12 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
-	//パーティクルグループのパーティクルリストにパーティクルを追加
-	
+
 	for (uint32_t i = 0; i < count; ++i) {
-
-
-		
-		particleGroups.at(name).particles.push_back(particleGroups.at(name).behavior->Create(randomEngine, transformValue,lifetime));
-
+		particleGroups.at(name).particles.push_back(
+			particleGroups.at(name).behavior->Create(
+				randomEngine, transformValue, lifetime));
 	}
-
-	//パーティクルグループのインスタンス数を更新
-	particleGroups.at(name).instanceCount = count;
-	////インスタンス用のリソースを作成
-	//particleGroups.at(name).instanceResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * particleGroups.at(name).instanceCount);
-	////インスタンス用のリソースをマップ
-	//particleGroups.at(name).instanceResource->Map(0, nullptr, reinterpret_cast<void**>(&particleGroups.at(name).instanceData));
-	//
 
 
 }

@@ -117,7 +117,7 @@ public:
 
 	// Behavior設定（明示的に設定する用）
 	void SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior);
-
+	static constexpr uint32_t kMaxInstanceCount = 1000;
 
 private:
 
