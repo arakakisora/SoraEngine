@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "GridCell.h"
+#include "MapChipDatabase.h"
 /// <summary>
 /// ステージエディタークラス
 /// </summary>
@@ -47,5 +48,6 @@ private:
 private:
 	std::vector<std::vector<GridCell>> grid_;
 	int selectedType_ = 1;
-	bool isReloadRequested_ = false; // GamePlayScene のメンバに追加
+	bool isReloadRequested_ = false; 
+
 };

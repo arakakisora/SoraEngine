@@ -5,14 +5,14 @@
 
 namespace {
 
-	std::map<std::string, MapChipType> mapChipTable = {
+	/*std::map<std::string, MapChipType> mapChipTable = {
 		{"0", MapChipType::kBlank},
 		{"1", MapChipType::kBlock},
 		{"2", MapChipType::kEnemy},
 		{"3",MapChipType::kEnemy2},
 		{"4", MapChipType::kGoal}
 
-	};
+	};*/
 
 }
 
@@ -20,9 +20,9 @@ void MapChipField::ResetMapChipData() {
 	// マップチップデータのリセット
 	mapChipData_.data.clear();
 	mapChipData_.data.resize(kNumBlockVirtical);
-	for (std::vector<MapChipType>& mapChipDataLine : mapChipData_.data) {
-		// 横方向のブロック数分リサイズ
-		mapChipDataLine.resize(kNumBlockHorizontal);
+	for (auto& line : mapChipData_.data) {
+		line.clear();
+		line.resize(kNumBlockHorizontal, 0);
 	}
 }
 
@@ -42,38 +42,32 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	// ファイルを閉じる
 	file.close();
 
-	// csvからマップチップデータを読み込む
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+	std::string line;
+	uint32_t y = 0;
 
-		std::string line;
-		getline(mapChipCsv, line);
+	while (std::getline(mapChipCsv, line)) {
+		std::stringstream lineStream(line);
+		std::string cell;
+		uint32_t x = 0;
 
-		// 1桁分の文字列をストリームに変換して解析しやすくする
-		std::istringstream lien_stream(line);
-		// 横方向のブロック数分ループ
-		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			// カンマ区切りで1単語取得
-			std::string word;
-			getline(lien_stream, word, ',');
-			// マップチップタイプに変換して格納
-			if (mapChipTable.contains(word)) {
-				mapChipData_.data[y][x] = mapChipTable[word];
+		while (std::getline(lineStream, cell, ',')) {
+			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
+				// CSV の文字列をそのまま int に変換して保存
+				int id = std::stoi(cell);
+				mapChipData_.data[y][x] = id;
 			}
+			++x;
 		}
+		++y;
 	}
 }
 
-MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
+int MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
 
-	// インデックスが範囲外の場合は空白を返す
-	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
-		return MapChipType::kBlank;
+	// 範囲チェック（unsigned なので 0 未満チェックは不要）
+	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) {
+		return 0; // 範囲外は Empty 扱い（id 0 を想定）
 	}
-	// インデックスが範囲外の場合は空白を返す
-	if (yIndex < 0 || kNumBlockVirtical - 1 < yIndex) {
-		return MapChipType::kBlank;
-	}
-	// 指定したインデックスのマップチップタイプを返す
 	return mapChipData_.data[yIndex][xIndex];
 }
 
