@@ -2,19 +2,9 @@
 #include <fstream>
 #include <map>
 #include <sstream>
+#include "MapChipDatabase.h"
 
-namespace {
 
-	/*std::map<std::string, MapChipType> mapChipTable = {
-		{"0", MapChipType::kBlank},
-		{"1", MapChipType::kBlock},
-		{"2", MapChipType::kEnemy},
-		{"3",MapChipType::kEnemy2},
-		{"4", MapChipType::kGoal}
-
-	};*/
-
-}
 
 void MapChipField::ResetMapChipData() {
 	// マップチップデータのリセット
@@ -102,37 +92,76 @@ Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex) {
 
 std::vector<Vector3> MapChipField::GetEnemyPositions()
 {
-	// 敵の座標リストを取得
 	std::vector<Vector3> enemyPositions;
-	// マップチップデータを走査
+	Enemynumber.clear();
+
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			// 敵のマップチップの場合、座標リストに追加
-			if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy) {
-				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-				Enemynumber.push_back(1); //敵の番号を追加
-			} // 2種類目の敵の場合
-			else if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy2) {
-				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-				Enemynumber.push_back(2); //敵の番号を追加
+
+			int typeId = GetMapChipTypeByIndex(x, y);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+			if (!info) {
+				continue;
 			}
 
+			// JSON で spawn == "enemy" のタイルを敵として扱う
+			if (info->spawn == "enemy") {
+				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
+				Enemynumber.push_back(info->enemyNumber); // enemyNumber をそのまま保存
+			}
 		}
 	}
 	return enemyPositions;
 }
 
-Vector3 MapChipField::GetGoalPosition()
-{
-	// ゴールの座標を取得
-	Vector3 pos;
+Vector3 MapChipField::GetGoalPosition() {
+	Vector3 pos{ 0.0f, 0.0f, 0.0f };
+
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			if (GetMapChipTypeByIndex(x, y) == MapChipType::kGoal) {
+
+			int typeId = GetMapChipTypeByIndex(x, y);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+			if (!info) {
+				continue;
+			}
+
+			// JSON で spawn == "goal" のタイルをゴールとして扱う
+			if (info->spawn == "goal") {
 				pos = GetMapChipPostionByIndex(x, y);
+				// 複数ある場合は最後のものが採用される
+			}
+		}
+	}
+	return pos;
+}
+
+bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex) 
+{
+	int typeId = GetMapChipTypeByIndex(xIndex, yIndex);
+	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+	if (!info) {
+		return false;
+	}
+	// JSON の collision == "solid" を「通れないブロック」として扱う
+	return info->collision == "solid";
+}
+
+std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTag)
+{
+	std::vector<Vector3> result;
+
+	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+
+			int typeId = GetMapChipTypeByIndex(x, y);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+
+			if (info->spawn == spawnTag) {
+				result.push_back(GetMapChipPostionByIndex(x, y));
 			}
 		}
 	}
 
-	return pos;
+	return result;
 }

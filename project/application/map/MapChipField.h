@@ -6,15 +6,7 @@
 #include <vector>
 #include "MapChipDatabase.h"
 
-//enum class MapChipType {
 
-//	kBlank, // 空白
-//	kBlock, // ブロック
-//	kEnemy, // 敵
-//	kEnemy2, // 2種類目の敵
-//	kGoal,  // ゴール
-
-//};
 
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
@@ -93,6 +85,10 @@ public:
 	/// </summary>
 	/// <returns>ゴールの座標を返す</returns>
 	Vector3 GetGoalPosition();
+
+	bool IsSolid(uint32_t xIndex,uint32_t yIndex);
+
+	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
 
 
 private:

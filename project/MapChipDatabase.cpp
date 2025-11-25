@@ -2,6 +2,14 @@
 #include "json.hpp"
 #include <fstream>
 
+static MapChipDatabase s_instance;
+
+//シングルトンインスタンス取得
+MapChipDatabase* MapChipDatabase::GetInstance()
+{
+	return &s_instance;
+}
+
 void MapChipDatabase::LoadJson(const std::string& path)
 {
 	std::ifstream file(path);// ファイルストリームを開く

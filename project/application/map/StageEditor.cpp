@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include "MapChipDatabase.h"
 
 namespace fs = std::filesystem;
 
@@ -98,7 +99,7 @@ void StageEditor::RenderUI() {
         isReloadRequested_ = true;
     }
 
-    for (const auto& info : gMapChipDB.GetAll()) {
+    for (const auto& info : MapChipDatabase::GetInstance()->GetAll()) {
         ImGui::RadioButton(info.label.c_str(), &selectedType_, info.id);
     }
 
@@ -115,7 +116,7 @@ void StageEditor::RenderUI() {
             int typeId = grid_[y][x].type;
 
             // DB から色を取得
-            const MapChipInfo* info = gMapChipDB.GetById(typeId);
+            const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
 
             ImVec4 color(1, 1, 1, 1);
             if (info) {

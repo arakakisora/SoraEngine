@@ -13,6 +13,8 @@
 class MapChipDatabase
 {
 public:
+	static MapChipDatabase* GetInstance();
+
 	/// <summary>
 	/// JSONファイルからマップチップ情報を読み込みます
 	/// </summary>
@@ -34,7 +36,3 @@ private:
 	std::unordered_map<int, MapChipInfo> chipsById_;// IDによるマップチップ情報マップ
 
 };
-/// <summary>
-/// グローバルに 1 個だけ使う前提の DB インスタンス
-/// </summary>
-extern MapChipDatabase gMapChipDB;
