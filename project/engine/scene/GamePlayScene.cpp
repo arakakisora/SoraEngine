@@ -96,7 +96,7 @@ void GamePlayScene::Initialize()
 
 	//ゴールの初期化
 	goal = new Goal();
-	goal->Initialize(mapChipField_);
+	goal->Initialize(mapChipField_,player);
 
 
 
@@ -137,9 +137,9 @@ void GamePlayScene::Update()
 
 
 	skydome_->Update();
-	goal->Update(player->GetGoal());
+	goal->Update(player->GetGoal(), 1.0f / 60.0f);
 	const float dt = 1.0f / 60.0f;
-	if (isStageStartPlaying_) {
+	if (isStageStartPlaying_|| goal->GetIsEffectStarted()) {
 
 		stageStartEffect_->Update(1.0f / 60.0f);
 		if (stageStartEffect_->IsFinished()) {
@@ -267,6 +267,7 @@ void GamePlayScene::Draw()
 	SpriteCommon::GetInstance()->CommonDraw();
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
+	goal->Draw2D();
 }
 
 void GamePlayScene::GenerateObject3D()
