@@ -118,9 +118,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
-    <ClCompile Include="application\particle\CollisionManager.cpp" />
+    <ClCompile Include="application\map\Collision\CollisionManager.cpp" />
     <ClCompile Include="application\enemy\Enemy2.cpp" />
-    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="application\map\Collision\Collider.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
@@ -145,7 +145,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\fade\FadeManager.cpp" />
     <ClCompile Include="application\gaol\Goal.cpp" />
-    <ClCompile Include="GameOverEffect.cpp" />
+    <ClCompile Include="application\particle\GameOverEffect.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -169,12 +169,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
-
-    <ClCompile Include="MapChipDatabase.cpp" />
-
-    <ClCompile Include="StageEndEffect.cpp" />
-
-    <ClCompile Include="StageStartEffect.cpp" />
+    <ClCompile Include="application\map\MapChipDatabase.cpp" />
+    <ClCompile Include="application\particle\StageEndEffect.cpp" />
+    <ClCompile Include="application\particle\StageStartEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -297,9 +294,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
     <ClInclude Include="application\particle\ChargeBehabiaor.h" />
-    <ClInclude Include="application\particle\CollisionManager.h" />
+    <ClInclude Include="application\map\Collision\CollisionManager.h" />
     <ClInclude Include="application\enemy\Enemy2.h" />
-    <ClInclude Include="Collider.h" />
+    <ClInclude Include="application\map\Collision\Collider.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
@@ -355,14 +352,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
-    <ClInclude Include="GameOverEffect.h" />
-
-    <ClInclude Include="json.hpp" />
-    <ClInclude Include="MapChipDatabase.h" />
-
-    <ClInclude Include="StageEndEffect.h" />
-
-    <ClInclude Include="StageStartEffect.h" />
+    <ClInclude Include="application\particle\GameOverEffect.h" />
+    <ClInclude Include="engine\base\json.hpp" />
+    <ClInclude Include="application\map\MapChipDatabase.h" />
+    <ClInclude Include="application\particle\StageEndEffect.h" />
+    <ClInclude Include="application\particle\StageStartEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
