@@ -67,7 +67,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade;$(ProjectDir)application\Collision</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,7 +94,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade;$(ProjectDir)application\Collision</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -118,9 +118,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
-    <ClCompile Include="application\map\Collision\CollisionManager.cpp" />
+    <ClCompile Include="application\Collision\CollisionManager.cpp" />
     <ClCompile Include="application\enemy\Enemy2.cpp" />
-    <ClCompile Include="application\map\Collision\Collider.cpp" />
+    <ClCompile Include="application\Collision\Collider.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
@@ -294,9 +294,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
     <ClInclude Include="application\particle\ChargeBehabiaor.h" />
-    <ClInclude Include="application\map\Collision\CollisionManager.h" />
+    <ClInclude Include="application\Collision\CollisionManager.h" />
     <ClInclude Include="application\enemy\Enemy2.h" />
-    <ClInclude Include="application\map\Collision\Collider.h" />
+    <ClInclude Include="application\Collision\Collider.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
