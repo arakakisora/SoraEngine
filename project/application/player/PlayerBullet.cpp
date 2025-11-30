@@ -63,6 +63,7 @@ void PlayerBullet::Draw() { object3D_->Draw(); }
 void PlayerBullet::OnCollision(Collider* other)
 {
 	if (other->GetLayer() == Layer::Enemy ||
+		other->GetLayer() == Layer::Enemy2 ||
 		other->GetLayer() == Layer::EnemyBullet) {
 		isDead_ = true;   // 消えるフラグ
 	}

@@ -38,7 +38,7 @@ void GamePlayScene::Initialize()
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/sage1.csv");//testmap blocks.csv
 	GenerateObject3D();
 
 
@@ -172,6 +172,13 @@ void GamePlayScene::Update()
 
 
 		for (Enemy* e : enemyManager_->GetEnemies()) {
+			collitionManager_->AddCollider(e);
+			for (PlayerBullet* b : player->GetBullets()) {
+				e->Setbulelt(b);
+			}
+		}
+
+		for (Enemy2* e : enemyManager_->GetEnemies2()) {
 			collitionManager_->AddCollider(e);
 			for (PlayerBullet* b : player->GetBullets()) {
 				e->Setbulelt(b);

@@ -5,6 +5,7 @@ public:
     enum class Layer {
         Player,
         Enemy,
+        Enemy2,
         PlayerBullet,
         EnemyBullet,
         // Map, Item など増やしたくなったらここに追加

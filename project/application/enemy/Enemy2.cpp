@@ -33,11 +33,12 @@ void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
-
+	aabb_ = GetEnemyAABB();
 
 }
 
 void Enemy2::Update(MapChipField* mapChipField) {
+	aabb_ = GetEnemyAABB();
 	// 歩行タイマーの更新
 	walkTimer_ += 1.0f / 60.0f;
 	// 歩行モーションの計算
@@ -112,31 +113,33 @@ Vector3 Enemy2::GetWorldPosition() {
 	return worldPos;
 }
 
-AABB Enemy2::GetAABB() {
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
-	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
-
-	return aabb;
-}
-
-
-
-void Enemy2::OnCollision(const PlayerBullet* bullet)
+void Enemy2::OnCollision(Collider* other)
 {
-	if (bullet) {
-		HP -= bullet->GetPower(); // 弾の攻撃力に応じてHPを減らす
+	if (other->GetLayer() == Layer::PlayerBullet) {
+
+		// ダメージ処理
+		HP -= bullet_->GetPower(); // 弾の攻撃力に応じてHPを減らす
 		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
 		damageTimer_ = kDamageDisplayTime;
-
+		object3D_->Update();
 		if (HP <= 0) {
 			isDead_ = true;
 			deatheEffect->Emit();
 		}
 	}
 
+}
 
+AABB Enemy2::GetEnemyAABB()
+{
+	// エネミーのワールド座標を取得
+	Vector3 worldPos = GetWorldPosition();
+	AABB aabb;
+	// AABBの最小点と最大点を計算
+	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
+	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
+
+	return aabb;
 }
 
 Vector3 Enemy2::GetRayEndPosition()

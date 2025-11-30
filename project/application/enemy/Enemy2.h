@@ -7,6 +7,7 @@
 #include"Object3D.h"
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
+#include "Collider.h"
 
 
 class Player;
@@ -15,7 +16,18 @@ class PlayerBullet;
 /// Enemyクラス
 /// 敵の細かい部分を管理するクラス
 /// </summary>
-class Enemy2 {
+class Enemy2  :public Collider {
+public:
+	Enemy2() : Collider(Layer::Enemy2) {}
+	AABB GetAABB() const override { return aabb_; }
+	void OnCollision(Collider* other) override;
+	void Setbulelt(PlayerBullet* b) { bullet_ = b; }
+	AABB GetEnemyAABB();
+private:
+
+
+	AABB aabb_;
+	PlayerBullet* bullet_;
 public:
 	~Enemy2();
 	/// <summary>
@@ -43,7 +55,7 @@ public:
 	/// world座標を取得します
 	/// </summary>
 	/// <returns>AABBを返す</returns>
-	AABB GetAABB();
+	//AABB GetAABB();
 
 	/// <summary>
 	/// 目の前にブロックがあるかどうか
@@ -69,7 +81,7 @@ public:
 	// 当たり判定
 	/// </summary>
 	/// <param name="bullet">プレイヤーの弾</param>
-	void OnCollision(const PlayerBullet* bullet);
+	//void OnCollision(const PlayerBullet* bullet);
 
 	/// <summary>
 	// 死亡しているかどうかを取得
