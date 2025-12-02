@@ -17,8 +17,9 @@ public:
 	// 新規生成時の初期化（Emitの中で呼ばれる）
 	virtual Particle Create(std::mt19937& rng, const EulerTransform transform,float lifetime) = 0;
 
-
-
+#ifdef USE_IMGUI
+	virtual void DrawImgui(const char* labelPrefix = "") {}
+#endif
 
 };
 
