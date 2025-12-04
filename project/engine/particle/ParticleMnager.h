@@ -80,6 +80,8 @@ public:
 
 	static ParticleMnager* GetInstance();
 
+
+
 private:
 	// コンストラクタをプライベートにする
 	ParticleMnager() = default;
@@ -88,8 +90,9 @@ private:
 	ParticleMnager(const ParticleMnager&) = delete;
 	ParticleMnager& operator=(const ParticleMnager&) = delete;
 
-
 public:
+
+	void ImguiDrawEditor();
 
 	/// <summary>
 	/// 初期化
@@ -130,7 +133,7 @@ public:
 	/// <param name="count"></param>
 	/// <param name="lifetime"></param>
 	void Emit(const std::string& name, const EulerTransform transform);
-	void Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime);
+	//void Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime);
 
 
 	//リングの頂点情報を作成
@@ -183,7 +186,10 @@ private:
 	VerticesType verticesType = VerticesType::Quad;
 
 
-
+#ifdef USE_IMGUI
+	
+	std::unique_ptr<ParticleEditor> editor_;
+#endif
 
 };
 

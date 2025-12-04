@@ -703,7 +703,7 @@ void Player::PlayerParticle()
 			}
 
 			// 1回に2粒くらい
-			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform);
 		}
 	}
 	else {

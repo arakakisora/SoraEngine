@@ -12,6 +12,8 @@
 #include <json.hpp>
 #include <fstream>
 #include <ChargeBehabiaor.h>
+#include "ParticleEditor.h"
+
 
 using json = nlohmann::json;
 
@@ -61,6 +63,17 @@ ParticleMnager* ParticleMnager::GetInstance()
 }
 
 
+
+
+void ParticleMnager::ImguiDrawEditor()
+{
+#ifdef USE_IMGUI
+	//Editorが生成されていたら描画
+	editor_->DrawImguiEditor();
+#endif
+
+}
+
 void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
 
@@ -85,7 +98,10 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	//ビルボード行列の作成
 	backToFrontMatrix = MyMath::MakeRotateYMatrix(std::numbers::pi_v<float>);
 
-	
+#ifdef USE_IMGUI
+	//Editor を生成
+	editor_ = std::make_unique<ParticleEditor>(this);
+#endif
 }
 
 
@@ -211,6 +227,9 @@ void ParticleMnager::Update()
 		particleGroup.instanceCount = counter;
 
 	}
+
+
+
 }
 
 void ParticleMnager::Draw()
@@ -328,16 +347,16 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime)
-{
-	//パーティクルグループが存在するかチェックしてassert
-	assert(particleGroups.contains(name));
-	for (uint32_t i = 0; i < count; ++i) {
-		particleGroups.at(name).particles.push_back(
-			particleGroups.at(name).behavior->Create(
-				randomEngine, transform, lifetime));
-	}
-}
+//void ParticleMnager::Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime)
+//{
+//	//パーティクルグループが存在するかチェックしてassert
+//	assert(particleGroups.contains(name));
+//	for (uint32_t i = 0; i < count; ++i) {
+//		particleGroups.at(name).particles.push_back(
+//			particleGroups.at(name).behavior->Create(
+//				randomEngine, transform, lifetime));
+//	}
+//}
 
 
 

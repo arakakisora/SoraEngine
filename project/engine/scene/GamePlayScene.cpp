@@ -369,6 +369,8 @@ void GamePlayScene::Imguidebug()
 	{
 		SceneManager::GetInstance()->ChangeScene("TITELE");
 	}
+
+	ParticleMnager::GetInstance()->ImguiDrawEditor();
 #endif // USE_IMGUI
 
 }

@@ -34,6 +34,8 @@ private:
 	std::vector<std::string> textureFilePaths_; // テクスチャファイルパス一覧
 	std::string textureDirectory_; // テクスチャディレクトリパス
 };
-
 #endif // USE_IMGUI
+
+
+
 

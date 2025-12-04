@@ -3,6 +3,7 @@
 #include "ParticleMnager.h"
 #include <algorithm> // 追加
 #include <filesystem>
+#include "imgui.h"
 #ifdef USE_IMGUI
 
 namespace fs = std::filesystem;
@@ -50,7 +51,7 @@ void ParticleEditor::DrawImguiEditor()
 
 	const std::string& currentName = names[currentIndex_];
 
-	
+
 	BasicIMGui(currentName);//基本設定
 	VertexTypeIMGui(currentName);//頂点タイプ選択
 	ImGui::SeparatorText("Texture");//テクスチャ選択
@@ -71,10 +72,10 @@ void ParticleEditor::BasicIMGui(const std::string& currentName)
 
 	//デフォルト　カウント・ライフタイム
 	int count = static_cast<int>(currentGroup.defaultCount);
-	if (ImGui::DragInt("Default Count", &count, 1, 1, 1000)) {
+	if (ImGui::DragInt("Count", &count, 1, 1, 1000)) {
 		groups.at(currentName).defaultCount = (uint32_t)std::max(count, 1);
 	}
-	ImGui::DragFloat("Default Lifetime", &groups.at(currentName).defaultLifetime, 0.1f, 0.1f, 10.0f);
+	ImGui::DragFloat("Lifetime", &groups.at(currentName).defaultLifetime, 0.1f, 0.1f, 10.0f);
 }
 
 void ParticleEditor::VertexTypeIMGui(const std::string& currentName)
