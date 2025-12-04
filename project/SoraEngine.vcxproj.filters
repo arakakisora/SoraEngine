@@ -246,11 +246,9 @@
     <ClCompile Include="StageStartEffect.cpp" />
     <ClCompile Include="GameOverEffect.cpp" />
     <ClCompile Include="Collider.cpp" />
-
     <ClCompile Include="MapChipDatabase.cpp" />
-
     <ClCompile Include="StageEndEffect.cpp" />
-
+    <ClCompile Include="ParticleEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -443,12 +441,10 @@
     <ClInclude Include="StageStartEffect.h" />
     <ClInclude Include="GameOverEffect.h" />
     <ClInclude Include="Collider.h" />
-
     <ClInclude Include="MapChipDatabase.h" />
     <ClInclude Include="json.hpp" />
-
     <ClInclude Include="StageEndEffect.h" />
-
+    <ClInclude Include="ParticleEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

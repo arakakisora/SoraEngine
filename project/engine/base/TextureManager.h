@@ -66,6 +66,8 @@ public:
 	/// <param name="filepath"></param>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filepath);
 
+	std::unordered_map<std::string, TexturData>& GetTextureDatas() { return textureDatas; }
+
 	/// <summary>
 	//Srvの最初
 	/// </summary>
