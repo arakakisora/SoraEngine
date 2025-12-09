@@ -38,7 +38,7 @@ void GamePlayScene::Initialize()
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/sage1.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
 	GenerateObject3D();
 
 
@@ -66,13 +66,8 @@ void GamePlayScene::Initialize()
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->Initialize(mapChipField_);
 
-	//当たり判定の初期化
-	collitionManager_ = std::make_unique<CollisionManager>();
-	collitionManager_->AddCollider(player);
 
-	for (Enemy* e : enemyManager_.get()->GetEnemies()) {
-		collitionManager_->AddCollider(e);
-	}
+
 
 
 
@@ -160,31 +155,17 @@ void GamePlayScene::Update()
 
 
 
-		collitionManager_->Clear();
+		// 毎フレーム、まずクリアしてから各オーナーに登録して Update を呼ぶ
+		CollisionManager::GetInstance()->Clear();
 
-		// プレイヤー
-		collitionManager_->AddCollider(player);
+		// プレイヤー自身と弾を登録（Player が担当）
+		player->RegisterColliders();
 
-		// プレイヤーの弾
-		for (PlayerBullet* b : player->GetBullets()) {
-			collitionManager_->AddCollider(b);
-		}
+		// 敵は EnemyManager が登録する
+		enemyManager_->RegisterColliders();
 
-
-		for (Enemy* e : enemyManager_->GetEnemies()) {
-			collitionManager_->AddCollider(e);
-			for (PlayerBullet* b : player->GetBullets()) {
-				e->Setbulelt(b);
-			}
-		}
-
-		for (Enemy2* e : enemyManager_->GetEnemies2()) {
-			collitionManager_->AddCollider(e);
-			for (PlayerBullet* b : player->GetBullets()) {
-				e->Setbulelt(b);
-			}
-		}
-		collitionManager_->Update();
+		// 衝突判定実行
+		CollisionManager::GetInstance()->Update();
 	}
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {

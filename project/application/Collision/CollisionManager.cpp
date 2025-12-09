@@ -3,7 +3,23 @@
 #include "EnemyManager.h"
 #include "PlayerBullet.h"
 #include "MyMath.h"
+#include <assert.h>
 
+CollisionManager* CollisionManager::instance_ = nullptr;
+
+CollisionManager* CollisionManager::GetInstance()
+{
+	if (instance_ == nullptr) {
+		instance_ = new CollisionManager();
+	}
+	return instance_;
+}
+
+void CollisionManager::Finalize()
+{
+	delete instance_;
+	instance_ = nullptr;
+}
 
 void CollisionManager::AddCollider(Collider* collider)
 {
@@ -17,6 +33,11 @@ void CollisionManager::Update()
         for (size_t j = i + 1; j < n; ++j) {
             Collider* a = colliders_[i];
             Collider* b = colliders_[j];
+
+            // どちらかが当たり判定無効ならスキップ
+            if (!a->IsCollisionEnabled() || !b->IsCollisionEnabled()) {
+                continue;
+            }
 
             if (!CanCollide(a->GetLayer(), b->GetLayer())) {
                 continue;
@@ -50,4 +71,8 @@ bool CollisionManager::CanCollide(Collider::Layer a, Collider::Layer b) const
 
 
     return false;
+}
+
+void CollisionManager::Clear() {
+	colliders_.clear();
 }

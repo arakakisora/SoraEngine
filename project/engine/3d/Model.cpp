@@ -46,18 +46,6 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	std::memcpy(mappedIndex, modelData.indices.data(), sizeof(uint32_t) * modelData.indices.size());
 
 
-	//マテリアル
-	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	materialResource = modelCommon_->GetDxCommon()->CreateBufferResource(sizeof(Material));
-	//マテリアルにデータを書き込む	
-	materialData = nullptr;
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//色
-	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-
-	materialData->enableLighting = true;//有効にするか否か
-	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
-	materialData->shiniess = 60.0f;
 
 
 	//.objの参照しているテクスチャファイル読み込み
@@ -81,8 +69,6 @@ void Model::Draw()
 	modelCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
 	//インデックスバッファビューを設定
 	modelCommon_->GetDxCommon()->GetCommandList()->IASetIndexBuffer(&indexBufferView);
-	//マテリアルのCBufferの場所を設定
-	modelCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	//SRVのDescriptorTableの先頭を設定
 	modelCommon_->GetSRVManager()->SetGraficsRootDescriptorTable(2, TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.textureFilePath));
 	// インデックス描画（インスタンス数 = 1）

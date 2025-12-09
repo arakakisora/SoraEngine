@@ -8,6 +8,7 @@
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
 #include "Collider.h"
+#include "HitDeathComponent.h"
 
 
 class Player;
@@ -35,9 +36,6 @@ private:
 
 
 public:
-
-
-
 
 	~Enemy();
 	/// <summary>
@@ -84,6 +82,7 @@ public:
 
 	/// <summary>
 	// 当たり判定
+	// (古いシグネチャは残していますが、Collider 経由の OnCollision を使ってください)
 	/// </summary>
 	/// <param name="bullet">プレイヤーの弾</param>
 	void OnCollision(const PlayerBullet* bullet);
@@ -93,6 +92,11 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	bool IsDead() const { return isDead_; }
+
+	/// <summary>
+	/// マネージャが削除判定に使う（死亡演出完了フラグ）
+	/// </summary>
+	bool IsPendingRemove() const { return pendingRemove_; }
 
 	Object3D* GetObject3D() const { return object3D_; }
 
@@ -121,5 +125,7 @@ private:
 
 	//撃破effect
 	ParticleEmitter* deatheEffect = nullptr; // パーティクルエミッター
-	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }}; // エフェクトの位置
+	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }};
+	HitDeathComponent hitDeath_;
+	bool pendingRemove_ = false; // マネージャ用
 };

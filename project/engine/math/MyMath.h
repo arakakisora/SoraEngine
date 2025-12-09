@@ -206,7 +206,27 @@ namespace MyMath {
 
 	Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 
+	// SmoothStep関数の追加
+	inline float SmoothStep(float edge0, float edge1, float x) {
+        // Clamp x to [0, 1]
+        x = (x - edge0) / (edge1 - edge0);
+        x = x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x);
+        return x * x * (3.0f - 2.0f * x);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

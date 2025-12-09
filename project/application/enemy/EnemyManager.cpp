@@ -1,6 +1,11 @@
 #include "EnemyManager.h"
 #include "MapChipField.h"
 #include "Object3DCommon.h"
+#include "CollisionManager.h"
+
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
 
 EnemyManager::~EnemyManager()
 {
@@ -71,10 +76,11 @@ void EnemyManager::Update() {
 			enemy->Update(map_);
 		}
 	}
+	
 
-	//死んだ敵を削除
+	//死んだ敵を削除（演出完了で回収するフラグを見る）
 	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
+		if (enemy && enemy->IsPendingRemove()) {
 			delete enemy;
 			return true;
 		}
@@ -89,12 +95,15 @@ void EnemyManager::Update() {
 	}
 	//死んだ敵2を削除
 	enemies2_.remove_if([](Enemy2* enemy2) {
-		if (enemy2->IsDead()) {
+		if (enemy2 && enemy2->IsPendingRemove()) {
 			delete enemy2;
 			return true;
 		}
 		return false;
 		});
+
+
+
 }
 
 void EnemyManager::Draw() {
@@ -129,5 +138,17 @@ void EnemyManager::EnemyObjectUpdate()
 		}
 	}
 
+}
+
+void EnemyManager::RegisterColliders()
+{
+	// CollisionManager シングルトンに自分の敵を登録する
+	auto* cm = CollisionManager::GetInstance();
+	for (Enemy* e : enemies_) {
+		if (e) cm->AddCollider(e);
+	}
+	for (Enemy2* e : enemies2_) {
+		if (e) cm->AddCollider(e);
+	}
 }
 

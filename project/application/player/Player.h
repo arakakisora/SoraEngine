@@ -61,6 +61,9 @@ public:
 		case Layer::Enemy:
 			SetIsDead(true);
 			break;
+		case Layer::Enemy2:
+			SetIsDead(true);
+			break;
 		default:
 			break;
 		}
@@ -248,6 +251,8 @@ public:
 	void StartDirection();
 
 	void SetOnGround(bool onground) { onGround_ = onground; }
+	// 自分と弾を CollisionManager に登録する
+	void RegisterColliders();
 private:
 	
 	//objec3D

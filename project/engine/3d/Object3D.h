@@ -34,7 +34,7 @@ public:
 	/// スケルトン更新
 	/// </summary>
 	/// <param name="skeleton"></param>
-	void SkeletonUpdate( Skeleton& skeleton);
+	void SkeletonUpdate(Skeleton& skeleton);
 	/// <summary>
 	/// アニメーション適用
 	/// </summary>
@@ -44,7 +44,7 @@ public:
 	/// スキンクラスター更新
 	/// </summary>
 	/// <param name="skinCluster"></param>
-	void SkinClusterUpdate(SkinCluster&skinCluster,const Skeleton&skeleton);
+	void SkinClusterUpdate(SkinCluster& skinCluster, const Skeleton& skeleton);
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -70,7 +70,7 @@ public:
 	//環境マップ
 	/// </summary>
 	/// <param name="filepath"></param>
-	void setskyboxfilepath(const std::string& filepath) { skyboxFilePath_=filepath; }
+	void setskyboxfilepath(const std::string& filepath) { skyboxFilePath_ = filepath; }
 	/// <summary>
 	/// 環境マップの反射強度設定
 	/// </summary>
@@ -172,19 +172,30 @@ public:
 	//ライトのオンオフ
 	void SetLighting(bool enable) { enableLighting = enable; }
 
-	void SetColor(const Vector4& color) { color_ = color; }
+	
 	Vector4 GetColor() const { return color_; }
 
 	//アニメーション
 	Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 	Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
-	
-	
+
+
 
 	//getワールドトランスフォーム
 	Matrix4x4 GetWorldMatrix() { return worldMatrix; }
 
-	void SetEnableAnimation(bool enable) { enableAnimation_ = enable; }
+
+
+
+	/// <summary>
+	//ライトのオンオフ
+	/// </summary>	
+	void SetEnableLighting(bool enable) { materialData->enableLighting = enable; }
+	/// <summary>
+	//色の設定
+	/// </summary>
+	// <param name="color"></param>
+	void SetColor(const Vector4& color) { materialData->color = color; }
 
 private:
 	Object3DCommon* object3DCommon_ = nullptr;//Object3DCommonのポインタ
@@ -228,19 +239,24 @@ private:
 	CaMeraForGpu* cameraForGpu = nullptr;//カメラのデータをGPUに送るための構造体
 	//アニメーション
 	float animationTime = 0.0f;
-	bool enableAnimation_= true;
+	bool enableAnimation_ = true;
 
 	Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f }; // デフォルトは白
 	Line line_; // Lineクラスのポインタ
 	std::vector<Matrix4x4> skeletonPose_;
 
-	std::string skyboxFilePath_ ; // スカイボックスのファイルパス
+	std::string skyboxFilePath_; // スカイボックスのファイルパス
 
 	std::string defaultEnvMapPath_ = "Resources/skyBox.dds";
 
 	EnvironmentReflectionSetting* environmentReflectionSettingData; // 環境反射設定
 	Microsoft::WRL::ComPtr<ID3D12Resource> environmentReflectionSettingResource;
-	
+
+	//マテリアル
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+	//マテリアルにデータを書き込む	
+	Material* materialData = nullptr;
 
 };
 
