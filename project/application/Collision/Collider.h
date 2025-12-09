@@ -21,8 +21,13 @@ public:
 
     Layer GetLayer() const { return layer_; }
 
+    // 当たり判定の有効/無効
+    void SetCollisionEnabled(bool v) { enabled_ = v; }
+    bool IsCollisionEnabled() const { return enabled_; }
+
 protected:
     Collider(Layer layer) : layer_(layer) {}
     Layer layer_;
+    bool enabled_ = true;
 };
 

@@ -4,10 +4,11 @@
 #include <algorithm>
 #include <numbers>
 #include "MyMath.h"
-#include"Object3D.h"
+#include "Object3D.h"
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
 #include "Collider.h"
+#include "HitDeathComponent.h"
 
 
 class Player;
@@ -23,13 +24,9 @@ public:
 	void OnCollision(Collider* other) override;
 	void Setbulelt(PlayerBullet* b) { bullet_ = b; }
 	AABB GetEnemyAABB();
-private:
 
-
-	AABB aabb_;
-	PlayerBullet* bullet_;
-public:
 	~Enemy2();
+
 	/// <summary>
 	/// 初期化
 	/// </summary>
@@ -52,12 +49,6 @@ public:
 	Vector3 GetWorldPosition();
 
 	/// <summary>
-	/// world座標を取得します
-	/// </summary>
-	/// <returns>AABBを返す</returns>
-	//AABB GetAABB();
-
-	/// <summary>
 	/// 目の前にブロックがあるかどうか
 	/// </summary>
 	/// <returns>エネミー目の前にレイを出す向きに応じて代わる</returns>
@@ -78,16 +69,15 @@ public:
 	}
 
 	/// <summary>
-	// 当たり判定
-	/// </summary>
-	/// <param name="bullet">プレイヤーの弾</param>
-	//void OnCollision(const PlayerBullet* bullet);
-
-	/// <summary>
 	// 死亡しているかどうかを取得
 	/// </summary>
 	/// <returns>死亡しているかどうか</returns>
 	bool IsDead() const { return isDead_; }
+
+	/// <summary>
+	/// マネージャ用: 演出完了で削除可能か
+	/// </summary>
+	bool IsPendingRemove() const { return pendingRemove_; }
 
 	Object3D* GetObject3D() const { return object3D_; }
 
@@ -116,4 +106,10 @@ private:
 	//撃破effect
 	ParticleEmitter* deatheEffect = nullptr; // パーティクルエミッター
 	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f } }; // エフェクトの位置
+
+	// 共通化したヒット・デスコンポーネント
+	HitDeathComponent hitDeath_;
+	bool pendingRemove_ = false; // マネージャ用
+	AABB aabb_;
+	PlayerBullet* bullet_ = nullptr;
 };

@@ -90,15 +90,6 @@ public:
 	SkinCluster& GetSkinCluster() { return skinCluster; }//スキンクラスターを取得
 
 	/// <summary>
-	//ライトのオンオフ
-	/// </summary>	
-	void SetEnableLighting(bool enable) { materialData->enableLighting = enable; }
-	/// <summary>
-	//色の設定
-	/// </summary>
-	// <param name="color"></param>
-	void SetColor(const Vector4& color) { materialData->color = color; }
-	/// <summary>
 	//マテリアルファイルの読み込み
 	/// </summary>
 	/// <param name="directorypath"></param>
@@ -145,11 +136,7 @@ private:
 	VertexData* vertexData = nullptr;
 	//バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-	//マテリアル
-	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
-	//マテリアルにデータを書き込む	
-	Material* materialData = nullptr;
+	
 	
 	//index描画
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;//インデックスバッファリソース

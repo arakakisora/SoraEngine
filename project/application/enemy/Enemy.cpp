@@ -1,4 +1,3 @@
-
 #include "Enemy.h"
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -37,15 +36,42 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
+
+	// Hit/Death コンポーネント初期化（初期HP = 3）
+	hitDeath_.Initialize(object3D_, 3, deatheEffect);
+
 	aabb_ = GetEnemyAABB();
 
-}
+}	
 
 void Enemy::Update(MapChipField* mapChipField) {
 	 aabb_ = GetEnemyAABB();
 
+	// 固定フレームとして dt を使う（現状のフレーム依存コードに合わせる）
+	const float dt = 1.0f / 60.0f;
+
+	// HitDeathComponent の更新を先に行う
+	hitDeath_.Update(object3D_, dt);
+
+	// 死亡状態なら通常の動作はスキップして演出のみ表示する
+	if (hitDeath_.IsDead()) {
+		// 当たり判定を無効化してプレイヤーへの衝突を防ぐ
+		SetCollisionEnabled(false);
+
+		isDead_ = true;
+		// 演出完了で回収フラグを立てる
+		if (hitDeath_.IsPendingRemove()) {
+			pendingRemove_ = true;
+		}
+		// object3D の GPU 更新（演出で位置・色を変更しているので反映は必要）
+		object3D_->Update();
+		// 死亡中はそれ以上の更新を行わない
+		return;
+	}
+
+	// 通常の挙動（死亡していなければ実行）
 	// 歩行タイマーの更新
-	walkTimer_ += 1.0f / 60.0f;
+	walkTimer_ += dt;
 	// 歩行モーションの計算
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
@@ -75,9 +101,9 @@ void Enemy::Update(MapChipField* mapChipField) {
 		}
 	}
 
-	// ダメージ表示タイマーの更新
+	// ダメージ表示タイマーの更新 （旧ロジックを残す：色戻し）
 	if (damageTimer_ > 0.0f) {
-		damageTimer_ -= 1.0f / 60.0f;
+		damageTimer_ -= dt;
 		if (damageTimer_ <= 0.0f) {
 			object3D_->SetColor(defaultColor_); // 元の色に戻す
 		}
@@ -88,17 +114,9 @@ void Enemy::Update(MapChipField* mapChipField) {
 	deatheEffect->SetPosition(effectPosition_.translate);
 	//deatheEffect->Update();
 
-
-
-
-	//HPの表示
 #ifdef _DEBUG
 	ImGui::Text("HP: %d", HP);
-
 #endif // _DEBUG
-
-
-
 
 }
 
@@ -118,32 +136,31 @@ Vector3 Enemy::GetWorldPosition() {
 	return worldPos;
 }
 
-//AABB Enemy::GetAABB() {
-//	// エネミーのワールド座標を取得
-//	Vector3 worldPos = GetWorldPosition();
-//	AABB aabb;
-//	// AABBの最小点と最大点を計算
-//	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
-//	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
-//
-//	return aabb;
-//}
 
 void Enemy::OnCollision(Collider* other)
 {
+	// 死亡中は当たり判定無視
+	if (hitDeath_.IsDead()) return;
+
+	// --- 修正点: 引数の other を使う ---
 	if (other->GetLayer() == Layer::PlayerBullet) {
-
-		// ダメージ処理
-		HP -= bullet_->GetPower(); // 弾の攻撃力に応じてHPを減らす
-		object3D_->SetColor({ 1, 0, 0, 1 }); // 赤くする
+		PlayerBullet* hitBullet = static_cast<PlayerBullet*>(other);
+		// 赤くしてノックバックを渡す
+		object3D_->SetColor({ 1, 0, 0, 1 });
 		damageTimer_ = kDamageDisplayTime;
-		object3D_->Update();
-		if (HP <= 0) {
-			isDead_ = true;
-			deatheEffect->Emit();
-		}
-	}
 
+		// 修正: knockback を速度 (units/sec) として渡し、HitDeathComponent 側で dt を掛けて位置を積分する
+		// カメラに映る程度の動きに抑えるため控えめな値にする
+		const float horizontalKnock = 1.0f; // 水平方向速度 (units/sec) - 調整可
+		const float verticalKnock = 3.0f;   // 上方向初速度 (units/sec) - 調整可
+		float dir = (velocity_.x > 0.0f) ? -1.0f : 1.0f; // 移動方向の逆（後方へ飛ばす）
+		Vector3 knock = { dir * horizontalKnock, verticalKnock, 0.0f };
+
+		// 内部モーションを使うようにしてノックバックを渡す
+		hitDeath_.SetUseExternalDeathMotion(false);
+		hitDeath_.OnHit(hitBullet->GetPower(), knock);
+		// コンポーネント側で isDead_ を立てるので Update の次回で演出が始まる
+	}
 }
 
 AABB Enemy::GetEnemyAABB()

@@ -81,6 +81,18 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraForGpu));
 	
 
+	//マテリアル
+	//modelマテリアる用のリソースを作る。今回color1つ分のサイズを用意する
+	materialResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(Material));
+	//マテリアルにデータを書き込む	
+	materialData = nullptr;
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	//色
+	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+
+	materialData->enableLighting = false;//有効にするか否か
+	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
+	materialData->shiniess = 60.0f;
 
 }
 
@@ -100,12 +112,7 @@ void Object3D::Update()
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
 
-	if (model_) {
-		//ライトのオンオフ
-		model_->SetEnableLighting(enableLighting);
-		// **ここでモデルの色を設定**
-		model_->SetColor(color_);
-	}
+	
 
 	if (activeCamera) {
 		//ビュー射影行列を掛け算して、ワールドビュープロジェクション行列を計算する
@@ -193,7 +200,8 @@ void Object3D::SkinClusterUpdate(SkinCluster& skinCluster, const Skeleton& skele
 
 void Object3D::Draw()
 {
-
+	//マテリアルのCBufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	//平行光源Cbufferの場所を設定
@@ -220,7 +228,8 @@ void Object3D::Draw()
 
 void Object3D::DrawSkinning()
 {
-
+	//マテリアルのCBufferの場所を設定
+	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 
 	object3DCommon_->GetDxCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	//平行光源Cbufferの場所を設定

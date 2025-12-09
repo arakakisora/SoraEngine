@@ -107,8 +107,7 @@ public:
 	// SkyDome
 	Object3D* skydome_ = nullptr;
 
-	//当たり判定
-	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
+	
 
 
 	StageEditor editor;

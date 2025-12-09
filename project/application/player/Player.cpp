@@ -12,6 +12,7 @@
 #include "ParticleMnager.h"
 #include "plyerpaticleBehavior.h"
 #include "ChargeBehabiaor.h"
+#include "CollisionManager.h"
 
 
 void Player::Initialize(const Vector3& position) {
@@ -39,7 +40,7 @@ void Player::Initialize(const Vector3& position) {
 		std::make_unique<ExhaustGasBehavior>()
 	);
 
-
+	
 
 }
 
@@ -70,10 +71,8 @@ Player::~Player()
 	}
 
 	delete object3D_;
-
-
-
 }
+
 
 void Player::Update() {
 
@@ -659,11 +658,15 @@ void Player::Attack()
 		object3DBullet_->Initialize(Object3DCommon::GetInstance());
 		object3DBullet_->SetModel("bullet.obj");
 		object3DBullet_->SetScale({ 0.4f,0.4f,0.4f });
+		
 
 		PlayerBullet* newBullet = new PlayerBullet();
 		newBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity, mapChipFild_);
 		newBullet->SetPower(damage);
 
+		// 正しく一度だけインスタンスを取得して登録する
+		auto* cm = CollisionManager::GetInstance();
+		cm->AddCollider(newBullet);
 
 		bullets_.push_back(newBullet);
 
@@ -715,3 +718,14 @@ void Player::PlayerParticle()
 }
 
 float Player::EaseOutSine(float x) { return cosf((x * std::numbers::pi_v<float>) / 2); }
+
+void Player::RegisterColliders()
+{
+	auto* cm = CollisionManager::GetInstance();
+	// 自身を登録
+	cm->AddCollider(this);
+	// 弾をすべて登録
+	for (PlayerBullet* b : bullets_) {
+		if (b) cm->AddCollider(b);
+	}
+}

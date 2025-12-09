@@ -23,25 +23,18 @@ public:
 	/// </summary>
 	void Draw();
 
+	// 新規：コライダを CollisionManager に登録する
+	void RegisterColliders();
+
 	//Getter
-	/// <summary>
-	//Enemyのリストを取得
-	/// </summary>
 	inline const std::list<Enemy*>& GetEnemies() const { return enemies_; }
-	/// <summary>
-	///Enemy2のリストを取得
-	/// </summary>
-	/// <returns></returns>
 	inline const std::list<Enemy2*>& GetEnemies2() const { return enemies2_; }
 
 	void EnemyObjectUpdate();
 private:
 	std::vector<int> Enemynumber;
-	//Enemy
 	std::list<Enemy*> enemies_;
-	//Enemy2
 	std::list<Enemy2*> enemies2_;
-
 	MapChipField* map_ = nullptr;
 	
 };

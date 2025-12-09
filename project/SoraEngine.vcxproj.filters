@@ -248,6 +248,8 @@
     <ClCompile Include="application\Collision\Collider.cpp" />
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
+    <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
+    <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -443,6 +445,8 @@
     <ClInclude Include="application\map\MapChipDatabase.h" />
     <ClInclude Include="engine\base\json.hpp" />
     <ClInclude Include="application\particle\StageEndEffect.h" />
+    <ClInclude Include="application\enemy\HitDeathComponent.h" />
+    <ClInclude Include="application\enemy\EnemyDeathStage.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
