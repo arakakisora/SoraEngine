@@ -74,5 +74,6 @@ private:
 	StageEditor editor;
 	std::vector<std::vector<Object3D*>> blockobject3D;
 
+
 };
 

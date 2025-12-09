@@ -59,7 +59,8 @@ void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypa
 	materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
 	materialData->shiniess = 60.0f;
 
-
+	std::string filePath = "Resources/uvChecker.dds";
+	modelData.material.textureFilePath = filePath;
 	//.objの参照しているテクスチャファイル読み込み
 	TextureManager::GetInstance()->LoadTexture(modelData.material.textureFilePath);
 	//読み込んだテクスチャ番号を取得

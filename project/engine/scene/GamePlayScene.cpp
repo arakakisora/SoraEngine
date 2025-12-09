@@ -49,12 +49,13 @@ void GamePlayScene::Initialize()
 
 	object3D = std::make_unique<Object3D>();
 	object3D->Initialize(Object3DCommon::GetInstance());
-	object3D->SetModel("walk.gltf");
+	object3D->SetModel("cube.obj");
 	object3D->SetLighting(true);
 	object3D->SetPointLightEnable(false);
 	object3D->SetDirectionalLightIntensity(1.0f);
 	object3D->SetRotate({ 0.0f,-3.0f,0.0f });
 	object3D->setskyboxfilepath(skyBox->GetTextureFilePath());
+
 
 	terrain = std::make_unique<Object3D>();
 	terrain->Initialize(Object3DCommon::GetInstance());
@@ -450,9 +451,9 @@ void GamePlayScene::Draw()
 			obj->Draw();
 		}
 	}
-
+	object3D->Draw();
 	Object3DCommon::GetInstance()->SkinNingCommonDraw();
-	//object3D->DrawSkinning();
+	
 
 
 	ParticleMnager::GetInstance()->Draw();
