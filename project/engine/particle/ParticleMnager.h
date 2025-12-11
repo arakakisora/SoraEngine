@@ -134,7 +134,7 @@ public:
 	/// <param name="lifetime"></param>
 	void Emit(const std::string& name, const EulerTransform transform);
 	//void Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime);
-
+	void EmitAtCamera(const std::string& name);
 
 	//リングの頂点情報を作成
 	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 32, float outerRadius = 1.0f, float innerRadius = 0.2f);
@@ -150,8 +150,14 @@ public:
 	//頂点タイプ設定
 	void SetGroupVerticesType(const std::string& groupName, VerticesType verticesType);
 
+	
+	/// <summary>
 	// Behavior設定（明示的に設定する用）
+	/// </summary>
+	/// <param name="groupName"></param>
+	/// <param name="behavior"></param>
 	void SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior);
+	//最大インスタンス数
 	static constexpr uint32_t kMaxInstanceCount = 1000;
 
 private:
@@ -166,9 +172,8 @@ private:
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
 	Model* model_ = nullptr;
-
+	//乱数生成エンジン
 	std::mt19937 randomEngine;
-
 
 	//SRT
 	EulerTransform transform;
@@ -185,6 +190,7 @@ private:
 	// 頂点の種類
 	VerticesType verticesType = VerticesType::Quad;
 
+	
 
 #ifdef USE_IMGUI
 	

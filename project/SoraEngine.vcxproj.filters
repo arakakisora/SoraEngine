@@ -249,6 +249,7 @@
     <ClCompile Include="MapChipDatabase.cpp" />
     <ClCompile Include="StageEndEffect.cpp" />
     <ClCompile Include="ParticleEditor.cpp" />
+    <ClCompile Include="ParticleBehaviorFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -445,6 +446,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="StageEndEffect.h" />
     <ClInclude Include="ParticleEditor.h" />
+    <ClInclude Include="ParticleBehaviorFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

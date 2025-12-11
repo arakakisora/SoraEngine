@@ -10,19 +10,31 @@
 
 Particle ChargeBehabiaor::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
 {
-	rng = rng;
 	Particle particle;
 
 	particle.transform.translate = transform.translate;
-	particle.transform.scale = { 1.2f, 1.2f, 1.2f }; // 最初は大きめ
-	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	particle.Velocity = { 0.0f, 0.0f, 0.0f };
 
-	// 黄色っぽい色から始める
-	particle.color = { 1.0f, 1.0f, 0.5f, 1.0f };
+	// スケールは param_ からランダムに決める
+	std::uniform_real_distribution<float> scaleDist(param_.scaleMin_, param_.scaleMax_);
+	float s = scaleDist(rng);
+	particle.transform.scale = { s, s, 0.0f };
+
+	// 速度
+	std::uniform_real_distribution<float> speedDist(param_.speedMin_, param_.speedMax_);
+	std::uniform_real_distribution<float> spreadDist(-param_.spreadY_, param_.spreadY_);
+
+	float speed = speedDist(rng);
+	float spread = spreadDist(rng);
+
+	particle.Velocity = { 0.0f, spread * speed, 0.0f };
+
+	// 色（グレイの範囲から）
+	std::uniform_real_distribution<float> grayDist(param_.grayMin_, param_.grayMax_);
+	float g = grayDist(rng);
+	particle.color = { g, g, g, 1.0f };
 
 	particle.lifetime = lifetime_;
-	particle.currentTime = 0;
+	particle.currentTime = 0.0f;
 
 	return particle;
 
@@ -50,6 +62,22 @@ void ChargeBehabiaor::Update(Particle& particle, float dt, Material* matelialDat
 	particle.color.w = 1.0f - t; // アルファ減衰
 }
 
+void ChargeBehabiaor::DrawImgui(const char* effectName)
+{
+	ImGui::SeparatorText("Charge Behavior");
+
+	ImGui::DragFloat("Speed Min", &param_.speedMin_, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Speed Max", &param_.speedMax_, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Spread Y", &param_.spreadY_, 0.01f, 0.0f, 5.0f);
+
+	ImGui::DragFloat("Scale Min", &param_.scaleMin_, 0.01f, 0.0f, 5.0f);
+	ImGui::DragFloat("Scale Max", &param_.scaleMax_, 0.01f, 0.0f, 5.0f);
+
+	ImGui::DragFloat("Gray Min", &param_.grayMin_, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("Gray Max", &param_.grayMax_, 0.01f, 0.0f, 1.0f);
+
+}
+
 
 
 
@@ -60,22 +88,22 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 	// --- ランダムな方向とスピード（ゆっくり広がる） ---
 	std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
 	Vector3 dir = MyMath::Normlize(Vector3{ dist(rng), dist(rng) * 0.5f, dist(rng) }); // Y成分は少し抑える
-	std::uniform_real_distribution<float> speedDist(0.3f, 1.0f);
+	std::uniform_real_distribution<float> speedDist(param_.speedMin_, param_.speedMax_);
 	particle.Velocity = dir * speedDist(rng);
 
 	// --- 初期位置・スケール・回転 ---
 	particle.transform.translate = transform.translate;
-	std::uniform_real_distribution<float> scaleDist(0.2f, 0.5f);
+	std::uniform_real_distribution<float> scaleDist(param_.scaleMin_, param_.scaleMax_);
 	float initialScale = scaleDist(rng);
 	particle.transform.scale = { initialScale, initialScale, initialScale };
 
 	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> *2.0f);
 	particle.transform.rotate = { 0.0f, 0.0f, rotDist(rng) };
 
-	// --- 色：煙（グレー系） ---
-	std::uniform_real_distribution<float> grayDist(0.1f, 0.4f);
-	float gray = grayDist(rng);
-	particle.color = { gray, gray, gray, 1.0f };
+	// 色（グレイの範囲から）
+	std::uniform_real_distribution<float> grayDist(param_.grayMin_, param_.grayMax_);
+	float g = grayDist(rng);
+	particle.color = { g, g, g, 1.0f };
 
 	particle.lifetime = lifetime;
 	particle.currentTime = 0;
@@ -103,6 +131,25 @@ void ExplosionBehavior::Update(Particle& particle, float dt, Material* matelialD
 
 }
 
+void ExplosionBehavior::DrawImgui(const char* effectName)
+{
+	ImGui::SeparatorText("Charge Behavior");
+
+	ImGui::DragFloat("Speed Min", &param_.speedMin_, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Speed Max", &param_.speedMax_, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Spread Y", &param_.spreadY_, 0.01f, 0.0f, 5.0f);
+
+	ImGui::DragFloat("Scale Min", &param_.scaleMin_, 0.01f, 0.0f, 5.0f);
+	ImGui::DragFloat("Scale Max", &param_.scaleMax_, 0.01f, 0.0f, 5.0f);
+
+	ImGui::DragFloat("Gray Min", &param_.grayMin_, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("Gray Max", &param_.grayMax_, 0.01f, 0.0f, 1.0f);
+
+}
+
+
+///////////////////////////////////////////////////////// ExhaustGasBehavior //////////////////////////////////////////////////////////////////////////////
+
 Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
 	Particle particle;
@@ -111,29 +158,42 @@ Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform tran
 	std::uniform_real_distribution<float> offsetX(-0.05f, 0.05f);
 	std::uniform_real_distribution<float> offsetZ(-0.02f, 0.02f);
 
-	particle.transform.translate = transform.translate +
-		Vector3(offsetX(rng), -0.1f, offsetZ(rng));
+	particle.transform.translate =
+		transform.translate + Vector3(offsetX(rng), -0.1f, offsetZ(rng));
 
-	// --- 初期スケール（小さめからスタート） ---
-	float s = 0.12f;
-	particle.transform.scale = { s, s, s };
+	// --- 初期スケール：param_.scaleMin_ ～ param_.scaleMax_ からランダム ---
+	{
+		std::uniform_real_distribution<float> scaleDist(param_.scaleMin_, param_.scaleMax_);
+		float s = scaleDist(rng);
+		particle.transform.scale = { s, s, s };
+	}
 
 	// --- 初期回転（軽くランダム回転） ---
 	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> *2.0f);
 	particle.transform.rotate = { 0.0f, 0.0f, rotDist(rng) };
 
 	// --- 上昇 + 少し揺れるゆっくりした速度 ---
-	std::uniform_real_distribution<float> vx(-0.005f, 0.005f);
-	std::uniform_real_distribution<float> vz(-0.005f, 0.005f);
-	particle.Velocity = { vx(rng), 0.015f, vz(rng) };
+	// X/Z は speedMin_ ～ speedMax_ の範囲でふらつかせる
+	std::uniform_real_distribution<float> vxDist(param_.speedMin_, param_.speedMax_);
+	std::uniform_real_distribution<float> vzDist(param_.speedMin_, param_.speedMax_);
+	float vx = vxDist(rng);
+	float vz = vzDist(rng);
+
+	// Y は 0.015f を中心に ±spreadY_ の範囲でランダム
+	std::uniform_real_distribution<float> vyDist(-param_.spreadY_, param_.spreadY_);
+	float vy = 0.015f + vyDist(rng);
+
+	particle.Velocity = { vx, vy, vz };
 
 	// --- 色（ほぼ白〜薄いグレー・透明気味） ---
-	std::uniform_real_distribution<float> gray(0.75f, 0.9f);
-	float c = gray(rng);
-	particle.color = { c, c, c, 0.6f }; // αは控えめ
+	{
+		std::uniform_real_distribution<float> grayDist(param_.grayMin_, param_.grayMax_);
+		float c = grayDist(rng);
+		particle.color = { c, c, c, 0.6f }; // αは控えめ
+	}
 
-	// --- 寿命（短めでサッと消える） ---
-	particle.lifetime = 0.7f;
+	// --- 寿命（ここは固定でもいいし、param_に追加してもOK） ---
+	particle.lifetime = lifetime;    // 呼び出し側から渡された lifetime を使う
 	particle.currentTime = 0.0f;
 
 	return particle;
@@ -162,4 +222,20 @@ void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* material
 	// アルファはなめらかに消えていく (二乗カーブで最後ふっと消える)
 	float a = 1.0f - t;
 	particle.color.w = a * a;
+}
+
+void ExhaustGasBehavior::DrawImgui(const char* effectName)
+{
+	ImGui::SeparatorText("ExhaustGas Behavior");
+
+	ImGui::DragFloat("Speed Min", &param_.speedMin_, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Speed Max", &param_.speedMax_, 0.01f, 0.0f, 10.0f);
+	ImGui::DragFloat("Spread Y", &param_.spreadY_, 0.01f, 0.0f, 5.0f);
+
+	ImGui::DragFloat("Scale Min", &param_.scaleMin_, 0.01f, 0.0f, 5.0f);
+	ImGui::DragFloat("Scale Max", &param_.scaleMax_, 0.01f, 0.0f, 5.0f);
+
+	ImGui::DragFloat("Gray Min", &param_.grayMin_, 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("Gray Max", &param_.grayMax_, 0.01f, 0.0f, 1.0f);
+
 }

@@ -26,7 +26,7 @@ public:
 	void TextureSelectIMGui(const std::string& currentName);
 	// ディレクトリからテクスチャ一覧を読み込み
 	void LoadTexturesFromDirectory(const std::string& directory);
-
+	void BehaviorIMGui(const std::string& currentName);
 
 private:
     ParticleMnager* manager_ = nullptr;

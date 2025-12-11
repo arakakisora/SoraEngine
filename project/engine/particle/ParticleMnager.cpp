@@ -347,18 +347,23 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 
 }
 
-//void ParticleMnager::Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime)
-//{
-//	//パーティクルグループが存在するかチェックしてassert
-//	assert(particleGroups.contains(name));
-//	for (uint32_t i = 0; i < count; ++i) {
-//		particleGroups.at(name).particles.push_back(
-//			particleGroups.at(name).behavior->Create(
-//				randomEngine, transform, lifetime));
-//	}
-//}
+void ParticleMnager::EmitAtCamera(const std::string& name)
+{
+	// グループ存在チェック
+	assert(particleGroups.contains(name));
 
+	// アクティブカメラから位置を取る
+	auto* camera = CameraManager::GetInstance()->GetActiveCamera();
+	EulerTransform t{};
+	t.scale = { 1.0f, 1.0f, 1.0f };
+	t.rotate = { 0.0f, 0.0f, 0.0f };
+	t.translate =CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate; // 位置の取り方はエンジンに合わせて
+	float offsetDistance = 5.0f;
+	t.translate.z += offsetDistance; // カメラの前方にオフセット
+	// 既存の Emit をそのまま使う
+	Emit(name, t);
 
+}
 
 std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {

@@ -5,6 +5,15 @@
 #include "Vector3.h"
 #include"MyMath.h"
 #include "RenderingData.h"
+struct PerticleParameter {
+	float speedMin_ = 0.3f;
+	float speedMax_ = 1.0f;
+	float spreadY_ = 0.5f;
+	float scaleMin_ = 0.2f;
+	float scaleMax_ = 0.5f;
+	float grayMin_ = 0.1f;
+	float grayMax_ = 0.4f;
+};
 
 struct Particle;
 struct Material; 
@@ -18,7 +27,7 @@ public:
 	virtual Particle Create(std::mt19937& rng, const EulerTransform transform,float lifetime) = 0;
 
 #ifdef USE_IMGUI
-	virtual void DrawImgui(const char* labelPrefix = "") {}
+	virtual void DrawImgui(const char* effectName) {}
 #endif
 
 };

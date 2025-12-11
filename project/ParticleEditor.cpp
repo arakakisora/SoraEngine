@@ -56,6 +56,7 @@ void ParticleEditor::DrawImguiEditor()
 	VertexTypeIMGui(currentName);//頂点タイプ選択
 	ImGui::SeparatorText("Texture");//テクスチャ選択
 	TextureSelectIMGui(currentName);//テクスチャ選択
+	BehaviorIMGui(currentName);
 
 	ImGui::End();
 
@@ -181,6 +182,22 @@ void ParticleEditor::LoadTexturesFromDirectory(const std::string& directory)
 
 
 
+}
+
+void ParticleEditor::BehaviorIMGui(const std::string& currentName)
+{
+	auto& groups = manager_->particleGroups;
+	auto& currentGroup = groups.at(currentName);
+
+	if (currentGroup.behavior) {
+		ImGui::SeparatorText("Behavior Params");
+		currentGroup.behavior->DrawImgui(currentName.c_str());
+
+		if (ImGui::Button("Test Emit (Camera)")) {
+			// カメラ位置でテスト発生
+			manager_->EmitAtCamera(currentName);
+		}
+	}
 }
 
 #endif // USE_IMGUI
