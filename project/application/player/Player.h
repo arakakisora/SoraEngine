@@ -275,15 +275,15 @@ private:
 	static inline const float KtimeTurn = 0.5f; // 角度補間タイム
 	// ジャンプ
 	bool onGround_ = true;                                 // 接点状態フラグ
-	static inline const float kGravityAccleration = 0.05f; // 重力加速度
+	static inline const float kGravityAccleration = 0.02f; // 重力加速度
 	static inline const float kLimitFallSpeed = 1.0f;      // 最大落下速度
-	static inline const float kJampAcceleration = 0.5f;    // ジャンプ初速
+	static inline const float kJampAcceleration = 0.3f;    // ジャンプ初速
 	// 当たり判定
 	MapChipField* mapChipFild_ = nullptr;
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 	static inline const float kBlank = 1.0;
-	static inline const float kAttenuationLanding = 0.1f;
+	static inline const float kAttenuationLanding =0.5f;
 	static inline const float kCollisionsmallnumber = 0.1f;
 	static inline const float kAttenuationWall = 0.1f;
 

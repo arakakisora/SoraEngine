@@ -171,7 +171,6 @@ void Player::Draw() {
 
 void Player::PrayerMove() {
 
-
 	if (onGround_) {
 		// 移動入力
 		// 左右移動操作
@@ -229,11 +228,9 @@ void Player::PrayerMove() {
 			playermoveleft = false;
 		}
 
+		// ジャンプ開始時は垂直速度を上書きして、着地時の負の残留が影響しないようにする
 		if (Input::GetInstance()->PushKey(DIK_UP)) {
-
-			velocity_.x += 0;
-			velocity_.y += kJampAcceleration;
-			velocity_.z += 0;
+			velocity_.y = kJampAcceleration;
 		}
 
 	}
@@ -261,7 +258,7 @@ void Player::PrayerTurn() {
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 		// 自キャラの角度を設定する
 		object3D_->SetRotate({ 0,destinationRotationY * EaseOutSine(turnTimer_) ,0 });
-
+	
 
 
 	}
@@ -306,7 +303,7 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 	if (info.ceiling) {
 
 		Logger::Log("hit ceiling\n");
-		velocity_.y = 0.0f;
+		velocity_.y *= (1.0f - kAttenuationLanding);
 	}
 }
 
@@ -363,7 +360,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 		if (info.landing) {
 
 			Logger::Log("hit landing\n");
-			velocity_.x *= (1.0f - kAttenuationLanding);
+			// 着地時に下向きの残留速度をキャンセルして次のジャンプを一定にする
 			velocity_.y = 0.0f;
 			onGround_ = true;
 		}
@@ -468,15 +465,15 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 
 	// hit
 	if (hit) {
-
+		// 地面に当たったらことを記録する
+		info.landing = true;
 		Vector3 position = object3D_->GetTransform().translate;
 		// めり込みを排除する方向に移動量を設定する
 		indexSet = mapChipFild_->GetMapChipIndexSetByPosition(position + Vector3(0, +kHeight / 2.0f, 0));
 		// めり込み先ブロックの範囲矩形
 		Rect rect = mapChipFild_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		info.move.y = std::min(0.0f, rect.bottom - position.y + (kHeight / 2.0f + kBlank));
-		// 地面に当たったらことを記録する
-		info.landing = true;
+		
 	}
 }
 
@@ -706,7 +703,7 @@ void Player::PlayerParticle()
 			}
 
 			// 1回に2粒くらい
-			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+			//ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
 		}
 	}
 	else {

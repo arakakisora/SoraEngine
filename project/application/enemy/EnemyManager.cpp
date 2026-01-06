@@ -2,6 +2,8 @@
 #include "MapChipField.h"
 #include "Object3DCommon.h"
 #include "CollisionManager.h"
+#include "Enemy.h"
+
 
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -37,14 +39,10 @@ void EnemyManager::Initialize(MapChipField* map) {
 	for (int i = 0; const Vector3 & enemyPos : enemyPositions) {
 
 		if (Enemynumber[i] == 1) {
-			//Enemy
-			// Object3Dの生成と初期化
-			Object3D* object3DEnemy = new Object3D();
-			object3DEnemy->Initialize(Object3DCommon::GetInstance());
-			object3DEnemy->SetModel("enemy.obj");
+			
 			// Enemyの生成と初期化
-			Enemy* newEnemy = new Enemy();
-			newEnemy->Initialize(object3DEnemy, enemyPos); 
+			EnemyBase* newEnemy = new Enemy();
+			newEnemy->Initialize(); 
 			enemies_.push_back(newEnemy);
 
 		}
@@ -70,7 +68,7 @@ void EnemyManager::Update() {
 
 
 	//敵の更新
-	for (Enemy* enemy : enemies_) {
+	for (EnemyBase* enemy : enemies_) {
 
 		if (enemy != nullptr) {
 			enemy->Update(map_);

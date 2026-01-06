@@ -1,6 +1,6 @@
 #pragma once
-#include "Enemy.h"
 #include "Enemy2.h"
+#include "EnemyBase.h"
 
 class MapChipField;
 /// <summary>
@@ -33,7 +33,7 @@ public:
 	void EnemyObjectUpdate();
 private:
 	std::vector<int> Enemynumber;
-	std::list<Enemy*> enemies_;
+	std::list<EnemyBase*> enemies_;
 	std::list<Enemy2*> enemies2_;
 	MapChipField* map_ = nullptr;
 	
