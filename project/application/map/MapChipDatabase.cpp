@@ -43,6 +43,11 @@ void MapChipDatabase::LoadJson(const std::string& path)
 			info.enemyNumber = chip["enemyNumber"];
 		}
 
+		// hitPoints が存在すれば読み込む（なければデフォルト 0）
+		if (chip.contains("hitPoints")) {
+			info.hitPoints = chip["hitPoints"];
+		}
+
 		chips_.push_back(info);
 		chipsById_[info.id] = info;
 

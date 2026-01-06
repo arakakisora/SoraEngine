@@ -42,7 +42,7 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	hitDeath_.Initialize(object3D_, HP, deatheEffect);
 
 	aabb_ = GetEnemyAABB();
-
+	line = std::make_unique<Line>();
 }	
 
 void Enemy::Update(MapChipField* mapChipField) {
@@ -77,11 +77,27 @@ void Enemy::Update(MapChipField* mapChipField) {
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	// 位置の更新
+	// 位置の更新（現在位置 + 速度を計算）
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 
-	object3D_->SetTranslate(position);
+	// 移動を適用する前に「目の前のタイル」をチェックする（1 タイル先を既定）
+	if (IsTileAheadSolid(mapChipField, 0)) {
+		// 壁がある → 進行方向を反転（移動は適用しない）
+		velocity_.x *= -1.0f;
+
+		// 回転方向も反転
+		if (velocity_.x > 0) {
+			rotateY = std::numbers::pi_v<float> / 2.0f;
+		}
+		else {
+			rotateY = -std::numbers::pi_v<float> / 2.0f;
+		}
+	}
+	else {
+		// 通路なら位置を確定
+		object3D_->SetTranslate(position);
+	}
 	// レイの先のマップチップを取得
 	int rayChipNumber = GetRayMapChipNumber(mapChipField);
 
@@ -179,23 +195,33 @@ AABB Enemy::GetEnemyAABB()
 
 Vector3 Enemy::GetRayEndPosition()
 {
-	// エネミーの現在位置
-	Vector3 currentPosition = GetWorldPosition();
+	// object3D の現在設定されているトランスフォーム位置を使う（SetTranslate の直後でも反映される）
+	Vector3 currentPosition = object3D_->GetTransform().translate;
 
-	// レイの長さ（3）
-	float rayLength = 3.0f;
+	// レイの長さ（必要なら MapChipField::kBlockWidth などに合わせて調整）
+	const float rayLength = 3.0f;
 
-	// 移動方向を正規化してレイの終点を計算
-	Vector3 normalizedVelocity = velocity_;
-	if (normalizedVelocity.Length() > 0) {
-		normalizedVelocity.Normalize();  // 速度を正規化
+	// 方向ベクトル：速度ベース、速度がほぼ0なら rotateY から作成
+	Vector3 direction = velocity_;
+	if (direction.Length() > 1e-6f) {
+		direction.Normalize();
+	}
+	else {
+		direction.x = std::cos(rotateY);
+		direction.y = 0.0f;
+		direction.z = std::sin(rotateY);
+		// 念のため正規化
+		if (direction.Length() > 1e-6f) direction.Normalize();
 	}
 
-	// 向きに応じたレイの終点座標を計算
+	// レイ終点を計算（高さは currentPosition.y を使用）
 	Vector3 rayEnd;
-	rayEnd.x = currentPosition.x + rayLength * normalizedVelocity.x;
+	rayEnd.x = currentPosition.x + direction.x * rayLength;
 	rayEnd.y = currentPosition.y;
-	rayEnd.z = currentPosition.z + rayLength * normalizedVelocity.z;
+	rayEnd.z = currentPosition.z + direction.z * rayLength;
+
+	// デバッグライン表示
+	line->Draw(currentPosition, rayEnd, { 1.0f, 0.0f, 0.0f, 1.0f });
 
 	return rayEnd;
 }
@@ -214,4 +240,45 @@ int Enemy::GetRayMapChipNumber(MapChipField* mapChipField)
 
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);
+}
+
+// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
+int Enemy::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
+{
+    // 現在位置（SetTranslate直後でも反映されるTransform位置を使用）
+    Vector3 pos = object3D_->GetTransform().translate;
+
+    // 進行方向（X軸左右移動前提）。速度優先、無ければ rotateY で決定
+    int dir = 0;
+    if (velocity_.x > 1e-6f) dir = 1;
+    else if (velocity_.x < -1e-6f) dir = -1;
+    else dir = (rotateY >= 0.0f) ? 1 : -1;
+
+    // チェックするワールド座標（エネミー前端＋タイル数分）
+    float offset = (kEnemyWidth * 0.5f) + (lookAheadTiles * 1.0f);
+    Vector3 checkPos = pos;
+    checkPos.x += dir * offset;
+
+    // マップのインデックスを取得して範囲内にクランプ
+    IndexSet idx = map->GetMapChipIndexSetByPosition(checkPos);
+    int x = static_cast<int>(idx.xIndex);
+    int y = static_cast<int>(idx.yIndex);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x >= static_cast<int>(map->GetNumBlockHorizontal())) x = static_cast<int>(map->GetNumBlockHorizontal()) - 1;
+    if (y >= static_cast<int>(map->GetNumBlockVirtical())) y = static_cast<int>(map->GetNumBlockVirtical()) - 1;
+
+    return map->GetMapChipTypeByIndex(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+}
+
+// 指定タイル先が固い（壁）かどうかを返すヘルパ
+bool Enemy::IsTileAheadSolid(MapChipField* map, int lookAheadTiles /*= 1*/)
+{
+    int type = GetTileAheadType(map, lookAheadTiles);
+    // Map の仕様により「1 がブロック」な既存コードに合わせる（必要なら修正）
+    IndexSet aheadIndex = map->GetMapChipIndexSetByPosition(
+        Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth*0.5f) + lookAheadTiles * 1.0f),
+                 object3D_->GetTransform().translate.y,
+                 object3D_->GetTransform().translate.z });
+    return map->IsSolid(aheadIndex.xIndex, aheadIndex.yIndex);
 }

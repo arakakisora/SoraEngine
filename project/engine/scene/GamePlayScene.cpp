@@ -11,6 +11,7 @@
 #include "CameraManager.h"
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
+#include "LineCommon.h"
 
 
 void GamePlayScene::Initialize()
@@ -41,11 +42,18 @@ void GamePlayScene::Initialize()
 	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
 	GenerateObject3D();
 
-
-
+	// --- プレイヤースポーン位置をマップから取得する ---
+	Vector3 playerPostion = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	if (!spawnPositions.empty()) {
+		// マップに player スポーンが複数ある場合は最初のものを使用
+		playerPostion = spawnPositions.front();
+	} else {
+		// フォールバック: 既存の手打ち位置
+		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+	}
 	//playerの生成	
 	player = std::make_unique<Player>();
-	Vector3 playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
@@ -165,6 +173,7 @@ void GamePlayScene::Update()
 
 		// 衝突判定実行
 		CollisionManager::GetInstance()->Update();
+		SyncBlockObjectsWithMap();
 	}
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
@@ -246,6 +255,7 @@ void GamePlayScene::Draw()
 
 	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
+	LineCommon::GetInstance()->Draw();
 #pragma endregion
 
 #pragma region スプライト描画
@@ -259,45 +269,71 @@ void GamePlayScene::Draw()
 
 void GamePlayScene::GenerateObject3D()
 {
-	// 要素数
-	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();     // 縦
-	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal(); // 横
+	if (!mapChipField_) return;
 
+	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();
+	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal();
+
+	// 既存のオブジェクトを全部削除して配列を初期化（安全策）
+	for (auto& row : blockobject3D) {
+		for (Object3D* obj : row) {
+			delete obj;
+		}
+	}
+	blockobject3D.clear();
 
 	blockobject3D.resize(numBlokVirtical);
-
-	for (uint32_t i = 0; i < numBlokVirtical; ++i)
-	{
-		blockobject3D[i].resize(numBlokHorizontal);
-
-	}
-	// キューブ生成
 	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
-		for (uint32_t j = 0; j < numBlokHorizontal; ++j) {
+		blockobject3D[i].assign(numBlokHorizontal, nullptr);
+	}
 
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == 1) {
+	// 実際の作成は Sync に任せる（初回はここで生成される）
+	SyncBlockObjectsWithMap();
+}
 
+void GamePlayScene::SyncBlockObjectsWithMap()
+{
+	if (!mapChipField_) return;
 
-				Object3D* object3D_ = new Object3D();
-				object3D_->Initialize(Object3DCommon::GetInstance());
-				object3D_->SetModel("blokc.obj");
-				blockobject3D[i][j] = object3D_;
-				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
-				//ライト
-				object3D_->SetLighting(true);
-				object3D_->SetDirectionalLightEnable(true);
-				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
+	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();
+	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal();
 
+	// 配列サイズが一致している前提
+	for (uint32_t y = 0; y < numBlokVirtical; ++y) {
+		for (uint32_t x = 0; x < numBlokHorizontal; ++x) {
 
+			int type = mapChipField_->GetMapChipTypeByIndex(x, y);
+			Object3D* obj = nullptr;
+			if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
+				obj = blockobject3D[y][x];
+			}
 
+			// タイプ 1 はブロック（必要に応じ他のIDも対応）
+			if (type == 1) {
+				// ブロックが存在すべきだがオブジェクトが無ければ作る
+				if (!obj) {
+					Object3D* newObj = new Object3D();
+					newObj->Initialize(Object3DCommon::GetInstance());
+					newObj->SetModel("blokc.obj");
+					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
+					newObj->SetLighting(true);
+					newObj->SetDirectionalLightEnable(true);
+					newObj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
+
+					// 保持配列へ格納
+					if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
+						blockobject3D[y][x] = newObj;
+					}
+				}
+			} else {
+				// ブロックが消えているのにオブジェクトが残っていれば削除
+				if (obj) {
+					delete obj;
+					blockobject3D[y][x] = nullptr;
+				}
 			}
 		}
 	}
-
-
-
-
-
 }
 
 
@@ -335,7 +371,17 @@ void GamePlayScene::Imguidebug()
 		enemyManager_->Initialize(mapChipField_);
 
 
-
+		// --- プレイヤースポーン位置をマップから取得する ---
+		Vector3 playerPostion = {};
+		auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+		if (!spawnPositions.empty()) {
+			// マップに player スポーンが複数ある場合は最初のものを使用
+			playerPostion = spawnPositions.front();
+		} else {
+			// フォールバック: 既存の手打ち位置
+			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		}
+		player->GetObject3D()->SetTranslate(playerPostion);
 
 	}
 

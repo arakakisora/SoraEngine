@@ -6,7 +6,6 @@
 #include "ParticleMnager.h"
 #include "ChargeBehabiaor.h"
 
-
 Enemy2::~Enemy2()
 {
 	if (object3D_) {
@@ -17,7 +16,6 @@ Enemy2::~Enemy2()
 
 void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 
-	
 	object3D_ = obj;
 	//エネミーの初期位置
 	object3D_->SetTranslate(position);
@@ -28,7 +26,6 @@ void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 	walkTimer_ = 0.0f;
 	rotateY = std::numbers::pi_v<float> / 2.0f;
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
-	
 
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
@@ -38,7 +35,7 @@ void Enemy2::Initialize(Object3D* obj, const Vector3& position) {
 	hitDeath_.Initialize(object3D_, HP, deatheEffect);
 
 	aabb_ = GetEnemyAABB();
-
+	line = std::make_unique<Line>();
 }
 
 void Enemy2::Update(MapChipField* mapChipField) {
@@ -69,30 +66,28 @@ void Enemy2::Update(MapChipField* mapChipField) {
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	// 歩行モーションの計算
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	// 位置の更新
+	// 位置の更新（現在位置 + 速度を計算）
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 
-	object3D_->SetTranslate(position);
-	// レイの先のマップチップを取得
-	int rayChipNumber = GetRayMapChipNumber(mapChipField);
-
-
-	// レイの先にブロックがある場合、反転
-	if (rayChipNumber == 1)
-	{
-		velocity_.x *= -1.0f; // 方向を反転
+	// 移動を適用する前に「目の前のタイル」をチェックする（0 = エネミー前端）
+	if (IsTileAheadSolid(mapChipField, 1)) {
+		// 壁がある → 進行方向を反転（移動は適用しない）
+		velocity_.x *= -1.0f;
 
 		// 回転方向も反転
 		if (velocity_.x > 0) {
-			
 			rotateY = std::numbers::pi_v<float> / 2.0f;
 		}
 		else {
-			
 			rotateY = -std::numbers::pi_v<float> / 2.0f;
 		}
 	}
+	else {
+		// 通路なら位置を確定
+		object3D_->SetTranslate(position);
+	}
+
 	// ダメージ表示タイマーの更新（旧ロジック）
 	if (damageTimer_ > 0.0f) {
 		damageTimer_ -= dt;
@@ -178,7 +173,6 @@ Vector3 Enemy2::GetRayEndPosition()
 	return rayEnd;
 }
 
-
 int Enemy2::GetRayMapChipNumber(MapChipField* mapChipField)
 {
 	// レイの終点座標を取得
@@ -192,4 +186,43 @@ int Enemy2::GetRayMapChipNumber(MapChipField* mapChipField)
 
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);
+}
+
+// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
+int Enemy2::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
+{
+    // 現在位置（SetTranslate直後でも反映されるTransform位置を使用）
+    Vector3 pos = object3D_->GetTransform().translate;
+
+    // 進行方向（X軸左右移動前提）。速度優先、無ければ rotateY で決定
+    int dir = 0;
+    if (velocity_.x > 1e-6f) dir = 1;
+    else if (velocity_.x < -1e-6f) dir = -1;
+    else dir = (rotateY >= 0.0f) ? 1 : -1;
+
+    // チェックするワールド座標（エネミー前端＋タイル数分）
+    float offset = (kEnemyWidth * 0.5f) + (lookAheadTiles * 1.0f);
+    Vector3 checkPos = pos;
+    checkPos.x += dir * offset;
+
+    // マップのインデックスを取得して範囲内にクランプ
+    IndexSet idx = map->GetMapChipIndexSetByPosition(checkPos);
+    int x = static_cast<int>(idx.xIndex);
+    int y = static_cast<int>(idx.yIndex);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x >= static_cast<int>(map->GetNumBlockHorizontal())) x = static_cast<int>(map->GetNumBlockHorizontal()) - 1;
+    if (y >= static_cast<int>(map->GetNumBlockVirtical())) y = static_cast<int>(map->GetNumBlockVirtical()) - 1;
+
+    return map->GetMapChipTypeByIndex(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+}
+
+// 指定タイル先が固い（壁）かどうかを返すヘルパ
+bool Enemy2::IsTileAheadSolid(MapChipField* map, int lookAheadTiles /*= 1*/)
+{
+    IndexSet aheadIndex = map->GetMapChipIndexSetByPosition(
+        Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth*0.5f) + lookAheadTiles * 1.0f),
+                 object3D_->GetTransform().translate.y,
+                 object3D_->GetTransform().translate.z });
+    return map->IsSolid(aheadIndex.xIndex, aheadIndex.yIndex);
 }

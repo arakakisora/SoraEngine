@@ -13,7 +13,8 @@
 #include "plyerpaticleBehavior.h"
 #include "ChargeBehabiaor.h"
 #include "CollisionManager.h"
-
+#include "LineCommon.h" // 追加: ライン描画
+#include <memory>      // std::make_unique を明示
 
 void Player::Initialize(const Vector3& position) {
 
@@ -40,16 +41,10 @@ void Player::Initialize(const Vector3& position) {
 		std::make_unique<ExhaustGasBehavior>()
 	);
 
-	
+	line_ = std::make_unique<Line>();
 
 }
 
-void Player::StartDirection()
-{
-
-
-
-}
 
 AABB Player::GetPlayerAABB()
 {
@@ -92,15 +87,18 @@ void Player::Update() {
 		ImGui::DragFloat3("*LightDirection", &lightDirection.x, 0.01f);
 		object3D_->SetDirectionalLightDirection(lightDirection);
 
-
+		// デバッグで砲台角度表示
+		ImGui::Text("CannonAngle: %.1f deg", cannonAngleDeg_);
 
 	}
 #endif // DEBUG_
 
 
-	PrayerMove();
-	
 
+	PrayerMove();
+
+
+	
 	aabb_ = GetPlayerAABB();
 
 
@@ -136,6 +134,8 @@ void Player::Update() {
 
 
 
+
+
 	// 衝突判定を初期化
 	CollisionMapInfo collisionMapInfo;
 	// 移動量に速度の値をコピー
@@ -158,6 +158,62 @@ void Player::Update() {
 		isDead_ = true;
 	}
 
+
+
+	// 上キーで仰角を増やし、下キーで仰角を減らす。連続入力に対応。
+	if (Input::GetInstance()->PushKey(DIK_UP)) {
+		cannonAngleDeg_ += kCannonAngleStepDeg;
+	}
+	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
+		cannonAngleDeg_ -= kCannonAngleStepDeg;
+	}
+
+	// マウスのホイール差分を取得して角度に反映
+	{
+		auto mouseMove = Input::GetInstance()->GetMouseMove();
+		if (mouseMove.lZ != 0) {
+			// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
+			const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
+			// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
+			cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
+		}
+	}
+
+	// 過度な角度にならないように制限（-90〜+90度）
+	cannonAngleDeg_ = std::clamp(cannonAngleDeg_, -90.0f, 90.0f);
+
+	// 始点はプレイヤーのワールド位置（発射位置）
+	Vector3 start = GetWorldPosition();
+	start.y += 0.5f; // 少し上から発射するイメージ
+	// 仰角をラジアンに変換してローカル方向を作成（ローカル座標系: +Z 前方, +Y 上）
+	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
+	Vector3 localDir = { 0.0f, std::sinf(rad), std::cosf(rad) };
+
+	// ローカル→ワールド変換（回転の影響を受ける）
+	Vector3 worldDir = MyMath::TransformNormal(localDir, object3D_->GetWorldMatrix());
+	Vector3 dirNorm = worldDir.Normalize();
+
+	// 表示長さ
+	const float length = 1.0f;
+	Vector3 end = start + dirNorm * length;
+
+	// 線の色（緑）
+	Vector4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
+
+	// メインライン
+	line_->Draw(start, end, color);
+
+	// 矢印の頭を描画（小さな左右の線）
+	Vector3 up = { 0.0f, 1.0f, 0.0f };
+	// 右ベクトル（dir × up）
+	Vector3 right = dirNorm.Cross(up).Normalize();
+	// 矢印ベース
+	Vector3 arrowBase = end - dirNorm * 0.2f;
+	Vector3 arrow1 = arrowBase + right * 0.12f;
+	Vector3 arrow2 = arrowBase - right * 0.12f;
+	line_->Draw(end, arrow1, color);
+	line_->Draw(end, arrow2, color);
+
 }
 
 void Player::Draw() {
@@ -167,19 +223,20 @@ void Player::Draw() {
 	for (PlayerBullet* bullet : bullets_) {
 		bullet->Draw();
 	}
+
+
+
 }
 
 void Player::PrayerMove() {
 
 
 	if (onGround_) {
-		// 移動入力
-		// 左右移動操作
-
-		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
+		// 移動入力 を WASD に変更（A/D 左右、W ジャンプ）
+		if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_A)) {
 			// 左右加速
 			Vector3 accceleration = {};
-			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+			if (Input::GetInstance()->PushKey(DIK_D)) {
 
 				if (velocity_.x < 0.0f) {
 					velocity_.x *= (1.0f - kAttenuation);
@@ -195,8 +252,7 @@ void Player::PrayerMove() {
 				playermoveright = true;
 				playermoveleft = false;
 
-			}
-			else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+			} else if (Input::GetInstance()->PushKey(DIK_A)) {
 
 				if (velocity_.x > 0.0f) {
 					velocity_.x *= (1.0f - kAttenuation);
@@ -218,8 +274,7 @@ void Player::PrayerMove() {
 
 			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 
-		}
-		else {
+		} else {
 
 			velocity_.x *= (1.0f - kAttenuation);
 			velocity_.y *= (1.0f - kAttenuation);
@@ -229,15 +284,15 @@ void Player::PrayerMove() {
 			playermoveleft = false;
 		}
 
-		if (Input::GetInstance()->PushKey(DIK_UP)) {
+		// ジャンプを W に変更
+		if (Input::GetInstance()->PushKey(DIK_W)) {
 
 			velocity_.x += 0;
 			velocity_.y += kJampAcceleration;
 			velocity_.z += 0;
 		}
 
-	}
-	else {
+	} else {
 		// 落下速度
 		velocity_.x += 0;
 		velocity_.y += -kGravityAccleration;
@@ -317,8 +372,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 
 			onGround_ = false;
 
-		}
-		else {
+		} else {
 			// 移動後4つの計算
 			std::array<Vector3, kNumCorner> positionsNew;
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -337,8 +391,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 			if (mapChipType == 4) {
 				hit = true;
-			}
-			else if (mapChipType == 4) {
+			} else if (mapChipType == 4) {
 				goal_ = true;
 			}
 			// 右点の判定
@@ -346,8 +399,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 			if (mapChipType == 1) {
 				hit = true;
-			}
-			else if (mapChipType == 4) {
+			} else if (mapChipType == 4) {
 				goal_ = true;
 			}
 
@@ -357,8 +409,7 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			}
 		}
 
-	}
-	else {
+	} else {
 
 		if (info.landing) {
 
@@ -394,7 +445,7 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	}
 
 	int mapChipType;
-	// 真上の当たり判定
+	// 真上のあたり判定
 	bool hit = false;
 	// 左点の判定
 	IndexSet indexSet;
@@ -402,8 +453,7 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType == 4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// 右点の判定
@@ -413,8 +463,7 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType == 4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -446,7 +495,7 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 
 	}
 	int mapChipType;
-	// 真下の当たり判定
+	// 真下のあたり判定
 	bool hit = false;
 
 	// 左点の判定
@@ -461,8 +510,7 @@ void Player::CollisionMapInfoBootm(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType == 4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -495,7 +543,7 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	}
 
 	int mapChipType;
-	// 真上の当たり判定
+	// 真上のあたり判定
 	bool hit = false;
 	// 右上点の判定
 	IndexSet indexSet;
@@ -503,8 +551,7 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType ==4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -514,8 +561,7 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType == 4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -548,7 +594,7 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	}
 
 	int mapChipType;
-	// 真上の当たり判定
+	// 真上のあたり判定
 	bool hit = false;
 	// hidari上点の判定
 	IndexSet indexSet;
@@ -556,8 +602,7 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType == 4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -567,8 +612,7 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	mapChipType = mapChipFild_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	if (mapChipType == 1) {
 		hit = true;
-	}
-	else if (mapChipType == 4) {
+	} else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -603,6 +647,7 @@ Vector3 Player::GetWorldPosition() {
 //
 //	return aabb;
 //}
+
 
 
 
@@ -651,14 +696,24 @@ void Player::Attack()
 
 		// 弾の速度
 		const float kBulletSpeed = 1.0f;
-		Vector3 velocity(0, 0, kBulletSpeed);
-		velocity = MyMath::TransformNormal(velocity, object3D_->GetWorldMatrix());
+
+		Vector3 localVelocity(0, 0, kBulletSpeed);
+
+
+		const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
+		localVelocity.y = std::sinf(rad) * kBulletSpeed;
+		localVelocity.z = std::cosf(rad) * kBulletSpeed;
+
+
+		// ローカル→ワールド変換
+		Vector3 velocity = MyMath::TransformNormal(localVelocity, object3D_->GetWorldMatrix());
 
 		object3DBullet_ = new Object3D();
 		object3DBullet_->Initialize(Object3DCommon::GetInstance());
 		object3DBullet_->SetModel("bullet.obj");
 		object3DBullet_->SetScale({ 0.4f,0.4f,0.4f });
-		
+
+
 
 		PlayerBullet* newBullet = new PlayerBullet();
 		newBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity, mapChipFild_);
@@ -669,7 +724,6 @@ void Player::Attack()
 		cm->AddCollider(newBullet);
 
 		bullets_.push_back(newBullet);
-
 
 
 	}
@@ -700,16 +754,14 @@ void Player::PlayerParticle()
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (lrDirection_ == LRDirecion::kright) {
 				smokeTransform.translate.x -= 0.15f;
-			}
-			else {
+			} else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
 			// 1回に2粒くらい
 			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
 		}
-	}
-	else {
+	} else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}

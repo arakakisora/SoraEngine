@@ -1,5 +1,6 @@
 #include "PlayerBullet.h"
 #include "TextureManager.h"
+#include "MapChipField.h" // 追加
 
 PlayerBullet::~PlayerBullet()
 {
@@ -29,7 +30,7 @@ void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vect
 
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(pos);
-
+	
 
 
 	// 速度
@@ -44,9 +45,24 @@ void PlayerBullet::Update() {
 	position += velocity_;
 	object3D_->SetTranslate(position);
 
-	//レイキャストを実行し、マップチップ番号を取得
-	if (GetRayMapChipNumber(mapChipField_) == 1) {
-		isDead_ = true;
+	// レイキャストの終点を計算
+	Vector3 rayEnd = GetRayEndPosition();
+
+	// マップチップのインデックスを取得
+	if (mapChipField_) {
+		IndexSet idx = mapChipField_->GetMapChipIndexSetByPosition(rayEnd);
+		int chipType = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
+
+		// タイルが存在する場合はダメージを与える（hp>0 のタイルのみ）
+		if (chipType != 0) {
+			int hp = mapChipField_->GetMapChipHPByIndex(idx.xIndex, idx.yIndex);
+			if (hp > 0) {
+				// 1ダメージ（必要なら量を変える）
+				mapChipField_->DamageMapChipByIndex(idx.xIndex, idx.yIndex, 1);
+			}
+			// 弾は当たると消える（タイルに当たったら）
+			isDead_ = true;
+		}
 	}
 
 	if (--deathTimer_ <= 0) {

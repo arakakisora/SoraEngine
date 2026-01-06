@@ -9,7 +9,7 @@
 #include "ParticleEmitter.h"
 #include "Collider.h"
 #include "HitDeathComponent.h"
-
+#include "Line.h"
 
 class Player;
 class PlayerBullet;
@@ -59,6 +59,16 @@ public:
 	/// </summary>
 	/// <returns>レイに当たってるマップチップ番号</returns>
 	int GetRayMapChipNumber(MapChipField* mapChipField);
+
+	/// <summary>
+	/// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
+	/// </summary>
+	int GetTileAheadType(MapChipField* map, int lookAheadTiles = 1);
+
+	/// <summary>
+	/// 指定タイル先が固い（壁）かどうかを返すヘルパ
+	/// </summary>
+	bool IsTileAheadSolid(MapChipField* map, int lookAheadTiles = 1);
 
 	/// <summary>
 	// Object3D解放用のメソッド
@@ -112,4 +122,6 @@ private:
 	bool pendingRemove_ = false; // マネージャ用
 	AABB aabb_;
 	PlayerBullet* bullet_ = nullptr;
+
+	std::unique_ptr<Line> line;
 };

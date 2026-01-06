@@ -14,6 +14,14 @@ void MapChipField::ResetMapChipData() {
 		line.clear();
 		line.resize(kNumBlockHorizontal, 0);
 	}
+
+	// hpData_ のリセット
+	hpData_.clear();
+	hpData_.resize(kNumBlockVirtical);
+	for (auto& line : hpData_) {
+		line.clear();
+		line.resize(kNumBlockHorizontal, 0);
+	}
 }
 
 void MapChipField::LoadMapChipCsv(const std::string& filePath) {
@@ -45,6 +53,15 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 				// CSV の文字列をそのまま int に変換して保存
 				int id = std::stoi(cell);
 				mapChipData_.data[y][x] = id;
+
+				// 追加: MapChipDatabase から hitPoints を取得して hpData_ を初期化
+				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
+				if (info) {
+					hpData_[y][x] = info->hitPoints;
+				}
+				else {
+					hpData_[y][x] = 0;
+				}
 			}
 			++x;
 		}
@@ -164,4 +181,30 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 	}
 
 	return result;
+}
+
+// 追加: 指定インデックスのHPを取得
+int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
+	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return 0;
+	return hpData_[yIndex][xIndex];
+}
+
+// 追加: 指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
+void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage) {
+	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return;
+
+	int& hp = hpData_[yIndex][xIndex];
+	if (hp <= 0) return; // 既に壊れない/空
+	hp -= damage;
+	if (hp <= 0) {
+		// 壊れた -> 空にする
+		mapChipData_.data[yIndex][xIndex] = 0;
+		hp = 0;
+	}
+}
+
+//  ワールド座標からダメージを与えるユーティリティ
+void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
+	IndexSet idx = GetMapChipIndexSetByPosition(position);
+	DamageMapChipByIndex(idx.xIndex, idx.yIndex, damage);
 }

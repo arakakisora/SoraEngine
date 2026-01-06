@@ -9,7 +9,7 @@
 #include "ParticleEmitter.h"
 #include "Collider.h"
 #include "HitDeathComponent.h"
-
+#include "Line.h"
 
 class Player;
 class PlayerBullet;
@@ -32,8 +32,6 @@ public:
 private:
 	AABB aabb_;
 	PlayerBullet* bullet_;
-
-
 
 public:
 
@@ -59,7 +57,6 @@ public:
 	/// <returns>vector3、ワールドポジションを返す</returns>
 	Vector3 GetWorldPosition();
 
-	
 	/// <summary>
 	/// 目の前にブロックがあるかどうか
 	/// </summary>
@@ -71,6 +68,16 @@ public:
 	/// </summary>
 	/// <returns>レイに当たってるマップチップ番号</returns>
 	int GetRayMapChipNumber(MapChipField* mapChipField);
+
+	/// <summary>
+	/// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
+	/// </summary>
+	int GetTileAheadType(MapChipField* map, int lookAheadTiles = 1);
+
+	/// <summary>
+	/// 指定タイル先が固い（壁）かどうかを返すヘルパ
+	/// </summary>
+	bool IsTileAheadSolid(MapChipField* map, int lookAheadTiles = 1);
 
 	/// <summary>
 	// Object3D解放用のメソッド
@@ -100,7 +107,6 @@ public:
 
 	Object3D* GetObject3D() const { return object3D_; }
 
-
 private:
 
 	Object3D* object3D_ = nullptr;
@@ -128,4 +134,6 @@ private:
 	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }};
 	HitDeathComponent hitDeath_;
 	bool pendingRemove_ = false; // マネージャ用
+
+	std::unique_ptr<Line> line;
 };
