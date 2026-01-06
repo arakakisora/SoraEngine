@@ -11,6 +11,7 @@
 #include "CameraManager.h"
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
+#include "LineCommon.h"
 
 
 void GamePlayScene::Initialize()
@@ -41,11 +42,18 @@ void GamePlayScene::Initialize()
 	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
 	GenerateObject3D();
 
-
-
+	// --- プレイヤースポーン位置をマップから取得する ---
+	Vector3 playerPostion = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	if (!spawnPositions.empty()) {
+		// マップに player スポーンが複数ある場合は最初のものを使用
+		playerPostion = spawnPositions.front();
+	} else {
+		// フォールバック: 既存の手打ち位置
+		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+	}
 	//playerの生成	
 	player = std::make_unique<Player>();
-	Vector3 playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
@@ -247,6 +255,7 @@ void GamePlayScene::Draw()
 
 	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
+	LineCommon::GetInstance()->Draw();
 #pragma endregion
 
 #pragma region スプライト描画
@@ -362,7 +371,17 @@ void GamePlayScene::Imguidebug()
 		enemyManager_->Initialize(mapChipField_);
 
 
-
+		// --- プレイヤースポーン位置をマップから取得する ---
+		Vector3 playerPostion = {};
+		auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+		if (!spawnPositions.empty()) {
+			// マップに player スポーンが複数ある場合は最初のものを使用
+			playerPostion = spawnPositions.front();
+		} else {
+			// フォールバック: 既存の手打ち位置
+			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		}
+		player->GetObject3D()->SetTranslate(playerPostion);
 
 	}
 

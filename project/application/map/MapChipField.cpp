@@ -203,7 +203,7 @@ void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int da
 	}
 }
 
-// 追加: ワールド座標からダメージを与えるユーティリティ
+//  ワールド座標からダメージを与えるユーティリティ
 void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
 	IndexSet idx = GetMapChipIndexSetByPosition(position);
 	DamageMapChipByIndex(idx.xIndex, idx.yIndex, damage);
