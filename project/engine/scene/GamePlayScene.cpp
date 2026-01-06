@@ -112,7 +112,8 @@ void GamePlayScene::Finalize()
 	}
 	blockobject3D.clear();
 
-
+	CameraManager::GetInstance()->RemoveCamera("maincam");
+	CameraManager::GetInstance()->RemoveCamera("debugcam");
 	delete camera;
 	delete debugCamera;
 	delete mapChipField_;

@@ -83,13 +83,13 @@ public:
 
 
 	//カメラのポインタ
-	Camera* camera = nullptr;
-	Camera* debugCamera = nullptr;
+	std::unique_ptr<Camera> camera = nullptr;
+	std::unique_ptr<Camera> debugCamera = nullptr;
 	//スプライトの初期化
-	Object3D* object3D2nd = nullptr;
+	std::unique_ptr<Object3D> object3D2nd = nullptr;
 	//player
-	Player* player = nullptr;
-	Goal* goal = nullptr; // ゴールオブジェクト
+	std::unique_ptr<Player> player = nullptr;
+	std::unique_ptr<Goal> goal = nullptr; // ゴールオブジェクト
 
 	//wvpData用のTransform変数を作る
 	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };

@@ -38,7 +38,8 @@ void Enemy::Initialize(Object3D* obj, const Vector3& position) {
 	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
 
 	// Hit/Death コンポーネント初期化（初期HP = 3）
-	hitDeath_.Initialize(object3D_, 3, deatheEffect);
+	int HP = 3;
+	hitDeath_.Initialize(object3D_, HP, deatheEffect);
 
 	aabb_ = GetEnemyAABB();
 
