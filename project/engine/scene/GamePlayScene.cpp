@@ -19,15 +19,15 @@ void GamePlayScene::Initialize()
 	fadeManager_.StartFadeIn();
 
 	//カメラの生成	
-	camera = new Camera();
+	camera= std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
-	CameraManager::GetInstance()->AddCamera("maincam", camera);
+	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 
-	debugCamera = new Camera();
+	debugCamera = std::make_unique<Camera>();
 	debugCamera->SetRotate({ 0,0,0, });
 	debugCamera->SetTranslate({ 15,13,-60, });
-	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera);
+	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera.get());
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
@@ -44,7 +44,7 @@ void GamePlayScene::Initialize()
 
 
 	//playerの生成	
-	player = new Player();
+	player = std::make_unique<Player>();
 	Vector3 playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(playerPostion);
@@ -72,7 +72,7 @@ void GamePlayScene::Initialize()
 
 
 	//3Dオブジェクトの初期化
-	object3D2nd = new Object3D();
+	object3D2nd = std::make_unique<Object3D>();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
 
@@ -90,8 +90,8 @@ void GamePlayScene::Initialize()
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 
 	//ゴールの初期化
-	goal = new Goal();
-	goal->Initialize(mapChipField_,player);
+	goal = std::make_unique<Goal>();
+	goal->Initialize(mapChipField_,player.get());
 
 
 
@@ -114,13 +114,11 @@ void GamePlayScene::Finalize()
 
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("debugcam");
-	delete camera;
-	delete debugCamera;
+	
 	delete mapChipField_;
-	delete player;
+	
 	delete skydome_;
-	delete goal;
-	delete object3D2nd;
+	
 
 
 }
