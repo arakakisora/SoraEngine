@@ -10,7 +10,8 @@
                 1.0
             ],
             "collision": "none",
-            "spawn": "none"
+            "spawn": "none",
+            "hitPoints": 0
         },
         {
             "id": 1,
@@ -22,7 +23,8 @@
                 1.0
             ],
             "collision": "solid",
-            "spawn": "none"
+            "spawn": "none",
+            "hitPoints": 3
         },
         {
             "id": 2,
@@ -35,7 +37,8 @@
             ],
             "collision": "none",
             "spawn": "enemy",
-            "enemyNumber": 1
+            "enemyNumber": 1,
+            "hitPoints": 0
         },
         {
             "id": 3,
@@ -48,7 +51,8 @@
             ],
             "collision": "none",
             "spawn": "enemy",
-            "enemyNumber": 2
+            "enemyNumber": 2,
+            "hitPoints": 0
         },
         {
             "id": 4,
@@ -60,7 +64,8 @@
                 1.0
             ],
             "collision": "none",
-            "spawn": "goal"
+            "spawn": "goal",
+            "hitPoints": 0
         },
         {
             "id": 5,
@@ -72,7 +77,8 @@
                 1.0
             ],
             "collision": "none",
-            "spawn": "player"
+            "spawn": "player",
+            "hitPoints": 0
         },
         {
             "id": 6,
@@ -84,7 +90,8 @@
                 1.0
             ],
             "collision": "none",
-            "spawn": "item"
+            "spawn": "item",
+            "hitPoints": 0
         }
 
     ]

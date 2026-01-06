@@ -64,6 +64,9 @@ public:
 	/// </summary>
 	void GenerateObject3D();
 
+	void SyncBlockObjectsWithMap();
+	
+
 	////当たり判定のまとまり
 	//void CheckAllCollisions();
 
