@@ -197,8 +197,8 @@ void Player::Update() {
 	const float length = 1.0f;
 	Vector3 end = start + dirNorm * length;
 
-	// 線の色（緑）
-	Vector4 color = { 0.0f, 1.0f, 0.0f, 1.0f };
+	// 線の色(ao）
+	Vector4 color = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 	// メインライン
 	line_->Draw(start, end, color);
