@@ -77,7 +77,7 @@ void ParticleMnager::Update()
 	billboardMatrix.m[3][2] = 0.0f;
 	//ビルボード行列を使ってビルボード行列を計算
 	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
-	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
+	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjectionMatrix();
 
 
 	

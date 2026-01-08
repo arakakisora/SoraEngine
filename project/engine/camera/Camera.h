@@ -72,12 +72,12 @@ public:
 	/// プロジェクション行列取得
 	/// </summary>
 	/// <returns></returns>
-	const Matrix4x4& GetProjextionMatrix()const { return projectionMatrix; }
+	const Matrix4x4& GetProjectionMatrix()const { return projectionMatrix; }
 	/// <summary>
 	/// ビュープロジェクション行列取得
 	/// </summary>
 	/// <returns></returns>
-	const Matrix4x4& GetViewprojectionMatrix()const { return viewProjectionMatrix; }
+	const Matrix4x4& GetViewProjectionMatrix()const { return viewProjectionMatrix; }
 	/// <summary>
 	/// トランスフォーム取得
 	/// </summary>

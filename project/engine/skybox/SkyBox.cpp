@@ -134,7 +134,7 @@ void SkyBox::Update()
 
 	if (activeCamera) {
 
-		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewprojectionMatrix();
+		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewProjectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
 		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
 		transformaitionMatrixData->World = worldMatrix;

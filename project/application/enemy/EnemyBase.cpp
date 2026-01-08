@@ -5,14 +5,14 @@ void EnemyBase::OnCollision(Collider* other)
 	// 死亡中は当たり判定無視
 	if (hitDeath_.IsDead()) return;
 
-	// --- 修正点: 引数の other を使う ---
+
 	if (other->GetLayer() == Layer::PlayerBullet) {
 		//PlayerBullet* hitBullet = static_cast<PlayerBullet*>(other);
 		// 赤くしてノックバックを渡す
 		object3D_->SetColor({ 1, 0, 0, 1 });
 		damageTimer_ = kDamageDisplayTime;
 
-		// 修正: knockback を速度 (units/sec) として渡し、HitDeathComponent 側で dt を掛けて位置を積分する
+	
 		// カメラに映る程度の動きに抑えるため控えめな値にする
 		const float horizontalKnock = 1.0f; // 水平方向速度 (units/sec) - 調整可
 		const float verticalKnock = 3.0f;   // 上方向初速度 (units/sec) - 調整可
@@ -21,7 +21,7 @@ void EnemyBase::OnCollision(Collider* other)
 
 		// 内部モーションを使うようにしてノックバックを渡す
 		hitDeath_.SetUseExternalDeathMotion(false);
-		float hitPower = 1;
+		int hitPower = 1;
 		hitDeath_.OnHit(hitPower, knock);
 		// コンポーネント側で isDead_ を立てるので Update の次回で演出が始まる
 	}

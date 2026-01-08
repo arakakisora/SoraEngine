@@ -86,7 +86,7 @@ void Enemy::Update() {
 
 	object3D_->SetTranslate(position);
 	// レイの先のマップチップを取得
-	int rayChipNumber = GetRayMapChipNumber(mapChipField);
+	int rayChipNumber = GetRayMapChipNumber(mapChipField_);
 
 
 	// レイの先にブロックがある場合、反転
@@ -119,7 +119,7 @@ void Enemy::Update() {
 	//deatheEffect->Update();
 
 #ifdef _DEBUG
-	ImGui::Text("HP: %d", HP);
+	//ImGui::Text("HP: %d", HP);
 #endif // _DEBUG
 
 }

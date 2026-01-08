@@ -79,11 +79,15 @@ public:
 	/// マネージャが削除判定に使う（死亡演出完了フラグ）
 	/// </summary>
 	bool IsPendingRemove() const { return pendingRemove_; }
-
+	/// <summary>
+	/// マップチップフィールドセット
+	/// </summary>
+	/// <param name="mapChipField"></param>
 	void SetMapChipField(MapChipField* mapChipField) {
 		mapChipField_ = mapChipField;
 	}
 
+	Object3D* GetObject3D() { return object3D_; }
 	
 
 protected:
