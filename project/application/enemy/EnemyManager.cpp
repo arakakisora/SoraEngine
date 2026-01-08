@@ -43,6 +43,7 @@ void EnemyManager::Initialize(MapChipField* map) {
 			// Enemyの生成と初期化
 			EnemyBase* newEnemy = new Enemy();
 			newEnemy->Initialize(); 
+			newEnemy->SetMapChipField(map_);
 			enemies_.push_back(newEnemy);
 
 		}
@@ -71,7 +72,7 @@ void EnemyManager::Update() {
 	for (EnemyBase* enemy : enemies_) {
 
 		if (enemy != nullptr) {
-			enemy->Update(map_);
+			enemy->Update();
 		}
 	}
 	
@@ -107,7 +108,7 @@ void EnemyManager::Update() {
 void EnemyManager::Draw() {
 	//Enemyの描画
 
-	for (Enemy* enemy : enemies_) {
+	for (EnemyBase* enemy : enemies_) {
 		if (!nullptr) {
 			enemy->Draw();
 		}
@@ -124,7 +125,7 @@ void EnemyManager::EnemyObjectUpdate()
 {
 
 	
-	for (Enemy* enemy : enemies_) {
+	for (EnemyBase* enemy : enemies_) {
 		if (!nullptr) {
 			enemy->GetObject3D()->Update();
 		}

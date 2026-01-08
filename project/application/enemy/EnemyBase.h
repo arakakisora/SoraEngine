@@ -80,6 +80,12 @@ public:
 	/// </summary>
 	bool IsPendingRemove() const { return pendingRemove_; }
 
+	void SetMapChipField(MapChipField* mapChipField) {
+		mapChipField_ = mapChipField;
+	}
+
+	
+
 protected:
 	Object3D* object3D_ = nullptr;
 	Vector3 position_;
@@ -98,4 +104,5 @@ protected:
 	HitDeathComponent hitDeath_;
 	bool pendingRemove_ = false; // マネージャ用
 	AABB aabb_;
+	MapChipField* mapChipField_ = nullptr;
 };
