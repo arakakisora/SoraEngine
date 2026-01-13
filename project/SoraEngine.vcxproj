@@ -342,8 +342,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\scene\GameOverScene.h" />
     <ClInclude Include="engine\fade\FadeManager.h" />
     <ClInclude Include="application\gaol\Goal.h" />
-    <ClInclude Include="application\map\GridCell.h" />
-    <ClInclude Include="application\map\MapType.h" />
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="application\player\PlayerBullet.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />

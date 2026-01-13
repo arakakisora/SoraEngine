@@ -396,7 +396,6 @@
     <ClInclude Include="engine\skybox\SkyBoxCommon.h">
       <Filter>engine\ヘッダーファイル\skybox</Filter>
     </ClInclude>
-    <ClInclude Include="application\map\GridCell.h" />
     <ClInclude Include="application\enemy\Enemy.h">
       <Filter>application\enemy</Filter>
     </ClInclude>
@@ -416,9 +415,6 @@
       <Filter>application\player</Filter>
     </ClInclude>
     <ClInclude Include="application\map\MapChipField.h">
-      <Filter>application\map</Filter>
-    </ClInclude>
-    <ClInclude Include="application\map\MapType.h">
       <Filter>application\map</Filter>
     </ClInclude>
     <ClInclude Include="application\map\StageEditor.h">

@@ -2,8 +2,15 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "GridCell.h"
 #include "MapChipDatabase.h"
+
+/// <summary>
+/// グリッドセル構造体
+/// </summary>
+struct GridCell {
+	int type = 0; // 0=empty, 1=block, 2=enemy, 3=player
+};
+
 /// <summary>
 /// ステージエディタークラス
 /// </summary>
@@ -48,6 +55,6 @@ private:
 private:
 	std::vector<std::vector<GridCell>> grid_;
 	int selectedType_ = 1;
-	bool isReloadRequested_ = false; 
+	bool isReloadRequested_ = false;
 
 };
