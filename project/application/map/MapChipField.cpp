@@ -54,7 +54,7 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 				int id = std::stoi(cell);
 				mapChipData_.data[y][x] = id;
 
-				// 追加: MapChipDatabase から hitPoints を取得して hpData_ を初期化
+				
 				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
 				if (info) {
 					hpData_[y][x] = info->hitPoints;

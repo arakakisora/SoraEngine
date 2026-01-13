@@ -88,7 +88,7 @@ public:
 
 	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
 
-	// 追加: タイル耐久に関する操作
+	
 	int GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const;
 	void DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage);
 	void DamageMapChipByPosition(const Vector3& position, int damage);
@@ -105,7 +105,7 @@ private:
 
 	std::vector<int> Enemynumber;
 
-	// 追加: タイルごとのHP（同サイズの2D配列）
+	
 	std::vector<std::vector<int>> hpData_;
 
 };
