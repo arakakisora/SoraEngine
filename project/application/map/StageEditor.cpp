@@ -108,7 +108,6 @@ void StageEditor::RenderUI() {
     ImGui::Begin("Stage");
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     // マップ描画エリア
-    // マップ描画エリア
     for (int y = 0; y < static_cast<int>(grid_.size()); ++y) {
         for (int x = 0; x < static_cast<int>(grid_[y].size()); ++x) {
 

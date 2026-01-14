@@ -8,6 +8,7 @@
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
 
+
 #include "EnemyBase.h"
 
 
@@ -18,6 +19,7 @@ class PlayerBullet;
 /// Enemyクラス
 /// 敵の細かい部分を管理するクラス
 /// </summary>
+
 class Enemy : public EnemyBase {
 public:
 
@@ -48,7 +50,5 @@ private:
 	static inline const float kWalkMotionTime = 0.1f;//アニメーションの時間
 
 	float walkTimer_ = 0.0f;
-
-	
 
 };

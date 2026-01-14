@@ -45,7 +45,7 @@ void Enemy::Initialize() {
 	hitDeath_.Initialize(object3D_, HP, deatheEffect);
 
 	aabb_ = GetEnemyAABB();
-
+	line = std::make_unique<Line>();
 }	
 
 void Enemy::Update() {
@@ -80,7 +80,7 @@ void Enemy::Update() {
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	// 位置の更新
+	// 位置の更新（現在位置 + 速度を計算）
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 

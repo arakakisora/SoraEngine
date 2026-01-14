@@ -6,8 +6,6 @@
 #include <vector>
 #include "MapChipDatabase.h"
 
-
-
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
 /// </summary>
@@ -77,7 +75,7 @@ public:
 	/// <returns></returns>
 	std::vector<Vector3> GetEnemyPositions();
 	/// <summary>
-	/// 敵の番号リストを取得
+	/// 敵の番号リストを取得します
 	/// </summary>
 	std::vector<int> GetEnemyNumbers() { return Enemynumber; } //敵の番号を取得
 	/// <summary>
@@ -90,6 +88,11 @@ public:
 
 	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
 
+	
+	int GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const;
+	void DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage);
+	void DamageMapChipByPosition(const Vector3& position, int damage);
+
 
 private:
 	// 1ブロックのサイズ
@@ -101,5 +104,8 @@ private:
 	MapChipData mapChipData_;
 
 	std::vector<int> Enemynumber;
+
+	
+	std::vector<std::vector<int>> hpData_;
 
 };

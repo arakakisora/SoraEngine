@@ -8,7 +8,7 @@
 		std::string collision;// 衝突情報
 		std::string spawn;
 		int enemyNumber = -1;// 敵番号
-
+		int hitPoints = 0; // 追加: タイルの耐久値（0 = 壊せない / 1以上 = 壊せる）
 	};
 class MapChipDatabase
 {

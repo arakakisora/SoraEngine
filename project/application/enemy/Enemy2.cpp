@@ -9,7 +9,6 @@
 
 
 
-
 Enemy2::~Enemy2()
 {
 	if (object3D_) {
@@ -20,11 +19,13 @@ Enemy2::~Enemy2()
 
 void Enemy2::Initialize() {
 
+
 	//Enemy
 			// Object3Dの生成と初期化
 	object3D_ = new Object3D();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("enemy.obj");
+
 	//エネミーの初期位置
 	object3D_->SetTranslate(position_);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
@@ -35,7 +36,6 @@ void Enemy2::Initialize() {
 	rotateY = std::numbers::pi_v<float> / 2.0f;
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
 
-
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
@@ -45,7 +45,7 @@ void Enemy2::Initialize() {
 	hitDeath_.Initialize(object3D_, HP, deatheEffect);
 
 	aabb_ = GetEnemyAABB();
-
+	line = std::make_unique<Line>();
 }
 
 void Enemy2::Update() {
@@ -80,19 +80,23 @@ void Enemy2::Update() {
 	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
 	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
 	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	// 位置の更新
+	// 位置の更新（現在位置 + 速度を計算）
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 
+
 	// 移動を適用する前に「目の前のタイル」をチェックする（1 タイル先を既定）
 	if (IsTileAheadSolid(mapChipField_, 1)) {
+
 		// 壁がある → 進行方向を反転（移動は適用しない）
 		velocity_.x *= -1.0f;
 
 		// 回転方向も反転
 		if (velocity_.x > 0) {
 			rotateY = std::numbers::pi_v<float> / 2.0f;
+
 		} else {
+
 			rotateY = -std::numbers::pi_v<float> / 2.0f;
 		}
 	} else {
@@ -100,7 +104,6 @@ void Enemy2::Update() {
 		object3D_->SetTranslate(position);
 	}
 
-	// ダメージ表示タイマーの更新 （旧ロジックを残す：色戻し）
 	if (damageTimer_ > 0.0f) {
 		damageTimer_ -= dt;
 		if (damageTimer_ <= 0.0f) {
@@ -124,9 +127,6 @@ void Enemy2::Draw() {
 
 
 }
-
-
-
 
 
 

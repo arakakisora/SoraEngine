@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 #include "Object3D.h"
+#include <memory>
+#include "Sprite.h"
 
 
 class StageStartEffect {
@@ -8,7 +10,9 @@ public:
     void Initialize(Object3D* player, const Vector3& basePos);
     void Begin();                  // 再生開始
     void Update(float dt);
-    void Draw();                   // ←ゲートのみ描画
+    void Draw();                   
+    void Draw2D();
+
     bool IsFinished() const { return isFinished_; }
 
 private:
@@ -22,5 +26,7 @@ private:
     Vector3 playerStartPos_{};
     float   baseY_ = 0.0f;      // Y固定用
     float   moveDistZ_ = 2.0f;  // 奥→手前の距離
+
+	std::unique_ptr<Sprite> gameOrder;
 
 };

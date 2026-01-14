@@ -9,7 +9,9 @@
 #include "ParticleEmitter.h"
 #include "Collider.h"
 #include "HitDeathComponent.h"
+
 #include "EnemyBase.h"
+
 
 
 class Player;
@@ -37,6 +39,7 @@ public:
 	/// </summary>
 	void Draw()override;
 
+
 private:
 
 
@@ -51,6 +54,5 @@ private:
 
 	//death
 	float rotateY = 0.0f;
-
 
 };

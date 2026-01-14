@@ -14,6 +14,9 @@
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
 #include "Collider.h"
+#include "Line.h"            // 追加: ライン描画
+#include <memory>           // 追加: std::unique_ptr を使用
+
 enum class LRDirecion {
 	kright,
 	kLeft,
@@ -39,6 +42,7 @@ enum class WeaponType {
 	Gatling,
 	Cannon,
 };
+
 
 
 class Enemy;
@@ -314,6 +318,11 @@ private:
 	
 	AABB aabb_;
 
+	// 追加: 大砲の角度（度単位）と調整ステップ
+	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
+	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）
 
+	// ライン描画用
+	std::unique_ptr<Line> line_; // 角度表示用ライン
 
 };
