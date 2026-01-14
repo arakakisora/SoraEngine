@@ -1,7 +1,10 @@
 #pragma once
-#include "Enemy.h"
 #include "Enemy2.h"
+#include "EnemyBase.h"
+#include <functional>
+#include <unordered_map>
 
+struct Vector3;
 class MapChipField;
 /// <summary>
 /// EnemyManagerクラス
@@ -9,6 +12,7 @@ class MapChipField;
 class EnemyManager
 {
 public:
+	EnemyManager();
 	~EnemyManager();
 	/// <summary>
 	//初期化
@@ -23,19 +27,25 @@ public:
 	/// </summary>
 	void Draw();
 
-	// 新規：コライダを CollisionManager に登録する
+	//コライダを CollisionManager に登録する
 	void RegisterColliders();
 
 	//Getter
-	inline const std::list<Enemy*>& GetEnemies() const { return enemies_; }
-	inline const std::list<Enemy2*>& GetEnemies2() const { return enemies2_; }
+	inline const std::list<EnemyBase*>& GetEnemies() const { return enemies_; }
+	
 
 	void EnemyObjectUpdate();
+
+	// 敵ファクトリ登録（id -> factory）
+	using Factory = std::function<EnemyBase*(const Vector3& pos, MapChipField* map)>;
+	//登録関数
+	void RegisterFactory(int id, Factory factory);
+
 private:
 	std::vector<int> Enemynumber;
-	std::list<Enemy*> enemies_;
-	std::list<Enemy2*> enemies2_;
+	std::list<EnemyBase*> enemies_;
 	MapChipField* map_ = nullptr;
-	
+
+	std::unordered_map<int, Factory> factories_;
 };
 

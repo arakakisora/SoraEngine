@@ -52,7 +52,7 @@ void LineCommon::Update()
 {
 
 	// カメラ情報更新
-	camerabuffer->projection = CameraManager::GetInstance()->GetActiveCamera()->GetProjextionMatrix();
+	camerabuffer->projection = CameraManager::GetInstance()->GetActiveCamera()->GetProjectionMatrix();
 	camerabuffer->view = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 
 
