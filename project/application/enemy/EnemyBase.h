@@ -62,6 +62,16 @@ public:
 	int GetRayMapChipNumber(MapChipField* mapChipField);
 
 	/// <summary>
+	/// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
+	/// </summary>
+	int GetTileAheadType(MapChipField* map, int lookAheadTiles = 1);
+
+	/// <summary>
+	/// 指定タイル先が固い（壁）かどうかを返すヘルパ
+	/// </summary>
+	bool IsTileAheadSolid(MapChipField* map, int lookAheadTiles = 1);
+
+	/// <summary>
 	// Object3D解放用のメソッド
 	/// </summary>
 	void ReleaseObject3D() {
@@ -109,4 +119,6 @@ protected:
 	bool pendingRemove_ = false; // マネージャ用
 	AABB aabb_;
 	MapChipField* mapChipField_ = nullptr;
+	//death
+	float rotateY = 0.0f;
 };

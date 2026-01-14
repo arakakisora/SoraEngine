@@ -84,24 +84,20 @@ void Enemy2::Update() {
 	Vector3 position = object3D_->GetTransform().translate;
 	position += velocity_;
 
-	object3D_->SetTranslate(position);
-	// レイの先のマップチップを取得
-	int rayChipNumber = GetRayMapChipNumber(mapChipField_);
-
-
-	// レイの先にブロックがある場合、反転
-	if (rayChipNumber == 1)
-	{
-		velocity_.x *= -1.0f; // 方向を反転
+	// 移動を適用する前に「目の前のタイル」をチェックする（1 タイル先を既定）
+	if (IsTileAheadSolid(mapChipField_, 1)) {
+		// 壁がある → 進行方向を反転（移動は適用しない）
+		velocity_.x *= -1.0f;
 
 		// 回転方向も反転
 		if (velocity_.x > 0) {
-			//object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f, 0 });  // 右向き
 			rotateY = std::numbers::pi_v<float> / 2.0f;
 		} else {
-			//object3D_->SetRotate({ 0, -std::numbers::pi_v<float> / 2.0f, 0 }); // 左向き
 			rotateY = -std::numbers::pi_v<float> / 2.0f;
 		}
+	} else {
+		// 通路なら位置を確定
+		object3D_->SetTranslate(position);
 	}
 
 	// ダメージ表示タイマーの更新 （旧ロジックを残す：色戻し）

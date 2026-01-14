@@ -88,3 +88,44 @@ int EnemyBase::GetRayMapChipNumber(MapChipField* mapChipField)
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);
 }
+
+// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
+int EnemyBase::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
+{
+	// 現在位置（SetTranslate直後でも反映されるTransform位置を使用）
+	Vector3 pos = object3D_->GetTransform().translate;
+
+	// 進行方向（X軸左右移動前提）。速度優先、無ければ rotateY で決定
+	int dir = 0;
+	if (velocity_.x > 1e-6f) dir = 1;
+	else if (velocity_.x < -1e-6f) dir = -1;
+	else dir = (rotateY >= 0.0f) ? 1 : -1;
+
+	// チェックするワールド座標（エネミー前端＋タイル数分）
+	float offset = (kEnemyWidth * 0.5f) + (lookAheadTiles * 1.0f);
+	Vector3 checkPos = pos;
+	checkPos.x += dir * offset;
+
+	// マップのインデックスを取得して範囲内にクランプ
+	IndexSet idx = map->GetMapChipIndexSetByPosition(checkPos);
+	int x = static_cast<int>(idx.xIndex);
+	int y = static_cast<int>(idx.yIndex);
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+	if (x >= static_cast<int>(map->GetNumBlockHorizontal())) x = static_cast<int>(map->GetNumBlockHorizontal()) - 1;
+	if (y >= static_cast<int>(map->GetNumBlockVirtical())) y = static_cast<int>(map->GetNumBlockVirtical()) - 1;
+
+	return map->GetMapChipTypeByIndex(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+}
+
+// 指定タイル先が固い（壁）かどうかを返すヘルパ
+bool EnemyBase::IsTileAheadSolid(MapChipField* map, int lookAheadTiles /*= 1*/)
+{
+	int type = GetTileAheadType(map, lookAheadTiles);
+	// Map の仕様により「1 がブロック」な既存コードに合わせる（必要なら修正）
+	IndexSet aheadIndex = map->GetMapChipIndexSetByPosition(
+		Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth * 0.5f) + lookAheadTiles * 1.0f),
+				 object3D_->GetTransform().translate.y,
+				 object3D_->GetTransform().translate.z });
+	return map->IsSolid(aheadIndex.xIndex, aheadIndex.yIndex);
+}

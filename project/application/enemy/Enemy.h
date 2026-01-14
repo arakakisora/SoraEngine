@@ -49,7 +49,6 @@ private:
 
 	float walkTimer_ = 0.0f;
 
-	//death
-	float rotateY = 0.0f;
+	
 
 };
