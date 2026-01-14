@@ -12,6 +12,7 @@
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
 #include "LineCommon.h"
+#include "ControlGuide.h" 
 
 
 void GamePlayScene::Initialize()
@@ -20,7 +21,7 @@ void GamePlayScene::Initialize()
 	fadeManager_.StartFadeIn();
 
 	//カメラの生成	
-	camera= std::make_unique<Camera>();
+	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
 	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
@@ -99,11 +100,10 @@ void GamePlayScene::Initialize()
 
 	//ゴールの初期化
 	goal = std::make_unique<Goal>();
-	goal->Initialize(mapChipField_,player.get());
+	goal->Initialize(mapChipField_, player.get());
 
-
-
-
+	// ControlGuide の初期化
+	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
 }
 
 void GamePlayScene::Finalize()
@@ -122,13 +122,14 @@ void GamePlayScene::Finalize()
 
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("debugcam");
-	
+
 	delete mapChipField_;
-	
+
 	delete skydome_;
-	
 
-
+	// ControlGuide の破棄
+	ControlGuide::GetInstance()->Finalize();
+	ControlGuide::DestroyInstance();
 }
 
 void GamePlayScene::Update()
@@ -141,7 +142,7 @@ void GamePlayScene::Update()
 	skydome_->Update();
 	goal->Update(player->GetGoal(), 1.0f / 60.0f);
 	const float dt = 1.0f / 60.0f;
-	if (isStageStartPlaying_|| goal->GetIsEffectStarted()) {
+	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 
 		stageStartEffect_->Update(1.0f / 60.0f);
 		if (stageStartEffect_->IsFinished()) {
@@ -237,7 +238,6 @@ void GamePlayScene::Draw()
 	enemyManager_->Draw();
 
 
-
 	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
 	{
 
@@ -262,9 +262,16 @@ void GamePlayScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	ControlGuide::GetInstance()->Render();
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
 	goal->Draw2D();
+
+	if (isStageStartPlaying_) {
+
+		stageStartEffect_->Draw2D();
+	}
 }
 
 void GamePlayScene::GenerateObject3D()
@@ -386,6 +393,7 @@ void GamePlayScene::Imguidebug()
 	}
 
 #ifdef USE_IMGUI
+	ControlGuide::GetInstance()->DebugImGui();
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {

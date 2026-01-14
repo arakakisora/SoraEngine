@@ -250,6 +250,7 @@
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
     <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
+    <ClCompile Include="application\ui\ControlGuide.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -443,6 +444,7 @@
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\enemy\HitDeathComponent.h" />
     <ClInclude Include="application\enemy\EnemyDeathStage.h" />
+    <ClInclude Include="application\ui\ControlGuide.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
