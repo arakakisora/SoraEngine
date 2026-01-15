@@ -11,10 +11,7 @@
 
 Enemy2::~Enemy2()
 {
-	if (object3D_) {
-		delete object3D_;
-		object3D_ = nullptr;
-	}
+
 }
 
 void Enemy2::Initialize() {
@@ -22,14 +19,15 @@ void Enemy2::Initialize() {
 
 	//Enemy
 			// Object3Dの生成と初期化
-	object3D_ = new Object3D();
+	object3D_ = std::make_unique<Object3D>();;
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("enemy.obj");
 
 	//エネミーの初期位置
 	object3D_->SetTranslate(position_);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-	object3D_->SetScale({ 3.0f,3.0f,3.0f });
+	scale = 3.0f;
+	object3D_->SetScale({ scale,scale,scale });
 	object3D_->SetLighting(false);
 	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
 	walkTimer_ = 0.0f;
@@ -38,14 +36,17 @@ void Enemy2::Initialize() {
 
 	//deatheffect
 	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
-	deatheEffect = new ParticleEmitter(effectPosition_, 1.0f, 1.0f, 100, "enemydeath");
+	lifeTime = 1.0f;//パーティクルの寿命
+	currentTime = 1.0f;//現在の時間
+	maxParticles = 100;//最大パーティクル数
+	deatheEffect= std::make_unique< ParticleEmitter>(effectPosition_, lifeTime, currentTime, maxParticles, "enemydeath");
 
 	// Hit/Death コンポーネント初期化（初期HP = 3）
 	int HP = 10;
-	hitDeath_.Initialize(object3D_, HP, deatheEffect);
+	hitDeath_.Initialize(object3D_.get(), HP, deatheEffect.get());
 
 	aabb_ = GetEnemyAABB();
-	line = std::make_unique<Line>();
+	
 }
 
 void Enemy2::Update() {
@@ -55,7 +56,7 @@ void Enemy2::Update() {
 	const float dt = 1.0f / 60.0f;
 
 	// HitDeathComponent の更新を先に行う
-	hitDeath_.Update(object3D_, dt);
+	hitDeath_.Update(object3D_.get(), dt);
 
 	// 死亡状態なら通常の動作はスキップして演出のみ表示する
 	if (hitDeath_.IsDead()) {

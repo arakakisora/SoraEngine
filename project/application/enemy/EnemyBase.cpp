@@ -9,19 +9,19 @@ void EnemyBase::OnCollision(Collider* other)
 	if (other->GetLayer() == Layer::PlayerBullet) {
 		//PlayerBullet* hitBullet = static_cast<PlayerBullet*>(other);
 		// 赤くしてノックバックを渡す
-		object3D_->SetColor({ 1, 0, 0, 1 });
+		object3D_->SetColor(kDamageColor);
 		damageTimer_ = kDamageDisplayTime;
 
 	
 		// カメラに映る程度の動きに抑えるため控えめな値にする
-		const float horizontalKnock = 1.0f; // 水平方向速度 (units/sec) - 調整可
-		const float verticalKnock = 3.0f;   // 上方向初速度 (units/sec) - 調整可
+		const float horizontalKnock = kHorizontalKnock; // 水平方向速度 (units/sec)
+		const float verticalKnock = kVerticalKnock;   // 上方向初速度 (units/sec)
 		float dir = (velocity_.x > 0.0f) ? -1.0f : 1.0f; // 移動方向の逆（後方へ飛ばす）
 		Vector3 knock = { dir * horizontalKnock, verticalKnock, 0.0f };
 
 		// 内部モーションを使うようにしてノックバックを渡す
 		hitDeath_.SetUseExternalDeathMotion(false);
-		int hitPower = 1;
+		int hitPower = kDefaultHitPower;
 		hitDeath_.OnHit(hitPower, knock);
 		// コンポーネント側で isDead_ を立てるので Update の次回で演出が始まる
 	}
@@ -32,9 +32,9 @@ Vector3 EnemyBase::GetWorldPosition() {
 
 	Vector3 worldPos;
 	/// ワールド座標を取得
-	worldPos.x = object3D_->GetWorldMatrix().m[3][0];;
-	worldPos.y = object3D_->GetWorldMatrix().m[3][1];;
-	worldPos.z = object3D_->GetWorldMatrix().m[3][2];;
+	worldPos.x = object3D_->GetWorldMatrix().m[3][0];
+	worldPos.y = object3D_->GetWorldMatrix().m[3][1];
+	worldPos.z = object3D_->GetWorldMatrix().m[3][2];
 	return worldPos;
 }
 
@@ -56,12 +56,12 @@ Vector3 EnemyBase::GetRayEndPosition()
 	// エネミーの現在位置
 	Vector3 currentPosition = GetWorldPosition();
 
-	// レイの長さ（3）
-	float rayLength = 3.0f;
+	// レイの長さ
+	const float rayLength = kRayLength;
 
 	// 移動方向を正規化してレイの終点を計算
 	Vector3 normalizedVelocity = velocity_;
-	if (normalizedVelocity.Length() > 0) {
+	if (normalizedVelocity.Length() > 0.0f) {
 		normalizedVelocity.Normalize();  // 速度を正規化
 	}
 
@@ -97,12 +97,12 @@ int EnemyBase::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
 
 	// 進行方向（X軸左右移動前提）。速度優先、無ければ rotateY で決定
 	int dir = 0;
-	if (velocity_.x > 1e-6f) dir = 1;
-	else if (velocity_.x < -1e-6f) dir = -1;
+	if (velocity_.x > kVelocityEpsilon) dir = 1;
+	else if (velocity_.x < -kVelocityEpsilon) dir = -1;
 	else dir = (rotateY >= 0.0f) ? 1 : -1;
 
 	// チェックするワールド座標（エネミー前端＋タイル数分）
-	float offset = (kEnemyWidth * 0.5f) + (lookAheadTiles * 1.0f);
+	float offset = (kEnemyWidth * 0.5f) + (lookAheadTiles * map->GetBlockWidth());
 	Vector3 checkPos = pos;
 	checkPos.x += dir * offset;
 
@@ -124,7 +124,7 @@ bool EnemyBase::IsTileAheadSolid(MapChipField* map, int lookAheadTiles /*= 1*/)
 	int type = GetTileAheadType(map, lookAheadTiles);
 	// Map の仕様により「1 がブロック」な既存コードに合わせる（必要なら修正）
 	IndexSet aheadIndex = map->GetMapChipIndexSetByPosition(
-		Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth * 0.5f) + lookAheadTiles * 1.0f),
+		Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth * 0.5f) + lookAheadTiles * map->GetBlockWidth()),
 				 object3D_->GetTransform().translate.y,
 				 object3D_->GetTransform().translate.z });
 	return map->IsSolid(aheadIndex.xIndex, aheadIndex.yIndex);

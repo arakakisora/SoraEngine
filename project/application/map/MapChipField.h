@@ -84,15 +84,19 @@ public:
 	/// <returns>ゴールの座標を返す</returns>
 	Vector3 GetGoalPosition();
 
-	bool IsSolid(uint32_t xIndex,uint32_t yIndex);
+	bool IsSolid(uint32_t xIndex, uint32_t yIndex);
 
 	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
 
-	
+
 	int GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const;
 	void DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage);
 	void DamageMapChipByPosition(const Vector3& position, int damage);
 
+	// 1ブロックの幅と高さを取得
+	float GetBlockWidth() const { return kBlockWidth; }
+	// 1ブロックの高さを取得
+	float GetBlockHeight() const { return kBlockHeight; }
 
 private:
 	// 1ブロックのサイズ
@@ -105,7 +109,7 @@ private:
 
 	std::vector<int> Enemynumber;
 
-	
+
 	std::vector<std::vector<int>> hpData_;
 
 };

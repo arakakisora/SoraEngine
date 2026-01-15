@@ -8,9 +8,10 @@
 #include <MapChipField.h>
 #include "ParticleEmitter.h"
 
-
+#include <stdlib.h>
 #include "EnemyBase.h"
-
+#include "MyMath.h"
+#include <cstdint>
 
 class Player;
 class PlayerBullet;
@@ -49,6 +50,13 @@ private:
 	static inline const float kWalkMotionAngleEnd = 0.5f;//最後の角度
 	static inline const float kWalkMotionTime = 0.1f;//アニメーションの時間
 
-	float walkTimer_ = 0.0f;
+	float walkTimer_ = 0.0f;//歩行時間
 
+	float rotateY = 0.0f;//回転角度
+	float scale = 0.0f;//スケール
+
+	//パアーティクルパラメータ
+	float lifeTime = 1.0f;
+	float currentTime = 1.0f;
+	uint32_t maxParticles = 100;
 };

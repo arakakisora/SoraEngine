@@ -75,8 +75,7 @@ public:
 	// Object3D解放用のメソッド
 	/// </summary>
 	void ReleaseObject3D() {
-		delete object3D_;
-		object3D_ = nullptr;
+		object3D_.reset();
 	}
 
 	/// <summary>
@@ -97,11 +96,11 @@ public:
 		mapChipField_ = mapChipField;
 	}
 
-	Object3D* GetObject3D() { return object3D_; }
+	Object3D* GetObject3D() { return object3D_.get(); }
 	
 
 protected:
-	Object3D* object3D_ = nullptr;
+	std::unique_ptr<Object3D> object3D_ = nullptr;
 	Vector3 position_;
 	Vector3 velocity_;
 	bool isDead_ = false;
@@ -113,7 +112,7 @@ protected:
 	float damageTimer_ = 0.0f;
 	static inline const float kDamageDisplayTime = 0.2f; // 赤くなる時間（秒）
 	//撃破effect
-	ParticleEmitter* deatheEffect = nullptr; // パーティクルエミッター
+	std::unique_ptr< ParticleEmitter> deatheEffect = nullptr; // パーティクルエミッター
 	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f } };
 	HitDeathComponent hitDeath_;
 	bool pendingRemove_ = false; // マネージャ用
@@ -121,4 +120,11 @@ protected:
 	MapChipField* mapChipField_ = nullptr;
 	//death
 	float rotateY = 0.0f;
+
+	static inline constexpr float kHorizontalKnock = 1.0f;   // 被弾時の水平方向ノックバック速度 (units/sec)
+	static inline constexpr float kVerticalKnock = 3.0f;     // 被弾時の上方向初速度 (units/sec)
+	static inline constexpr int   kDefaultHitPower = 1;      // 被弾時のダメージ量（暫定）
+	static inline constexpr float kRayLength = 3.0f;         // 前方レイの長さ
+	static inline constexpr float kVelocityEpsilon = 1e-6f;  // 速度比較の閾値
+	static inline const    Vector4  kDamageColor = {1.0f, 0.0f, 0.0f, 1.0f}; // 被弾表示色
 };

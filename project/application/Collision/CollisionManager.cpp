@@ -5,25 +5,26 @@
 #include "MyMath.h"
 #include <assert.h>
 
-CollisionManager* CollisionManager::instance_ = nullptr;
+// 修正: std::unique_ptr に合わせて定義
+std::unique_ptr<CollisionManager> CollisionManager::instance_ = nullptr;
 
 CollisionManager* CollisionManager::GetInstance()
 {
-	if (instance_ == nullptr) {
-		instance_ = new CollisionManager();
+	if (!instance_) {
+		instance_ = std::make_unique<CollisionManager>();
 	}
-	return instance_;
+	return instance_.get();
 }
 
 void CollisionManager::Finalize()
 {
-	delete instance_;
-	instance_ = nullptr;
+	instance_.reset();
 }
 
 void CollisionManager::AddCollider(Collider* collider)
 {
     colliders_.push_back(collider);
+    
 }
 
 void CollisionManager::Update()
@@ -38,7 +39,7 @@ void CollisionManager::Update()
             if (!a->IsCollisionEnabled() || !b->IsCollisionEnabled()) {
                 continue;
             }
-
+			// レイヤー同士で当たり判定を取るべきか
             if (!CanCollide(a->GetLayer(), b->GetLayer())) {
                 continue;
             }
@@ -74,5 +75,6 @@ bool CollisionManager::CanCollide(Collider::Layer a, Collider::Layer b) const
 }
 
 void CollisionManager::Clear() {
+    
 	colliders_.clear();
 }

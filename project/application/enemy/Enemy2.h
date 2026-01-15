@@ -42,7 +42,6 @@ public:
 
 private:
 
-
 	static inline const float kWalkSpeed = 0.01f; // 歩行の速さ
 
 	//敵のアニメーション
@@ -50,9 +49,14 @@ private:
 	static inline const float kWalkMotionAngleEnd = 0.5f;//最後の角度
 	static inline const float kWalkMotionTime = 0.1f;//アニメーションの時間
 
-	float walkTimer_ = 0.0f;
+	float walkTimer_ = 0.0f;//歩行時間
 
-	//death
-	float rotateY = 0.0f;
+	float rotateY = 0.0f;//回転角度
+	float scale = 0.0f;//スケール
+
+	//パアーティクルパラメータ
+	float lifeTime = 1.0f;
+	float currentTime = 1.0f;
+	uint32_t maxParticles = 100;
 
 };
