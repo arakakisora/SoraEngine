@@ -2,36 +2,26 @@
 #include "TextureManager.h"
 #include "MapChipField.h" // 追加
 
-PlayerBullet::~PlayerBullet()
-{
-	if (object3D_) {
-		delete object3D_;
-		object3D_ = nullptr;
-	}
-
-}
 
 AABB PlayerBullet::GetBulletAABB()
 {
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;
-	aabb.min = { worldPos.x - 0.1f, worldPos.y - 0.1f, worldPos.z - 0.1f };
-	aabb.max = { worldPos.x + 0.1f, worldPos.y + 0.1f, worldPos.z + 0.1f };
+	aabb.min = { worldPos.x - kAABBHalf, worldPos.y - kAABBHalf, worldPos.z - kAABBHalf };
+	aabb.max = { worldPos.x + kAABBHalf, worldPos.y + kAABBHalf, worldPos.z + kAABBHalf };
 	return aabb;
 }
 
-void PlayerBullet::Initialize(Object3D* obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField) {
+void PlayerBullet::Initialize(std::unique_ptr<Object3D> obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField) {
 
-	// ポインタ参照
-	object3D_ = obj;
+	// 所有権を受け取る
+	object3D_ = std::move(obj);
 
 	Vector3 pos = potition;
 	pos.y += 0.5f;
 
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(pos);
-	
-
 
 	// 速度
 	velocity_ = velocity;
@@ -86,8 +76,6 @@ void PlayerBullet::OnCollision(Collider* other)
 
 }
 
-//void PlayerBullet::OnCollison() { }
-
 Vector3 PlayerBullet::GetWorldPosition() {
 	Vector3 worldPos;
 
@@ -97,27 +85,19 @@ Vector3 PlayerBullet::GetWorldPosition() {
 	return worldPos;
 }
 
-//AABB PlayerBullet::GetAABB()
-//{
-//	
-//}
-
 Vector3 PlayerBullet::GetRayEndPosition() {
 
 	// 弾の現在位置
 	Vector3 currentPosition = GetWorldPosition();
 
-	// レイの長さ
-	float rayLength = 0.5f; // 弾が進む小さい距離でチェック
-
 	// 移動方向を正規化
 	Vector3 normalizedVelocity = velocity_;
 	if (normalizedVelocity.Length() > 0) {
-		normalizedVelocity.Normalize();
+		normalizedVelocity = normalizedVelocity.Normalize();
 	}
 
 	// レイの終点を計算
-	Vector3 rayEnd = currentPosition + normalizedVelocity * rayLength;
+	Vector3 rayEnd = currentPosition + normalizedVelocity * kRayLength;
 	return rayEnd;
 }
 

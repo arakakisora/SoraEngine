@@ -43,8 +43,6 @@ enum class WeaponType {
 	Cannon,
 };
 
-
-
 class Enemy;
 class MapChipField;
 /// <summary>
@@ -74,8 +72,8 @@ public:
 	}
 	AABB GetPlayerAABB();
 
-	~Player();
-	
+	~Player() = default; // unique_ptr により自動解放
+
 	/// <summary>
 	// 初期化
 	/// </summary>
@@ -192,8 +190,6 @@ public:
 	/// </summary>
 	Vector3 GetWorldPosition();
 
-	
-
 	/// <summary>
 	// 死亡しているかどうかを取得
 	/// </summary>
@@ -217,12 +213,12 @@ public:
 	/// 現在の武器タイプを取得します
 	/// </summary>
 	/// <returns> </returns>
-	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
 
 	/// <summary>
-	/// Object3Dを取得します
+	/// Object3Dを取得します（所有は Player） 
 	/// </summary>
-	Object3D* GetObject3D() const { return object3D_; }
+	Object3D* GetObject3D() const { return object3D_.get(); }
 
 	/// <summary>
 	/// 右移動フラグを取得します
@@ -259,19 +255,21 @@ public:
 	void RegisterColliders();
 private:
 	
-	//objec3D
-	Object3D *object3D_=nullptr;
+	// 所有する Object3D を unique_ptr に変更（new/delete を消す）
+	std::unique_ptr<Object3D> object3D_;
 	Vector3 playerposition_ = {};
 
-	//バレットオブジェクト
-	Object3D* object3DBullet_ = nullptr;
-	
+	// 弾は PlayerBullet が Object3D を所有するよう変更
 	
 	
 	Vector3 velocity_ = {};                          // 速度
 	static inline const float kAccleration = 0.01f;  // 定数加速度
 	static inline const float kAttenuation = 0.2f;   // 速度減衰率
 	static inline const float kLimitRunSpeed = 1.0f; // 最大速度制限
+
+	// 数学的定数
+	static inline constexpr float kPi = std::numbers::pi_v<float>;
+
 	// 振り向き
 	LRDirecion lrDirection_ = LRDirecion::kright;
 	float turnFirstRotationY_ = 0.0f;           // 現在の向き
@@ -286,7 +284,7 @@ private:
 	MapChipField* mapChipFild_ = nullptr;
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
-	static inline const float kBlank = 1.0;
+	static inline const float kBlank = 1.0f;
 	static inline const float kAttenuationLanding =0.5f;
 	static inline const float kCollisionsmallnumber = 0.1f;
 	static inline const float kAttenuationWall = 0.1f;
@@ -299,7 +297,7 @@ private:
 
 	//弾
 	WeaponType currentWeaponType_ = WeaponType::Gatling; // 現在の武器タイプ
-	std::list<PlayerBullet* > bullets_;
+	std::list<std::unique_ptr<PlayerBullet>> bullets_;
 	int32_t fireTimer = 0;
 
 	// プレイヤー移動フラグ

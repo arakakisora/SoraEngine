@@ -18,10 +18,9 @@
 
 void Player::Initialize(const Vector3& position) {
 
-
-
+	// 初期配置と Object3D の作成（unique_ptr 所有）
 	playerposition_ = position;
-	object3D_ = new Object3D();
+	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player.obj");
 	object3D_->SetScale(Vector3{ 0.25f,0.25f,0.25f });
@@ -32,7 +31,6 @@ void Player::Initialize(const Vector3& position) {
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-
 
 	ParticleMnager::GetInstance()->CreateParticleGroup(
 		"dash_smoke",
@@ -45,7 +43,6 @@ void Player::Initialize(const Vector3& position) {
 
 }
 
-
 AABB Player::GetPlayerAABB()
 {
 	Vector3 worldPos = GetWorldPosition();
@@ -56,18 +53,6 @@ AABB Player::GetPlayerAABB()
 	return aabb;
 
 }
-
-Player::~Player()
-{
-	// プレイヤーの弾を削除
-	for (PlayerBullet* bullet : bullets_) {
-
-		delete bullet;
-	}
-
-	delete object3D_;
-}
-
 
 void Player::Update() {
 
@@ -97,10 +82,7 @@ void Player::Update() {
 
 	PrayerMove();
 
-
-	
 	aabb_ = GetPlayerAABB();
-
 
 	if (Input::GetInstance()->TriggerKey(DIK_1)) {
 		currentWeaponType_ = WeaponType::Gatling;
@@ -114,33 +96,19 @@ void Player::Update() {
 
 	Attack();
 
-	for (PlayerBullet* bullet : bullets_) {
-
-		bullet->Update();
-
+	for (auto& bullet : bullets_) {
+		if (bullet) bullet->Update();
 	}
 
-	//bulletデス
-	bullets_.remove_if([](PlayerBullet* bullet) {
-		if (bullet->GetIsDead()) {
-			delete bullet;
-
-			return true;
-
-		}
-		return false;
+	// 弾削除: unique_ptr を使うので delete は不要
+	bullets_.remove_if([](const std::unique_ptr<PlayerBullet>& bullet) {
+		return bullet->GetIsDead();
 		});
-
-
-
-
-
 
 	// 衝突判定を初期化
 	CollisionMapInfo collisionMapInfo;
 	// 移動量に速度の値をコピー
 	collisionMapInfo.move = velocity_;
-
 
 	// マップ衝突チェック
 	MapCollision(collisionMapInfo);
@@ -157,8 +125,6 @@ void Player::Update() {
 	if (object3D_->GetTransform().translate.y < deathHeight_) {
 		isDead_ = true;
 	}
-
-
 
 	// 上キーで仰角を増やし、下キーで仰角を減らす。連続入力に対応。
 	if (Input::GetInstance()->PushKey(DIK_UP)) {
@@ -201,7 +167,7 @@ void Player::Update() {
 	Vector4 color = { 0.0f, 0.0f, 1.0f, 1.0f };
 
 	// メインライン
-	line_->Draw(start, end, color);
+	if (line_) line_->Draw(start, end, color);
 
 	// 矢印の頭を描画（小さな左右の線）
 	Vector3 up = { 0.0f, 1.0f, 0.0f };
@@ -211,21 +177,19 @@ void Player::Update() {
 	Vector3 arrowBase = end - dirNorm * 0.2f;
 	Vector3 arrow1 = arrowBase + right * 0.12f;
 	Vector3 arrow2 = arrowBase - right * 0.12f;
-	line_->Draw(end, arrow1, color);
-	line_->Draw(end, arrow2, color);
+	if (line_) {
+		line_->Draw(end, arrow1, color);
+		line_->Draw(end, arrow2, color);
+	}
 
 }
 
 void Player::Draw() {
-	object3D_->Draw();
+	if (object3D_) object3D_->Draw();
 
-
-	for (PlayerBullet* bullet : bullets_) {
-		bullet->Draw();
+	for (auto& bullet : bullets_) {
+		if (bullet) bullet->Draw();
 	}
-
-
-
 }
 
 void Player::PrayerMove() {
@@ -317,9 +281,6 @@ void Player::PrayerTurn() {
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 		// 自キャラの角度を設定する
 		object3D_->SetRotate({ 0,destinationRotationY * EaseOutSine(turnTimer_) ,0 });
-	
-
-
 	}
 }
 
@@ -639,26 +600,13 @@ Vector3 Player::GetWorldPosition() {
 	worldPos.z = object3D_->GetWorldMatrix().m[3][2];;
 	return worldPos;
 }
-//
-//AABB Player::GetAABB() {
-//	Vector3 worldPos = GetWorldPosition();
-//	AABB aabb;
-//	aabb.min = { worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f };
-//	aabb.max = { worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f };
-//
-//	return aabb;
-//}
-
-
-
-
 
 void Player::Attack()
 {
 
 	if (turnTimer_ > 0.0f) return;
 
-	// 武器ごとの設定
+	// 武器ごとの設定（マジックナンバーはローカル定数に）
 	int32_t kFireInterval = 0;
 	int damage = 1;
 
@@ -666,15 +614,15 @@ void Player::Attack()
 	case WeaponType::Gatling:
 		kFireInterval = 10; // 高速連射
 		damage = 1;
-		for (PlayerBullet* bullet : bullets_) {
-			bullet->Getobject3DBullet_()->SetScale(Vector3{ 0.4f,0.4f,0.4f });
+		for (auto& bullet : bullets_) {
+			if (bullet && bullet->Getobject3DBullet_()) bullet->Getobject3DBullet_()->SetScale(Vector3{ 0.4f,0.4f,0.4f });
 		}
 		break;
 	case WeaponType::Cannon:
 		kFireInterval = 60; // リロード長い
 		damage = 3;
-		for (PlayerBullet* bullet : bullets_) {
-			bullet->Getobject3DBullet_()->SetScale(Vector3{ 1.5f,1.5f,1.5f });
+		for (auto& bullet : bullets_) {
+			if (bullet && bullet->Getobject3DBullet_()) bullet->Getobject3DBullet_()->SetScale(Vector3{ 1.5f,1.5f,1.5f });
 		}
 		break;
 	}
@@ -695,7 +643,7 @@ void Player::Attack()
 
 		fireTimer = kFireInterval;
 
-		// 弾の速度
+		// 弾の速度（定数化）
 		const float kBulletSpeed = 1.0f;
 
 		Vector3 localVelocity(0, 0, kBulletSpeed);
@@ -709,27 +657,23 @@ void Player::Attack()
 		// ローカル→ワールド変換
 		Vector3 velocity = MyMath::TransformNormal(localVelocity, object3D_->GetWorldMatrix());
 
-		object3DBullet_ = new Object3D();
-		object3DBullet_->Initialize(Object3DCommon::GetInstance());
-		object3DBullet_->SetModel("bullet.obj");
-		object3DBullet_->SetScale({ 0.4f,0.4f,0.4f });
+		// Object3D を弾用に作成し所有権を渡す
+		auto obj = std::make_unique<Object3D>();
+		obj->Initialize(Object3DCommon::GetInstance());
+		obj->SetModel("bullet.obj");
+		obj->SetScale({ 0.4f,0.4f,0.4f });
 
-
-
-		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(object3DBullet_, GetWorldPosition(), velocity, mapChipFild_);
+		// PlayerBullet を unique_ptr で作成し、Object3D の所有権を移す
+		auto newBullet = std::make_unique<PlayerBullet>();
+		newBullet->Initialize(std::move(obj), GetWorldPosition(), velocity, mapChipFild_);
 		newBullet->SetPower(damage);
 
 		// 正しく一度だけインスタンスを取得して登録する
 		auto* cm = CollisionManager::GetInstance();
-		cm->AddCollider(newBullet);
+		cm->AddCollider(newBullet.get());
 
-		bullets_.push_back(newBullet);
-
-
+		bullets_.push_back(std::move(newBullet));
 	}
-
-
 }
 
 void Player::PlayerParticle()
@@ -766,8 +710,6 @@ void Player::PlayerParticle()
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
-
-
 }
 
 float Player::EaseOutSine(float x) { return cosf((x * std::numbers::pi_v<float>) / 2); }
@@ -778,7 +720,7 @@ void Player::RegisterColliders()
 	// 自身を登録
 	cm->AddCollider(this);
 	// 弾をすべて登録
-	for (PlayerBullet* b : bullets_) {
-		if (b) cm->AddCollider(b);
+	for (auto& b : bullets_) {
+		if (b) cm->AddCollider(b.get());
 	}
 }
