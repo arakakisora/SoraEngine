@@ -30,6 +30,7 @@
 #include "StageStartEffect.h"
 #include "StageEndEffect.h"
 #include "GameOverEffect.h"
+#include "GenerateBlock.h"
 
 /// <summary>
 /// ゲームプレイシーン
@@ -55,20 +56,6 @@ public:
 	/// シーンの描画
 	/// </summary>
 	void Draw()override;
-
-
-	/// ブロックの生成
-
-	/// <summary>
-	/// マップのブロックを配置します
-	/// </summary>
-	void GenerateObject3D();
-
-	void SyncBlockObjectsWithMap();
-	
-
-	////当たり判定のまとまり
-	//void CheckAllCollisions();
 
 	/// <summary>
 	/// デバッグ用ImGui
@@ -98,8 +85,7 @@ public:
 	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//mapchip
-	//ブロック
-	std::vector<std::vector<Object3D*>> blockobject3D;
+	
 	MapChipField* mapChipField_;
 	/*MapChipDatabase mapChipDatabase_;*/
 
@@ -110,9 +96,8 @@ public:
 	// SkyDome
 	Object3D* skydome_ = nullptr;
 
-	
-
-
+	//ブロック生成
+	GenerateBlock generateBlock_;
 	StageEditor editor;
 
 	FadeManager fadeManager_;

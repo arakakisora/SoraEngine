@@ -251,6 +251,7 @@
     <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
     <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
     <ClCompile Include="application\ui\ControlGuide.cpp" />
+    <ClCompile Include="GenerateBlock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -445,6 +446,7 @@
     <ClInclude Include="application\enemy\HitDeathComponent.h" />
     <ClInclude Include="application\enemy\EnemyDeathStage.h" />
     <ClInclude Include="application\ui\ControlGuide.h" />
+    <ClInclude Include="GenerateBlock.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

@@ -149,6 +149,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\fade\FadeManager.cpp" />
     <ClCompile Include="application\gaol\Goal.cpp" />
     <ClCompile Include="application\particle\GameOverEffect.cpp" />
+    <ClCompile Include="GenerateBlock.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -361,6 +362,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\map\MapChipDatabase.h" />
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\particle\StageStartEffect.h" />
+    <ClInclude Include="GenerateBlock.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

@@ -41,7 +41,9 @@ void GamePlayScene::Initialize()
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
-	GenerateObject3D();
+	// ブロック生成
+	generateBlock_.Initialize(mapChipField_);
+	generateBlock_.GenerateObject3D();
 
 	// --- プレイヤースポーン位置をマップから取得する ---
 	Vector3 playerPostion = {};
@@ -75,11 +77,6 @@ void GamePlayScene::Initialize()
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->Initialize(mapChipField_);
 
-
-
-
-
-
 	//3Dオブジェクトの初期化
 	object3D2nd = std::make_unique<Object3D>();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
@@ -108,17 +105,6 @@ void GamePlayScene::Initialize()
 
 void GamePlayScene::Finalize()
 {
-
-	//object3Dの解放
-
-	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
-	{
-		for (Object3D* obj : objext3dLine)
-		{
-			delete obj;
-		}
-	}
-	blockobject3D.clear();
 
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("debugcam");
@@ -174,7 +160,7 @@ void GamePlayScene::Update()
 
 		// 衝突判定実行
 		CollisionManager::GetInstance()->Update();
-		SyncBlockObjectsWithMap();
+		generateBlock_.SyncBlockObjectsWithMap();
 	}
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
@@ -189,21 +175,7 @@ void GamePlayScene::Update()
 	}
 
 
-	//エネミーの更新
-
-
-
-
-	//3Dオブジェクトの更新
-	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
-	{
-		for (Object3D* obj : objext3dLine)
-		{
-			if (!obj)
-				continue;
-			obj->Update();
-		}
-	}
+	generateBlock_.Update();
 
 
 
@@ -237,19 +209,7 @@ void GamePlayScene::Draw()
 	//エネミーの描画o 
 	enemyManager_->Draw();
 
-
-	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
-	{
-
-		for (Object3D* obj : objext3dLine)
-		{
-			if (!obj) {
-				continue;
-			}
-			obj->Draw();
-		}
-
-	}
+	generateBlock_.Draw();
 
 
 
@@ -274,78 +234,6 @@ void GamePlayScene::Draw()
 	}
 }
 
-void GamePlayScene::GenerateObject3D()
-{
-	if (!mapChipField_) return;
-
-	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();
-	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal();
-
-	// 既存のオブジェクトを全部削除して配列を初期化（安全策）
-	for (auto& row : blockobject3D) {
-		for (Object3D* obj : row) {
-			delete obj;
-		}
-	}
-	blockobject3D.clear();
-
-	blockobject3D.resize(numBlokVirtical);
-	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
-		blockobject3D[i].assign(numBlokHorizontal, nullptr);
-	}
-
-	// 実際の作成は Sync に任せる（初回はここで生成される）
-	SyncBlockObjectsWithMap();
-}
-
-void GamePlayScene::SyncBlockObjectsWithMap()
-{
-	if (!mapChipField_) return;
-
-	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();
-	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal();
-
-	// 配列サイズが一致している前提
-	for (uint32_t y = 0; y < numBlokVirtical; ++y) {
-		for (uint32_t x = 0; x < numBlokHorizontal; ++x) {
-
-			int type = mapChipField_->GetMapChipTypeByIndex(x, y);
-			Object3D* obj = nullptr;
-			if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
-				obj = blockobject3D[y][x];
-			}
-
-			// タイプ 1 はブロック（必要に応じ他のIDも対応）
-			if (type == 1) {
-				// ブロックが存在すべきだがオブジェクトが無ければ作る
-				if (!obj) {
-					Object3D* newObj = new Object3D();
-					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("blokc.obj");
-					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
-					newObj->SetLighting(true);
-					newObj->SetDirectionalLightEnable(true);
-					newObj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-
-					// 保持配列へ格納
-					if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
-						blockobject3D[y][x] = newObj;
-					}
-				}
-			} else {
-				// ブロックが消えているのにオブジェクトが残っていれば削除
-				if (obj) {
-					delete obj;
-					blockobject3D[y][x] = nullptr;
-				}
-			}
-		}
-	}
-}
-
-
-
-
 void GamePlayScene::Imguidebug()
 {
 	//マップ作製エディタ
@@ -361,16 +249,9 @@ void GamePlayScene::Imguidebug()
 		mapChipField_->LoadMapChipCsv(filePath);
 
 		mapChipField_->LoadMapChipCsv(filePath);
-		// 既存のオブジェクト削除
-		for (auto& row : blockobject3D) {
-			for (auto& obj : row) {
-				delete obj;
-			}
-		}
-		blockobject3D.clear();
-
+		
 		// 再生成
-		GenerateObject3D();
+		generateBlock_.GenerateObject3D();
 
 
 		enemyManager_.reset();
