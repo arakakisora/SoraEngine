@@ -194,7 +194,7 @@ void TitleScene::Update() {
 		fadeManager_.StartFadeOut();
 	}
 	if (fadeManager_.IsFadeOutFinished()) {
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 	ImguiDraw();
 }

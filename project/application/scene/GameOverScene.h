@@ -31,5 +31,7 @@ public:
 	//fade
 	FadeManager fadeManager_;
 
+	Camera* camera = nullptr;
+
 };
 

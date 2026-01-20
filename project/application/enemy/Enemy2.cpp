@@ -26,7 +26,7 @@ void Enemy2::Initialize() {
 	//エネミーの初期位置
 	object3D_->SetTranslate(position_);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-	scale = 3.0f;
+	scale = 1.0f;
 	object3D_->SetScale({ scale,scale,scale });
 	object3D_->SetLighting(false);
 	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度

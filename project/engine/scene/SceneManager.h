@@ -21,9 +21,14 @@ public:
 	//sceneFactoryの設定
 	void SetSceneFactory(AbstractSceneFactory* sceneFactoryValue) { this->sceneFactory = sceneFactoryValue; }
 
-	void ChangeScene(const std::string &sceneName);
 	
+	//ステージindexセッター
+	void SetStageIndex(int index) { stageIndex_ = index; }
 
+	void ChangeScene(const std::string& sceneName);
+
+	//ステージindexゲッター
+	int GetStageIndex()const { return stageIndex_; }
 private:
 
 	SceneManager() = default;
@@ -38,6 +43,7 @@ private:
 	BaseScene* currentScene = nullptr;
 	BaseScene* nextScene = nullptr;
 	AbstractSceneFactory* sceneFactory = nullptr;
+	int stageIndex_ = 0;
 
 };
 

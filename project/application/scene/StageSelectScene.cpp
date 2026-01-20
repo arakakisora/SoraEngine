@@ -1,0 +1,232 @@
+#include "StageSelectScene.h"
+#include "Object3DCommon.h"
+#include "SpriteCommon.h"
+#include "Input.h"
+#include "SceneManager.h"
+#include "ImGuiManager.h"
+#include <imgui.h>
+#include <CameraManager.h>
+#include <ModelManager.h>
+
+
+void StageSelectScene::Initialize()
+{
+	CameraManager::GetInstance()->RemoveCamera("maincam");
+	CameraManager::GetInstance()->Finalize();
+	//カメラの生成
+	camera1 = std::make_unique<Camera>();
+	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
+	CameraManager::GetInstance()->AddCamera("maincam", camera1.get());
+
+
+
+	// デフォルトカメラを設定
+	CameraManager::GetInstance()->SetActiveCamera("maincam");
+
+	// ステージのインデックスを取得
+	int stageIndex = SceneManager::GetInstance()->GetStageIndex();
+	currentIndex_ = stageIndex;	// 現在のステージを設定	 (ステージ1)
+
+	ModelManager::GetInstans()->LoadModel("plane.obj");
+
+	//背景
+	//ModelManager::GetInstans()->LoadModel("back.obj");
+	ModelManager::GetInstans()->LoadModel("stage1.obj");
+	ModelManager::GetInstans()->LoadModel("stage2.obj");
+	ModelManager::GetInstans()->LoadModel("stage3.obj");
+
+	ModelManager::GetInstans()->LoadModel("player.obj");
+	playerobj = std::make_unique<Object3D>();
+	playerobj->Initialize(Object3DCommon::GetInstance());
+	playerobj->SetModel("player.obj");
+	playerobj->SetScale({ 0.25f,0.25f,0.25f });
+
+
+	std::vector<std::string> stageModels = {
+	"stage1.obj",
+	"stage2.obj",
+	"stage3.obj"
+	// 必要ならさらに追加
+	};
+
+	for (int i = 0; i < MaxSelectIndex_; i++) {
+		StageObject stage;
+		stage.object = std::make_unique<Object3D>();
+		stage.object->Initialize(Object3DCommon::GetInstance());
+		stage.object->SetRotate(Vector3(0.0f, 3.1f, 0.0f));
+
+		// iに応じてモデルを選択
+		if (i < stageModels.size()) {
+			stage.object->SetModel(stageModels[i]);
+		} else {
+			// モデルが足りない場合はデフォルトを入れる
+			stage.object->SetModel("stage1.obj");
+		}
+		stage.object->SetEnableLighting(true);
+
+
+
+		stage.basePos = { (float)i * inrerval_, 0.0f, 0.0f }; // x方向に間隔をあけて配置
+		stages_.push_back(std::move(stage));
+	}
+
+	// フェードインの初期化
+	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.StartFadeIn();
+
+}
+
+void StageSelectScene::Finalize()
+{
+	CameraManager::GetInstance()->RemoveCamera("maincam");
+	CameraManager::GetInstance()->Finalize();
+
+}
+
+void StageSelectScene::Update()
+{
+	//カメラの更新
+
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
+	// フェード更新
+	fadeManager_.Update();
+
+	float targetOffset = -(float)currentIndex_ * inrerval_; // 中央に来るようにオフセット
+	scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f; // イージング
+
+
+	if (
+
+		Input::GetInstance()->TriggerKey(DIK_SPACE) ||
+
+		Input::GetInstance()->Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
+		if (!fadeManager_.IsFading()) {
+			fadeManager_.StartFadeOut();
+		}
+	}
+
+
+	// フェードアウトが完了したらシーン切り替え
+	if (fadeManager_.IsFadeOutFinished()) {
+		SceneManager::GetInstance()->SetStageIndex(currentIndex_);
+		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+	}
+
+	SelectMove();
+
+#ifdef _DEBUG
+
+	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Text("sutage%d", currentIndex_);
+
+		ImGui::Text("titleScene %d");
+		if (ImGui::Button("gamePlayScene"))
+		{
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		}
+
+		if (ImGui::CollapsingHeader("Spot Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+			// 代表用に一時変数を用意
+			static SpotLight spot;
+			static bool initialized = false;
+			if (!initialized && !stages_.empty()) {
+				spot = stages_[0].object->GetSpotLight(); // 最初のオブジェクトからコピー
+				initialized = true;
+			}
+
+			// UIでパラメータ調整
+			ImGui::ColorEdit4("Color", &spot.color.x);
+			ImGui::DragFloat3("Position", &spot.position.x, 0.1f);
+			ImGui::DragFloat3("Direction", &spot.direction.x, 0.1f);
+			ImGui::DragFloat("Intensity", &spot.intensity, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat("Distance", &spot.distance, 0.1f, 0.0f, 100.0f);
+			ImGui::DragFloat("Decay", &spot.decay, 0.01f, 0.0f, 2.0f);
+			ImGui::DragFloat("ConsAngle", &spot.consAngle, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("CosFalloffStart", &spot.cosFalloffstrt, 0.01f, 0.0f, 1.0f);
+
+			// 全オブジェクトに反映
+			for (auto& stage : stages_) {
+				stage.object->SetSpotLight(spot);
+			}
+
+		}
+
+	}
+#endif // _DEBUG
+}
+
+void StageSelectScene::Draw()
+{
+	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
+	Object3DCommon::GetInstance()->CommonDraw();
+
+	for (int i = 0; i < stages_.size(); i++) {
+		Vector3 pos = stages_[i].basePos;
+		pos.x += scrollOffset_;  // オフセット反映
+		stages_[i].object->SetTranslate(pos);
+
+		float scale = (i == currentIndex_) ? 1.2f : 1.0f;
+		stages_[i].object->SetScale({ scale, scale, scale });
+
+		stages_[i].object->Update();
+		stages_[i].object->Draw();
+	}
+
+	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
+	SpriteCommon::GetInstance()->CommonDraw();
+	fadeManager_.Draw();
+}
+
+void StageSelectScene::SelectMove()
+{
+	static float holdDelay_ = 0.3f;        // 長押し開始までの時間
+	static float repeatInterval_ = 0.25f;  // 長押し中のリピート間隔
+	static float holdTimer_ = 0.0f;
+	static float repeatTimer_ = 0.0f;
+
+	float rightStickX = Input::GetInstance()->GetGamePadStickX(); // -1.0〜1.0
+	const float stickThreshold = 0.5f;
+
+	if (Input::GetInstance()->PushKey(DIK_D)) {
+		rightStickX = 1.0f;
+	} else if (Input::GetInstance()->PushKey(DIK_A)) {
+		rightStickX = -1.0f;
+	}
+#ifdef _DEBUG
+
+
+#endif
+
+	if (fabs(rightStickX) > stickThreshold) {
+		// 入力が続いているのでタイマー加算
+		holdTimer_ += deltaTime_;
+
+		if (holdTimer_ >= holdDelay_) {
+			// 長押し中
+			repeatTimer_ += deltaTime_;
+			if (repeatTimer_ >= repeatInterval_) {
+				if (rightStickX > 0 && currentIndex_ < MaxSelectIndex_ - 1) {
+					currentIndex_++;
+				} else if (rightStickX < 0 && currentIndex_ > 0) {
+					currentIndex_--;
+				}
+				repeatTimer_ = 0.0f; // リピート間隔リセット
+			}
+		} else {
+			// 押した瞬間（初回だけすぐ反応）
+			if (rightStickX > 0 && currentIndex_ < MaxSelectIndex_ - 1) {
+				currentIndex_++;
+				holdTimer_ = holdDelay_; // 長押し状態に強制移行
+			} else if (rightStickX < 0 && currentIndex_ > 0) {
+				currentIndex_--;
+				holdTimer_ = holdDelay_;
+			}
+		}
+	} else {
+		// 入力が離れたらリセット
+		holdTimer_ = 0.0f;
+		repeatTimer_ = 0.0f;
+	}
+}
+

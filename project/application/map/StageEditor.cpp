@@ -13,7 +13,7 @@ void StageEditor::Run() {
 	// 初期化
 	if (grid_.empty()) {
 		// グリッドの初期化
-		constexpr int kGridWidth = 100;
+		constexpr int kGridWidth = 50;
 		constexpr int kGridHeight = 25;
 		// 2Dグリッドを指定サイズで初期化
 		grid_.resize(kGridHeight, std::vector<GridCell>(kGridWidth));

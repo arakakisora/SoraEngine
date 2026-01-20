@@ -91,9 +91,11 @@ void GamePlayScene::Initialize()
 	skydome_->SetLighting(false);
 
 	//フォローカメラ設定
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 0, -15 });
-
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 1, -12 });
+	CameraManager::GetInstance()->GetCamera("maincam")->SetRotate({ 0.15f,0,0 });
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBoundsEnabled(false);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBounds({ 4.0f, 5.0f, -100.0f }, { 47.0f, 20.0f, 50.0f });
 
 	//ゴールの初期化
 	goal = std::make_unique<Goal>();

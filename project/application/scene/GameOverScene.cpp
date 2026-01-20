@@ -17,6 +17,13 @@ void GameOverScene::Initialize()
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameover.png");
 	//titleSprite->SetSize({ 1280,720 });
 
+	// カメラ
+	camera = new Camera();
+	camera->SetRotate({ 0, 0, 0 });
+	camera->SetTranslate({ 0, 0, -10 });
+	CameraManager::GetInstance()->AddCamera("maincam", camera);
+	CameraManager::GetInstance()->SetActiveCamera("maincam");
+
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
@@ -26,11 +33,13 @@ void GameOverScene::Finalize()
 {
 	delete sprite;
 	sprite = nullptr;
-
+	delete camera;
+	CameraManager::GetInstance()->RemoveCamera("maincam");
 }
 
 void GameOverScene::Update()
 {
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	fadeManager_.Update();
 
 	//スプライトの更新
