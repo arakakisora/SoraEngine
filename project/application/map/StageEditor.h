@@ -46,6 +46,12 @@ public:
 	/// ファイル名を取得します
 	/// </summary>
 	const char* GetFileName() const { return fileNameBuffer; }
+
+	/// <summary>
+	/// ビルドステージモードかどうかを取得します
+	/// </summary>
+	/// <returns></returns>
+	bool GetBuildStage() const { return buildStage_; }
 private:
 	/// <summary>
 	/// UIの描画
@@ -84,6 +90,10 @@ private:
 	/// Redo操作
 	/// </summary>
 	void Redo();
+	
+	
+	
+
 private:
 	
 	std::vector<std::vector<GridCell>> grid_;// グリッドデータ
@@ -101,5 +111,7 @@ private:
 	bool isStrokeActive_ = false;// ストロークがアクティブかどうか
 	// すでに記録したセルの重複防止
 	std::vector<std::vector<bool>> strokeVisited_;
+
+	bool buildStage_ = false;
 
 };

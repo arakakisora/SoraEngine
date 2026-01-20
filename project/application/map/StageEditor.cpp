@@ -109,6 +109,23 @@ void StageEditor::RenderUI() {
 		isReloadRequested_ = true;
 	}
 
+	// Build mode トグルボタンを追加 
+	ImGui::Separator();
+	// 現在のビルドモード表示
+	ImGui::Text("Build Mode: %s", buildStage_ ? "ON" : "OFF");
+	ImGui::SameLine();
+	// ボタンでトグル
+	if (!buildStage_) {
+		if (ImGui::Button("Start Build Mode")) {
+			buildStage_ = true;
+		}
+	} else {
+		if (ImGui::Button("Stop Build Mode")) {
+			buildStage_ = false;
+		}
+	}
+	ImGui::Separator();
+
 	for (const auto& info : MapChipDatabase::GetInstance()->GetAll()) {
 		ImGui::RadioButton(info.label.c_str(), &selectedType_, info.id);
 	}

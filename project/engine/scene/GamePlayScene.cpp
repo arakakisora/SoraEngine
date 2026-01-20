@@ -138,6 +138,20 @@ void GamePlayScene::Update()
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	fadeManager_.Update();
 
+	//// ステージビルド中はゲーム進行を止める（UI とホットリロードは動かす）
+	//if (editor.GetBuildStage()) {
+	//	// エディタ UI とリロード処理（Imguidebug 内で行う）
+	//	Imguidebug();
+
+	//	// ゲーム側の状態更新は行わない
+	//	player->GetObject3D()->Update();
+	//	enemyManager_->EnemyObjectUpdate();
+	//	generateBlock_.Update();
+	//	skydome_->Update();
+	//	goal->Update(player->GetGoal(), 1.0f / 60.0f);
+	//	return;
+	//}
+	//
 
 	skydome_->Update();
 	goal->Update(player->GetGoal(), 1.0f / 60.0f);
@@ -351,45 +365,46 @@ void GamePlayScene::Imguidebug()
 	//マップ作製エディタ
 	editor.Run();
 
-
-	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
+	// マップリロード要求があれば処理
 	if (editor.GetReloadRequested() == true) {
 		editor.SetReloadRequested(false);
 
 		std::string filePath = "Resources/Mapdata/";
 		filePath += editor.GetFileName();
+
+		// CSV を一度だけ読み込む
 		mapChipField_->LoadMapChipCsv(filePath);
 
-		mapChipField_->LoadMapChipCsv(filePath);
-		// 既存のオブジェクト削除
-		for (auto& row : blockobject3D) {
-			for (auto& obj : row) {
-				delete obj;
-			}
-		}
-		blockobject3D.clear();
+		// ブロック生成器に map ポインタを確実に教えてから再生成
+		generateBlock_.Initialize(mapChipField_);
+		generateBlock_.GenerateObject3D();
 
-		// 再生成
-		GenerateObject3D();
-
-
+		// エネミーを再初期化（既存の EnemyManager を捨てて作り直す）
 		enemyManager_.reset();
 		enemyManager_ = std::make_unique<EnemyManager>();
 		enemyManager_->Initialize(mapChipField_);
 
-
-		// --- プレイヤースポーン位置をマップから取得する ---
+		// プレイヤーのスポーン位置をマップから取得してプレイヤー状態をリセット
 		Vector3 playerPostion = {};
-		auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
 		if (!spawnPositions.empty()) {
-			// マップに player スポーンが複数ある場合は最初のものを使用
 			playerPostion = spawnPositions.front();
 		} else {
-			// フォールバック: 既存の手打ち位置
 			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 		}
-		player->GetObject3D()->SetTranslate(playerPostion);
 
+		// 安全にプレイヤーのマップ参照と状態を更新する
+		player->SetMapChipField(mapChipField_);
+		player->Initialize(playerPostion); // 内部状態（位置／コライダ等）を再初期化
+		player->SetDeathHeight(0.0f);
+
+		// カメラの位置と追従ターゲットを更新
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ playerPostion.x, playerPostion.y, -10.0f });
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 0, -15 });
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+
+		// ゴールもマップ参照を基に再初期化
+		goal->Initialize(mapChipField_, player.get());
 	}
 
 #ifdef USE_IMGUI
