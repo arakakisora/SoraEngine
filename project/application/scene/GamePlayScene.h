@@ -86,15 +86,10 @@ public:
 	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//mapchip
 	
-	MapChipField* mapChipField_;
-	/*MapChipDatabase mapChipDatabase_;*/
-
+	std::unique_ptr <MapChipField> mapChipField_;
+	
 	//エネミー
 	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
-
-
-	// SkyDome
-	Object3D* skydome_ = nullptr;
 
 	//ブロック生成
 	GenerateBlock generateBlock_;

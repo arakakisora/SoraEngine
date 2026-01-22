@@ -48,14 +48,14 @@ class MapChipField;
 /// <summary>
 /// Playerクラス
 /// </summary>
-class Player :public Collider{
+class Player :public Collider {
 
 public:
 
 	Player() : Collider(Layer::Player) {};
 
 	AABB GetAABB() const override {
-		return aabb_;   
+		return aabb_;
 	}
 
 	void OnCollision(Collider* other) override {
@@ -75,9 +75,10 @@ public:
 	~Player() = default; // unique_ptr により自動解放
 
 	/// <summary>
-	// 初期化
+	/// 初期化
 	/// </summary>
-	void Initialize( const Vector3& position);
+	/// <param name="position"></param>
+	void Initialize(const Vector3& position);
 
 	/// <summary>
 	// 更新
@@ -254,14 +255,14 @@ public:
 	// 自分と弾を CollisionManager に登録する
 	void RegisterColliders();
 private:
-	
+
 	// 所有する Object3D を unique_ptr に変更（new/delete を消す）
 	std::unique_ptr<Object3D> object3D_;
 	Vector3 playerposition_ = {};
 
 	// 弾は PlayerBullet が Object3D を所有するよう変更
-	
-	
+
+
 	Vector3 velocity_ = {};                          // 速度
 	static inline const float kAccleration = 0.01f;  // 定数加速度
 	static inline const float kAttenuation = 0.2f;   // 速度減衰率
@@ -274,7 +275,7 @@ private:
 	LRDirecion lrDirection_ = LRDirecion::kright;
 	float turnFirstRotationY_ = 0.0f;           // 現在の向き
 	float turnTimer_ = 0.0f;                    // 振り向き時間
-	static inline const float KtimeTurn = 0.5f; // 角度補間タイム
+	static inline const float kTimeTurn = 0.5f; // 角度補間タイム
 	// ジャンプ
 	bool onGround_ = true;                                 // 接点状態フラグ
 	static inline const float kGravityAccleration = 0.02f; // 重力加速度
@@ -285,7 +286,7 @@ private:
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 	static inline const float kBlank = 1.0f;
-	static inline const float kAttenuationLanding =0.5f;
+	static inline const float kAttenuationLanding = 0.5f;
 	static inline const float kCollisionsmallnumber = 0.1f;
 	static inline const float kAttenuationWall = 0.1f;
 
@@ -306,16 +307,8 @@ private:
 	// Player.h の private:
 	float exhaustTimer_ = 0.0f;
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
-
-
 	bool goal_ = false; // ゴールに到達したかどうか
-
-	//プレイヤーパーティクル
-	ParticleEmitter* dashparticleEmitter_ = nullptr; // プレイヤーのパーティクルエミッター
-	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
-	
 	AABB aabb_;
-
 	// 追加: 大砲の角度（度単位）と調整ステップ
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）

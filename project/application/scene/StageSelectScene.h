@@ -44,9 +44,6 @@ private:
 	int currentIndex_ = 0;	// 現在のステージ
 	float deltaTime_ = 1.0f / 60.0f;	// デルタタイム
 
-	Object3D* stageplane = nullptr;
-
-
 	std::vector<StageObject> stages_;
 	float scrollOffset_ = 0.0f; // 補間用のオフセット
 	float inrerval_ = 4.0f; // ステージ間の距離

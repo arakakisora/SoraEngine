@@ -222,7 +222,7 @@
     <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp">
       <Filter>application\ソースファイル\particle</Filter>
     </ClCompile>
-    <ClCompile Include="application\Collision\CollisionManager.cpp">
+    <ClCompile Include="application\collision\CollisionManager.cpp">
       <Filter>application\ソースファイル\colition</Filter>
     </ClCompile>
     <ClCompile Include="engine\fade\FadeManager.cpp">
@@ -258,7 +258,7 @@
     <ClCompile Include="application\ui\ControlGuide.cpp">
       <Filter>application\ソースファイル\ui</Filter>
     </ClCompile>
-    <ClCompile Include="application\Collision\Collider.cpp">
+    <ClCompile Include="application\collision\Collider.cpp">
       <Filter>application\ソースファイル\colition</Filter>
     </ClCompile>
     <ClCompile Include="application\enemy\HitDeathComponent.cpp">
@@ -410,10 +410,10 @@
     <ClInclude Include="engine\fade\FadeManager.h">
       <Filter>engine\ヘッダーファイル\fade</Filter>
     </ClInclude>
-    <ClInclude Include="application\Collision\Collider.h">
+    <ClInclude Include="application\collision\Collider.h">
       <Filter>application\ヘッダーファイル\colition</Filter>
     </ClInclude>
-    <ClInclude Include="application\Collision\CollisionManager.h">
+    <ClInclude Include="application\collision\CollisionManager.h">
       <Filter>application\ヘッダーファイル\colition</Filter>
     </ClInclude>
     <ClInclude Include="application\enemy\Enemy.h">

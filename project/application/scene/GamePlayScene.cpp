@@ -39,10 +39,10 @@ void GamePlayScene::Initialize()
 
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
-	mapChipField_ = new MapChipField;
+	mapChipField_ = std::make_unique<MapChipField>();
 	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
 	// ブロック生成
-	generateBlock_.Initialize(mapChipField_);
+	generateBlock_.Initialize(mapChipField_.get());
 	generateBlock_.GenerateObject3D();
 
 	// --- プレイヤースポーン位置をマップから取得する ---
@@ -57,7 +57,7 @@ void GamePlayScene::Initialize()
 	}
 	//playerの生成	
 	player = std::make_unique<Player>();
-	player->SetMapChipField(mapChipField_);
+	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
 	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ playerPostion.x,playerPostion.y,-10, });
@@ -75,20 +75,12 @@ void GamePlayScene::Initialize()
 
 	//エネミー
 	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Initialize(mapChipField_);
+	enemyManager_->Initialize(mapChipField_.get());
 
 	//3Dオブジェクトの初期化
 	object3D2nd = std::make_unique<Object3D>();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
-
-	//SkyDome
-	skydome_ = new Object3D();
-	skydome_->Initialize(Object3DCommon::GetInstance());
-	skydome_->SetModel("skyplane.obj");
-	skydome_->SetScale(Vector3{ 50.0f,50.0f,1.0f });
-	//ライト
-	skydome_->SetLighting(false);
 
 	//フォローカメラ設定
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 1, -12 });
@@ -99,7 +91,7 @@ void GamePlayScene::Initialize()
 
 	//ゴールの初期化
 	goal = std::make_unique<Goal>();
-	goal->Initialize(mapChipField_, player.get());
+	goal->Initialize(mapChipField_.get(), player.get());
 
 	// ControlGuide の初期化
 	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
@@ -110,11 +102,6 @@ void GamePlayScene::Finalize()
 
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("debugcam");
-
-	delete mapChipField_;
-
-	delete skydome_;
-
 	// ControlGuide の破棄
 	ControlGuide::GetInstance()->Finalize();
 	ControlGuide::DestroyInstance();
@@ -127,7 +114,7 @@ void GamePlayScene::Update()
 	fadeManager_.Update();
 
 
-	skydome_->Update();
+
 	goal->Update(player->GetGoal(), 1.0f / 60.0f);
 	const float dt = 1.0f / 60.0f;
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
@@ -196,9 +183,7 @@ void GamePlayScene::Draw()
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
 	//SkyDome
-	//skydome_->Draw();
 	goal->Draw();
-
 
 	if (isStageStartPlaying_) {
 		stageStartEffect_->Draw(); // ←ゲートのみ描画
@@ -258,7 +243,7 @@ void GamePlayScene::Imguidebug()
 
 		enemyManager_.reset();
 		enemyManager_ = std::make_unique<EnemyManager>();
-		enemyManager_->Initialize(mapChipField_);
+		enemyManager_->Initialize(mapChipField_.get());
 
 
 		// --- プレイヤースポーン位置をマップから取得する ---

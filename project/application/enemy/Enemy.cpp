@@ -111,10 +111,10 @@ void Enemy::Update() {
 	object3D_->Update();
 	effectPosition_.translate = object3D_->GetTransform().translate;
 	deatheEffect->SetPosition(effectPosition_.translate);
-	//deatheEffect->Update();
+	
 
 #ifdef _DEBUG
-	//ImGui::Text("HP: %d", HP);
+	
 #endif // _DEBUG
 
 }

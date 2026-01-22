@@ -113,10 +113,10 @@ void Player::Update() {
 	// マップ衝突チェック
 	MapCollision(collisionMapInfo);
 	// 移動
-	CeilingCollisionMove(collisionMapInfo);
-	PlayerCollisionMove(collisionMapInfo);
-	OnGroundSwitching(collisionMapInfo);
-	HitWallCollisionMove(collisionMapInfo);
+	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
+	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
+	OnGroundSwitching(collisionMapInfo);// 着地時の移動処理
+	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
 	PrayerTurn();
 	object3D_->Update();
 	PlayerParticle();
@@ -693,9 +693,6 @@ void Player::PlayerParticle()
 			EulerTransform smokeTransform{};
 			smokeTransform.translate = object3D_->GetTransform().translate;
 
-			// 足元にオフセット
-			//smokeTransform.translate.y -= 0.25f;
-
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (lrDirection_ == LRDirecion::kright) {
 				smokeTransform.translate.x -= 0.15f;
@@ -704,7 +701,7 @@ void Player::PlayerParticle()
 			}
 
 			// 1回に2粒くらい
-			//ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
 		}
 	} else {
 		// 止まったらタイマーリセット

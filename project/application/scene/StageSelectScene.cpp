@@ -30,7 +30,6 @@ void StageSelectScene::Initialize()
 	ModelManager::GetInstans()->LoadModel("plane.obj");
 
 	//背景
-	//ModelManager::GetInstans()->LoadModel("back.obj");
 	ModelManager::GetInstans()->LoadModel("stage1.obj");
 	ModelManager::GetInstans()->LoadModel("stage2.obj");
 	ModelManager::GetInstans()->LoadModel("stage3.obj");
