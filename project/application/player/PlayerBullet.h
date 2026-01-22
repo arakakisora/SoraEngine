@@ -2,20 +2,25 @@
 #include "Model.h"
 #include "Object3D.h"
 #include <MapChipField.h>
+#include "Collider.h"
+#include <memory>
 
 /// <summary>
 /// プレイヤーの弾クラス
 /// </summary>
-class PlayerBullet {
+class PlayerBullet : public Collider {
 
 public:
+	PlayerBullet() : Collider(Layer::PlayerBullet) {}
+	~PlayerBullet() = default;  // unique_ptr により自動解放
 
-	~PlayerBullet();  // デストラクタ
+	AABB GetAABB() const override { return aabb_; }
+	AABB GetBulletAABB();
 
 	/// <summary>
-	/// 初期化
+	/// 初期化（Object3D の所有権を受け取る）
 	/// </summary>
-	void Initialize(Object3D* obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField);
+	void Initialize(std::unique_ptr<Object3D> obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField);
 
 	/// <summary>
 	/// 更新
@@ -29,8 +34,8 @@ public:
 
 	/// <summary>
 	// 当たったときコールバック
+	void OnCollision(Collider* other) override;
 	/// </summary>
-	void OnCollison();
 
 	//Getter
 	/// <summary>
@@ -47,7 +52,7 @@ public:
 	/// <summary>
 	/// AABBを取得します
 	/// </summary>
-	AABB GetAABB();
+	
 	/// <summary>
 	// レイを出してマップチップ番号を取得
 	/// </summary>
@@ -66,13 +71,14 @@ public:
 	/// </summary>
 	void SetPower(int p) { power_ = p; }
 
-	Object3D* Getobject3DBullet_() { return object3D_; }
+	// Object3D の生ポインタ参照を返す（所有は PlayerBullet）
+	Object3D* Getobject3DBullet_() { return object3D_.get(); }
 
 
 private:
-
-	Object3D* object3D_ = nullptr;
-	// textureHandle
+	AABB aabb_;
+	std::unique_ptr<Object3D> object3D_; // 所有（unique_ptr）
+	//textureHandle
 	//uint32_t textureHandle_ = 0u;
 	//速度
 	Vector3 velocity_;
@@ -82,4 +88,8 @@ private:
 	bool isDead_ = false;			//デスフラグ
 	MapChipField* mapChipField_ = nullptr;
 	int power_ = 1; // 弾の威力
+
+	// 定数化（マジックナンバー削減）
+	static inline constexpr float kAABBHalf = 0.1f; // AABB の半幅
+	static inline constexpr float kRayLength = 0.5f; // レイ長さ
 };

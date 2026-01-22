@@ -9,7 +9,7 @@
 
 #include "SceneManager.h"
 #include "MapChipField.h"
-
+#include "MapChipDatabase.h"
 
 #include <vector>
 #include <Player.h>
@@ -28,7 +28,9 @@
 #include "FadeManager.h"
 
 #include "StageStartEffect.h"
+#include "StageEndEffect.h"
 #include "GameOverEffect.h"
+#include "GenerateBlock.h"
 
 /// <summary>
 /// ゲームプレイシーン
@@ -55,17 +57,6 @@ public:
 	/// </summary>
 	void Draw()override;
 
-
-	/// ブロックの生成
-
-	/// <summary>
-	/// マップのブロックを配置します
-	/// </summary>
-	void GenerateObject3D();
-
-	////当たり判定のまとまり
-	//void CheckAllCollisions();
-
 	/// <summary>
 	/// デバッグ用ImGui
 	/// </summary>
@@ -82,21 +73,21 @@ public:
 
 
 	//カメラのポインタ
-	Camera* camera = nullptr;
-	Camera* debugCamera = nullptr;
+	std::unique_ptr<Camera> camera = nullptr;
+	std::unique_ptr<Camera> debugCamera = nullptr;
 	//スプライトの初期化
-	Object3D* object3D2nd = nullptr;
+	std::unique_ptr<Object3D> object3D2nd = nullptr;
 	//player
-	Player* player = nullptr;
-	Goal* goal = nullptr; // ゴールオブジェクト
+	std::unique_ptr<Player> player = nullptr;
+	std::unique_ptr<Goal> goal = nullptr; // ゴールオブジェクト
 
 	//wvpData用のTransform変数を作る
 	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//mapchip
-	//ブロック
-	std::vector<std::vector<Object3D*>> blockobject3D;
+	
 	MapChipField* mapChipField_;
+	/*MapChipDatabase mapChipDatabase_;*/
 
 	//エネミー
 	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
@@ -105,10 +96,8 @@ public:
 	// SkyDome
 	Object3D* skydome_ = nullptr;
 
-	//当たり判定
-	std::unique_ptr<CollisionManager> collitionManager_ = nullptr;
-
-
+	//ブロック生成
+	GenerateBlock generateBlock_;
 	StageEditor editor;
 
 	FadeManager fadeManager_;
@@ -116,8 +105,11 @@ public:
 	//スタート演出
 	std::unique_ptr<StageStartEffect> stageStartEffect_;
 	bool isStageStartPlaying_ = false;
+	
 	//ゲームオーバー演出
 	std::unique_ptr<GameOverEffect> gameOverEffect_;
+
+	
 
 	//debug用
 #ifdef _DEBUG

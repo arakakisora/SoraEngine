@@ -1,133 +1,113 @@
 #include "EnemyManager.h"
 #include "MapChipField.h"
 #include "Object3DCommon.h"
+#include "CollisionManager.h"
+#include "Enemy.h"
+#include "Enemy2.h"
+#include <algorithm>
+#include <cassert>
+#include <memory>
 
-EnemyManager::~EnemyManager()
+#ifdef USE_IMGUI
+#include "imgui.h"
+#endif // USE_IMGUI
+
+// コンストラクタ: デフォルトの敵ファクトリを登録
+EnemyManager::EnemyManager()
 {
-	// Enemyの解放
-	///enemy
-	for (auto& enemy : enemies_) {
-		if (enemy) {
-			
-			delete enemy; // Enemy自体を解放
-		}
-	}
-	//enemy2
-	for (auto& enemy2 : enemies2_) {
-		if (enemy2) {
-			
-			delete enemy2; // Enemy2自体を解放
-		}
-	}
+	// Factory: 通常の Enemy（ID 1）
+	RegisterFactory(kFactoryIdDefaultEnemy, [](const Vector3& pos, MapChipField* map) -> std::unique_ptr<EnemyBase> {
+		// unique_ptr を用いて所有権を明確にする
+		auto e = std::make_unique<Enemy>();
+		e->SetMapChipField(map); // Initialize が map を参照する可能性があるため先にセット
+		e->SetPosition(pos);
+		e->Initialize();
+		return e;
+	});
 
+	// Factory: Enemy2（ID 2）
+	RegisterFactory(kFactoryIdEnemy2, [](const Vector3& pos, MapChipField* map) -> std::unique_ptr<EnemyBase> {
+		auto e = std::make_unique<Enemy2>();
+		e->SetMapChipField(map);
+		e->SetPosition(pos);
+		e->Initialize();
+		return e;
+	});
 }
 
+// RegisterFactory: ファクトリを登録（ID -> factory）
+void EnemyManager::RegisterFactory(int id, Factory factory)
+{
+	factories_[id] = std::move(factory);
+}
+
+// Initialize: マップから敵情報を読み取り、factory で生成して所有リストに追加
 void EnemyManager::Initialize(MapChipField* map) {
-
 	map_ = map;
-	// CSVから敵の位置を取得
+	// マップから敵の位置リストとタイプリストを取得
 	std::vector<Vector3> enemyPositions = map_->GetEnemyPositions();
-	// 敵の番号を取得
-	Enemynumber = map_->GetEnemyNumbers(); //敵の番号を取得
-	for (int i = 0; const Vector3 & enemyPos : enemyPositions) {
+	Enemynumber = map_->GetEnemyNumbers();
 
-		if (Enemynumber[i] == 1) {
-			//Enemy
-			// Object3Dの生成と初期化
-			Object3D* object3DEnemy = new Object3D();
-			object3DEnemy->Initialize(Object3DCommon::GetInstance());
-			object3DEnemy->SetModel("enemy.obj");
-			// Enemyの生成と初期化
-			Enemy* newEnemy = new Enemy();
-			newEnemy->Initialize(object3DEnemy, enemyPos); 
-			enemies_.push_back(newEnemy);
-
+	// 配列長の不整合に備えて最小長でループ
+	size_t count = std::min(enemyPositions.size(), Enemynumber.size());
+	for (size_t i = 0; i < count; ++i) {
+		const Vector3& enemyPos = enemyPositions[i];
+		int id = Enemynumber[i];
+		// ファクトリから敵を生成（存在しないIDならアサート）
+		auto it = factories_.find(id);
+		if (it != factories_.end()) {
+			std::unique_ptr<EnemyBase> newEnemy = it->second(enemyPos, map_);
+			if (newEnemy) enemies_.push_back(std::move(newEnemy));
 		}
-		else if (Enemynumber[i] == 2) {
-			//Enemy2]
-			// Object3Dの生成と初期化
-			Object3D* object3DEnemy2 = new Object3D();
-			object3DEnemy2->Initialize(Object3DCommon::GetInstance());
-			object3DEnemy2->SetModel("enemy.obj");
-			// Enemy2の生成と初期化
-			Enemy2* newEnemy2 = new Enemy2();
-			newEnemy2->Initialize(object3DEnemy2, enemyPos); 
-			enemies2_.push_back(newEnemy2);
+		else {
+			assert(false && "未登録の敵IDです");
 		}
-
-
-		i++;
 	}
-
 }
 
+// Update: 全敵を更新し、演出完了で消す
 void EnemyManager::Update() {
 
-
-	//敵の更新
-	for (Enemy* enemy : enemies_) {
-
-		if (enemy != nullptr) {
-			enemy->Update(map_);
+	// 敵の Update 呼び出し
+	for (auto& enemy : enemies_) {
+		if (enemy) {
+			enemy->Update();
 		}
 	}
 
-	//死んだ敵を削除
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
-		}
-		return false;
-		});
-
-	//敵2の更新
-	for (Enemy2* enemy2 : enemies2_) {
-		if (enemy2 != nullptr) {
-			enemy2->Update(map_);
-		}
-	}
-	//死んだ敵2を削除
-	enemies2_.remove_if([](Enemy2* enemy2) {
-		if (enemy2->IsDead()) {
-			delete enemy2;
-			return true;
-		}
-		return false;
-		});
+	// 死亡して演出完了フラグが立っている敵をリストから削除（unique_ptr のデストラクタで解放される）
+	enemies_.remove_if([](const std::unique_ptr<EnemyBase>& enemy) {
+		return enemy && enemy->IsPendingRemove();
+	});
 }
 
+// Draw: 全敵の描画を呼ぶ
 void EnemyManager::Draw() {
-	//Enemyの描画
-
-	for (Enemy* enemy : enemies_) {
-		if (!nullptr) {
+	for (const auto& enemy : enemies_) {
+		if (enemy) {
 			enemy->Draw();
 		}
 	}
-	//Enemy2の描画
-	for (Enemy2* enemy2 : enemies2_) {
-		if (!nullptr) {
-			enemy2->Draw();
+}
+
+// EnemyObjectUpdate: 内部の Object3D の更新を行う（描画用の GPU 更新など）
+void EnemyManager::EnemyObjectUpdate()
+{
+	for (const auto& enemy : enemies_) {
+		if (enemy) {
+			if (auto* obj = enemy->GetObject3D()) {
+				obj->Update();
+			}
 		}
 	}
 }
 
-void EnemyManager::EnemyObjectUpdate()
+// RegisterColliders: CollisionManager に自分の敵をコライダー登録する
+void EnemyManager::RegisterColliders()
 {
-
-	
-	for (Enemy* enemy : enemies_) {
-		if (!nullptr) {
-			enemy->GetObject3D()->Update();
-		}
+	auto* cm = CollisionManager::GetInstance();
+	for (const auto& e : enemies_) {
+		if (e) cm->AddCollider(e.get()); // Collider* を渡す（unique_ptr の所有はここに残る）
 	}
-	//Enemy2の描画
-	for (Enemy2* enemy2 : enemies2_) {
-		if (!nullptr) {
-			enemy2->GetObject3D()->Update();
-		}
-	}
-
 }
 

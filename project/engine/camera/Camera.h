@@ -72,17 +72,30 @@ public:
 	/// プロジェクション行列取得
 	/// </summary>
 	/// <returns></returns>
-	const Matrix4x4& GetProjextionMatrix()const { return projectionMatrix; }
+	const Matrix4x4& GetProjectionMatrix()const { return projectionMatrix; }
 	/// <summary>
 	/// ビュープロジェクション行列取得
 	/// </summary>
 	/// <returns></returns>
-	const Matrix4x4& GetViewprojectionMatrix()const { return viewProjectionMatrix; }
+	const Matrix4x4& GetViewProjectionMatrix()const { return viewProjectionMatrix; }
 	/// <summary>
 	/// トランスフォーム取得
 	/// </summary>
 	/// <returns></returns>
 	const EulerTransform& GetTransform()const { return transform; }
+
+	/// <summary>
+	/// フォローボーダー有効化
+	/// </summary>
+	/// <param name="enable"></param>
+	void SetFollowBoundsEnabled(bool enable) { useFollowBounds_ = enable; }
+	/// <summary>
+	/// フォローボーダーセット
+	/// </summary>
+	/// <param name="min"></param>
+	/// <param name="max"></param>
+	void SetFollowBounds(const Vector3& min, const Vector3& max) { followMin_ = min; followMax_ = max; }
+
 
 private:
 
@@ -103,5 +116,9 @@ private:
 	Vector3 followOffset = { 0.0f, 0.0f, -15.0f };
 	bool followMode = false;
 	static inline const float interpolationRate = 0.5f; // 補間率
+
+	bool useFollowBounds_ = false;
+	Vector3 followMin_ = { -99999.0f, -99999.0f, -99999.0f };
+	Vector3 followMax_ = { 99999.0f,  99999.0f,  99999.0f };
 };
 

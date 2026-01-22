@@ -27,6 +27,12 @@ void Camera::Update()
 	if (followMode && followTarget) {
 		const EulerTransform& targetTransform = followTarget->GetTransform();
 		Vector3 targetPosition = targetTransform.translate + followOffset;
+		// 補間率
+		if (useFollowBounds_) {
+			targetPosition.x = std::clamp(targetPosition.x, followMin_.x, followMax_.x);
+			targetPosition.y = std::clamp(targetPosition.y, followMin_.y, followMax_.y);
+			targetPosition.z = std::clamp(targetPosition.z, followMin_.z, followMax_.z);
+		}
 		transform.translate = MyMath::Lerp(transform.translate, targetPosition, interpolationRate);
 	}
 	// カメラの行列を再計算

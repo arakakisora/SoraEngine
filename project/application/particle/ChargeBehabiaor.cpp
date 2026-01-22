@@ -103,3 +103,63 @@ void ExplosionBehavior::Update(Particle& particle, float dt, Material* matelialD
 
 }
 
+Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
+{
+	Particle particle;
+
+	// --- 初期位置（プレイヤーの足元あたり、少しだけバラけさせる） ---
+	std::uniform_real_distribution<float> offsetX(-0.05f, 0.05f);
+	std::uniform_real_distribution<float> offsetZ(-0.02f, 0.02f);
+
+	particle.transform.translate = transform.translate +
+		Vector3(offsetX(rng), -0.1f, offsetZ(rng));
+
+	// --- 初期スケール（小さめからスタート） ---
+	float s = 0.12f;
+	particle.transform.scale = { s, s, s };
+
+	// --- 初期回転（軽くランダム回転） ---
+	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> *2.0f);
+	particle.transform.rotate = { 0.0f, 0.0f, rotDist(rng) };
+
+	// --- 上昇 + 少し揺れるゆっくりした速度 ---
+	std::uniform_real_distribution<float> vx(-0.005f, 0.005f);
+	std::uniform_real_distribution<float> vz(-0.005f, 0.005f);
+	particle.Velocity = { vx(rng), 0.015f, vz(rng) };
+
+	// --- 色（ほぼ白〜薄いグレー・透明気味） ---
+	std::uniform_real_distribution<float> gray(0.75f, 0.9f);
+	float c = gray(rng);
+	particle.color = { c, c, c, 0.6f }; // αは控えめ
+
+	// --- 寿命（短めでサッと消える） ---
+	particle.lifetime = 0.7f;
+	particle.currentTime = 0.0f;
+
+	return particle;
+}
+
+void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+{
+	(void)materialData;
+	(void)alpha;
+
+	particle.currentTime += dt;
+	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
+
+	// 速度で移動（少しずつ上昇させる）
+	particle.transform.translate += particle.Velocity * dt;
+
+	// 上昇につれてわずかに減速＆上向きに寄せると「漂ってる感」が出る
+	particle.Velocity.x *= 0.98f;
+	particle.Velocity.z *= 0.98f;
+	particle.Velocity.y += 0.005f * dt; // ほんの少しだけ浮力
+
+	// スケール拡大（じんわり大きくなる）
+	float scale = std::lerp(0.12f, 0.35f, t);
+	particle.transform.scale = { scale, scale, scale };
+
+	// アルファはなめらかに消えていく (二乗カーブで最後ふっと消える)
+	float a = 1.0f - t;
+	particle.color.w = a * a;
+}

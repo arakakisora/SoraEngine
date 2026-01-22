@@ -11,7 +11,8 @@
 #include "CameraManager.h"
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
-
+#include "LineCommon.h"
+#include "ControlGuide.h" 
 
 
 void GamePlayScene::Initialize()
@@ -20,15 +21,15 @@ void GamePlayScene::Initialize()
 	fadeManager_.StartFadeIn();
 
 	//カメラの生成	
-	camera = new Camera();
+	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
-	CameraManager::GetInstance()->AddCamera("maincam", camera);
+	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 
-	debugCamera = new Camera();
+	debugCamera = std::make_unique<Camera>();
 	debugCamera->SetRotate({ 0,0,0, });
 	debugCamera->SetTranslate({ 15,13,-60, });
-	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera);
+	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera.get());
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
@@ -36,18 +37,26 @@ void GamePlayScene::Initialize()
 	//モデルの読み込み
 	Road();
 
-
-
+	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
 	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap.csv");//testmap blocks.csv
-	GenerateObject3D();
+	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
+	// ブロック生成
+	generateBlock_.Initialize(mapChipField_);
+	generateBlock_.GenerateObject3D();
 
-
-
+	// --- プレイヤースポーン位置をマップから取得する ---
+	Vector3 playerPostion = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	if (!spawnPositions.empty()) {
+		// マップに player スポーンが複数ある場合は最初のものを使用
+		playerPostion = spawnPositions.front();
+	} else {
+		// フォールバック: 既存の手打ち位置
+		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+	}
 	//playerの生成	
-	player = new Player();
-	Vector3 playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_);
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
@@ -68,12 +77,8 @@ void GamePlayScene::Initialize()
 	enemyManager_ = std::make_unique<EnemyManager>();
 	enemyManager_->Initialize(mapChipField_);
 
-	//当たり判定の初期化
-	collitionManager_ = std::make_unique<CollisionManager>();
-	collitionManager_->Initialize(player, enemyManager_.get());
-
 	//3Dオブジェクトの初期化
-	object3D2nd = new Object3D();
+	object3D2nd = std::make_unique<Object3D>();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
 
@@ -86,43 +91,33 @@ void GamePlayScene::Initialize()
 	skydome_->SetLighting(false);
 
 	//フォローカメラ設定
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 0, -15 });
-
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 1, -12 });
+	CameraManager::GetInstance()->GetCamera("maincam")->SetRotate({ 0.15f,0,0 });
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBoundsEnabled(false);
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBounds({ 4.0f, 5.0f, -100.0f }, { 47.0f, 20.0f, 50.0f });
 
 	//ゴールの初期化
-	goal = new Goal();
-	goal->Initialize(mapChipField_);
+	goal = std::make_unique<Goal>();
+	goal->Initialize(mapChipField_, player.get());
 
-
-
-
+	// ControlGuide の初期化
+	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
 }
 
 void GamePlayScene::Finalize()
 {
 
-	//object3Dの解放
+	CameraManager::GetInstance()->RemoveCamera("maincam");
+	CameraManager::GetInstance()->RemoveCamera("debugcam");
 
-	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
-	{
-		for (Object3D* obj : objext3dLine)
-		{
-			delete obj;
-		}
-	}
-	blockobject3D.clear();
-
-
-	delete camera;
-	delete debugCamera;
 	delete mapChipField_;
-	delete player;
+
 	delete skydome_;
-	delete goal;
-	delete object3D2nd;
 
-
+	// ControlGuide の破棄
+	ControlGuide::GetInstance()->Finalize();
+	ControlGuide::DestroyInstance();
 }
 
 void GamePlayScene::Update()
@@ -131,10 +126,11 @@ void GamePlayScene::Update()
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	fadeManager_.Update();
 
+
 	skydome_->Update();
-	goal->Update(player->GetGoal());
+	goal->Update(player->GetGoal(), 1.0f / 60.0f);
 	const float dt = 1.0f / 60.0f;
-	if (isStageStartPlaying_) {
+	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 
 		stageStartEffect_->Update(1.0f / 60.0f);
 		if (stageStartEffect_->IsFinished()) {
@@ -148,15 +144,32 @@ void GamePlayScene::Update()
 		////プレイヤーの更新
 		if (!player->GetIsDead_()) {
 			player->Update();
+			// プレイヤーの弾
+
 		}
 		enemyManager_->Update();
+
+
+
+		// 毎フレーム、まずクリアしてから各オーナーに登録して Update を呼ぶ
+		CollisionManager::GetInstance()->Clear();
+
+		// プレイヤー自身と弾を登録（Player が担当）
+		player->RegisterColliders();
+
+		// 敵は EnemyManager が登録する
+		enemyManager_->RegisterColliders();
+
+		// 衝突判定実行
+		CollisionManager::GetInstance()->Update();
+		generateBlock_.SyncBlockObjectsWithMap();
 	}
 	//プレイヤーが死んだらゲームオーバーシーンに遷移
 	if (player->GetIsDead_()) {
 
 		gameOverEffect_->Update(dt);
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
-		
+
 
 	}
 	if (!gameOverEffect_->IsPlaying()) {
@@ -164,21 +177,7 @@ void GamePlayScene::Update()
 	}
 
 
-	//エネミーの更新
-	
-	collitionManager_->Update();
-
-
-	//3Dオブジェクトの更新
-	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
-	{
-		for (Object3D* obj : objext3dLine)
-		{
-			if (!obj)
-				continue;
-			obj->Update();
-		}
-	}
+	generateBlock_.Update();
 
 
 
@@ -212,80 +211,30 @@ void GamePlayScene::Draw()
 	//エネミーの描画o 
 	enemyManager_->Draw();
 
-
-
-	for (std::vector<Object3D*>& objext3dLine : blockobject3D)
-	{
-
-		for (Object3D* obj : objext3dLine)
-		{
-			if (!obj) {
-				continue;
-			}
-			obj->Draw();
-		}
-
-	}
+	generateBlock_.Draw();
 
 
 
 	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
+	LineCommon::GetInstance()->Draw();
 #pragma endregion
 
 #pragma region スプライト描画
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	ControlGuide::GetInstance()->Render();
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
-}
+	goal->Draw2D();
 
-void GamePlayScene::GenerateObject3D()
-{
-	// 要素数
-	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();     // 縦
-	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal(); // 横
+	if (isStageStartPlaying_) {
 
-
-	blockobject3D.resize(numBlokVirtical);
-
-	for (uint32_t i = 0; i < numBlokVirtical; ++i)
-	{
-		blockobject3D[i].resize(numBlokHorizontal);
-
+		stageStartEffect_->Draw2D();
 	}
-	// キューブ生成
-	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
-		for (uint32_t j = 0; j < numBlokHorizontal; ++j) {
-
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-
-
-				Object3D* object3D_ = new Object3D();
-				object3D_->Initialize(Object3DCommon::GetInstance());
-				object3D_->SetModel("blokc.obj");
-				blockobject3D[i][j] = object3D_;
-				blockobject3D[i][j]->SetTranslate(mapChipField_->GetMapChipPostionByIndex(j, i));
-				//ライト
-				object3D_->SetLighting(true);
-				object3D_->SetDirectionalLightEnable(true);
-				object3D_->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-
-
-
-			}
-		}
-	}
-
-	
-
-
-
 }
-
-
-
 
 void GamePlayScene::Imguidebug()
 {
@@ -302,16 +251,9 @@ void GamePlayScene::Imguidebug()
 		mapChipField_->LoadMapChipCsv(filePath);
 
 		mapChipField_->LoadMapChipCsv(filePath);
-		// 既存のオブジェクト削除
-		for (auto& row : blockobject3D) {
-			for (auto& obj : row) {
-				delete obj;
-			}
-		}
-		blockobject3D.clear();
-
+		
 		// 再生成
-		GenerateObject3D();
+		generateBlock_.GenerateObject3D();
 
 
 		enemyManager_.reset();
@@ -319,11 +261,22 @@ void GamePlayScene::Imguidebug()
 		enemyManager_->Initialize(mapChipField_);
 
 
+		// --- プレイヤースポーン位置をマップから取得する ---
+		Vector3 playerPostion = {};
+		auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+		if (!spawnPositions.empty()) {
+			// マップに player スポーンが複数ある場合は最初のものを使用
+			playerPostion = spawnPositions.front();
+		} else {
+			// フォールバック: 既存の手打ち位置
+			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		}
+		player->GetObject3D()->SetTranslate(playerPostion);
 
-		collitionManager_->Initialize(player, enemyManager_.get());
 	}
 
 #ifdef USE_IMGUI
+	ControlGuide::GetInstance()->DebugImGui();
 
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {

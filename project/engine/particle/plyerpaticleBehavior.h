@@ -9,9 +9,9 @@ class plyerpaticleBehavior : public IParticleBehavior
 
 };
 
-class ExhaustGasBehavior : public IParticleBehavior {
-public:
-	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
-	void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
-};
+//class ExhaustGasBehavior : public IParticleBehavior {
+//public:
+//	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
+//	void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
+//};
 

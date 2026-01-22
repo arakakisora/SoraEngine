@@ -3,6 +3,7 @@
 #include <SceneManager.h>
 #include <Object3DCommon.h>
 #include <SpriteCommon.h>
+#include <CameraManager.h>
 
 void GameClearScene::Initialize()
 {
@@ -10,16 +11,27 @@ void GameClearScene::Initialize()
 	sprite = new Sprite();
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameclear.png");
 	//titleSprite->SetSize({ 1280,720 });
+
+
+	// カメラ
+	camera = new Camera();
+	camera->SetRotate({ 0, 0, 0 });
+	camera->SetTranslate({ 0, 0, -10 });
+	CameraManager::GetInstance()->AddCamera("maincam", camera);
+	CameraManager::GetInstance()->SetActiveCamera("maincam");
 }
 
 void GameClearScene::Finalize()
 {
 	delete sprite;
 	sprite = nullptr;
+	delete camera;
+	CameraManager::GetInstance()->RemoveCamera("maincam");
 }
 
 void GameClearScene::Update()
 {
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 	//スプライトの更新
 	sprite->Update();

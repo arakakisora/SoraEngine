@@ -74,6 +74,7 @@ public:
 	/// <param name="buttonNumber"></param>
 	/// <returns></returns>
 	bool TriggerMouse(int buttonNumber);
+
 	/// <summary>
 	//マウスの座標
 	/// </summary>

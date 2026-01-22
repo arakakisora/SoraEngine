@@ -2,27 +2,25 @@
 #include <fstream>
 #include <map>
 #include <sstream>
+#include "MapChipDatabase.h"
 
-namespace {
 
-	std::map<std::string, MapChipType> mapChipTable = {
-		{"0", MapChipType::kBlank},
-		{"1", MapChipType::kBlock},
-		{"2", MapChipType::kEnemy},
-		{"3",MapChipType::kEnemy2},
-		{"4", MapChipType::kGoal}
-
-	};
-
-}
 
 void MapChipField::ResetMapChipData() {
 	// マップチップデータのリセット
 	mapChipData_.data.clear();
 	mapChipData_.data.resize(kNumBlockVirtical);
-	for (std::vector<MapChipType>& mapChipDataLine : mapChipData_.data) {
-		// 横方向のブロック数分リサイズ
-		mapChipDataLine.resize(kNumBlockHorizontal);
+	for (auto& line : mapChipData_.data) {
+		line.clear();
+		line.resize(kNumBlockHorizontal, 0);
+	}
+
+	// hpData_ のリセット
+	hpData_.clear();
+	hpData_.resize(kNumBlockVirtical);
+	for (auto& line : hpData_) {
+		line.clear();
+		line.resize(kNumBlockHorizontal, 0);
 	}
 }
 
@@ -42,38 +40,41 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	// ファイルを閉じる
 	file.close();
 
-	// csvからマップチップデータを読み込む
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+	std::string line;
+	uint32_t y = 0;
 
-		std::string line;
-		getline(mapChipCsv, line);
+	while (std::getline(mapChipCsv, line)) {
+		std::stringstream lineStream(line);
+		std::string cell;
+		uint32_t x = 0;
 
-		// 1桁分の文字列をストリームに変換して解析しやすくする
-		std::istringstream lien_stream(line);
-		// 横方向のブロック数分ループ
-		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			// カンマ区切りで1単語取得
-			std::string word;
-			getline(lien_stream, word, ',');
-			// マップチップタイプに変換して格納
-			if (mapChipTable.contains(word)) {
-				mapChipData_.data[y][x] = mapChipTable[word];
+		while (std::getline(lineStream, cell, ',')) {
+			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
+				// CSV の文字列をそのまま int に変換して保存
+				int id = std::stoi(cell);
+				mapChipData_.data[y][x] = id;
+
+				
+				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
+				if (info) {
+					hpData_[y][x] = info->hitPoints;
+				}
+				else {
+					hpData_[y][x] = 0;
+				}
 			}
+			++x;
 		}
+		++y;
 	}
 }
 
-MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
+int MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
 
-	// インデックスが範囲外の場合は空白を返す
-	if (xIndex < 0 || kNumBlockHorizontal - 1 < xIndex) {
-		return MapChipType::kBlank;
+	// 範囲チェック（unsigned なので 0 未満チェックは不要）
+	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) {
+		return 0; // 範囲外は Empty 扱い（id 0 を想定）
 	}
-	// インデックスが範囲外の場合は空白を返す
-	if (yIndex < 0 || kNumBlockVirtical - 1 < yIndex) {
-		return MapChipType::kBlank;
-	}
-	// 指定したインデックスのマップチップタイプを返す
 	return mapChipData_.data[yIndex][xIndex];
 }
 
@@ -108,37 +109,102 @@ Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex) {
 
 std::vector<Vector3> MapChipField::GetEnemyPositions()
 {
-	// 敵の座標リストを取得
 	std::vector<Vector3> enemyPositions;
-	// マップチップデータを走査
+	Enemynumber.clear();
+
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			// 敵のマップチップの場合、座標リストに追加
-			if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy) {
-				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-				Enemynumber.push_back(1); //敵の番号を追加
-			} // 2種類目の敵の場合
-			else if (GetMapChipTypeByIndex(x, y) == MapChipType::kEnemy2) {
-				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-				Enemynumber.push_back(2); //敵の番号を追加
+
+			int typeId = GetMapChipTypeByIndex(x, y);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+			if (!info) {
+				continue;
 			}
 
+			// JSON で spawn == "enemy" のタイルを敵として扱う
+			if (info->spawn == "enemy") {
+				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
+				Enemynumber.push_back(info->enemyNumber); // enemyNumber をそのまま保存
+			}
 		}
 	}
 	return enemyPositions;
 }
 
-Vector3 MapChipField::GetGoalPosition()
-{
-	// ゴールの座標を取得
-	Vector3 pos;
+Vector3 MapChipField::GetGoalPosition() {
+	Vector3 pos{ 0.0f, 0.0f, 0.0f };
+
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			if (GetMapChipTypeByIndex(x, y) == MapChipType::kGoal) {
+
+			int typeId = GetMapChipTypeByIndex(x, y);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+			if (!info) {
+				continue;
+			}
+
+			// JSON で spawn == "goal" のタイルをゴールとして扱う
+			if (info->spawn == "goal") {
 				pos = GetMapChipPostionByIndex(x, y);
+				// 複数ある場合は最後のものが採用される
+			}
+		}
+	}
+	return pos;
+}
+
+bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex) 
+{
+	int typeId = GetMapChipTypeByIndex(xIndex, yIndex);
+	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+	if (!info) {
+		return false;
+	}
+	// JSON の collision == "solid" を「通れないブロック」として扱う
+	return info->collision == "solid";
+}
+
+std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTag)
+{
+	std::vector<Vector3> result;
+
+	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+
+			int typeId = GetMapChipTypeByIndex(x, y);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+
+			if (info->spawn == spawnTag) {
+				result.push_back(GetMapChipPostionByIndex(x, y));
 			}
 		}
 	}
 
-	return pos;
+	return result;
+}
+
+// 追加: 指定インデックスのHPを取得
+int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
+	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return 0;
+	return hpData_[yIndex][xIndex];
+}
+
+// 追加: 指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
+void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage) {
+	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return;
+
+	int& hp = hpData_[yIndex][xIndex];
+	if (hp <= 0) return; // 既に壊れない/空
+	hp -= damage;
+	if (hp <= 0) {
+		// 壊れた -> 空にする
+		mapChipData_.data[yIndex][xIndex] = 0;
+		hp = 0;
+	}
+}
+
+//  ワールド座標からダメージを与えるユーティリティ
+void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
+	IndexSet idx = GetMapChipIndexSetByPosition(position);
+	DamageMapChipByIndex(idx.xIndex, idx.yIndex, damage);
 }

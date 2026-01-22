@@ -44,45 +44,45 @@ void plyerpaticleBehavior::Update(Particle& particle, float dt, Material* mateli
 
 
 
-#include <random>
-#include <numbers>
-#include "MyMath.h"
-
-Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime) {
-	
-	lifetime = lifetime;
-	
-	std::uniform_real_distribution<float> distOffset(-0.1f, 0.1f);
-	std::uniform_real_distribution<float> distScale(0.2f, 0.4f);
-	std::uniform_real_distribution<float> distRotate(-0.1f, 0.1f);
-	std::uniform_real_distribution<float> distGray(0.1f, 0.3f);
-
-	Particle particle;
-	particle.transform.translate = transform.translate + Vector3(distOffset(rng), distOffset(rng), distOffset(rng));
-	particle.transform.scale = Vector3(1,1,1);
-	particle.transform.rotate = Vector3(0,0,0);
-	particle.Velocity = Vector3(0.0f, 0.01f, 0.0f); // 上昇
-
-	float gray = distGray(rng);
-	particle.color = { gray, gray, gray, 0.6f }; // 半透明の灰色
-
-	particle.lifetime = 1.5f;
-	particle.currentTime = 0.0f;
-
-	return particle;
-}
-
-void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha) {
-	//float t = particle.currentTime / particle.lifetime;
-	materialData = materialData;
-
-	// 時間と共に拡大していく（少し縦長）
-	//float scale = 0.2f + 0.6f * t;
-	
-	alpha = alpha;
-	// 上昇
-	particle.transform.translate += particle.Velocity;
-
-	// 時間更新
-	particle.currentTime += dt;
-}
+//#include <random>
+//#include <numbers>
+//#include "MyMath.h"
+//
+//Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime) {
+//	
+//	lifetime = lifetime;
+//	
+//	std::uniform_real_distribution<float> distOffset(-0.1f, 0.1f);
+//	std::uniform_real_distribution<float> distScale(0.2f, 0.4f);
+//	std::uniform_real_distribution<float> distRotate(-0.1f, 0.1f);
+//	std::uniform_real_distribution<float> distGray(0.1f, 0.3f);
+//
+//	Particle particle;
+//	particle.transform.translate = transform.translate + Vector3(distOffset(rng), distOffset(rng), distOffset(rng));
+//	particle.transform.scale = Vector3(1,1,1);
+//	particle.transform.rotate = Vector3(0,0,0);
+//	particle.Velocity = Vector3(0.0f, 0.01f, 0.0f); // 上昇
+//
+//	float gray = distGray(rng);
+//	particle.color = { gray, gray, gray, 0.6f }; // 半透明の灰色
+//
+//	particle.lifetime = 1.5f;
+//	particle.currentTime = 0.0f;
+//
+//	return particle;
+//}
+//
+//void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha) {
+//	//float t = particle.currentTime / particle.lifetime;
+//	materialData = materialData;
+//
+//	// 時間と共に拡大していく（少し縦長）
+//	//float scale = 0.2f + 0.6f * t;
+//	
+//	alpha = alpha;
+//	// 上昇
+//	particle.transform.translate += particle.Velocity;
+//
+//	// 時間更新
+//	particle.currentTime += dt;
+//}

@@ -13,6 +13,10 @@
 #include <PlayerBullet.h>
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
+#include "Collider.h"
+#include "Line.h"            // 追加: ライン描画
+#include <memory>           // 追加: std::unique_ptr を使用
+
 enum class LRDirecion {
 	kright,
 	kLeft,
@@ -39,17 +43,37 @@ enum class WeaponType {
 	Cannon,
 };
 
-
 class Enemy;
 class MapChipField;
 /// <summary>
 /// Playerクラス
 /// </summary>
-class Player {
+class Player :public Collider{
 
 public:
-	~Player();
-	
+
+	Player() : Collider(Layer::Player) {};
+
+	AABB GetAABB() const override {
+		return aabb_;   
+	}
+
+	void OnCollision(Collider* other) override {
+		switch (other->GetLayer()) {
+		case Layer::Enemy:
+			SetIsDead(true);
+			break;
+		case Layer::Enemy2:
+			SetIsDead(true);
+			break;
+		default:
+			break;
+		}
+	}
+	AABB GetPlayerAABB();
+
+	~Player() = default; // unique_ptr により自動解放
+
 	/// <summary>
 	// 初期化
 	/// </summary>
@@ -78,6 +102,8 @@ public:
 	//攻撃
 	/// </summary>
 	void Attack();
+
+	void PlayerParticle();
 
 	/// <summary>
 	/// イーズアウトサイン関数
@@ -165,12 +191,6 @@ public:
 	Vector3 GetWorldPosition();
 
 	/// <summary>
-	/// AABBを取得します
-	/// </summary>
-	AABB GetAABB();
-	//void OnCollision(const Enemy*enemy);
-
-	/// <summary>
 	// 死亡しているかどうかを取得
 	/// </summary>
 	/// <returns></returns>
@@ -193,12 +213,12 @@ public:
 	/// 現在の武器タイプを取得します
 	/// </summary>
 	/// <returns> </returns>
-	const std::list<PlayerBullet*>& GetBullets() const { return bullets_; }
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
 
 	/// <summary>
-	/// Object3Dを取得します
+	/// Object3Dを取得します（所有は Player） 
 	/// </summary>
-	Object3D* GetObject3D() const { return object3D_; }
+	Object3D* GetObject3D() const { return object3D_.get(); }
 
 	/// <summary>
 	/// 右移動フラグを取得します
@@ -231,21 +251,25 @@ public:
 	void StartDirection();
 
 	void SetOnGround(bool onground) { onGround_ = onground; }
+	// 自分と弾を CollisionManager に登録する
+	void RegisterColliders();
 private:
 	
-	//objec3D
-	Object3D *object3D_=nullptr;
+	// 所有する Object3D を unique_ptr に変更（new/delete を消す）
+	std::unique_ptr<Object3D> object3D_;
 	Vector3 playerposition_ = {};
 
-	//バレットオブジェクト
-	Object3D* object3DBullet_ = nullptr;
-	
+	// 弾は PlayerBullet が Object3D を所有するよう変更
 	
 	
 	Vector3 velocity_ = {};                          // 速度
 	static inline const float kAccleration = 0.01f;  // 定数加速度
 	static inline const float kAttenuation = 0.2f;   // 速度減衰率
 	static inline const float kLimitRunSpeed = 1.0f; // 最大速度制限
+
+	// 数学的定数
+	static inline constexpr float kPi = std::numbers::pi_v<float>;
+
 	// 振り向き
 	LRDirecion lrDirection_ = LRDirecion::kright;
 	float turnFirstRotationY_ = 0.0f;           // 現在の向き
@@ -253,15 +277,15 @@ private:
 	static inline const float KtimeTurn = 0.5f; // 角度補間タイム
 	// ジャンプ
 	bool onGround_ = true;                                 // 接点状態フラグ
-	static inline const float kGravityAccleration = 0.05f; // 重力加速度
+	static inline const float kGravityAccleration = 0.02f; // 重力加速度
 	static inline const float kLimitFallSpeed = 1.0f;      // 最大落下速度
-	static inline const float kJampAcceleration = 0.5f;    // ジャンプ初速
+	static inline const float kJampAcceleration = 0.3f;    // ジャンプ初速
 	// 当たり判定
 	MapChipField* mapChipFild_ = nullptr;
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
-	static inline const float kBlank = 1.0;
-	static inline const float kAttenuationLanding = 0.1f;
+	static inline const float kBlank = 1.0f;
+	static inline const float kAttenuationLanding =0.5f;
 	static inline const float kCollisionsmallnumber = 0.1f;
 	static inline const float kAttenuationWall = 0.1f;
 
@@ -273,12 +297,16 @@ private:
 
 	//弾
 	WeaponType currentWeaponType_ = WeaponType::Gatling; // 現在の武器タイプ
-	std::list<PlayerBullet* > bullets_;
+	std::list<std::unique_ptr<PlayerBullet>> bullets_;
 	int32_t fireTimer = 0;
 
 	// プレイヤー移動フラグ
 	bool playermoveright = false;
 	bool playermoveleft = false;
+	// Player.h の private:
+	float exhaustTimer_ = 0.0f;
+	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
+
 
 	bool goal_ = false; // ゴールに到達したかどうか
 
@@ -286,8 +314,13 @@ private:
 	ParticleEmitter* dashparticleEmitter_ = nullptr; // プレイヤーのパーティクルエミッター
 	ParticleEmitter* jumpParticleEmitter_ = nullptr; // ジャンプのパーティクルエミッター
 	
-	//Start演出
+	AABB aabb_;
 
+	// 追加: 大砲の角度（度単位）と調整ステップ
+	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
+	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）
 
+	// ライン描画用
+	std::unique_ptr<Line> line_; // 角度表示用ライン
 
 };

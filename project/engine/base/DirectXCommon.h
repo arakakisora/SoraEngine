@@ -137,7 +137,7 @@ public:
 	const D3D12_RENDER_TARGET_VIEW_DESC& GetRTVDesc() const { return rtvDesc; }
 
 	/// <summary>
-	/// getdsvDescriptorHeap
+	/// getDSVDescriptorHeap
 	/// </summary>
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDSVDescriptorHeap() { return dsvDescriptorHeap; }
 	/// <summary>

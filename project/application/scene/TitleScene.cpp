@@ -84,7 +84,7 @@ void TitleScene::Update() {
 		playerX_ += playerSpeed_;
 		if (playerX_ > 12.0f) playerX_ = 12.0f;
 
-		// ← ここ変更：移動方向で向きを切替
+		
 		float rotateY = kYawFront;             // デフォは正面
 		if (playerSpeed_ > 0.0f) rotateY = kYawRight; // 右へ移動中
 		if (playerSpeed_ < 0.0f) rotateY = kYawLeft;  // 左へ移動中
@@ -159,7 +159,7 @@ void TitleScene::Update() {
 				playerX_ = provisionaltargetX;
 			}
 
-			// ← ここ変更：移動方向に応じて左右
+			
 			float rotateY = (dir > 0) ? kYawRight : kYawLeft;
 
 			EulerTransform tr = object3D_->GetTransform();
@@ -194,7 +194,7 @@ void TitleScene::Update() {
 		fadeManager_.StartFadeOut();
 	}
 	if (fadeManager_.IsFadeOutFinished()) {
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 	ImguiDraw();
 }

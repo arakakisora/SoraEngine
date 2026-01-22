@@ -174,13 +174,13 @@
     <ClCompile Include="engine\scene\Game.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\GameClearScene.cpp">
+    <ClCompile Include="application\scene\GameClearScene.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\GameOverScene.cpp">
+    <ClCompile Include="application\scene\GameOverScene.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\GamePlayScene.cpp">
+    <ClCompile Include="application\scene\GamePlayScene.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
     <ClCompile Include="engine\scene\SceneFactory.cpp">
@@ -195,7 +195,7 @@
     <ClCompile Include="engine\skybox\SkyBox.cpp">
       <Filter>engine\ソースファイルcpp\skybox</Filter>
     </ClCompile>
-    <ClCompile Include="engine\scene\TitleScene.cpp">
+    <ClCompile Include="application\scene\TitleScene.cpp">
       <Filter>engine\ソースファイルcpp\scne</Filter>
     </ClCompile>
     <ClCompile Include="engine\Line\Line.cpp">
@@ -237,14 +237,22 @@
     <ClCompile Include="application\gaol\Goal.cpp">
       <Filter>application\colition</Filter>
     </ClCompile>
-    <ClCompile Include="application\particle\CollisionManager.cpp">
+    <ClCompile Include="application\Collision\CollisionManager.cpp">
       <Filter>application\colition</Filter>
     </ClCompile>
     <ClCompile Include="engine\fade\FadeManager.cpp">
       <Filter>engine\ソースファイルcpp\fade</Filter>
     </ClCompile>
-    <ClCompile Include="StageStartEffect.cpp" />
-    <ClCompile Include="GameOverEffect.cpp" />
+    <ClCompile Include="application\particle\StageStartEffect.cpp" />
+    <ClCompile Include="application\particle\GameOverEffect.cpp" />
+    <ClCompile Include="application\Collision\Collider.cpp" />
+    <ClCompile Include="application\map\MapChipDatabase.cpp" />
+    <ClCompile Include="application\particle\StageEndEffect.cpp" />
+    <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
+    <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
+    <ClCompile Include="application\ui\ControlGuide.cpp" />
+    <ClCompile Include="GenerateBlock.cpp" />
+    <ClCompile Include="application\scene\StageSelectScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -367,13 +375,13 @@
     <ClInclude Include="engine\scene\Game.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\GameClearScene.h">
+    <ClInclude Include="application\scene\GameClearScene.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\GameOverScene.h">
+    <ClInclude Include="application\scene\GameOverScene.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\GamePlayScene.h">
+    <ClInclude Include="application\scene\GamePlayScene.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
     <ClInclude Include="engine\scene\SceneFactory.h">
@@ -382,7 +390,7 @@
     <ClInclude Include="engine\scene\SceneManager.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
-    <ClInclude Include="engine\scene\TitleScene.h">
+    <ClInclude Include="application\scene\TitleScene.h">
       <Filter>engine\ヘッダーファイル\scne</Filter>
     </ClInclude>
     <ClInclude Include="engine\skybox\SkyBox.h">
@@ -391,7 +399,6 @@
     <ClInclude Include="engine\skybox\SkyBoxCommon.h">
       <Filter>engine\ヘッダーファイル\skybox</Filter>
     </ClInclude>
-    <ClInclude Include="application\map\GridCell.h" />
     <ClInclude Include="application\enemy\Enemy.h">
       <Filter>application\enemy</Filter>
     </ClInclude>
@@ -413,9 +420,6 @@
     <ClInclude Include="application\map\MapChipField.h">
       <Filter>application\map</Filter>
     </ClInclude>
-    <ClInclude Include="application\map\MapType.h">
-      <Filter>application\map</Filter>
-    </ClInclude>
     <ClInclude Include="application\map\StageEditor.h">
       <Filter>application\map</Filter>
     </ClInclude>
@@ -428,14 +432,23 @@
     <ClInclude Include="application\gaol\Goal.h">
       <Filter>application\gaol</Filter>
     </ClInclude>
-    <ClInclude Include="application\particle\CollisionManager.h">
+    <ClInclude Include="application\Collision\CollisionManager.h">
       <Filter>application\colition</Filter>
     </ClInclude>
     <ClInclude Include="engine\fade\FadeManager.h">
       <Filter>engine\ヘッダーファイル\fade</Filter>
     </ClInclude>
-    <ClInclude Include="StageStartEffect.h" />
-    <ClInclude Include="GameOverEffect.h" />
+    <ClInclude Include="application\particle\StageStartEffect.h" />
+    <ClInclude Include="application\particle\GameOverEffect.h" />
+    <ClInclude Include="application\Collision\Collider.h" />
+    <ClInclude Include="application\map\MapChipDatabase.h" />
+    <ClInclude Include="engine\base\json.hpp" />
+    <ClInclude Include="application\particle\StageEndEffect.h" />
+    <ClInclude Include="application\enemy\HitDeathComponent.h" />
+    <ClInclude Include="application\enemy\EnemyDeathStage.h" />
+    <ClInclude Include="application\ui\ControlGuide.h" />
+    <ClInclude Include="GenerateBlock.h" />
+    <ClInclude Include="application\scene\StageSelectScene.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

@@ -1,10 +1,10 @@
 #pragma once
 #include "BaseScene.h"
 #include "Sprite.h"
-
-
-class GameClearScene :public BaseScene
+#include "FadeManager.h"
+class GameOverScene:public BaseScene
 {
+
 
 public:
 	/// <summary>
@@ -24,15 +24,14 @@ public:
 	/// </summary>
 	void Draw()override;
 
-
-
 public:
 
 	//taitorusprite
 	Sprite* sprite = nullptr;
+	//fade
+	FadeManager fadeManager_;
 
-
-
+	Camera* camera = nullptr;
 
 };
 

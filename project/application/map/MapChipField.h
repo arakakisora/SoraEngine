@@ -4,33 +4,32 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "MapChipDatabase.h"
 
-	enum class MapChipType {
+/// <summary>
+/// マップチップのインデックス（配列上の位置）
+/// </summary>
+struct MapChipData {
 
-		kBlank, // 空白
-		kBlock, // ブロック
-		kEnemy, // 敵
-		kEnemy2, // 2種類目の敵
-		kGoal,  // ゴール
+	std::vector<std::vector<int>> data;
+};
+/// <summary>
+/// マップチップのインデックス（配列上の位置）
+/// </summary>
+struct IndexSet {
+	uint32_t xIndex;
+	uint32_t yIndex;
+};
+/// <summary>
+/// マップチップ1マス分のワールド上の矩形
+/// </summary>
+struct Rect {
 
-	};
-	struct MapChipData {
-
-		std::vector<std::vector<MapChipType>> data;
-	};
-
-	struct IndexSet {
-		uint32_t xIndex;
-		uint32_t yIndex;
-	};
-
-	struct Rect {
-
-	    float left ;
-	    float right ;
-	    float bottom ;
-	    float top  ;
-    };
+	float left;
+	float right;
+	float bottom;
+	float top;
+};
 /// <summary>
 /// マップチップフィールドクラス
 /// </summary>
@@ -47,9 +46,9 @@ public:
 	/// </summary>
 	void LoadMapChipCsv(const std::string& filePath);
 	/// <summary>
-	/// 指定したインデックスのマップチップタイプを取得
+	/// 指定したインデックスのマップチップID（= JSON の id）を取得
 	/// </summary>
-	MapChipType GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
+	int  GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
 	/// <summary>
 	/// 指定したインデックスのマップチップのワールド座標を取得
 	/// </summary>
@@ -76,7 +75,7 @@ public:
 	/// <returns></returns>
 	std::vector<Vector3> GetEnemyPositions();
 	/// <summary>
-	/// 敵の番号リストを取得
+	/// 敵の番号リストを取得します
 	/// </summary>
 	std::vector<int> GetEnemyNumbers() { return Enemynumber; } //敵の番号を取得
 	/// <summary>
@@ -85,6 +84,19 @@ public:
 	/// <returns>ゴールの座標を返す</returns>
 	Vector3 GetGoalPosition();
 
+	bool IsSolid(uint32_t xIndex, uint32_t yIndex);
+
+	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
+
+
+	int GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const;
+	void DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage);
+	void DamageMapChipByPosition(const Vector3& position, int damage);
+
+	// 1ブロックの幅と高さを取得
+	float GetBlockWidth() const { return kBlockWidth; }
+	// 1ブロックの高さを取得
+	float GetBlockHeight() const { return kBlockHeight; }
 
 private:
 	// 1ブロックのサイズ
@@ -96,5 +108,8 @@ private:
 	MapChipData mapChipData_;
 
 	std::vector<int> Enemynumber;
-	
+
+
+	std::vector<std::vector<int>> hpData_;
+
 };
