@@ -19,8 +19,7 @@
 generated/
 Bin/
 
-# assimp build outputs
-project/externals/assimp/lib/
+.pdb
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
