@@ -499,6 +499,7 @@
     <None Include="Resources\Mapdate\testmap.csv">
       <Filter>Resources</Filter>
     </None>
+    <None Include="externals\assimp\lib\Debug\assimp-vc143-mtd.pdb" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Resources">
