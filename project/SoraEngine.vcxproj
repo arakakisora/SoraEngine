@@ -67,7 +67,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade;$(ProjectDir)application\Collision;$(ProjectDir)application\ui;$(ProjectDir)application\scene</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\goal;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade;$(ProjectDir)application\Collision;$(ProjectDir)application\ui;$(ProjectDir)application\scene;$(ProjectDir)externals\json</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,7 +94,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\gaol;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade;$(ProjectDir)application\Collision;$(ProjectDir)application\ui;$(ProjectDir)application\scene</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\input;$(ProjectDir)engine\math;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)engine\particle;$(ProjectDir)externals\assimp\include;$(ProjectDir)engine\Line;$(ProjectDir)engine\skybox;$(ProjectDir)application\player;$(ProjectDir)application\particle;$(ProjectDir)application\map;$(ProjectDir)application\goal;$(ProjectDir)application\enemy;$(ProjectDir)engine\fade;$(ProjectDir)application\Collision;$(ProjectDir)application\ui;$(ProjectDir)application\scene;$(ProjectDir)externals\json</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -148,9 +148,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\fade\FadeManager.cpp" />
-    <ClCompile Include="application\gaol\Goal.cpp" />
+    <ClCompile Include="application\goal\Goal.cpp" />
     <ClCompile Include="application\particle\GameOverEffect.cpp" />
-    <ClCompile Include="GenerateBlock.cpp" />
+    <ClCompile Include="application\map\GenerateBlock.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -346,7 +346,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\scene\GameClearScene.h" />
     <ClInclude Include="application\scene\GameOverScene.h" />
     <ClInclude Include="engine\fade\FadeManager.h" />
-    <ClInclude Include="application\gaol\Goal.h" />
+    <ClInclude Include="application\goal\Goal.h" />
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="application\player\PlayerBullet.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
@@ -360,11 +360,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
     <ClInclude Include="application\particle\GameOverEffect.h" />
-    <ClInclude Include="engine\base\json.hpp" />
     <ClInclude Include="application\map\MapChipDatabase.h" />
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\particle\StageStartEffect.h" />
-    <ClInclude Include="GenerateBlock.h" />
+    <ClInclude Include="application\map\GenerateBlock.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -372,10 +371,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="externals\assimp\lib\Debug\assimp-vc143-mtd.pdb">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </None>
     <None Include="Resources\Mapdate\testmap.csv" />
     <None Include="Resources\Shaders\BoxFilter.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
