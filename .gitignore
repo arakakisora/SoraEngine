@@ -18,7 +18,6 @@
 # Build results
 generated/
 Bin/
-
 *.pdb
 
 # Visual Studio 2015/2017 cache/options directory
@@ -317,6 +316,7 @@ MigrationBackup/
 .ionide/
 DirectXGame/DirectXGame.exe
 DirectXGame/imgui.ini
+project/imgui.ini
 
 # DirectXTex Compiled Shaders
 **/DirectXTex/Shaders/Compiled/
