@@ -31,7 +31,7 @@ public:
 	//taitorusprite
 	Sprite* sprite = nullptr;
 
-
+	Camera* camera = nullptr;
 
 
 };
