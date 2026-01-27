@@ -6,6 +6,7 @@
 #include "Audio.h"
 #include "BaseScene.h"
 #include <FadeManager.h>
+#include "application\\ui\\PauseMenu.h"
 
 struct StageObject {
 	std::unique_ptr<Object3D> object;
@@ -52,6 +53,8 @@ private:
 
 	std::unique_ptr<Object3D>playerobj;
 
+	// PauseMenu を追加
+	PauseMenu pauseMenu_;
 	
 };
 
