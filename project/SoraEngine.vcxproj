@@ -127,7 +127,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\ui\ControlGuide.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
-    <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp" />
+    <ClCompile Include="engine\particle\PlayerpaticleBehavior.cpp" />
     <ClCompile Include="engine\scene\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\scene\BaseScene.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
@@ -309,7 +309,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
-    <ClInclude Include="engine\particle\plyerpaticleBehavior.h" />
+    <ClInclude Include="engine\particle\PlayerpaticleBehavior.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
     <ClInclude Include="engine\scene\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />

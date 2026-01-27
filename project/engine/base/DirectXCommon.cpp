@@ -138,7 +138,7 @@ void DirectXCommon::SwapChainInitialize()
 #pragma region SwapChain
 	//スワップチェーンを生成する
 
-	swapChainDesc.Width = WinApp::kClientWindth;		//画面の幅。ウィンドウのクライアント領域を同じ物にしておく
+	swapChainDesc.Width = WinApp::kClientWidth;		//画面の幅。ウィンドウのクライアント領域を同じ物にしておく
 	swapChainDesc.Height = WinApp::kClientHeight;		//画面の高さ。ウィンドウのクライアント領域を同じものにしておく
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;	//色の形式	
 	swapChainDesc.SampleDesc.Count = 1;//マルチサンプルなし
@@ -157,7 +157,7 @@ void DirectXCommon::SwapChainInitialize()
 void DirectXCommon::DepthBufferInitialize()
 {
 	D3D12_RESOURCE_DESC resourceDesc{};
-	resourceDesc.Width = WinApp::kClientWindth;//Textureの幅
+	resourceDesc.Width = WinApp::kClientWidth;//Textureの幅
 	resourceDesc.Height = WinApp::kClientHeight;//Textureの高さ
 	resourceDesc.MipLevels = 1;//mipmapの数
 	resourceDesc.DepthOrArraySize = 1;//奥行きor配列Texturの配列数
@@ -265,7 +265,7 @@ void DirectXCommon::ViewportInitialize()
 {
 
 	//クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = WinApp::kClientWindth;
+	viewport.Width = WinApp::kClientWidth;
 	viewport.Height = WinApp::kClientHeight;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
@@ -279,7 +279,7 @@ void DirectXCommon::ScissorInitialize()
 
 	//基本的にビューポートと同じ矩形が構成さるようにする
 	scissorRect.left = 0;
-	scissorRect.right = WinApp::kClientWindth;
+	scissorRect.right = WinApp::kClientWidth;
 	scissorRect.top = 0;
 	scissorRect.bottom = WinApp::kClientHeight;
 

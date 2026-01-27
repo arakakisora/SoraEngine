@@ -55,33 +55,19 @@ public:
 	bool GetIsEffectStarted() const { return isEffectStarted_; }
 
 private:
-	// 定数化（マジックナンバー撲滅）
-	/// <summary>
-	/// フェードのデフォルト時間（マジックナンバーを直接書かないための定数）
-	/// </summary>
 	static constexpr float kDefaultFadeDuration = 1.0f;
 
 	// メンバ（処理コメント付き）
 	bool isGoal_ = false;                          // ゴール到達フラグ
 
-	/// <summary>
-	/// ゴール表示用 3D オブジェクトを unique_ptr で所有
-	/// - new/delete を使わず自動管理にしました
-	/// </summary>
 	std::unique_ptr<Object3D> object3D_;           // ゴールの3Dオブジェクト（所有）
 
 	Vector3 goalPosition_;                         // ゴールのワールド位置
 
-	/// <summary>
-	/// ステージクリアのエフェクト（所有）
-	/// </summary>
 	std::unique_ptr<StageEndEffect> stageClearEffect_;
 	bool isEffectStarted_ = false;                 // エフェクト開始済みフラグ
 
-	/// <summary>
-	/// フェード管理
-	/// - フェード時間には kDefaultFadeDuration を使ってください
-	/// </summary>
+	
 	FadeManager fadeManager_;
 	bool isFadeOutStarted_ = false;                // フェードアウト開始フラグ
 };

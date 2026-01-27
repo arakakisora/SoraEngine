@@ -127,7 +127,7 @@ public:
 	/// <summary>
 	// 速度設定
 	/// </summary>
-	void SetMapChipField(MapChipField* mapChipFild) { mapChipFild_ = mapChipFild; }
+	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
 	/// <summary>
 	// map衝突判定
@@ -136,7 +136,7 @@ public:
 	/// <summary>
 	/// コーナーのワールド座標を取得
 	/// </summary>
-	/// <param name="centor"></param>
+	/// <param name="center"></param>
 	/// <param name="corner"></param>
 	/// <returns></returns>
 	Vector3 CornerPosition(const Vector3& centor, Corner corner);
@@ -172,7 +172,7 @@ public:
 	/// 底衝突時の当たり判定
 	/// </summary>
 	/// <param name="info"></param>
-	void CollisionMapInfoBootm(CollisionMapInfo& info);
+	void CollisionMapInfoBottom(CollisionMapInfo& info);
 
 	/// <summary>
 	/// 右衝突時の当たり判定
@@ -187,7 +187,7 @@ public:
 	void CollisionMapInfoLeft(CollisionMapInfo& info);
 
 	/// <summary>
-	/// warld座標を取得します
+	/// world座標を取得します
 	/// </summary>
 	Vector3 GetWorldPosition();
 
@@ -225,22 +225,22 @@ public:
 	/// 右移動フラグを取得します
 	/// </summary>
 	/// <returns></returns>
-	bool GetPrayerMoveRight() { return playermoveright; }
+	bool GetPrayerMoveRight() { return playerMoveRight_; }
 	/// <summary>
 	/// 左移動フラグを取得します
 	/// </summary>
 	/// <returns></returns>
-	bool GetPrayerMoveLeft() { return playermoveleft; }
+	bool GetPrayerMoveLeft() { return playerMoveLeft; }
 	/// <summary>
 	/// 右移動フラグを設定します
 	/// </summary>
 	/// <param name="right"></param>
-	void SetPrayerMoveRight(bool right) { playermoveright = right; }
+	void SetPrayerMoveRight(bool right) { playerMoveRight_ = right; }
 	/// <summary>
 	/// 左移動フラグを設定します
 	/// </summary>
 	/// <param name="left"></param>
-	void SetPrayerMoveLeft(bool left) { playermoveleft = left; }
+	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
 	/// <summary>
 	// ゴールに到達したかどうか
 	/// </summary>
@@ -256,15 +256,15 @@ public:
 	void RegisterColliders();
 private:
 
-	// 所有する Object3D を unique_ptr に変更（new/delete を消す）
+	
 	std::unique_ptr<Object3D> object3D_;
-	Vector3 playerposition_ = {};
+	Vector3 playerPosition_ = {};
 
-	// 弾は PlayerBullet が Object3D を所有するよう変更
+	
 
 
 	Vector3 velocity_ = {};                          // 速度
-	static inline const float kAccleration = 0.01f;  // 定数加速度
+	static inline const float kAcceleration = 0.01f;  // 定数加速度
 	static inline const float kAttenuation = 0.2f;   // 速度減衰率
 	static inline const float kLimitRunSpeed = 1.0f; // 最大速度制限
 
@@ -278,16 +278,16 @@ private:
 	static inline const float kTimeTurn = 0.5f; // 角度補間タイム
 	// ジャンプ
 	bool onGround_ = true;                                 // 接点状態フラグ
-	static inline const float kGravityAccleration = 0.02f; // 重力加速度
+	static inline const float kGravityAcceleration = 0.02f; // 重力加速度
 	static inline const float kLimitFallSpeed = 1.0f;      // 最大落下速度
-	static inline const float kJampAcceleration = 0.3f;    // ジャンプ初速
+	static inline const float kJumpAcceleration = 0.3f;    // ジャンプ初速
 	// 当たり判定
-	MapChipField* mapChipFild_ = nullptr;
+	MapChipField* mapChipField_ = nullptr;
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
 	static inline const float kBlank = 1.0f;
 	static inline const float kAttenuationLanding = 0.5f;
-	static inline const float kCollisionsmallnumber = 0.1f;
+	static inline const float kCollisionEpsilon = 0.1f;
 	static inline const float kAttenuationWall = 0.1f;
 
 	//死んだ
@@ -302,8 +302,8 @@ private:
 	int32_t fireTimer = 0;
 
 	// プレイヤー移動フラグ
-	bool playermoveright = false;
-	bool playermoveleft = false;
+	bool playerMoveRight_ = false;
+	bool playerMoveLeft = false;
 	// Player.h の private:
 	float exhaustTimer_ = 0.0f;
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す

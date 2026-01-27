@@ -59,8 +59,6 @@ private:
             Left,
             Right
         } side = Side::Left;
-
-
     };
 
     void UpdateLayout(); // レイアウト計算
@@ -69,7 +67,7 @@ private:
     bool visible_ = true;
     SpriteCommon* spriteCommon_ = nullptr;
 
-    static ControlGuide* instance_;
+    static std::unique_ptr<ControlGuide> instance_; // 所有権を unique_ptr に
 
     // レイアウト設定
     Anchor anchor_ = Anchor::TopLeft;
@@ -90,6 +88,4 @@ private:
 
     // Sprite座標基準（中心/左上）差分吸収
     bool spritePivotIsCenter_ = true;
-
-    
 };

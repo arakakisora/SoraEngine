@@ -219,7 +219,7 @@
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp">
       <Filter>application\ソースファイル\particle</Filter>
     </ClCompile>
-    <ClCompile Include="engine\particle\plyerpaticleBehavior.cpp">
+    <ClCompile Include="engine\particle\PlayerpaticleBehavior.cpp">
       <Filter>application\ソースファイル\particle</Filter>
     </ClCompile>
     <ClCompile Include="application\collision\CollisionManager.cpp">
@@ -455,7 +455,7 @@
     <ClInclude Include="application\particle\GameOverEffect.h">
       <Filter>application\ヘッダーファイル\particle</Filter>
     </ClInclude>
-    <ClInclude Include="engine\particle\plyerpaticleBehavior.h">
+    <ClInclude Include="engine\particle\PlayerpaticleBehavior.h">
       <Filter>application\ヘッダーファイル\particle</Filter>
     </ClInclude>
     <ClInclude Include="application\particle\StageEndEffect.h">

@@ -26,7 +26,7 @@ void TitleScene::Initialize() {
 	titleSprite_->SetPosition({ kTitleSpritePosX, kTitleSpritePosY });
 	titleSprite_->SetSize({ kTitleSpriteW, kTitleSpriteH });
 
-	// プレイヤー Object3D を生成してセットアップ（所有は unique_ptr）
+	// プレイヤー Object3D を生成してセットアップ
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player.obj");
@@ -51,7 +51,7 @@ void TitleScene::Initialize() {
 		titleObj_->SetTransform(t);
 	}
 
-	// カメラを生成して CameraManager に登録（所有権はシーン側に残す）
+	// カメラを生成して CameraManager に登録
 	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0, 0, 0 });
 	camera->SetTranslate({ 0, 0, -10 });
