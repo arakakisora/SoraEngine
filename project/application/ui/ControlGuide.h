@@ -43,9 +43,7 @@ public:
     void SetMargins(float marginX, float marginY) { marginX_ = marginX; marginY_ = marginY; }
 
 private:
-    ControlGuide();
-    ~ControlGuide();
-
+ 
     struct Entry {
         std::unique_ptr<Sprite> icon;
         std::unique_ptr<Sprite> label; // ラベル画像（任意）

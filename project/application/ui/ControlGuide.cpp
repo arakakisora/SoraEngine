@@ -23,9 +23,6 @@ void ControlGuide::DestroyInstance() {
     instance_.reset();
 }
 
-ControlGuide::ControlGuide() = default;
-ControlGuide::~ControlGuide() = default;
-
 // デバッグUI（ImGui）表示
 void ControlGuide::DebugImGui() {
 #ifdef _DEBUG
