@@ -8,16 +8,16 @@
 /// </summary>
 class CameraManager
 {
+
+public:
 	/// <summary>
 	/// シングルトンインスタンス
 	/// </summary>
-	static CameraManager* instance;
+	static std::unique_ptr <CameraManager> instance;
 	CameraManager() = default;
 	~CameraManager() = default;
 	CameraManager(CameraManager&) = default;
 	CameraManager& operator=(CameraManager&) = delete;
-
-public:
 	/// <summary>
 	/// シングルトンインスタンスの取得
 	/// </summary>

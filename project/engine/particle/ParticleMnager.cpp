@@ -11,13 +11,13 @@
 
 //シングルトンインスタンスの取得
 
-ParticleMnager* ParticleMnager::instance_ = nullptr;
+std::unique_ptr <ParticleMnager> ParticleMnager::instance_ = nullptr;
 ParticleMnager* ParticleMnager::GetInstance()
 {
 	if (instance_ == nullptr) {
-		instance_ = new ParticleMnager();
+		instance_ = std::make_unique <ParticleMnager>();
 	}
-	return instance_;
+	return instance_.get();
 
 
 }
@@ -55,15 +55,10 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 }
 
 
-
-
 void ParticleMnager::Finalize()
 {
 
-	delete instance_;
-	instance_ = nullptr;
-
-
+	instance_.reset();
 }
 
 
@@ -78,9 +73,6 @@ void ParticleMnager::Update()
 	//ビルボード行列を使ってビルボード行列を計算
 	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjectionMatrix();
-
-
-	
 
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
@@ -287,7 +279,7 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 void ParticleMnager::SetModel(const std::string& filepath)
 {
 	//もでるを検索してセットする
-	model_ = ModelManager::GetInstans()->FindModel(filepath);
+	model_ = ModelManager::GetInstance()->FindModel(filepath);
 }
 
 std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)

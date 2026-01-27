@@ -73,7 +73,6 @@ public:
 
 	static ParticleMnager* GetInstance();
 	
-private:
 	// コンストラクタをプライベートにする
 	ParticleMnager() = default;
 	~ParticleMnager() = default;
@@ -123,7 +122,7 @@ private:
 
 
 	//インスタンス
-	static ParticleMnager* instance_;
+	static std::unique_ptr <ParticleMnager> instance_;
 	DirectXCommon* dxCommon_=nullptr;
 	SrvManager* srvManager_ = nullptr;
 

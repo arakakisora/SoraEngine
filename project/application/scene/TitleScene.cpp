@@ -13,8 +13,8 @@
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
 	// モデル読み込み（ModelManager は単一インスタンス）
-	ModelManager::GetInstans()->LoadModel("player.obj");
-	ModelManager::GetInstans()->LoadModel("title.obj"); // タイトルモデル
+	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("title.obj"); // タイトルモデル
 
 	// フェードの初期化（白）
 	fadeManager_.Initialize("Resources/white.png");

@@ -83,7 +83,6 @@ public:
 	///<returns></returns>
 	SrvManager* GetSrvmanager()const { return srvManager_; }
 
-private:
 	/// <summary>
 	/// コンストラクタ
 	/// </summary>
@@ -91,9 +90,11 @@ private:
 	~LineCommon() = default;
 	LineCommon(const LineCommon&) = delete;
 	LineCommon& operator=(const LineCommon&) = delete;
+
 private:
-	//インスタンス
-	static LineCommon* instance_;
+	// インスタンス（staticに変更）
+	static std::unique_ptr<LineCommon> instance_;
+
 	DirectXCommon* dxCommon_;
 	SrvManager* srvManager_;
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
@@ -111,16 +112,12 @@ private:
 	};
 
 	std::vector<VertexDataLine>linevertices = {
-
 		{{0.0f,0.0f,0.0f}},
 		{{1.0f,0.0f,0.0f}},
-
 	};
 	std::vector<LineInstanceData> instances_;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> cameraResource;//カメラのデータを送るためのリソース
 	CameraBufferforGpu* camerabuffer = nullptr;//カメラのデータをGPUに送るための構造体
-
-
 };
 

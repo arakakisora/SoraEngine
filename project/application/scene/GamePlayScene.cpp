@@ -285,16 +285,16 @@ void GamePlayScene::Imguidebug()
 void GamePlayScene::Road()
 {
 	//3Dオブジェクト読み込み
-	ModelManager::GetInstans()->LoadModel("plane.obj");
-	ModelManager::GetInstans()->LoadModel("axis.obj");
-	ModelManager::GetInstans()->LoadModel("cube.obj");
-	ModelManager::GetInstans()->LoadModel("player.obj");
-	ModelManager::GetInstans()->LoadModel("blokc.obj");
-	ModelManager::GetInstans()->LoadModel("skyplane.obj");
-	ModelManager::GetInstans()->LoadModel("enemy.obj");
-	ModelManager::GetInstans()->LoadModel("gool.obj");
-	ModelManager::GetInstans()->LoadModel("bullet.obj");
-	ModelManager::GetInstans()->LoadModel("sphere.obj");
-	ModelManager::GetInstans()->LoadModel("gate.obj");
+	ModelManager::GetInstance()->LoadModel("plane.obj");
+	ModelManager::GetInstance()->LoadModel("axis.obj");
+	ModelManager::GetInstance()->LoadModel("cube.obj");
+	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("blokc.obj");
+	ModelManager::GetInstance()->LoadModel("skyplane.obj");
+	ModelManager::GetInstance()->LoadModel("enemy.obj");
+	ModelManager::GetInstance()->LoadModel("gool.obj");
+	ModelManager::GetInstance()->LoadModel("bullet.obj");
+	ModelManager::GetInstance()->LoadModel("sphere.obj");
+	ModelManager::GetInstance()->LoadModel("gate.obj");
 }
 

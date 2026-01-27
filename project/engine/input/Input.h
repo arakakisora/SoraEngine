@@ -8,7 +8,7 @@
 #include <Vector2.h>
 #include <array>
 template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
-
+#include <memory>
 #include <Xinput.h>
 #pragma comment(lib, "Xinput.lib")
 /// <summary>
@@ -16,16 +16,16 @@ template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 /// </summary>
 class Input
 {
+public: 
 	/// <summary>
 	/// シングルトンインスタンス
 	/// </summary>
-	static Input* instance;
+	static std::unique_ptr <Input> instance;
 	Input() = default;
 	~Input() = default;
 	Input(Input&) = default;
 	Input& operator=(Input&) = delete;
 
-public: // インナークラス
 	/// <summary>
 	/// マウス移動量構造体
 	/// </summary>

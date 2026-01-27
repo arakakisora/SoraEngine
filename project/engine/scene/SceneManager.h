@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseScene.h"
 #include "AbstractSceneFactory.h"
+#include <memory>
 
 class SceneManager
 {
@@ -10,7 +11,7 @@ public:
 	//シーンの設定
 
 	//現在のシーンを取得
-	void SetNextScene(BaseScene* nextSceneValue) { this ->nextScene = nextSceneValue; };
+	void SetNextScene(std::unique_ptr<BaseScene> nextSceneValue) { this->nextScene = std::move(nextSceneValue); };
 	//シーンの更新
 	void Update();
 	//シーンの描画
@@ -29,19 +30,17 @@ public:
 
 	//ステージindexゲッター
 	int GetStageIndex()const { return stageIndex_; }
-private:
+public:
 
 	SceneManager() = default;
 	~SceneManager() = default;
 	SceneManager(SceneManager&) = delete;
 	SceneManager& operator=(SceneManager&) = delete;
 
-	
-
 private:
-	static SceneManager* instance_;
-	BaseScene* currentScene = nullptr;
-	BaseScene* nextScene = nullptr;
+	static std::unique_ptr <SceneManager> instance_;
+	std::unique_ptr<BaseScene> currentScene = nullptr;
+	std::unique_ptr<BaseScene> nextScene = nullptr;
 	AbstractSceneFactory* sceneFactory = nullptr;
 	int stageIndex_ = 0;
 

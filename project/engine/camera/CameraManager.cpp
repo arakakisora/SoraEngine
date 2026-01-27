@@ -2,24 +2,22 @@
 #include <cassert>
 #include <Logger.h>
 
-CameraManager* CameraManager::instance = nullptr;
+std::unique_ptr <CameraManager> CameraManager::instance = nullptr;
 
 CameraManager* CameraManager::GetInstance()
 {
     if (!instance) {
-        instance = new CameraManager();
+        instance = std::make_unique<CameraManager>();
     }
 
 
-    return instance;
+    return instance.get();
 
 }
 
 void CameraManager::Finalize()
 {
-
-    delete instance;
-    instance = nullptr;
+	instance.reset();
 }
 
 void CameraManager::Initialize()
@@ -31,15 +29,10 @@ void CameraManager::Initialize()
     AddCamera("default", defaultCamera);
     SetActiveCamera("default"); // デフォルトカメラをアクティブカメラとして設定
 
-
-
 }
 
 void CameraManager::AddCamera(const std::string& name, const Camera* camera)
 {
-
-   
-
     cameras[name] = *camera;
     // 最初のカメラをアクティブに設定
     if (activeCameraName.empty()) {

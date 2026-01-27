@@ -48,7 +48,7 @@ public:
 
 public:
 
-	// 所有するリソースは unique_ptr で保持（new/delete を排除）
+	
 	std::unique_ptr<Sprite> titleSprite_;
 
 	FadeManager fadeManager_;

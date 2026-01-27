@@ -1,14 +1,14 @@
 #include "SceneManager.h"
 #include <cassert>
 
-SceneManager* SceneManager::instance_ = nullptr;
+std::unique_ptr <SceneManager> SceneManager::instance_ = nullptr;
 SceneManager* SceneManager::GetInstance()
 {
 	
 	if (instance_ == nullptr) {
-		instance_ = new SceneManager();
+		instance_ = std::make_unique <SceneManager>();
 	}
-	return instance_;
+	return instance_.get();
 }
 void SceneManager::Update()
 {
@@ -18,11 +18,10 @@ void SceneManager::Update()
 		//旧シーンの終了処理
 		if (currentScene) {
 			currentScene->Finalize();
-			delete currentScene;
+			currentScene.reset();
 		}
-		//新シーンの初期化
-		currentScene = nextScene;
-		nextScene = nullptr;
+		//新シーンの初期化（所有権移譲）
+		currentScene = std::move(nextScene);
 
 		currentScene->SetSceneManager(this);
 
@@ -31,21 +30,26 @@ void SceneManager::Update()
 	}
 
 	//現在のシーンの更新
-	currentScene->Update();
+	if (currentScene) {
+		currentScene->Update();
+	}
 
 }
 
 void SceneManager::Draw()
 {
 	//現在のシーンの描画
-	currentScene->Draw();
+	if (currentScene) {
+		currentScene->Draw();
+	}
 }
 
 void SceneManager::Finalize()
 {
-	currentScene->Finalize();
-	delete currentScene;
-
+	if (currentScene) {
+		currentScene->Finalize();
+		currentScene.reset();
+	}
 }
 
 void SceneManager::ChangeScene(const std::string& sceneName)
@@ -53,6 +57,7 @@ void SceneManager::ChangeScene(const std::string& sceneName)
 	assert(sceneFactory);
 	assert(nextScene==nullptr);
 
+	// sceneFactory の CreateScene は std::unique_ptr を返す
 	nextScene = sceneFactory->CreateScene(sceneName);
 
 }

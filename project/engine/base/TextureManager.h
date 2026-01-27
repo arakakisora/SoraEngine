@@ -11,15 +11,9 @@
 class TextureManager
 {
 private:
-	static TextureManager* instance;
-
-	TextureManager() = default;
-	~TextureManager() = default;
-	TextureManager(TextureManager&) = default;
-	TextureManager& operator=(TextureManager&) = delete;
 
 	//テクスチャ1枚分のデータ
-	struct TexturData {
+	struct TextureData {
 
 		DirectX::TexMetadata metadata;
 		Microsoft::WRL::ComPtr<ID3D12Resource>resource;
@@ -29,6 +23,13 @@ private:
 
 	};
 public:
+	static std::unique_ptr <TextureManager> instance;
+
+	TextureManager() = default;
+	~TextureManager() = default;
+	TextureManager(TextureManager&) = default;
+	TextureManager& operator=(TextureManager&) = delete;
+
 	/// <summary>
 	//シングルトンインタンス
 	/// </summary>
@@ -75,7 +76,7 @@ private:
 
 	//テクスチャデータ
 	DirectXCommon* dxCommon_=nullptr;
-	std::unordered_map<std::string, TexturData> textureDatas;
+	std::unordered_map<std::string, TextureData> textureDatas;
 	SrvManager* srvmanager = nullptr;
 
 };

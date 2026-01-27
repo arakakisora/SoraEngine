@@ -70,27 +70,27 @@ public:
 	//環境マップ
 	/// </summary>
 	/// <param name="filepath"></param>
-	void setskyboxfilepath(const std::string& filepath) { skyboxFilePath_ = filepath; }
+	void SetSkyboxFilePath(const std::string& filepath) { skyboxFilePath_ = filepath; }
 	/// <summary>
 	/// 環境マップの反射強度設定
 	/// </summary>
 	/// <param name="reflectionStrength"></param>
-	void SetreflectionStrengthforkankyouMap(float reflectionStrength) { environmentReflectionSettingData->reflectionStrength = reflectionStrength; }
+	void SetReflectionStrengthforkankyouMap(float reflectionStrength) { environmentReflectionSettingData->reflectionStrength = reflectionStrength; }
 	/// <summary>
 	/// 環境マップの粗さ設定
 	/// </summary>
 	/// <param name="roughness"></param>
-	void SettoughnessforkankyouMap(float roughness) { environmentReflectionSettingData->roughness = roughness; }
+	void SetRoughnessForKankyouMap(float roughness) { environmentReflectionSettingData->roughness = roughness; }
 	/// <summary>
 	/// 環境マップの反射強度取得
 	/// </summary>
 	/// <returns></returns>
-	float GetreflectionStrengthforkankyouMap() { return environmentReflectionSettingData->reflectionStrength; }
+	float GetReflectionStrengthForKankyouMap() { return environmentReflectionSettingData->reflectionStrength; }
 	/// <summary>
 	/// 環境マップの粗さ取得
 	/// </summary>
 	/// <returns></returns>
-	float GetoughnessforkankyouMap() { return environmentReflectionSettingData->roughness; }
+	float GetRoughnessForKankyouMap() { return environmentReflectionSettingData->roughness; }
 
 	/// <summary>
 	/// トランスフォームセット
@@ -111,7 +111,7 @@ public:
 	//回転
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	//位置
-	void SetTranslate(const Vector3& transrate) { transform.translate = transrate; }
+	void SetTranslate(const Vector3& translate) { transform.translate = translate; }
 	//カメラ
 	//void SetCamera(Camera* camera) { this->camera = camera; }
 	////デフォルトカメラ
@@ -207,7 +207,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	//データを書き込む
 
-	TransformationMatrix* transformaitionMatrixData = nullptr;
+	TransformationMatrix* transformationMatrixData = nullptr;
 
 
 	//平行光源

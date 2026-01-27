@@ -1,14 +1,14 @@
 #include "Audio.h"
 #include <wrl.h>
 
-Audio* Audio::instance_ = nullptr;
+std::unique_ptr<Audio> Audio::instance_ = nullptr;
 
 Audio* Audio::GetInstance()
 {
     if (instance_ == nullptr) {
-        instance_ = new Audio();
+        instance_ = std::make_unique<Audio>();
     }
-    return instance_;
+    return instance_.get();
 }
 
 void Audio::Initialize()
@@ -33,7 +33,7 @@ void Audio::Finalize()
     activeVoices.clear();
 
     xAudio2.Reset();
-    delete instance_;
+	instance_.reset();
 }
 
 SoundData Audio::SoundLoadWave(const char* filename)
