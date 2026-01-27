@@ -2,13 +2,13 @@
 #include "MyMath.h"
 #include <CameraManager.h>
 
-LineCommon* LineCommon::instance_ = nullptr;
+std::unique_ptr <LineCommon> LineCommon::instance_ = nullptr;
 LineCommon* LineCommon::GetInstance()
 {
 	if (instance_ == nullptr) {
-		instance_ = new LineCommon();
+		instance_ = std::make_unique <LineCommon>();
 	}
-	return instance_;
+	return instance_.get();
 }
 
 void LineCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
@@ -36,8 +36,8 @@ void LineCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager)
 }
 void LineCommon::Finalize()
 {
-	delete instance_;
-	instance_ = nullptr;
+	instance_.reset();
+	
 }
 void LineCommon::CommonDraw()
 {

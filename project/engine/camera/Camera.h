@@ -108,7 +108,7 @@ private:
 
 
 	float fovY = 0.45f;
-	float aspectRatio = float(WinApp::kClientWindth) / float(WinApp::kClientHeight);
+	float aspectRatio = float(WinApp::kClientWidth) / float(WinApp::kClientHeight);
 	float nearCilp = 0.1f;
 	float farClip = 100.0f;
 

@@ -37,9 +37,6 @@ public:
 	void SetCount(const uint32_t countvalue) { this->count = countvalue; }
 	void SetName(const std::string& namevalue) { name_ = namevalue; }
 
-
-
-
 private:
 	//位置
 	EulerTransform  transform_;
@@ -52,8 +49,6 @@ private:
 	//名前
 	std::string name_;
 	//particleタイプ
-
-
 
 };
 

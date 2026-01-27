@@ -11,7 +11,7 @@ Camera::Camera()
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{ 0.0f,0.0f,-5.0f} };
 
 	fovY = 0.45f;
-	aspectRatio = float(WinApp::kClientWindth) / float(WinApp::kClientHeight);
+	aspectRatio = float(WinApp::kClientWidth) / float(WinApp::kClientHeight);
 	nearCilp = 0.1f;
 	farClip = 100.0f;
 	projectionMatrix = MyMath::MakePerspectiveFovMatrix(fovY, aspectRatio, nearCilp, farClip);
@@ -49,7 +49,7 @@ void Camera::Update()
 	{
 
 		ImGui::DragFloat3("*CameraRotate", &transform.rotate.x, 0.01f);
-		ImGui::DragFloat3("*CameraTransrate", &transform.translate.x, 0.01f);
+		ImGui::DragFloat3("*CameraTranslate", &transform.translate.x, 0.01f);
 
 
 	}

@@ -27,15 +27,14 @@ void StageSelectScene::Initialize()
 	int stageIndex = SceneManager::GetInstance()->GetStageIndex();
 	currentIndex_ = stageIndex;	// 現在のステージを設定	 (ステージ1)
 
-	ModelManager::GetInstans()->LoadModel("plane.obj");
+	ModelManager::GetInstance()->LoadModel("plane.obj");
 
 	//背景
-	//ModelManager::GetInstans()->LoadModel("back.obj");
-	ModelManager::GetInstans()->LoadModel("stage1.obj");
-	ModelManager::GetInstans()->LoadModel("stage2.obj");
-	ModelManager::GetInstans()->LoadModel("stage3.obj");
+	ModelManager::GetInstance()->LoadModel("stage1.obj");
+	ModelManager::GetInstance()->LoadModel("stage2.obj");
+	ModelManager::GetInstance()->LoadModel("stage3.obj");
 
-	ModelManager::GetInstans()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("player.obj");
 	playerobj = std::make_unique<Object3D>();
 	playerobj->Initialize(Object3DCommon::GetInstance());
 	playerobj->SetModel("player.obj");

@@ -31,13 +31,13 @@ public:
 private:
 	
 
-	static SkyBoxCommon* instance_;
+	static std::unique_ptr <SkyBoxCommon> instance_;
 	// DirectX共通
 	DirectXCommon* dxCommon_ = nullptr;
 	// シェーダーリソースマネージャー
 	SrvManager* srvManager_ = nullptr;
 	// パイプライン
-	GraphicsPipeline* graphicsPipeline_ = nullptr;
+	std::unique_ptr <GraphicsPipeline> graphicsPipeline_ ;
 	
 
 };

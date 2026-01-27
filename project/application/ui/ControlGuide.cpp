@@ -3,24 +3,27 @@
 #include "ControlGuide.h"
 #include <cassert>
 #include <algorithm>
+#include <memory> // std::unique_ptr, std::make_unique
 #ifdef _DEBUG
 #include <imgui.h>
 #endif // _DEBUG
 
-ControlGuide* ControlGuide::instance_ = nullptr;
+// シングルトンの所有権を unique_ptr に移行。
+// ヘッダで `static std::unique_ptr<ControlGuide> instance_;` を宣言している前提。
+std::unique_ptr<ControlGuide> ControlGuide::instance_ = nullptr;
 
 ControlGuide* ControlGuide::GetInstance() {
-    if (!instance_) instance_ = new ControlGuide();
-    return instance_;
+    if (!instance_) {
+        
+        instance_ = std::make_unique<ControlGuide>();
+    }
+    return instance_.get();
 }
 void ControlGuide::DestroyInstance() {
-    delete instance_;
-    instance_ = nullptr;
+    instance_.reset();
 }
 
-ControlGuide::ControlGuide() = default;
-ControlGuide::~ControlGuide() = default;
-
+// デバッグUI（ImGui）表示
 void ControlGuide::DebugImGui() {
 #ifdef _DEBUG
 
@@ -46,7 +49,7 @@ void ControlGuide::DebugImGui() {
 
         ImGui::Separator();
 
-        // 便利ボタン
+        // プリセットボタン（簡易レイアウト調整）
         if (ImGui::Button("Preset: Small & Safe")) {
             scale_ = 0.78f;
             rowSpacing_ = 10.0f;
@@ -70,26 +73,26 @@ void ControlGuide::DebugImGui() {
 
 }
 
+// 初期化：SpriteCommon を使ってアイコンスプライトを作成する
 void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
     spriteCommon_ = spriteCommon;
     assert(spriteCommon_ && "SpriteCommon must be initialized before ControlGuide");
 
     // 表示するアイコン（ラベルは不要なので読み込まない）
     struct Setup { const char* icon; Vector2 iconSize; Entry::Side side; float localScale; };
-    // 指定: W/A/D と Space を左下、マウスホイール と 上下キー を右下に配置
+    // 左下グループ： W/A/D/Space、右下グループ：マウスホイール/上下キー
     const Setup setups[] = {
-        // Left bottom group: W (ジャンプ), A (左), D (右), Space (攻撃)
         { "Resources/key_w.jpg",    {64,64}, Entry::Side::Left },
         { "Resources/key_a.jpg",    {64,64}, Entry::Side::Left },
         { "Resources/key_d.jpg",    {64,64}, Entry::Side::Left },
         { "Resources/space.jpg",    {64,64}, Entry::Side::Left },
 
-        // Right bottom group: mouse wheel (エイム上下)、Up/Down keys (エイム)
         { "Resources/mouse_wheel.jpg", {64,64}, Entry::Side::Right },
         { "Resources/arrow_up.jpg",    {64,64}, Entry::Side::Right },
         { "Resources/arrow_down.jpg",  {64,64}, Entry::Side::Right },
     };
 
+    // 既存エントリをクリアして再構築
     entries_.clear();
 
     for (auto& s : setups) {
@@ -99,43 +102,48 @@ void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
         e.size = s.iconSize;
         e.labelSize = {0,0};
         e.side = s.side;
-        // 仮位置（UpdateLayoutで上書き）
+        // 仮位置（UpdateLayout で上書き）
         e.position = { marginX_, marginY_ };
 
-        // アイコンスプライト作成（ラベルは作らない）
+        // Sprite を unique_ptr で所有（自動破棄される）
         e.icon = std::make_unique<Sprite>();
         e.icon->Initialize(spriteCommon_, e.iconFile);
-        //e.icon->SetSize(e.size);
+        // e.icon->SetSize(e.size); // 必要ならサイズを設定
 
         entries_.push_back(std::move(e));
     }
 
-    visible_ = true; // リリースではデフォルトで表示にしておく
+    visible_ = true; // デフォルト表示
 }
 
+// 終了処理：エントリをクリアしてリソース解放（unique_ptr により自動で解放される）
 void ControlGuide::Finalize() {
     entries_.clear();
     spriteCommon_ = nullptr;
 }
 
+// 表示トグル
 void ControlGuide::Toggle() {
     visible_ = !visible_;
 }
 void ControlGuide::SetVisible(bool v) { visible_ = v; }
 bool ControlGuide::IsVisible() const { return visible_; }
 
+// レイアウト計算：画面サイズと設定に基づき各エントリの位置を決定する
 void ControlGuide::UpdateLayout() {
     if (entries_.empty()) return;
 
-    const float screenW = static_cast<float>(WinApp::kClientWindth);
+    const float screenW = static_cast<float>(WinApp::kClientWidth);
     const float screenH = static_cast<float>(WinApp::kClientHeight);
 
+    // 左右グループに分割
     std::vector<Entry*> lefts;
     std::vector<Entry*> rights;
     for (auto& e : entries_) {
         (e.side == Entry::Side::Left ? lefts : rights).push_back(&e);
     }
 
+    // グループの合計高さと最大幅を計算するラムダ
     auto computeGroupMetrics = [&](const std::vector<Entry*>& group) {
         float totalH = 0.0f;
         float maxW = 0.0f;
@@ -149,12 +157,12 @@ void ControlGuide::UpdateLayout() {
             maxW = std::max(maxW, rowW);
         }
         return std::pair<float, float>(totalH, maxW);
-        };
+    };
 
     auto [leftH, leftW] = computeGroupMetrics(lefts);
     auto [rightH, rightW] = computeGroupMetrics(rights);
 
-    // ---- Left bottom
+    // ---- 左下グループ配置
     float leftStartX = marginX_ + offset_.x + leftOffset_.x;
     float leftStartY = screenH - marginY_ - leftH + offset_.y + leftOffset_.y;
 
@@ -170,6 +178,7 @@ void ControlGuide::UpdateLayout() {
             p->position.y = y;
         }
 
+        // 画面外に出ないようにクランプ
         if (clampToScreen_) {
             float halfW = spritePivotIsCenter_ ? (scaledSize.x * 0.5f) : 0.0f;
             float halfH = spritePivotIsCenter_ ? (scaledSize.y * 0.5f) : 0.0f;
@@ -180,7 +189,7 @@ void ControlGuide::UpdateLayout() {
         y += scaledSize.y + rowSpacing_;
     }
 
-    // ---- Right bottom
+    // ---- 右下グループ配置
     float rightStartX = screenW - marginX_ - rightW + offset_.x + rightOffset_.x;
     float rightStartY = screenH - marginY_ - rightH + offset_.y + rightOffset_.y;
 
@@ -207,16 +216,17 @@ void ControlGuide::UpdateLayout() {
     }
 }
 
+// 描画：各エントリのスプライトを適切な位置・サイズで描画する
 void ControlGuide::Render() {
     if (!visible_) return;
     if (!spriteCommon_) return;
 
-    // レイアウトを更新（解像度変更や設定変更に対応）
+    // 解像度変更や設定変更に対応してレイアウトを更新
     UpdateLayout();
 
-    // 各エントリを描画（ラベルは描画しない）
+    // 各エントリを描画（ラベルは今は描画しない）
     for (auto& e : entries_) {
-        Vector2 texSize = e.icon->GetTextureSize(); // 元解像度
+        Vector2 texSize = e.icon->GetTextureSize(); // 元テクスチャ解像度
         float targetH = e.size.y * scale_;
         float aspect = texSize.x / texSize.y;
 
@@ -225,6 +235,7 @@ void ControlGuide::Render() {
             targetH
         };
 
+        // スプライトに対する設定と描画
         e.icon->SetPosition(e.position);
         e.icon->SetSize(iconSizeScaled);
         e.icon->Update();

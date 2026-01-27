@@ -30,7 +30,8 @@ struct SoundData {
 /// オーディオ管理クラス
 /// </summary>
 class Audio {
-    static Audio* instance_;
+public:
+    static std::unique_ptr<Audio> instance_;
     Audio() = default;
     ~Audio() = default;
     Audio(const Audio&) = delete;

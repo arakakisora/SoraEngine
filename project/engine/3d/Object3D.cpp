@@ -18,12 +18,12 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	//ModelTransform用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	transformationMatrixResource = object3DCommon_->GetDxCommon()->CreateBufferResource(sizeof(TransformationMatrix));
 	//書き込むためのアドレスを取得
-	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformaitionMatrixData));
+	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
 	//単位行列を書き込む
 
-	transformaitionMatrixData->WVP = transformaitionMatrixData->WVP.MakeIdentity4x4();
-	transformaitionMatrixData->World = transformaitionMatrixData->World.MakeIdentity4x4();
-	transformaitionMatrixData->worldInberseTranspose = transformaitionMatrixData->worldInberseTranspose.MakeIdentity4x4();
+	transformationMatrixData->WVP = transformationMatrixData->WVP.MakeIdentity4x4();
+	transformationMatrixData->World = transformationMatrixData->World.MakeIdentity4x4();
+	transformationMatrixData->worldInberseTranspose = transformationMatrixData->worldInberseTranspose.MakeIdentity4x4();
 
 
 	//平行光源
@@ -112,24 +112,19 @@ void Object3D::Update()
 	worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
 
-	
-
 	if (activeCamera) {
 		//ビュー射影行列を掛け算して、ワールドビュープロジェクション行列を計算する
 		const Matrix4x4& viewProjectionMatrix = activeCamera->GetViewProjectionMatrix();
 		worldViewProjectionMatrix = worldMatrix * viewProjectionMatrix;
-		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
-		transformaitionMatrixData->World = worldMatrix;
+		transformationMatrixData->WVP = worldViewProjectionMatrix;
+		transformationMatrixData->World = worldMatrix;
 		Vector3 cameraPosition = activeCamera->GetTransform().translate;
 		cameraForGpu->worldPosition = cameraPosition;
 
-
-
-
 	} else {
 		worldViewProjectionMatrix = worldMatrix;
-		transformaitionMatrixData->WVP = worldViewProjectionMatrix;
-		transformaitionMatrixData->World = worldMatrix;
+		transformationMatrixData->WVP = worldViewProjectionMatrix;
+		transformationMatrixData->World = worldMatrix;
 	}
 
 
@@ -259,7 +254,7 @@ void Object3D::DrawSkinning()
 void Object3D::SetModel(const std::string& filepath)
 {
 	//もでるを検索してセットする
-	model_ = ModelManager::GetInstans()->FindModel(filepath);
+	model_ = ModelManager::GetInstance()->FindModel(filepath);
 }
 
 

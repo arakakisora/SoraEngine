@@ -1,8 +1,8 @@
-#include "plyerpaticleBehavior.h"
+#include "PlayerpaticleBehavior.h"
 #include "ParticleMnager.h"
 #include <numbers>
 
-Particle plyerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
+Particle PlayerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
 	lifetime = lifetime;
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
@@ -30,10 +30,10 @@ Particle plyerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTra
 	return particle;
 }
 
-void plyerpaticleBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void PlayerpaticleBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
 {
 
-	matelialData= matelialData; // X方向スクロール
+	materialData= materialData; // X方向スクロール
 	dt = dt;
 	alpha = alpha;
 	//パーティクルの位置を更新

@@ -1,27 +1,24 @@
 #include "GameOverScene.h"
+#include <memory>
 #include <Input.h>
 #include <SceneManager.h>
 #include <Object3DCommon.h>
 #include <SpriteCommon.h>
- 
-
-#include "Input.h"
-#include "SceneManager.h"
 #include "CameraManager.h"
 
 void GameOverScene::Initialize()
 {
 
 	//titeleの生成
-	sprite = new Sprite();
+	sprite = std::make_unique<Sprite>();
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameover.png");
 	//titleSprite->SetSize({ 1280,720 });
 
 	// カメラ
-	camera = new Camera();
+	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0, 0, 0 });
 	camera->SetTranslate({ 0, 0, -10 });
-	CameraManager::GetInstance()->AddCamera("maincam", camera);
+	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 	fadeManager_.Initialize("Resources/white.png");
@@ -31,10 +28,11 @@ void GameOverScene::Initialize()
 
 void GameOverScene::Finalize()
 {
-	delete sprite;
-	sprite = nullptr;
-	delete camera;
+	// 先にカメラをマネージャから除去してから破棄する
 	CameraManager::GetInstance()->RemoveCamera("maincam");
+
+	
+	
 }
 
 void GameOverScene::Update()

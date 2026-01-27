@@ -56,12 +56,6 @@ void Line::DrawAABBVector3(Vector3 center, float radius, Vector4 color)
 	DrawAABB(min, max, color); // 既存の min/max 版を再利用
 }
 
-
-
-
-
-
-
 void Line::DrawGrid(Vector3 center, float Gridhalfwidth, uint32_t Subdivision)
 {
 	assert(Subdivision > 0);

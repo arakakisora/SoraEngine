@@ -3,6 +3,8 @@
 #include "Camera.h"
 #include "GraphicsPipeline.h"
 #include "SrvManager.h"
+#include <memory> // std::unique_ptr
+
 
 /// <summary>
 /// 3Dオブジェクト共通クラス
@@ -11,6 +13,16 @@ class Object3DCommon
 {
 public:
 
+	/// <summary>
+	/// コンストラクタ・デストラクタ
+	/// </summary>
+	Object3DCommon() = default;
+	~Object3DCommon() = default;
+	Object3DCommon(const Object3DCommon&) = delete;
+	Object3DCommon& operator=(const Object3DCommon&) = delete;
+	//インスタンス
+	static std::unique_ptr<Object3DCommon> instance_;
+	
 	static Object3DCommon* GetInstance();
 
 	/// <summary>
@@ -37,24 +49,10 @@ public:
 	SrvManager* GetSrvManager()const { return srvManager_; }
 
 	
-
 private:
-	/// <summary>
-	/// コンストラクタ・デストラクタ
-	/// </summary>
-	Object3DCommon() = default;
-	~Object3DCommon() = default;
-	Object3DCommon(const Object3DCommon&) = delete;
-	Object3DCommon& operator=(const Object3DCommon&) = delete;
-
-private:
-
-	//インスタンス
-	static Object3DCommon* instance_;
 
 	DirectXCommon* dxCommon_;
 	SrvManager* srvManager_ = nullptr;
-
 
 	Camera* defaultCamera = nullptr;
 

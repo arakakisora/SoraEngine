@@ -1,11 +1,13 @@
 #pragma once
+#include <memory>
 #include "BaseScene.h"
 #include "Sprite.h"
 #include "FadeManager.h"
-class GameOverScene:public BaseScene
+
+class Camera;
+
+class GameOverScene : public BaseScene
 {
-
-
 public:
 	/// <summary>
 	/// シーンの初期化
@@ -14,24 +16,24 @@ public:
 	/// <summary>
 	/// シーンの終了処理
 	/// </summary>
-	void Finalize()override;
+	void Finalize() override;
 	/// <summary>
 	/// シーンの更新
 	/// </summary>
-	void Update()override;
+	void Update() override;
 	/// <summary>
 	/// シーンの描画
 	/// </summary>
-	void Draw()override;
+	void Draw() override;
 
 public:
+	//タイトル用スプライト
+	std::unique_ptr<Sprite> sprite;
 
-	//taitorusprite
-	Sprite* sprite = nullptr;
 	//fade
 	FadeManager fadeManager_;
 
-	Camera* camera = nullptr;
-
+	//カメラ
+	std::unique_ptr<Camera> camera;
 };
 

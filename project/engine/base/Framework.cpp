@@ -37,7 +37,7 @@ void Framework::Initialize()
 	SpriteCommon::GetInstance()->Initialize(dxCommon.get());
 
 	//3Dモデルマネージャの初期化
-	ModelManager::GetInstans()->Initialize(dxCommon.get(), srvManager.get());
+	ModelManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 
 	//3Dオブジェクト共通部の初期化
 	Object3DCommon::GetInstance()->Initialize(dxCommon.get(),srvManager.get());
@@ -69,7 +69,7 @@ void Framework::Finalize()
 	//WindowsAPI解放
 	TextureManager::GetInstance()->Finalize();
 	//DirectXCommon解放
-	ModelManager::GetInstans()->Finalize();
+	ModelManager::GetInstance()->Finalize();
 	//カメラの解放
 	CameraManager::GetInstance()->Finalize();
 	//パーティクルの解放
@@ -77,7 +77,7 @@ void Framework::Finalize()
 
 	SkyBoxCommon::GetInstance()->Finalize();
 
-	// ユニークポインタは自動的に解放されるため、deleteは不要
+	
 #ifdef _DEBUG
 	imGuiMnager.reset();
 #endif // _DEBUG

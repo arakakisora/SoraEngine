@@ -18,7 +18,7 @@ class PlayerBullet;
 
 /// <summary>
 /// Enemyクラス
-/// 敵の細かい部分を管理するクラス
+/// 敵の挙動を管理するクラス
 /// </summary>
 
 class Enemy : public EnemyBase {

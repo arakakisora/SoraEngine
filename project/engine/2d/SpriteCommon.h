@@ -1,4 +1,5 @@
 #pragma once
+#include <memory> // std::unique_ptr
 #include "DirectXCommon.h"
 #include "GraphicsPipeline.h"
 /// <summary>
@@ -9,8 +10,6 @@ class SpriteCommon
 public:
 
 	static SpriteCommon* GetInstance();
-
-
 
 	/// <summary>
 	/// 初期化
@@ -27,10 +26,12 @@ public:
 
 private:
 
-	static SpriteCommon* instance_;
+	
+	static std::unique_ptr<SpriteCommon> instance_;
+
 	DirectXCommon* dxCommon_;//dxcommnをポインタ参照
 
-	//グラフィックスパイプライン
+	//グラフィックスパイプライン（unique_ptr）
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
 

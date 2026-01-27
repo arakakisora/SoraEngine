@@ -1,13 +1,14 @@
 #include "Object3DCommon.h"
 #include "Logger.h"
 
-Object3DCommon* Object3DCommon::instance_ = nullptr;
+std::unique_ptr<Object3DCommon> Object3DCommon::instance_ = nullptr;
 Object3DCommon* Object3DCommon::GetInstance()
 {
 	if (instance_ == nullptr) {
-		instance_ = new Object3DCommon();
+		instance_ = std::make_unique<Object3DCommon>();
 	}
-	return instance_;
+	
+	return instance_.get();
 
 }
 
@@ -32,8 +33,7 @@ void Object3DCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanage)
 void Object3DCommon::Finalize()
 {
 	
-	delete instance_;
-	instance_ = nullptr;
+	instance_.reset();
 }
 
 void Object3DCommon::CommonDraw()

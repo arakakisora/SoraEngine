@@ -4,29 +4,32 @@
 #include <Object3DCommon.h>
 #include <SpriteCommon.h>
 #include <CameraManager.h>
+#include <memory>
 
 void GameClearScene::Initialize()
 {
-	//titeleの生成
-	sprite = new Sprite();
+	//titleの生成
+	sprite = std::make_unique<Sprite>();
 	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameclear.png");
 	//titleSprite->SetSize({ 1280,720 });
 
 
 	// カメラ
-	camera = new Camera();
+	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0, 0, 0 });
 	camera->SetTranslate({ 0, 0, -10 });
-	CameraManager::GetInstance()->AddCamera("maincam", camera);
+	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 }
 
 void GameClearScene::Finalize()
 {
-	delete sprite;
-	sprite = nullptr;
-	delete camera;
+	// CameraManager から先にカメラを削除してから unique_ptr をリセットする
 	CameraManager::GetInstance()->RemoveCamera("maincam");
+
+	// unique_ptr によって自動的に解放される
+	sprite.reset();
+	camera.reset();
 }
 
 void GameClearScene::Update()

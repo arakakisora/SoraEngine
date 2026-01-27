@@ -4,30 +4,31 @@
 #include "GameClearScene.h"
 #include "GameOverScene.h"
 #include "StageSelectScene.h"
+#include <memory>
+#include <cassert>
 
-BaseScene* SceneFactory::CreateScene(const std::string& sceneName)
+std::unique_ptr<BaseScene> SceneFactory::CreateScene(const std::string& sceneName)
 {
-	BaseScene* newscene = nullptr;
+	std::unique_ptr<BaseScene> newscene = nullptr;
 
 	if (sceneName == "GAMEPLAY") {
-		newscene = new GamePlayScene();
+		newscene = std::make_unique<GamePlayScene>();
 	}
 	else if (sceneName == "TITELE") {
-		newscene = new TitleScene();
+		newscene = std::make_unique<TitleScene>();
 	}
 	else if (sceneName == "GAMECLEAR") {
-		newscene = new GameClearScene();
+		newscene = std::make_unique<GameClearScene>();
 	}
 	else if (sceneName == "GAMEOVER") {
-		newscene = new GameOverScene();
-	} 
+		newscene = std::make_unique<GameOverScene>();
+	}
 	else if (sceneName == "STAGESELECT") {
-		newscene = new StageSelectScene();
+		newscene = std::make_unique<StageSelectScene>();
 	}
 	else {
 		assert(0);
 	}
 
 	return newscene;
-
 }

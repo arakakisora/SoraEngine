@@ -1,8 +1,9 @@
 #pragma once
 #include "BaseScene.h"
 #include "Sprite.h"
+#include <memory>
 
-
+class Camera;
 class GameClearScene :public BaseScene
 {
 
@@ -28,10 +29,10 @@ public:
 
 public:
 
-	//taitorusprite
-	Sprite* sprite = nullptr;
 
-	Camera* camera = nullptr;
+	std::unique_ptr<Sprite> sprite = nullptr;
+
+	std::unique_ptr<Camera> camera = nullptr;
 
 
 };

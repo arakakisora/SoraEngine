@@ -8,7 +8,7 @@
 #include "BaseScene.h"
 #include "FadeManager.h"
 #include <numbers> // 追加
-
+#include <memory>
 
 enum class TitleAnimState {
 	IntroRun,   // プレイヤーが走り始める（タイトルはまだオフスクリーン）
@@ -48,18 +48,14 @@ public:
 
 public:
 
-
-	//taitorusprite
-	Sprite* titleSprite = nullptr;
+	
+	std::unique_ptr<Sprite> titleSprite_;
 
 	FadeManager fadeManager_;
 
-
-	Object3D* object3D_ = nullptr;
-	Object3D* titleObj_ = nullptr;
-	Camera* camera = nullptr;
-
-
+	std::unique_ptr<Object3D> object3D_;
+	std::unique_ptr<Object3D> titleObj_;
+	std::unique_ptr<Camera> camera;
 
 	TitleAnimState state_ = TitleAnimState::IntroRun;
 
@@ -71,7 +67,7 @@ public:
 	// フックが掛かるX位置（ワールド座標の目安）
 	float hookAtX_ = 1.5f;
 
-	// タイトルスプライトの位置（ピクセル座標）
+	// タイトルスプライトの位置（ワールド座標）
 	Vector3 titlePos3_{ -12.0f, 0.0f, 0.0f };   // 左外から開始（単位はワールド）
 	Vector3 titleTarget3_{ 0.0f, 0.0f, 0.0f };  // カメラ中心へ寄せる
 
@@ -90,7 +86,7 @@ public:
 	float playerReturnSpeed_ = 0.08f;        // 戻る速さ
 
 
-	// レイヤーの向き定数 ---
+	// レイヤーの向き定数 ---（既存）
 	float kYawFront = 3.1f; // 正面
 	float kYawRight = kYawFront - std::numbers::pi_v<float> *0.5f; // 右
 	float kYawLeft = kYawFront + std::numbers::pi_v<float> *0.5f; // 左
@@ -105,7 +101,19 @@ public:
 	bool loop_ = true;           // 常にループ
 	float loopWaitSec_ = 1.5f;   // 静止表示の秒数
 
-	
+	// マジックナンバーの定数化（しきい値・UIサイズなど）
+	static inline constexpr float kPlayerMaxX = 12.0f;
+	static inline constexpr float kTitleStartX = -12.0f;
+	static inline constexpr float kTitleSpritePosX = 490.0f;
+	static inline constexpr float kTitleSpritePosY = 600.0f;
+	static inline constexpr float kTitleSpriteW = 300.0f;
+	static inline constexpr float kTitleSpriteH = 100.0f;
+
+	static inline constexpr float kSpringCloseDist1 = 0.5f;
+	static inline constexpr float kSpringVelThresh1 = 0.05f;
+	static inline constexpr float kSpringCloseDist2 = 0.1f;
+	static inline constexpr float kSpringVelThresh2 = 0.02f;
+	static inline constexpr float kPlayerReturnEpsilon = 0.001f;
 
 };
 

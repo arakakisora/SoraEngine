@@ -1,13 +1,13 @@
 #include "SkyBoxCommon.h"
 
 
-SkyBoxCommon* SkyBoxCommon::instance_ = nullptr;
+std::unique_ptr <SkyBoxCommon> SkyBoxCommon::instance_ = nullptr;
 SkyBoxCommon* SkyBoxCommon::GetInstance()
 {
 	if (instance_ == nullptr) {
-		instance_ = new SkyBoxCommon();
+		instance_ = std::make_unique <SkyBoxCommon>();
 	}
-	return instance_;
+	return instance_.get();
 }
 
 void SkyBoxCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanager) {
@@ -15,7 +15,7 @@ void SkyBoxCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanager) {
 	dxCommon_ = dxCommon;
 	srvManager_ = srvmanager;
 
-	graphicsPipeline_ = new GraphicsPipeline();
+	graphicsPipeline_ = std::make_unique <GraphicsPipeline>();
 	graphicsPipeline_->Initialize(dxCommon_);
 	graphicsPipeline_->CreateSkybox();
 
@@ -24,12 +24,8 @@ void SkyBoxCommon::Initialize(DirectXCommon* dxCommon, SrvManager* srvmanager) {
 void SkyBoxCommon::Finalize()
 {
 
-	delete graphicsPipeline_;
-	if (instance_ != nullptr)
-	{
-		delete instance_;
-		instance_ = nullptr;
-	}
+	graphicsPipeline_.reset();
+	instance_.reset();
 
 }
 

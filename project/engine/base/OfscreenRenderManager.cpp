@@ -10,7 +10,7 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	//RTVの作成
 
 	renderTargetTextureResource = CreateRenderTargetTextureResource(
-		WinApp::kClientWindth,
+		WinApp::kClientWidth,
 		WinApp::kClientHeight,
 		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
 	);

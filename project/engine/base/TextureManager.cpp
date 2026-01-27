@@ -5,22 +5,21 @@
 
 using namespace StringUtility;
 
-TextureManager* TextureManager::instance = nullptr;
+std::unique_ptr <TextureManager> TextureManager::instance = nullptr;
 
 TextureManager* TextureManager::GetInstance()
 {
 	if (instance == nullptr) {
 
-		instance = new TextureManager;
+		instance = std::make_unique <TextureManager>();
 	}
-	return instance;
+	return instance.get();
 }
 
 void TextureManager::Finalize()
 {
 
-	delete instance;
-	instance = nullptr;
+	instance.reset();
 
 }
 
@@ -37,7 +36,7 @@ const DirectX::TexMetadata& TextureManager::GetMetaData(const std::string& filep
 	
 	assert(textureDatas.size() + kSRVIndexTop < DirectXCommon::kMaxSRVCount);
 	//テクスチャデータを取得
-	TexturData& textureData = textureDatas[filepath];
+	TextureData& textureData = textureDatas[filepath];
 	return textureData.metadata;
 }
 
@@ -84,7 +83,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 
 	
 	//追加したデータの参照を取得する
-	TexturData& textureData = textureDatas[filePath];
+	TextureData& textureData = textureDatas[filePath];
 
 	//textureData.filePath= ConvertString(filePathW);
 	textureData.metadata = mipImages.GetMetadata();

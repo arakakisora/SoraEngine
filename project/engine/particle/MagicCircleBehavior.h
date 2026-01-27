@@ -16,7 +16,5 @@ private:
 	Vector3 initScale_ = { 2.0f,2.0f, 2.0f };
 	Vector3 initRotate_ = { 1.27f, 0.0f, 0.0f };
 
-
-
 };
 
