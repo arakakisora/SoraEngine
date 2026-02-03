@@ -39,8 +39,19 @@ void GamePlayScene::Initialize()
 
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
+
+	const int stageIndex = SceneManager::GetInstance()->GetStageIndex();
+	std::string stagePath;
+	const int kAvailableMaps = 12; // Map1.csv .. Map12.csv
+
+	if (stageIndex >= 0 && stageIndex < kAvailableMaps) {
+		stagePath = "Resources/Mapdata/Map" + std::to_string(stageIndex + 1) + ".csv";
+	}
+	else {
+		stagePath = "Resources/Mapdata/Map1.csv";
+	}
 	mapChipField_ = std::make_unique<MapChipField>();
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv(stagePath);//testmap blocks.csv
 	// ブロック生成
 	generateBlock_.Initialize(mapChipField_.get());
 	generateBlock_.GenerateObject3D();
@@ -115,7 +126,7 @@ void GamePlayScene::Finalize()
 
 void GamePlayScene::UpdateGameLogic(float dt)
 {
-	// ゴール／ステージ開始処理など（ゲーム進行に関わるロジック）
+	
 	goal->Update(player->GetGoal(), dt);
 
 	const float fixedDt = dt;
@@ -158,9 +169,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 
 void GamePlayScene::UpdateObjects(float dt)
 {
-	// Camera は常に現在の active camera を更新（ポーズ用カメラ切替後に反映されるよう、ここで行う）
-	CameraManager::GetInstance()->GetActiveCamera()->Update();
-
 	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
 	// 例: Object3D の更新、エネミーの transform 更新、ブロックのビジュアル更新、パーティクル
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
@@ -181,6 +189,8 @@ void GamePlayScene::UpdateObjects(float dt)
 
 void GamePlayScene::Update()
 {
+	// Camera は常に現在の active camera を更新（ポーズ用カメラ切替後に反映されるよう、ここで行う）
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	// ポーズメニューの入力・イージングを先に処理（カメラ切替等を即時反映させるため）
 	pauseMenu->Update();
 

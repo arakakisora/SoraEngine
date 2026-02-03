@@ -16,7 +16,6 @@
 #include "LineCommon.h" // 追加: ライン描画
 #include <memory>      // std::make_unique を明示
 
-
 void Player::Initialize(const Vector3& position) {
 
 	// 初期配置と Object3D の作成（unique_ptr 所有）
@@ -193,71 +192,116 @@ void Player::Draw() {
 	}
 }
 
+void Player::PrayerMove() {
 
-void Player::PrayerMove()
-{
-	// ===== 調整パラメータ =====
-	const float kMaxRunSpeed = kLimitRunSpeed;     // 最大移動速度
-	const float kRunAccel = kAcceleration;      // 加速度（大きいほどキビキビ）
-	const float kJumpSpeed = kJumpAcceleration;  // ジャンプ初速
-	const float kGravity = kGravityAcceleration;// 重力加速度
-	const float kMaxFallSpeed = kLimitFallSpeed;// 最大落下速度
-
-	// ===== 入力（-1,0,1にまとめる） =====
-	int moveX = 0;
-	if (Input::GetInstance()->PushKey(DIK_D)) moveX += 1;
-	if (Input::GetInstance()->PushKey(DIK_A)) moveX -= 1;
-
-	// 見た目用フラグは入力から決める（速度処理と混ぜない）
-	playerMoveRight_ = (moveX > 0);
-	playerMoveLeft = (moveX < 0);
-
-	// 方向（必要ならここでだけ変える）
-	if (moveX > 0) {
-		lrDirection_ = LRDirecion::kright;
-	} else if (moveX < 0) {
-		lrDirection_ = LRDirecion::kLeft;
-	}
-
-	// ===== 水平移動（目標速度に加速で寄せる） =====
-	float targetVx = moveX * kMaxRunSpeed;
-
-	// targetVx へ kRunAccel で近づける（減衰ゼロでも止まりやすい）
-	float diff = targetVx - velocity_.x;
-	float step = std::clamp(diff, -kRunAccel, kRunAccel);
-	velocity_.x += step;
-
-	// ===== ジャンプ・重力 =====
 	if (onGround_) {
-	
-		if (Input::GetInstance()->PushKey(DIK_W)) {
-			velocity_.y = kJumpSpeed; // += じゃなくて代入にすると安定
-			onGround_ = false;        // ここで空中扱いにしたいなら（設計次第で消してOK）
-		} else {
-			velocity_.y = 0.0f; // 地上でYを固定したい場合
-		}
-	} else {
-		velocity_.y -= kGravity;
-		velocity_.y = std::max(velocity_.y, -kMaxFallSpeed);
-	}
+		// 移動入力 を WASD に変更（A/D 左右、W ジャンプ）
+		if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_A)) {
+			// 左右加速
+			Vector3 acceleration = {};
+			if (Input::GetInstance()->PushKey(DIK_D)) {
 
-	// zは使わないなら固定
-	velocity_.z = 0.0f;
+				if (velocity_.x < 0.0f) {
+					velocity_.x *= (1.0f - kAttenuation);
+				}
+
+				if (lrDirection_ != LRDirecion::kright) {
+					lrDirection_ = LRDirecion::kright;
+					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
+					turnTimer_ = kTimeTurn;
+				}
+				// 右移動
+				acceleration.x += kAcceleration;
+				playerMoveRight_ = true;
+				playerMoveLeft = false;
+
+			}
+			else if (Input::GetInstance()->PushKey(DIK_A)) {
+
+				if (velocity_.x > 0.0f) {
+					velocity_.x *= (1.0f - kAttenuation);
+				}
+				if (lrDirection_ != LRDirecion::kLeft) {
+					lrDirection_ = LRDirecion::kLeft;
+					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
+					turnTimer_ = kTimeTurn;
+				}
+				// 左移動
+				acceleration.x -= kAcceleration;
+				playerMoveLeft = true;
+				playerMoveRight_ = false;
+
+			}
+			velocity_.x += acceleration.x;
+			velocity_.y += acceleration.y;
+			velocity_.z += acceleration.z;
+
+			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
+
+		}
+		else {
+
+			velocity_.x *= (1.0f - kAttenuation);
+			velocity_.y *= (1.0f - kAttenuation);
+			velocity_.z *= (1.0f - kAttenuation);
+			// スティックが真ん中なら両方falseにする
+			playerMoveRight_ = false;
+			playerMoveLeft = false;
+		}
+
+
+		// ジャンプを W に変更
+		if (Input::GetInstance()->PushKey(DIK_W)) {
+
+			velocity_.x += 0;
+			velocity_.y += kJumpAcceleration;
+			velocity_.z += 0;
+
+		}
+
+	}
+	else {
+		// 落下速度
+		velocity_.x += 0;
+		velocity_.y += -kGravityAcceleration;
+		velocity_.z += 0;
+		// 落下速度制限
+
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
 }
 
 void Player::PrayerTurn() {
 	if (turnTimer_ > 0.0f) {
-		turnTimer_ -= 1.0f / 30.0f;
+		// 固定フレーム前提の dt（現状コードの多くが 1/60 を使っているため合わせる）
+		const float dt = 1.0f / 30.0f;
+		turnTimer_ -= dt;
 
 		// 左右の角度テーブル
 		float destinationRotationYTable[] = {
 			std::numbers::pi_v<float> / 2.0f,
-			std::numbers::pi_v<float> *3.0f / 2.0f,
+			std::numbers::pi_v<float> * 3.0f / 2.0f,
 		};
-		// 状態に応じた角度を取得する
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-		// 自キャラの角度を設定する
-		object3D_->SetRotate({ 0,destinationRotationY * EaseOutSine(turnTimer_) ,0 });
+
+		// turnTimer_ を kTimeTurn に対して正規化して進行率 t を得る（0..1）
+		const float total = kTimeTurn;
+		float t = 1.0f - (turnTimer_ / total);
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		// イージング（正しい EaseOutSine）
+		float eased = EaseOutSine(t);
+
+		// 開始角度から目標角度へ補間
+		float startY = turnFirstRotationY_;
+		float newY = startY + (destinationRotationY - startY) * eased;
+		object3D_->SetRotate({ 0.0f, newY, 0.0f });
+
+		// 終了時に角度を厳密に合わせる
+		if (turnTimer_ <= 0.0f) {
+			object3D_->SetRotate({ 0.0f, destinationRotationY, 0.0f });
+			turnTimer_ = 0.0f;
+		}
 	}
 }
 
@@ -311,7 +355,8 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 
 			onGround_ = false;
 
-		} else {
+		}
+		else {
 			// 移動後4つの計算
 			std::array<Vector3, kNumCorner> positionsNew;
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -328,17 +373,19 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			IndexSet indexSet;
 			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(0, -kCollisionEpsilon, 0));
 			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == 4) {
+			if (mapChipType == 1 || mapChipType == 6) {
 				hit = true;
-			} else if (mapChipType == 4) {
+			}
+			else if (mapChipType == 4) {
 				goal_ = true;
 			}
 			// 右点の判定
 			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(0, -kCollisionEpsilon, 0));
 			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == 1) {
+			if (mapChipType == 1 || mapChipType == 6) {
 				hit = true;
-			} else if (mapChipType == 4) {
+			}
+			else if (mapChipType == 4) {
 				goal_ = true;
 			}
 
@@ -348,7 +395,8 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			}
 		}
 
-	} else {
+	}
+	else {
 
 		if (info.landing) {
 
@@ -390,9 +438,10 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// 右点の判定
@@ -400,9 +449,10 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -441,15 +491,16 @@ void Player::CollisionMapInfoBottom(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
 	}
 	// 右点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -463,7 +514,7 @@ void Player::CollisionMapInfoBottom(CollisionMapInfo& info) {
 		// めり込み先ブロックの範囲矩形
 		Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		info.move.y = std::min(0.0f, rect.bottom - position.y + (kHeight / 2.0f + kBlank));
-		
+
 	}
 }
 
@@ -488,9 +539,10 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop] + Vector3(+kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -498,9 +550,10 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(+kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -539,9 +592,10 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop] + Vector3(-kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -549,9 +603,10 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -634,7 +689,7 @@ void Player::Attack()
 		// ローカル→ワールド変換
 		Vector3 velocity = MyMath::TransformNormal(localVelocity, object3D_->GetWorldMatrix());
 
-		// Object3D を弾用に作成し所有権を渡す
+		// Object3D を弾用に作成しOwnershipを移す
 		auto obj = std::make_unique<Object3D>();
 		obj->Initialize(Object3DCommon::GetInstance());
 		obj->SetModel("bullet.obj");
@@ -673,14 +728,16 @@ void Player::PlayerParticle()
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (lrDirection_ == LRDirecion::kright) {
 				smokeTransform.translate.x -= 0.15f;
-			} else {
+			}
+			else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
 			// 1回に2粒くらい
 			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
 		}
-	} else {
+	}
+	else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}

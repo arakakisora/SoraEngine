@@ -35,10 +35,13 @@ public:
 
 	// アクセッサ
 	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetBlockObject3D() { return blockobject3D; }
+	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetUnbreakableObject3D() { return unbreakableject3D; }
+
 
 private:
 	//ブロック
 	std::vector<std::vector<std::unique_ptr<Object3D>>> blockobject3D;
+	std::vector<std::vector<std::unique_ptr<Object3D>>> unbreakableject3D;
 	MapChipField* mapChipField_ = nullptr;
 
 
