@@ -15,6 +15,7 @@
 #include "CollisionManager.h"
 #include "LineCommon.h" // 追加: ライン描画
 #include <memory>      // std::make_unique を明示
+#include "newPlayer.h"
 
 void Player::Initialize(const Vector3& position) {
 
@@ -191,6 +192,8 @@ void Player::Draw() {
 		if (bullet) bullet->Draw();
 	}
 }
+
+
 
 void Player::PrayerMove() {
 

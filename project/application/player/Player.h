@@ -309,7 +309,7 @@ private:
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
 	bool goal_ = false; // ゴールに到達したかどうか
 	AABB aabb_;
-	// 追加: 大砲の角度（度単位）と調整ステップ
+	//大砲の角度（度単位）と調整ステップ
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）
 
