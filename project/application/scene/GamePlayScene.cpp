@@ -343,9 +343,10 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("blokc.obj");
 	ModelManager::GetInstance()->LoadModel("skyplane.obj");
 	ModelManager::GetInstance()->LoadModel("enemy.obj");
-	ModelManager::GetInstance()->LoadModel("gool.obj");
+	ModelManager::GetInstance()->LoadModel("goal.obj");
 	ModelManager::GetInstance()->LoadModel("bullet.obj");
 	ModelManager::GetInstance()->LoadModel("sphere.obj");
 	ModelManager::GetInstance()->LoadModel("gate.obj");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
 }
 
