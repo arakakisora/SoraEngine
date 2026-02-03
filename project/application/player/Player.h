@@ -261,12 +261,14 @@ private:
 	Vector3 playerPosition_ = {};
 
 	
+	
+
 
 
 	Vector3 velocity_ = {};                          // 速度
-	static inline const float kAcceleration = 0.01f;  // 定数加速度
-	static inline const float kAttenuation = 0.2f;   // 速度減衰率
-	static inline const float kLimitRunSpeed = 1.0f; // 最大速度制限
+	static inline const float kAcceleration = 0.02f; // 0.01 -> 0.03 で止まりも改善
+	static inline const float kAttenuation = 1.0f;   // 速度減衰率
+	static inline const float kLimitRunSpeed = 0.15f; // 0.5 -> 0.25 で半分
 
 	// 数学的定数
 	static inline constexpr float kPi = std::numbers::pi_v<float>;

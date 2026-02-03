@@ -15,7 +15,7 @@
 #include "CollisionManager.h"
 #include "LineCommon.h" // 追加: ライン描画
 #include <memory>      // std::make_unique を明示
-#include "newPlayer.h"
+
 
 void Player::Initialize(const Vector3& position) {
 
@@ -194,81 +194,55 @@ void Player::Draw() {
 }
 
 
+void Player::PrayerMove()
+{
+	// ===== 調整パラメータ =====
+	const float kMaxRunSpeed = kLimitRunSpeed;     // 最大移動速度
+	const float kRunAccel = kAcceleration;      // 加速度（大きいほどキビキビ）
+	const float kJumpSpeed = kJumpAcceleration;  // ジャンプ初速
+	const float kGravity = kGravityAcceleration;// 重力加速度
+	const float kMaxFallSpeed = kLimitFallSpeed;// 最大落下速度
 
-void Player::PrayerMove() {
+	// ===== 入力（-1,0,1にまとめる） =====
+	int moveX = 0;
+	if (Input::GetInstance()->PushKey(DIK_D)) moveX += 1;
+	if (Input::GetInstance()->PushKey(DIK_A)) moveX -= 1;
 
-	if (onGround_) {
-		// 移動入力 を WASD に変更（A/D 左右、W ジャンプ）
-		if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_A)) {
-			// 左右加速
-			Vector3 acceleration = {};
-			if (Input::GetInstance()->PushKey(DIK_D)) {
+	// 見た目用フラグは入力から決める（速度処理と混ぜない）
+	playerMoveRight_ = (moveX > 0);
+	playerMoveLeft = (moveX < 0);
 
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-
-				if (lrDirection_ != LRDirecion::kright) {
-					lrDirection_ = LRDirecion::kright;
-					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-					turnTimer_ = kLimitRunSpeed;
-				}
-				// 右移動
-				acceleration.x += kAcceleration;
-				playerMoveRight_ = true;
-				playerMoveLeft = false;
-
-			} else if (Input::GetInstance()->PushKey(DIK_A)) {
-
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - kAttenuation);
-				}
-				if (lrDirection_ != LRDirecion::kLeft) {
-					lrDirection_ = LRDirecion::kLeft;
-					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-					turnTimer_ = kLimitRunSpeed;
-				}
-				// 左移動
-				acceleration.x -= kAcceleration;
-				playerMoveLeft = true;
-				playerMoveRight_ = false;
-
-			}
-			velocity_.x += acceleration.x;
-			velocity_.y += acceleration.y;
-			velocity_.z += acceleration.z;
-
-			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
-
-		} else {
-
-			velocity_.x *= (1.0f - kAttenuation);
-			velocity_.y *= (1.0f - kAttenuation);
-			velocity_.z *= (1.0f - kAttenuation);
-			// スティックが真ん中なら両方falseにする
-			playerMoveRight_ = false;
-			playerMoveLeft = false;
-		}
-
-
-		// ジャンプを W に変更
-		if (Input::GetInstance()->PushKey(DIK_W)) {
-
-			velocity_.x += 0;
-			velocity_.y += kJumpAcceleration;
-			velocity_.z += 0;
-
-		}
-
-	} else {
-		// 落下速度
-		velocity_.x += 0;
-		velocity_.y += -kGravityAcceleration;
-		velocity_.z += 0;
-		// 落下速度制限
-
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	// 方向（必要ならここでだけ変える）
+	if (moveX > 0) {
+		lrDirection_ = LRDirecion::kright;
+	} else if (moveX < 0) {
+		lrDirection_ = LRDirecion::kLeft;
 	}
+
+	// ===== 水平移動（目標速度に加速で寄せる） =====
+	float targetVx = moveX * kMaxRunSpeed;
+
+	// targetVx へ kRunAccel で近づける（減衰ゼロでも止まりやすい）
+	float diff = targetVx - velocity_.x;
+	float step = std::clamp(diff, -kRunAccel, kRunAccel);
+	velocity_.x += step;
+
+	// ===== ジャンプ・重力 =====
+	if (onGround_) {
+	
+		if (Input::GetInstance()->PushKey(DIK_W)) {
+			velocity_.y = kJumpSpeed; // += じゃなくて代入にすると安定
+			onGround_ = false;        // ここで空中扱いにしたいなら（設計次第で消してOK）
+		} else {
+			velocity_.y = 0.0f; // 地上でYを固定したい場合
+		}
+	} else {
+		velocity_.y -= kGravity;
+		velocity_.y = std::max(velocity_.y, -kMaxFallSpeed);
+	}
+
+	// zは使わないなら固定
+	velocity_.z = 0.0f;
 }
 
 void Player::PrayerTurn() {

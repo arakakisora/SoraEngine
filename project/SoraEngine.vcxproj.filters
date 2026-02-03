@@ -274,7 +274,6 @@
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
     <ClCompile Include="application\ui\PauseMenu.cpp" />
-    <ClCompile Include="application\player\newPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -491,7 +490,6 @@
       <Filter>application\ヘッダーファイル\ui</Filter>
     </ClInclude>
     <ClInclude Include="application\ui\PauseMenu.h" />
-    <ClInclude Include="application\player\newPlayer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
