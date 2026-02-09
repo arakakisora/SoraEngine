@@ -132,7 +132,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				if (!unbreakableObj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("cube.obj");
+					newObj->SetModel("unbreakableBlokc.obj");
 					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
 					newObj->SetLighting(true);
 					newObj->SetDirectionalLightEnable(true);
