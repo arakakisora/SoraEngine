@@ -82,14 +82,14 @@ void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
     struct Setup { const char* icon; Vector2 iconSize; Entry::Side side; float localScale; };
     // 左下グループ： W/A/D/Space、右下グループ：マウスホイール/上下キー
     const Setup setups[] = {
-        { "Resources/key_w.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/key_a.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/key_d.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/space.jpg",    {64,64}, Entry::Side::Left },
+        { "Resources/key_w.dds",    {64,64}, Entry::Side::Left },
+        { "Resources/key_a.dds",    {64,64}, Entry::Side::Left },
+        { "Resources/key_d.dds",    {64,64}, Entry::Side::Left },
+        { "Resources/space.dds",    {64,64}, Entry::Side::Left },
 
-        { "Resources/mouse_wheel.jpg", {64,64}, Entry::Side::Right },
-        { "Resources/arrow_up.jpg",    {64,64}, Entry::Side::Right },
-        { "Resources/arrow_down.jpg",  {64,64}, Entry::Side::Right },
+        { "Resources/mouse_wheel.dds", {64,64}, Entry::Side::Right },
+        { "Resources/arrow_up.dds",    {64,64}, Entry::Side::Right },
+        { "Resources/arrow_down.dds",  {64,64}, Entry::Side::Right },
     };
 
     // 既存エントリをクリアして再構築

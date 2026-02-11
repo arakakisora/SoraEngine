@@ -73,7 +73,7 @@ void StageSelectScene::Initialize()
 	pauseMenu_.SetCamera(camera1.get());
 
 	// フェードインの初期化
-	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.Initialize("Resources/white.dds");
 	fadeManager_.StartFadeIn();
 
 }

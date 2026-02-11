@@ -11,7 +11,7 @@ void GameOverScene::Initialize()
 
 	//titeleの生成
 	sprite = std::make_unique<Sprite>();
-	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameover.png");
+	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameover.dds");
 	//titleSprite->SetSize({ 1280,720 });
 
 	// カメラ
@@ -21,7 +21,7 @@ void GameOverScene::Initialize()
 	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
-	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.Initialize("Resources/white.dds");
 	fadeManager_.StartFadeIn();
 
 }

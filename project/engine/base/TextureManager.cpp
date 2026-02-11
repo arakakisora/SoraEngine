@@ -1,6 +1,7 @@
 #include "TextureManager.h"
 #include "StringUtility.h"
-
+#include <cassert>
+#include <filesystem>
 
 
 using namespace StringUtility;
@@ -119,6 +120,30 @@ D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetSrvHandleGPU(const std::string& f
 	assert(textureDatas.size() + kSRVIndexTop < DirectXCommon::kMaxSRVCount);
 
 	return textureDatas.at(filepath).srvHandleGPU;
+}
+
+std::string TextureManager::PreferDDSPath(const std::string& originalPath)
+{
+	namespace fs = std::filesystem;
+
+	fs::path p(originalPath);
+
+	// すでに .dds ならそのまま
+	if (p.has_extension() && p.extension() == ".dds") {
+		return originalPath;
+	}
+
+	// 拡張子だけ .dds に差し替え
+	fs::path ddsPath = p;
+	ddsPath.replace_extension(".dds");
+
+	// 同名ddsが存在するならdds優先
+	if (fs::exists(ddsPath)) {
+		return ddsPath.string();
+	}
+
+	// 無ければ元のまま
+	return originalPath;
 }
 
 

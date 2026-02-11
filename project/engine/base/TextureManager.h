@@ -67,6 +67,8 @@ public:
 	/// <param name="filepath"></param>
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandleGPU(const std::string& filepath);
 
+	static std::string PreferDDSPath(const std::string& originalPath);
+
 	/// <summary>
 	//Srvの最初
 	/// </summary>

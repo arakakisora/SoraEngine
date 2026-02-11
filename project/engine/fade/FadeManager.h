@@ -12,7 +12,7 @@ public:
 	/// 初期化
     /// </summary>
     /// <param name="texture"></param>
-    void Initialize(const std::string& texture = "white1x1.png");
+    void Initialize(const std::string& texture = "white1x1.dds");
 	/// <summary>
 	/// フェードイン開始
 	/// </summary>

@@ -35,7 +35,7 @@ void Enemy2::Initialize() {
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
 
 	//deatheffect
-	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.dds", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	lifeTime = 1.0f;//パーティクルの寿命
 	currentTime = 1.0f;//現在の時間
 	maxParticles = 100;//最大パーティクル数

@@ -17,7 +17,7 @@
 
 void GamePlayScene::Initialize()
 {
-	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.Initialize("Resources/white.dds");
 	fadeManager_.StartFadeIn();
 
 	//カメラの生成
@@ -326,16 +326,13 @@ void GamePlayScene::Imguidebug()
 void GamePlayScene::Road()
 {
 	//3Dオブジェクト読み込み
-	ModelManager::GetInstance()->LoadModel("plane.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
-	ModelManager::GetInstance()->LoadModel("cube.obj");
+
 	ModelManager::GetInstance()->LoadModel("player.obj");
 	ModelManager::GetInstance()->LoadModel("blokc.obj");
 	ModelManager::GetInstance()->LoadModel("skyplane.obj");
 	ModelManager::GetInstance()->LoadModel("enemy.obj");
 	ModelManager::GetInstance()->LoadModel("gool.obj");
 	ModelManager::GetInstance()->LoadModel("bullet.obj");
-	ModelManager::GetInstance()->LoadModel("sphere.obj");
 	ModelManager::GetInstance()->LoadModel("gate.obj");
 }
 

@@ -10,7 +10,7 @@ void GameClearScene::Initialize()
 {
 	//titleの生成
 	sprite = std::make_unique<Sprite>();
-	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameclear.png");
+	sprite->Initialize(SpriteCommon::GetInstance(), "Resources/gameclear.dds");
 	//titleSprite->SetSize({ 1280,720 });
 
 

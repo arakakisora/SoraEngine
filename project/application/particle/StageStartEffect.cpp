@@ -22,7 +22,7 @@ void StageStartEffect::Initialize(Object3D* player, const Vector3& basePos) {
     gateRight_->SetTranslate({ basePos_.x + 1.0f, basePos_.y, basePos_.z - 0.5f });
 
 	gameOrder = std::make_unique<Sprite>();
-	gameOrder->Initialize(SpriteCommon::GetInstance(), "Resources/gameorder.png");
+	gameOrder->Initialize(SpriteCommon::GetInstance(), "Resources/gameorder.dds");
 }
 
 void StageStartEffect::Begin() {

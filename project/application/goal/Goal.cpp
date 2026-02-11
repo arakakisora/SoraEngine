@@ -18,7 +18,7 @@ void Goal::Initialize(MapChipField* map, Player* paleyr)
 	stageClearEffect_ = std::make_unique<StageEndEffect>();
 	stageClearEffect_->Initialize(paleyr->GetObject3D(), goalPosition_);
 
-	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.Initialize("Resources/white.dds");
 	fadeManager_.StartFadeIn();
 	isFadeOutStarted_ = false;
 	

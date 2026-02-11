@@ -17,12 +17,12 @@ void TitleScene::Initialize() {
 	ModelManager::GetInstance()->LoadModel("title.obj"); // タイトルモデル
 
 	// フェードの初期化（白）
-	fadeManager_.Initialize("Resources/white.png");
+	fadeManager_.Initialize("Resources/white.dds");
 	fadeManager_.StartFadeIn();
 
 	// タイトルスプライトを作成して初期パラメータ設定
 	titleSprite_ = std::make_unique<Sprite>();
-	titleSprite_->Initialize(SpriteCommon::GetInstance(), "Resources/space.png");
+	titleSprite_->Initialize(SpriteCommon::GetInstance(), "Resources/space.dds");
 	titleSprite_->SetPosition({ kTitleSpritePosX, kTitleSpritePosY });
 	titleSprite_->SetSize({ kTitleSpriteW, kTitleSpriteH });
 

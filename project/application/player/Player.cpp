@@ -34,7 +34,7 @@ void Player::Initialize(const Vector3& position) {
 
 	ParticleMnager::GetInstance()->CreateParticleGroup(
 		"dash_smoke",
-		"Resources/smoke.png", // 使いたいテクスチャ
+		"Resources/smoke.dds", // 使いたいテクスチャ
 		VerticesType::Quad,
 		std::make_unique<ExhaustGasBehavior>()
 	);

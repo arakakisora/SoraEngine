@@ -101,7 +101,7 @@ public:
 	bool loop_ = true;           // 常にループ
 	float loopWaitSec_ = 1.5f;   // 静止表示の秒数
 
-	// マジックナンバーの定数化（しきい値・UIサイズなど）
+	
 	static inline constexpr float kPlayerMaxX = 12.0f;
 	static inline constexpr float kTitleStartX = -12.0f;
 	static inline constexpr float kTitleSpritePosX = 490.0f;
