@@ -85,7 +85,7 @@ void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
         { "Resources/key_w.dds",    {64,64}, Entry::Side::Left },
         { "Resources/key_a.dds",    {64,64}, Entry::Side::Left },
         { "Resources/key_d.dds",    {64,64}, Entry::Side::Left },
-        { "Resources/space.dds",    {64,64}, Entry::Side::Left },
+        { "Resources/attackspace.dds",    {64,64}, Entry::Side::Left },
 
         { "Resources/mouse_wheel.dds", {64,64}, Entry::Side::Right },
         { "Resources/arrow_up.dds",    {64,64}, Entry::Side::Right },
