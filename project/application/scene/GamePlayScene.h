@@ -31,6 +31,7 @@
 #include "StageEndEffect.h"
 #include "GameOverEffect.h"
 #include "GenerateBlock.h"
+#include <PauseMenu.h>
 
 /// <summary>
 /// ゲームプレイシーン
@@ -66,6 +67,12 @@ public:
 	/// モデルをロードする
 	/// </summary>
 	void Road();
+
+private:
+	// ゲームのロジック更新（ポーズ時は呼ばない）
+	void UpdateGameLogic(float dt);
+	// オブジェクト・見た目の更新（ポーズ中でも常に呼ぶ）
+	void UpdateObjects(float dt);
 
 public:
 
@@ -104,7 +111,7 @@ public:
 	//ゲームオーバー演出
 	std::unique_ptr<GameOverEffect> gameOverEffect_;
 
-	
+	std::unique_ptr<PauseMenu>pauseMenu;
 
 	//debug用
 #ifdef _DEBUG

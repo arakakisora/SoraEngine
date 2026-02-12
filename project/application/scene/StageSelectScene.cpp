@@ -9,6 +9,7 @@
 #include <ModelManager.h>
 
 
+
 void StageSelectScene::Initialize()
 {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
@@ -17,8 +18,6 @@ void StageSelectScene::Initialize()
 	camera1 = std::make_unique<Camera>();
 	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
 	CameraManager::GetInstance()->AddCamera("maincam", camera1.get());
-
-
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
@@ -69,6 +68,10 @@ void StageSelectScene::Initialize()
 		stages_.push_back(std::move(stage));
 	}
 
+	// PauseMenu 初期化（セレクトシーン用）
+	pauseMenu_.Initialize(Object3DCommon::GetInstance(), PauseType::StageSelectScene);
+	pauseMenu_.SetCamera(camera1.get());
+
 	// フェードインの初期化
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
@@ -85,33 +88,42 @@ void StageSelectScene::Finalize()
 void StageSelectScene::Update()
 {
 	//カメラの更新
-
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	// フェード更新
 	fadeManager_.Update();
 
-	float targetOffset = -(float)currentIndex_ * inrerval_; // 中央に来るようにオフセット
-	scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f; // イージング
+	// PauseMenu の更新（先に更新してポーズ判定を反映）
+	pauseMenu_.Update();
 
+	// ポーズ中はセレクト操作やフェード開始などのゲーム入力を無視する
+	if (!pauseMenu_.IsPaused()) {
 
-	if (
+		float targetOffset = -(float)currentIndex_ * inrerval_; // 中央に来るようにオフセット
+		scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f; // イージング
 
-		Input::GetInstance()->TriggerKey(DIK_SPACE) ||
+		if (
 
-		Input::GetInstance()->Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
-		if (!fadeManager_.IsFading()) {
-			fadeManager_.StartFadeOut();
+			Input::GetInstance()->TriggerKey(DIK_SPACE) ||
+
+			Input::GetInstance()->Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
+			if (!fadeManager_.IsFading()) {
+				fadeManager_.StartFadeOut();
+			}
 		}
+
+		// フェードアウトが完了したらシーン切り替え
+		if (fadeManager_.IsFadeOutFinished()) {
+			SceneManager::GetInstance()->SetStageIndex(currentIndex_);
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		}
+
+		SelectMove();
 	}
-
-
-	// フェードアウトが完了したらシーン切り替え
-	if (fadeManager_.IsFadeOutFinished()) {
-		SceneManager::GetInstance()->SetStageIndex(currentIndex_);
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+	else {
+		// ポーズ中でもスクロールの補間は見た目のため保持する
+		float targetOffset = -(float)currentIndex_ * inrerval_;
+		scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f;
 	}
-
-	SelectMove();
 
 #ifdef _DEBUG
 
@@ -171,6 +183,9 @@ void StageSelectScene::Draw()
 		stages_[i].object->Update();
 		stages_[i].object->Draw();
 	}
+
+	// PauseMenu を 3D パス内で描画（オーバーレイ）
+	pauseMenu_.Draw();
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();

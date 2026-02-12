@@ -12,7 +12,7 @@
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
 #include "LineCommon.h"
-#include "ControlGuide.h" 
+#include "ControlGuide.h"
 
 
 void GamePlayScene::Initialize()
@@ -20,7 +20,7 @@ void GamePlayScene::Initialize()
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
-	//カメラの生成	
+	//カメラの生成
 	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
@@ -39,8 +39,19 @@ void GamePlayScene::Initialize()
 
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
+
+	const int stageIndex = SceneManager::GetInstance()->GetStageIndex();
+	std::string stagePath;
+	const int kAvailableMaps = 12; // Map1.csv .. Map12.csv
+
+	if (stageIndex >= 0 && stageIndex < kAvailableMaps) {
+		stagePath = "Resources/Mapdata/Map" + std::to_string(stageIndex + 1) + ".csv";
+	}
+	else {
+		stagePath = "Resources/Mapdata/Map1.csv";
+	}
 	mapChipField_ = std::make_unique<MapChipField>();
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv(stagePath);//testmap blocks.csv
 	// ブロック生成
 	generateBlock_.Initialize(mapChipField_.get());
 	generateBlock_.GenerateObject3D();
@@ -51,11 +62,12 @@ void GamePlayScene::Initialize()
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
-	} else {
+	}
+	else {
 		// フォールバック: 既存の手打ち位置
 		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 	}
-	//playerの生成	
+	//playerの生成
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
@@ -95,6 +107,11 @@ void GamePlayScene::Initialize()
 
 	// ControlGuide の初期化
 	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
+
+	//ポーズメニュー
+	pauseMenu = std::make_unique<PauseMenu>();
+	pauseMenu->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
+	pauseMenu->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
 }
 
 void GamePlayScene::Finalize()
@@ -107,70 +124,96 @@ void GamePlayScene::Finalize()
 	ControlGuide::DestroyInstance();
 }
 
-void GamePlayScene::Update()
+void GamePlayScene::UpdateGameLogic(float dt)
 {
-	//カメラの更新
-	CameraManager::GetInstance()->GetActiveCamera()->Update();
-	fadeManager_.Update();
+	
+	goal->Update(player->GetGoal(), dt);
 
-
-
-	goal->Update(player->GetGoal(), 1.0f / 60.0f);
-	const float dt = 1.0f / 60.0f;
+	const float fixedDt = dt;
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 
-		stageStartEffect_->Update(1.0f / 60.0f);
+		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
 			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 		}
-		player->GetObject3D()->Update();
-		enemyManager_->EnemyObjectUpdate();
-	} else {
-		//player->Update();
-		////プレイヤーの更新
+		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
+		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
+	}
+	else {
+		// ゲーム進行系（ポーズ中は実行しない）
 		if (!player->GetIsDead_()) {
 			player->Update();
-			// プレイヤーの弾
-
+			// プレイヤーの弾などは player 内で管理される
 		}
 		enemyManager_->Update();
 
-
-
-		// 毎フレーム、まずクリアしてから各オーナーに登録して Update を呼ぶ
+		// 衝突周りはゲームロジック
 		CollisionManager::GetInstance()->Clear();
-
-		// プレイヤー自身と弾を登録（Player が担当）
 		player->RegisterColliders();
-
-		// 敵は EnemyManager が登録する
 		enemyManager_->RegisterColliders();
-
-		// 衝突判定実行
 		CollisionManager::GetInstance()->Update();
+
 		generateBlock_.SyncBlockObjectsWithMap();
 	}
-	//プレイヤーが死んだらゲームオーバーシーンに遷移
-	if (player->GetIsDead_()) {
 
+	// プレイヤーが死んだらゲームオーバー演出
+	if (player->GetIsDead_()) {
 		gameOverEffect_->Update(dt);
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
-
-
 	}
 	if (!gameOverEffect_->IsPlaying()) {
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 	}
+}
 
+void GamePlayScene::UpdateObjects(float dt)
+{
+	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
+	// 例: Object3D の更新、エネミーの transform 更新、ブロックのビジュアル更新、パーティクル
+	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
+		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
+		player->GetObject3D()->Update();
+		enemyManager_->EnemyObjectUpdate();
+	}
+	else {
+		// 普通時も見た目の更新は行う（物理・ロジックは UpdateGameLogic 側）
+		player->GetObject3D()->Update();
+		enemyManager_->EnemyObjectUpdate();
+	}
 
+	// ブロックやパーティクルなどは常に更新
 	generateBlock_.Update();
 
+}
+
+void GamePlayScene::Update()
+{
+	// Camera は常に現在の active camera を更新（ポーズ用カメラ切替後に反映されるよう、ここで行う）
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
+	// ポーズメニューの入力・イージングを先に処理（カメラ切替等を即時反映させるため）
+	pauseMenu->Update();
+
+	// フェードは常に更新
+	fadeManager_.Update();
+
+	// ポーズ中かどうかを判定
+	const bool isPaused = pauseMenu->IsPaused();
+
+	// 固定 dt
+	const float dt = 1.0f / 60.0f;
+
+	// ゲームロジックはポーズ時に止める
+	if (!isPaused) {
+		UpdateGameLogic(dt);
+	}
+
+	// オブジェクトの見た目更新は常に行う
+	UpdateObjects(dt);
 
 
 #ifdef _DEBUG
 	Imguidebug();
-
 #endif // _DEBUG
 }
 
@@ -182,13 +225,18 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
+
 	//SkyDome
 	goal->Draw();
 
 	if (isStageStartPlaying_) {
-		stageStartEffect_->Draw(); // ←ゲートのみ描画
+		if (!pauseMenu->IsPaused())
+		{
+			stageStartEffect_->Draw();
+		} // ←ゲートのみ描画
 		player->Draw();            // ←プレイヤーを別に描画
-	} else {
+	}
+	else {
 
 		player->Draw();
 
@@ -198,7 +246,7 @@ void GamePlayScene::Draw()
 
 	generateBlock_.Draw();
 
-
+	pauseMenu->Draw();
 
 	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
@@ -209,15 +257,17 @@ void GamePlayScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
-	ControlGuide::GetInstance()->Render();
+	if (!pauseMenu->IsPaused()) {
+		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+		ControlGuide::GetInstance()->Render();
+	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
 	goal->Draw2D();
 
 	if (isStageStartPlaying_) {
-
-		stageStartEffect_->Draw2D();
+		if (!pauseMenu->IsPaused())
+			stageStartEffect_->Draw2D();
 	}
 }
 
@@ -236,7 +286,7 @@ void GamePlayScene::Imguidebug()
 		mapChipField_->LoadMapChipCsv(filePath);
 
 		mapChipField_->LoadMapChipCsv(filePath);
-		
+
 		// 再生成
 		generateBlock_.GenerateObject3D();
 
@@ -248,11 +298,12 @@ void GamePlayScene::Imguidebug()
 
 		// --- プレイヤースポーン位置をマップから取得する ---
 		Vector3 playerPostion = {};
-		auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
 		if (!spawnPositions.empty()) {
 			// マップに player スポーンが複数ある場合は最初のものを使用
 			playerPostion = spawnPositions.front();
-		} else {
+		}
+		else {
 			// フォールバック: 既存の手打ち位置
 			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 		}
@@ -292,9 +343,10 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("blokc.obj");
 	ModelManager::GetInstance()->LoadModel("skyplane.obj");
 	ModelManager::GetInstance()->LoadModel("enemy.obj");
-	ModelManager::GetInstance()->LoadModel("gool.obj");
+	ModelManager::GetInstance()->LoadModel("goal.obj");
 	ModelManager::GetInstance()->LoadModel("bullet.obj");
 	ModelManager::GetInstance()->LoadModel("sphere.obj");
 	ModelManager::GetInstance()->LoadModel("gate.obj");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
 }
 

@@ -44,7 +44,7 @@ void PlayerBullet::Update() {
 		int chipType = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
 
 		// タイルが存在する場合はダメージを与える（hp>0 のタイルのみ）
-		if (chipType == 1) {
+		if (chipType == 1|| chipType==6) {
 			int hp = mapChipField_->GetMapChipHPByIndex(idx.xIndex, idx.yIndex);
 			if (hp > 0) {
 				// 1ダメージ（必要なら量を変える）

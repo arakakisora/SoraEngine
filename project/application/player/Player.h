@@ -43,6 +43,37 @@ enum class WeaponType {
 	Cannon,
 };
 
+enum class CollisionType {
+	Top,
+	Bottom,
+	Left,
+	Right
+};
+
+struct PlayerParameter {
+	//プレイヤーパラメータ
+//speedパラメータ
+	float kAccleration = 0.05f;  // 定数加速度
+	float kAttenuation = 0.2f;   // 速度減衰率
+	float kLimitRunSpeed = 0.2f; // 最大速度制限
+	//jannpパラメータ
+	float kGravityAccleration = 0.05f; // 重力加速度
+	float kLimitFallSpeed = 1.0f;      // 最大落下速度
+	float kJampAcceleration = 0.5f;    // ジャンプ初速
+	float kJampBlockAcceleration = 0.8f;//ジャンプブロックのジャンプ初速
+	float kAccumulateJumpTime_ = 0.2f;   //溜め時間
+	//当たり判定パラメータ
+	float kWidth = 0.8f;//当たり判定の幅
+	float kHeight = 0.8f;//当たり判定の高さ
+	float kBlank = 2.0;//当たり判定の余裕
+	float kCollisionsmallnumber = 0.1f;//当たり判定の余裕
+	//減衰パラメータ
+	float kAttenuationLanding = 0.1f;//着地時の減衰率
+	float kAttenuationWall = 1.0f;//壁に当たった時の減衰率
+	// 振り向きパラメータ
+	float KtimeTurn = 1.0f; // 角度補間タイム
+};
+
 class Enemy;
 class MapChipField;
 /// <summary>
@@ -261,12 +292,10 @@ private:
 	Vector3 playerPosition_ = {};
 
 	
-
-
 	Vector3 velocity_ = {};                          // 速度
-	static inline const float kAcceleration = 0.01f;  // 定数加速度
-	static inline const float kAttenuation = 0.2f;   // 速度減衰率
-	static inline const float kLimitRunSpeed = 1.0f; // 最大速度制限
+	static inline const float kAcceleration = 0.02f; // 0.01 -> 0.03 で止まりも改善
+	static inline const float kAttenuation = 0.9f;   // 速度減衰率
+	static inline const float kLimitRunSpeed = 0.15f; // 0.5 -> 0.25 で半分
 
 	// 数学的定数
 	static inline constexpr float kPi = std::numbers::pi_v<float>;
@@ -309,7 +338,7 @@ private:
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
 	bool goal_ = false; // ゴールに到達したかどうか
 	AABB aabb_;
-	// 追加: 大砲の角度（度単位）と調整ステップ
+	//大砲の角度（度単位）と調整ステップ
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）
 
