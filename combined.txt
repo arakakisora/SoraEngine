@@ -6,6 +6,7 @@
     └── ├── Mapdata/
     └── ├── Shaders/
     └── ├── models/
+    └── └── ├── PauseMenu/
     ├── SoraEngine.vcxproj
     ├── SoraEngine.vcxproj.filters
     ├── application/
@@ -66,7 +67,9 @@
     └── └── └── TitleScene.h
     └── └── ui/
     └──     ├── ControlGuide.cpp
-    └──     └── ControlGuide.h
+    └──     ├── ControlGuide.h
+    └──     ├── PauseMenu.cpp
+    └──     └── PauseMenu.h
     ├── engine/
     └── ├── 2d/
     └── └── ├── Sprite.cpp
@@ -302,6 +305,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
     <ClCompile Include="application\ui\ControlGuide.cpp" />
+    <ClCompile Include="application\ui\PauseMenu.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\particle\PlayerpaticleBehavior.cpp" />
@@ -483,6 +487,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
     <ClInclude Include="application\ui\ControlGuide.h" />
+    <ClInclude Include="application\ui\PauseMenu.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
@@ -881,6 +886,7 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClCompile Include="application\scene\GameClearScene.cpp">
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
+    <ClCompile Include="application\ui\PauseMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -1096,6 +1102,7 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClInclude Include="application\ui\ControlGuide.h">
       <Filter>application\ヘッダーファイル\ui</Filter>
     </ClInclude>
+    <ClInclude Include="application\ui\PauseMenu.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">
@@ -2730,7 +2737,7 @@ void Goal::Initialize(MapChipField* map, Player* paleyr)
 	// ゴールの生成（unique_ptr で所有）
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("cube.obj");
+	object3D_->SetModel("goal.obj");
 	// スケールの設定
 	goalPosition_ = map->GetGoalPosition();
 	object3D_->SetTranslate(goalPosition_);
@@ -2883,7 +2890,7 @@ File Path: project/application/map/GenerateBlock.cpp
 void GenerateBlock::Initialize(MapChipField* map)
 {
 	mapChipField_ = map;
-	
+
 }
 
 void GenerateBlock::Update()
@@ -2894,8 +2901,21 @@ void GenerateBlock::Update()
 	{
 		for (auto& obj : objext3dLine)
 		{
-			if (!obj)
+			if (!obj) {
 				continue;
+			}
+			obj->Update();
+		}
+	}
+
+	//壊れないブロックの更新
+	for (auto& objext3dLine : unbreakableject3D)
+	{
+		for (auto& obj : objext3dLine)
+		{
+			if (!obj) {
+				continue;
+			}
 			obj->Update();
 		}
 	}
@@ -2917,6 +2937,17 @@ void GenerateBlock::Draw()
 
 	}
 
+	for (auto& objext3dLine : unbreakableject3D)
+	{
+		for (auto& obj : objext3dLine)
+		{
+			if (!obj) {
+				continue;
+			}
+			obj->Draw();
+		}
+	}
+
 }
 
 void GenerateBlock::GenerateObject3D()
@@ -2928,10 +2959,14 @@ void GenerateBlock::GenerateObject3D()
 
 	// 既存のオブジェクトを全部削除して配列を初期化（unique_ptr が自動で破棄）
 	blockobject3D.clear();
+	unbreakableject3D.clear();
 
-	blockobject3D.resize(numBlokVirtical);
+	blockobject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
+	unbreakableject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
+
 	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
 		blockobject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
+		unbreakableject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
 	}
 
 	// 実際の作成は Sync に任せる（初回はここで生成される）
@@ -2951,8 +2986,13 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 
 			int type = mapChipField_->GetMapChipTypeByIndex(x, y);
 			Object3D* obj = nullptr;
+			Object3D* unbreakableObj = nullptr;
+
 			if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
 				obj = blockobject3D[y][x].get();
+			}
+			if (y < unbreakableject3D.size() && x < unbreakableject3D[y].size()) {
+				unbreakableObj = unbreakableject3D[y][x].get();
 			}
 
 			// タイプ 1 はブロック（必要に応じ他のIDも対応）
@@ -2972,7 +3012,25 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 						blockobject3D[y][x] = std::move(newObj);
 					}
 				}
-			} else {
+			}
+			else if (type == 6) {
+
+				if (!unbreakableObj) {
+					auto newObj = std::make_unique<Object3D>();
+					newObj->Initialize(Object3DCommon::GetInstance());
+					newObj->SetModel("unbreakableBlokc.obj");
+					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
+					newObj->SetLighting(true);
+					newObj->SetDirectionalLightEnable(true);
+					newObj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
+					// 保持配列へ格納
+					if (y < unbreakableject3D.size() && x < unbreakableject3D[y].size()) {
+						unbreakableject3D[y][x] = std::move(newObj);
+					}
+				}
+
+			}
+			else {
 				// ブロックが消えているのにオブジェクトが残っていれば削除（unique_ptr::reset で破棄）
 				if (obj) {
 					if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
@@ -3024,10 +3082,13 @@ public:
 
 	// アクセッサ
 	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetBlockObject3D() { return blockobject3D; }
+	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetUnbreakableObject3D() { return unbreakableject3D; }
+
 
 private:
 	//ブロック
 	std::vector<std::vector<std::unique_ptr<Object3D>>> blockobject3D;
+	std::vector<std::vector<std::unique_ptr<Object3D>>> unbreakableject3D;
 	MapChipField* mapChipField_ = nullptr;
 
 
@@ -4798,14 +4859,15 @@ void Player::PrayerMove() {
 				if (lrDirection_ != LRDirecion::kright) {
 					lrDirection_ = LRDirecion::kright;
 					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-					turnTimer_ = kLimitRunSpeed;
+					turnTimer_ = kTimeTurn;
 				}
 				// 右移動
 				acceleration.x += kAcceleration;
 				playerMoveRight_ = true;
 				playerMoveLeft = false;
 
-			} else if (Input::GetInstance()->PushKey(DIK_A)) {
+			}
+			else if (Input::GetInstance()->PushKey(DIK_A)) {
 
 				if (velocity_.x > 0.0f) {
 					velocity_.x *= (1.0f - kAttenuation);
@@ -4813,7 +4875,7 @@ void Player::PrayerMove() {
 				if (lrDirection_ != LRDirecion::kLeft) {
 					lrDirection_ = LRDirecion::kLeft;
 					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-					turnTimer_ = kLimitRunSpeed;
+					turnTimer_ = kTimeTurn;
 				}
 				// 左移動
 				acceleration.x -= kAcceleration;
@@ -4827,7 +4889,8 @@ void Player::PrayerMove() {
 
 			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 
-		} else {
+		}
+		else {
 
 			velocity_.x *= (1.0f - kAttenuation);
 			velocity_.y *= (1.0f - kAttenuation);
@@ -4847,7 +4910,8 @@ void Player::PrayerMove() {
 
 		}
 
-	} else {
+	}
+	else {
 		// 落下速度
 		velocity_.x += 0;
 		velocity_.y += -kGravityAcceleration;
@@ -4860,17 +4924,35 @@ void Player::PrayerMove() {
 
 void Player::PrayerTurn() {
 	if (turnTimer_ > 0.0f) {
-		turnTimer_ -= 1.0f / 30.0f;
+		// 固定フレーム前提の dt（現状コードの多くが 1/60 を使っているため合わせる）
+		const float dt = 1.0f / 30.0f;
+		turnTimer_ -= dt;
 
 		// 左右の角度テーブル
 		float destinationRotationYTable[] = {
 			std::numbers::pi_v<float> / 2.0f,
-			std::numbers::pi_v<float> *3.0f / 2.0f,
+			std::numbers::pi_v<float> * 3.0f / 2.0f,
 		};
-		// 状態に応じた角度を取得する
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-		// 自キャラの角度を設定する
-		object3D_->SetRotate({ 0,destinationRotationY * EaseOutSine(turnTimer_) ,0 });
+
+		// turnTimer_ を kTimeTurn に対して正規化して進行率 t を得る（0..1）
+		const float total = kTimeTurn;
+		float t = 1.0f - (turnTimer_ / total);
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		// イージング（正しい EaseOutSine）
+		float eased = EaseOutSine(t);
+
+		// 開始角度から目標角度へ補間
+		float startY = turnFirstRotationY_;
+		float newY = startY + (destinationRotationY - startY) * eased;
+		object3D_->SetRotate({ 0.0f, newY, 0.0f });
+
+		// 終了時に角度を厳密に合わせる
+		if (turnTimer_ <= 0.0f) {
+			object3D_->SetRotate({ 0.0f, destinationRotationY, 0.0f });
+			turnTimer_ = 0.0f;
+		}
 	}
 }
 
@@ -4924,7 +5006,8 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 
 			onGround_ = false;
 
-		} else {
+		}
+		else {
 			// 移動後4つの計算
 			std::array<Vector3, kNumCorner> positionsNew;
 			for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -4941,17 +5024,19 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			IndexSet indexSet;
 			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(0, -kCollisionEpsilon, 0));
 			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == 4) {
+			if (mapChipType == 1 || mapChipType == 6) {
 				hit = true;
-			} else if (mapChipType == 4) {
+			}
+			else if (mapChipType == 4) {
 				goal_ = true;
 			}
 			// 右点の判定
 			indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(0, -kCollisionEpsilon, 0));
 			mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			if (mapChipType == 1) {
+			if (mapChipType == 1 || mapChipType == 6) {
 				hit = true;
-			} else if (mapChipType == 4) {
+			}
+			else if (mapChipType == 4) {
 				goal_ = true;
 			}
 
@@ -4961,7 +5046,8 @@ void Player::OnGroundSwitching(const CollisionMapInfo& info) {
 			}
 		}
 
-	} else {
+	}
+	else {
 
 		if (info.landing) {
 
@@ -5003,9 +5089,10 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// 右点の判定
@@ -5013,9 +5100,10 @@ void Player::CollisionMapInfoTop(CollisionMapInfo& info) {
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -5054,15 +5142,16 @@ void Player::CollisionMapInfoBottom(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
 	}
 	// 右点の判定
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom]);
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -5076,7 +5165,7 @@ void Player::CollisionMapInfoBottom(CollisionMapInfo& info) {
 		// めり込み先ブロックの範囲矩形
 		Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 		info.move.y = std::min(0.0f, rect.bottom - position.y + (kHeight / 2.0f + kBlank));
-		
+
 	}
 }
 
@@ -5101,9 +5190,10 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop] + Vector3(+kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -5111,9 +5201,10 @@ void Player::CollisionMapInfoRight(CollisionMapInfo& info) {
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightBottom] + Vector3(+kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -5152,9 +5243,10 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 	IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop] + Vector3(-kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 
@@ -5162,9 +5254,10 @@ void Player::CollisionMapInfoLeft(CollisionMapInfo& info) {
 
 	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftBottom] + Vector3(-kCollisionEpsilon, 0, 0));
 	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	if (mapChipType == 1) {
+	if (mapChipType == 1 || mapChipType == 6) {
 		hit = true;
-	} else if (mapChipType == 4) {
+	}
+	else if (mapChipType == 4) {
 		goal_ = true;
 	}
 	// hit
@@ -5247,7 +5340,7 @@ void Player::Attack()
 		// ローカル→ワールド変換
 		Vector3 velocity = MyMath::TransformNormal(localVelocity, object3D_->GetWorldMatrix());
 
-		// Object3D を弾用に作成し所有権を渡す
+		// Object3D を弾用に作成しOwnershipを移す
 		auto obj = std::make_unique<Object3D>();
 		obj->Initialize(Object3DCommon::GetInstance());
 		obj->SetModel("bullet.obj");
@@ -5286,14 +5379,16 @@ void Player::PlayerParticle()
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (lrDirection_ == LRDirecion::kright) {
 				smokeTransform.translate.x -= 0.15f;
-			} else {
+			}
+			else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
 			// 1回に2粒くらい
 			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
 		}
-	} else {
+	}
+	else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
@@ -5311,7 +5406,6 @@ void Player::RegisterColliders()
 		if (b) cm->AddCollider(b.get());
 	}
 }
-
 
 ============================================================
 File Path: project/application/player/Player.h
@@ -5359,6 +5453,37 @@ enum Corner {
 enum class WeaponType {
 	Gatling,
 	Cannon,
+};
+
+enum class CollisionType {
+	Top,
+	Bottom,
+	Left,
+	Right
+};
+
+struct PlayerParameter {
+	//プレイヤーパラメータ
+//speedパラメータ
+	float kAccleration = 0.05f;  // 定数加速度
+	float kAttenuation = 0.2f;   // 速度減衰率
+	float kLimitRunSpeed = 0.2f; // 最大速度制限
+	//jannpパラメータ
+	float kGravityAccleration = 0.05f; // 重力加速度
+	float kLimitFallSpeed = 1.0f;      // 最大落下速度
+	float kJampAcceleration = 0.5f;    // ジャンプ初速
+	float kJampBlockAcceleration = 0.8f;//ジャンプブロックのジャンプ初速
+	float kAccumulateJumpTime_ = 0.2f;   //溜め時間
+	//当たり判定パラメータ
+	float kWidth = 0.8f;//当たり判定の幅
+	float kHeight = 0.8f;//当たり判定の高さ
+	float kBlank = 2.0;//当たり判定の余裕
+	float kCollisionsmallnumber = 0.1f;//当たり判定の余裕
+	//減衰パラメータ
+	float kAttenuationLanding = 0.1f;//着地時の減衰率
+	float kAttenuationWall = 1.0f;//壁に当たった時の減衰率
+	// 振り向きパラメータ
+	float KtimeTurn = 1.0f; // 角度補間タイム
 };
 
 class Enemy;
@@ -5579,12 +5704,10 @@ private:
 	Vector3 playerPosition_ = {};
 
 	
-
-
 	Vector3 velocity_ = {};                          // 速度
-	static inline const float kAcceleration = 0.01f;  // 定数加速度
-	static inline const float kAttenuation = 0.2f;   // 速度減衰率
-	static inline const float kLimitRunSpeed = 1.0f; // 最大速度制限
+	static inline const float kAcceleration = 0.02f; // 0.01 -> 0.03 で止まりも改善
+	static inline const float kAttenuation = 0.9f;   // 速度減衰率
+	static inline const float kLimitRunSpeed = 0.15f; // 0.5 -> 0.25 で半分
 
 	// 数学的定数
 	static inline constexpr float kPi = std::numbers::pi_v<float>;
@@ -5627,7 +5750,7 @@ private:
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
 	bool goal_ = false; // ゴールに到達したかどうか
 	AABB aabb_;
-	// 追加: 大砲の角度（度単位）と調整ステップ
+	//大砲の角度（度単位）と調整ステップ
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）
 
@@ -5686,7 +5809,7 @@ void PlayerBullet::Update() {
 		int chipType = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
 
 		// タイルが存在する場合はダメージを与える（hp>0 のタイルのみ）
-		if (chipType == 1) {
+		if (chipType == 1|| chipType==6) {
 			int hp = mapChipField_->GetMapChipHPByIndex(idx.xIndex, idx.yIndex);
 			if (hp > 0) {
 				// 1ダメージ（必要なら量を変える）
@@ -6108,7 +6231,7 @@ File Path: project/application/scene/GamePlayScene.cpp
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
 #include "LineCommon.h"
-#include "ControlGuide.h" 
+#include "ControlGuide.h"
 
 
 void GamePlayScene::Initialize()
@@ -6116,7 +6239,7 @@ void GamePlayScene::Initialize()
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
-	//カメラの生成	
+	//カメラの生成
 	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
 	camera->SetTranslate({ 0,0,-10, });
@@ -6135,8 +6258,19 @@ void GamePlayScene::Initialize()
 
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
+
+	const int stageIndex = SceneManager::GetInstance()->GetStageIndex();
+	std::string stagePath;
+	const int kAvailableMaps = 12; // Map1.csv .. Map12.csv
+
+	if (stageIndex >= 0 && stageIndex < kAvailableMaps) {
+		stagePath = "Resources/Mapdata/Map" + std::to_string(stageIndex + 1) + ".csv";
+	}
+	else {
+		stagePath = "Resources/Mapdata/Map1.csv";
+	}
 	mapChipField_ = std::make_unique<MapChipField>();
-	mapChipField_->LoadMapChipCsv("Resources/Mapdata/testmap1.csv");//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv(stagePath);//testmap blocks.csv
 	// ブロック生成
 	generateBlock_.Initialize(mapChipField_.get());
 	generateBlock_.GenerateObject3D();
@@ -6147,11 +6281,12 @@ void GamePlayScene::Initialize()
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
-	} else {
+	}
+	else {
 		// フォールバック: 既存の手打ち位置
 		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 	}
-	//playerの生成	
+	//playerの生成
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
@@ -6191,6 +6326,11 @@ void GamePlayScene::Initialize()
 
 	// ControlGuide の初期化
 	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
+
+	//ポーズメニュー
+	pauseMenu = std::make_unique<PauseMenu>();
+	pauseMenu->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
+	pauseMenu->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
 }
 
 void GamePlayScene::Finalize()
@@ -6203,70 +6343,96 @@ void GamePlayScene::Finalize()
 	ControlGuide::DestroyInstance();
 }
 
-void GamePlayScene::Update()
+void GamePlayScene::UpdateGameLogic(float dt)
 {
-	//カメラの更新
-	CameraManager::GetInstance()->GetActiveCamera()->Update();
-	fadeManager_.Update();
+	
+	goal->Update(player->GetGoal(), dt);
 
-
-
-	goal->Update(player->GetGoal(), 1.0f / 60.0f);
-	const float dt = 1.0f / 60.0f;
+	const float fixedDt = dt;
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 
-		stageStartEffect_->Update(1.0f / 60.0f);
+		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
 			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 		}
-		player->GetObject3D()->Update();
-		enemyManager_->EnemyObjectUpdate();
-	} else {
-		//player->Update();
-		////プレイヤーの更新
+		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
+		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
+	}
+	else {
+		// ゲーム進行系（ポーズ中は実行しない）
 		if (!player->GetIsDead_()) {
 			player->Update();
-			// プレイヤーの弾
-
+			// プレイヤーの弾などは player 内で管理される
 		}
 		enemyManager_->Update();
 
-
-
-		// 毎フレーム、まずクリアしてから各オーナーに登録して Update を呼ぶ
+		// 衝突周りはゲームロジック
 		CollisionManager::GetInstance()->Clear();
-
-		// プレイヤー自身と弾を登録（Player が担当）
 		player->RegisterColliders();
-
-		// 敵は EnemyManager が登録する
 		enemyManager_->RegisterColliders();
-
-		// 衝突判定実行
 		CollisionManager::GetInstance()->Update();
+
 		generateBlock_.SyncBlockObjectsWithMap();
 	}
-	//プレイヤーが死んだらゲームオーバーシーンに遷移
-	if (player->GetIsDead_()) {
 
+	// プレイヤーが死んだらゲームオーバー演出
+	if (player->GetIsDead_()) {
 		gameOverEffect_->Update(dt);
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
-
-
 	}
 	if (!gameOverEffect_->IsPlaying()) {
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
 	}
+}
 
+void GamePlayScene::UpdateObjects(float dt)
+{
+	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
+	// 例: Object3D の更新、エネミーの transform 更新、ブロックのビジュアル更新、パーティクル
+	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
+		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
+		player->GetObject3D()->Update();
+		enemyManager_->EnemyObjectUpdate();
+	}
+	else {
+		// 普通時も見た目の更新は行う（物理・ロジックは UpdateGameLogic 側）
+		player->GetObject3D()->Update();
+		enemyManager_->EnemyObjectUpdate();
+	}
 
+	// ブロックやパーティクルなどは常に更新
 	generateBlock_.Update();
 
+}
+
+void GamePlayScene::Update()
+{
+	// Camera は常に現在の active camera を更新（ポーズ用カメラ切替後に反映されるよう、ここで行う）
+	CameraManager::GetInstance()->GetActiveCamera()->Update();
+	// ポーズメニューの入力・イージングを先に処理（カメラ切替等を即時反映させるため）
+	pauseMenu->Update();
+
+	// フェードは常に更新
+	fadeManager_.Update();
+
+	// ポーズ中かどうかを判定
+	const bool isPaused = pauseMenu->IsPaused();
+
+	// 固定 dt
+	const float dt = 1.0f / 60.0f;
+
+	// ゲームロジックはポーズ時に止める
+	if (!isPaused) {
+		UpdateGameLogic(dt);
+	}
+
+	// オブジェクトの見た目更新は常に行う
+	UpdateObjects(dt);
 
 
 #ifdef _DEBUG
 	Imguidebug();
-
 #endif // _DEBUG
 }
 
@@ -6278,13 +6444,18 @@ void GamePlayScene::Draw()
 
 	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
 	Object3DCommon::GetInstance()->CommonDraw();
+
 	//SkyDome
 	goal->Draw();
 
 	if (isStageStartPlaying_) {
-		stageStartEffect_->Draw(); // ←ゲートのみ描画
+		if (!pauseMenu->IsPaused())
+		{
+			stageStartEffect_->Draw();
+		} // ←ゲートのみ描画
 		player->Draw();            // ←プレイヤーを別に描画
-	} else {
+	}
+	else {
 
 		player->Draw();
 
@@ -6294,7 +6465,7 @@ void GamePlayScene::Draw()
 
 	generateBlock_.Draw();
 
-
+	pauseMenu->Draw();
 
 	//object3D2nd->Draw();
 	ParticleMnager::GetInstance()->Draw();
@@ -6305,15 +6476,17 @@ void GamePlayScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
-	ControlGuide::GetInstance()->Render();
+	if (!pauseMenu->IsPaused()) {
+		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+		ControlGuide::GetInstance()->Render();
+	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
 	goal->Draw2D();
 
 	if (isStageStartPlaying_) {
-
-		stageStartEffect_->Draw2D();
+		if (!pauseMenu->IsPaused())
+			stageStartEffect_->Draw2D();
 	}
 }
 
@@ -6332,7 +6505,7 @@ void GamePlayScene::Imguidebug()
 		mapChipField_->LoadMapChipCsv(filePath);
 
 		mapChipField_->LoadMapChipCsv(filePath);
-		
+
 		// 再生成
 		generateBlock_.GenerateObject3D();
 
@@ -6344,11 +6517,12 @@ void GamePlayScene::Imguidebug()
 
 		// --- プレイヤースポーン位置をマップから取得する ---
 		Vector3 playerPostion = {};
-		auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
 		if (!spawnPositions.empty()) {
 			// マップに player スポーンが複数ある場合は最初のものを使用
 			playerPostion = spawnPositions.front();
-		} else {
+		}
+		else {
 			// フォールバック: 既存の手打ち位置
 			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
 		}
@@ -6388,10 +6562,11 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("blokc.obj");
 	ModelManager::GetInstance()->LoadModel("skyplane.obj");
 	ModelManager::GetInstance()->LoadModel("enemy.obj");
-	ModelManager::GetInstance()->LoadModel("gool.obj");
+	ModelManager::GetInstance()->LoadModel("goal.obj");
 	ModelManager::GetInstance()->LoadModel("bullet.obj");
 	ModelManager::GetInstance()->LoadModel("sphere.obj");
 	ModelManager::GetInstance()->LoadModel("gate.obj");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
 }
 
 
@@ -6432,6 +6607,7 @@ File Path: project/application/scene/GamePlayScene.h
 #include "StageEndEffect.h"
 #include "GameOverEffect.h"
 #include "GenerateBlock.h"
+#include <PauseMenu.h>
 
 /// <summary>
 /// ゲームプレイシーン
@@ -6467,6 +6643,12 @@ public:
 	/// モデルをロードする
 	/// </summary>
 	void Road();
+
+private:
+	// ゲームのロジック更新（ポーズ時は呼ばない）
+	void UpdateGameLogic(float dt);
+	// オブジェクト・見た目の更新（ポーズ中でも常に呼ぶ）
+	void UpdateObjects(float dt);
 
 public:
 
@@ -6505,7 +6687,7 @@ public:
 	//ゲームオーバー演出
 	std::unique_ptr<GameOverEffect> gameOverEffect_;
 
-	
+	std::unique_ptr<PauseMenu>pauseMenu;
 
 	//debug用
 #ifdef _DEBUG
@@ -6532,6 +6714,7 @@ File Path: project/application/scene/StageSelectScene.cpp
 #include <ModelManager.h>
 
 
+
 void StageSelectScene::Initialize()
 {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
@@ -6540,8 +6723,6 @@ void StageSelectScene::Initialize()
 	camera1 = std::make_unique<Camera>();
 	camera1->SetTranslate({ 0,0,-10, });//カメラの位置
 	CameraManager::GetInstance()->AddCamera("maincam", camera1.get());
-
-
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
@@ -6592,6 +6773,10 @@ void StageSelectScene::Initialize()
 		stages_.push_back(std::move(stage));
 	}
 
+	// PauseMenu 初期化（セレクトシーン用）
+	pauseMenu_.Initialize(Object3DCommon::GetInstance(), PauseType::StageSelectScene);
+	pauseMenu_.SetCamera(camera1.get());
+
 	// フェードインの初期化
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
@@ -6608,33 +6793,42 @@ void StageSelectScene::Finalize()
 void StageSelectScene::Update()
 {
 	//カメラの更新
-
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	// フェード更新
 	fadeManager_.Update();
 
-	float targetOffset = -(float)currentIndex_ * inrerval_; // 中央に来るようにオフセット
-	scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f; // イージング
+	// PauseMenu の更新（先に更新してポーズ判定を反映）
+	pauseMenu_.Update();
 
+	// ポーズ中はセレクト操作やフェード開始などのゲーム入力を無視する
+	if (!pauseMenu_.IsPaused()) {
 
-	if (
+		float targetOffset = -(float)currentIndex_ * inrerval_; // 中央に来るようにオフセット
+		scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f; // イージング
 
-		Input::GetInstance()->TriggerKey(DIK_SPACE) ||
+		if (
 
-		Input::GetInstance()->Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
-		if (!fadeManager_.IsFading()) {
-			fadeManager_.StartFadeOut();
+			Input::GetInstance()->TriggerKey(DIK_SPACE) ||
+
+			Input::GetInstance()->Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
+			if (!fadeManager_.IsFading()) {
+				fadeManager_.StartFadeOut();
+			}
 		}
+
+		// フェードアウトが完了したらシーン切り替え
+		if (fadeManager_.IsFadeOutFinished()) {
+			SceneManager::GetInstance()->SetStageIndex(currentIndex_);
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		}
+
+		SelectMove();
 	}
-
-
-	// フェードアウトが完了したらシーン切り替え
-	if (fadeManager_.IsFadeOutFinished()) {
-		SceneManager::GetInstance()->SetStageIndex(currentIndex_);
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+	else {
+		// ポーズ中でもスクロールの補間は見た目のため保持する
+		float targetOffset = -(float)currentIndex_ * inrerval_;
+		scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f;
 	}
-
-	SelectMove();
 
 #ifdef _DEBUG
 
@@ -6694,6 +6888,9 @@ void StageSelectScene::Draw()
 		stages_[i].object->Update();
 		stages_[i].object->Draw();
 	}
+
+	// PauseMenu を 3D パス内で描画（オーバーレイ）
+	pauseMenu_.Draw();
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
@@ -6765,6 +6962,7 @@ File Path: project/application/scene/StageSelectScene.h
 #include "Audio.h"
 #include "BaseScene.h"
 #include <FadeManager.h>
+#include "application\\ui\\PauseMenu.h"
 
 struct StageObject {
 	std::unique_ptr<Object3D> object;
@@ -6811,6 +7009,8 @@ private:
 
 	std::unique_ptr<Object3D>playerobj;
 
+	// PauseMenu を追加
+	PauseMenu pauseMenu_;
 	
 };
 
@@ -7566,6 +7766,413 @@ private:
     // Sprite座標基準（中心/左上）差分吸収
     bool spritePivotIsCenter_ = true;
 };
+
+============================================================
+File Path: project/application/ui/PauseMenu.cpp
+============================================================
+#include "PauseMenu.h"
+#include <SceneManager.h>
+#ifdef _DEBUG
+#include <imgui.h>
+#endif // _DEBUG
+#include <ModelManager.h>
+#include <CameraManager.h>
+
+double easeInOutCirc(double x) {
+	return (x < 0.5)
+		? (1 - std::sqrt(1 - std::pow(2 * x, 2))) / 2
+		: (std::sqrt(1 - std::pow(-2 * x + 2, 2)) + 1) / 2;
+}
+
+//初期化
+void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
+
+
+
+	//カメラの生成	
+	pouseCamera_ = std::make_unique<Camera>();
+	pouseCamera_->SetRotate({ 0,0,0, });
+	pouseCamera_->SetTranslate({1.0f,11.41f,-22.700f, });
+	CameraManager::GetInstance()->AddCamera("pouseCamera", pouseCamera_.get());
+
+	object3dcommon_ = object3dcommon;
+	pauseType_ = type;
+	ModelManager::GetInstance()->LoadModel("PauseMenu/Pause.obj");
+	ModelManager::GetInstance()->LoadModel("PauseMenu/return.obj");
+	ModelManager::GetInstance()->LoadModel("PauseMenu/StageSelect.obj");
+	ModelManager::GetInstance()->LoadModel("PauseMenu/title.obj");
+
+	transform.translate = { -2.6f,1.5f,0.0f };
+	object = std::make_unique<Object3D>();
+	object->Initialize(object3dcommon_);
+	object->SetModel("PauseMenu/Pause.obj");
+	object->SetScale({ 1.0f,2.0f,1.0f });
+	input = Input::GetInstance();
+
+	// 作成してでリストに追加
+	for (uint32_t i = 0; i < 2; ++i) {
+		std::unique_ptr<Object3D> newObject = std::make_unique<Object3D>();
+		newObject->Initialize(Object3DCommon::GetInstance());
+		if (i == 0) {
+			newObject->SetModel("PauseMenu/return.obj");
+		}
+		else if (i == 1) {
+			if (pauseType_ == PauseType::GamePlayScene) {
+				newObject->SetModel("PauseMenu/StageSelect.obj");
+			}
+			else if (pauseType_ == PauseType::StageSelectScene) {
+				newObject->SetModel("PauseMenu/title.obj");
+			}
+		}
+
+		texttransform[i] = { transform.translate };
+		texttransform[i].translate.y = 0.0f;
+		newObject->SetTranslate(texttransform[i].translate);
+		newObject->SetScale(Vector3(0.0f, 0.0f, 0.0f));
+		newObject->SetLighting(false);
+		TextObjects.push_back(std::move(newObject));
+	}
+
+
+}
+
+//更新
+void PauseMenu::Update() {
+
+
+
+	object->SetTranslate(transform.translate);
+
+	object->Update();
+
+#ifdef _DEBUG
+	ImGui::Begin("Textindex");
+	ImGui::Text("check: %d", textindex);
+	ImGui::End();
+#endif // _DEBUG
+
+	for (std::unique_ptr<Object3D>& text : TextObjects) {
+		text->SetScale(Vector3(0.0f, 0.0f, 0.0f));
+		text->Update();
+	}
+
+	//遷移速度
+	const float easeSpeed = 0.04f;
+
+	if (isPaused_) {
+		easeTimer_ += easeSpeed;
+		if (easeTimer_ > 1.0f) easeTimer_ = 1.0f;
+	}
+	else {
+		easeTimer_ -= easeSpeed;
+		if (easeTimer_ < 0.0f) easeTimer_ = 0.0f;
+		
+	}
+
+	if (pauseType_ == PauseType::GamePlayScene) {
+		// ゲームシーンのポーズ画面表示
+		PausedStartGamePlay();
+	}
+	if (pauseType_ == PauseType::StageSelectScene) {
+		// ゲームセレクトのポーズ画面表示
+		PausedStartStageSelect();
+	}
+	// コントローラの動き
+	ControllerUpdate();
+	if (!isPaused_) {
+
+		CameraManager::GetInstance()->SetActiveCamera("maincam");
+	}
+}
+
+//描画
+void PauseMenu::Draw() {
+
+	if (isPaused_) {
+		//ポーズ画面
+		object->Draw();
+	}
+	if (easeTimer_ >= 0.1f) {
+		for (std::unique_ptr<Object3D>& text : TextObjects) {
+			text->Draw();
+		}
+	}
+}
+
+//フラグのゲッター
+bool PauseMenu::IsPaused()const {
+	// 「ポーズ中」または「イージングがまだ戻っている最中」なら true
+	return isPaused_ || easeTimer_ > 0.0f;
+}
+
+void PauseMenu::PausedStartGamePlay() {
+	if (isPaused_ || easeTimer_ > 0.0f) {
+		// イージングの値（0.0〜1.0）の計算（※逆再生に対応）
+		float easedValue = float(easeInOutCirc(easeTimer_));
+
+		CameraManager::GetInstance()->SetActiveCamera("pouseCamera");
+
+		Vector3 cameraPos = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate;
+		transform.translate.x = cameraPos.x;
+		transform.translate.y = cameraPos.y;
+		transform.translate.z = 5.0f + (-7.0f * easedValue);
+
+		float minScale = 0.0f;
+		float limitedScale = (easedValue > 1.0f) ? 1.0f :
+			(easedValue < minScale) ? minScale : easedValue;
+
+		// ポーズを閉じている途中なら、0.0f までしっかり戻す
+		if (easeTimer_ < 1.0f && !isPaused_) {
+			limitedScale = (easedValue > 0.0f) ? easedValue : 0.0f;
+		}
+		else if (easeTimer_ >= 1.0f) {
+			limitedScale = 1.0f;
+		}
+
+		transform.scale = { limitedScale, limitedScale, limitedScale };
+
+		object->SetTranslate(transform.translate);
+		object->SetScale(transform.scale);
+		object->Update();
+
+		Vector3 basePos = object->GetTransform().translate;
+
+		float currentScale = (easedValue > minScale) ? easedValue : minScale;
+		float offsetY = 1.8f;
+		for (size_t i = 0; i < TextObjects.size(); ++i) {
+			Vector3 followPos = basePos;
+			followPos.z -= 5.0f;
+			followPos.y += 1.0f + (offsetY * -static_cast<float>(i));
+
+			TextObjects[i]->SetTranslate(followPos);
+
+			if (i == textindex && easeTimer_ == 1.0f) {
+				if (pauseType_ == PauseType::GamePlayScene) {
+					TextObjects[i]->SetScale(Vector3(1.5f, 1.5f, 1.5f));
+				}
+				else if (pauseType_ == PauseType::StageSelectScene) {
+					TextObjects[i]->SetScale(Vector3(0.8f, 0.8f, 0.8f));
+				}
+			}
+			else {
+				Vector3 limitedScale = { std::min(currentScale, 1.0f), std::min(currentScale, 1.0f), std::min(currentScale, 1.0f) };
+				TextObjects[i]->SetScale(limitedScale);
+			}
+			TextObjects[i]->Update();
+		}
+	}
+}
+
+void PauseMenu::PausedStartStageSelect() {
+	if (isPaused_ || easeTimer_ > 0.0f) {
+		// イージングの値（0.0〜1.0）の計算（※逆再生に対応）
+		float easedValue = float(easeInOutCirc(easeTimer_));
+
+
+		CameraManager::GetInstance()->SetActiveCamera("pouseCamera");
+
+		Vector3 cameraPos = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate;
+		transform.translate.x = cameraPos.x;
+		transform.translate.y = cameraPos.y;
+		transform.translate.z = 5.0f + (-7.0f * easedValue);
+
+		float minScale = 0.0f;
+		float const maxScale = 0.6f;
+		float limitedScale = (easedValue > maxScale) ? maxScale :
+			(easedValue < minScale) ? minScale : easedValue;
+
+		// ポーズを閉じている途中なら、0.0f までしっかり戻す
+		if (easeTimer_ < maxScale && !isPaused_) {
+			limitedScale = (easedValue > 0.0f) ? easedValue : 0.0f;
+		}
+		else if (easeTimer_ >= maxScale) {
+			limitedScale = maxScale;
+		}
+
+		transform.scale = { limitedScale, limitedScale, limitedScale };
+
+		object->SetTranslate(transform.translate);
+		object->SetScale(transform.scale);
+		object->Update();
+
+		Vector3 basePos = object->GetTransform().translate;
+
+		float currentScale = (easedValue > minScale) ? easedValue : minScale;
+		float offsetY = 1.3f;
+		for (size_t i = 0; i < TextObjects.size(); ++i) {
+			Vector3 followPos = basePos;
+			followPos.z -= 5.0f;
+			followPos.y += 0.8f + (offsetY * -static_cast<float>(i));
+
+			TextObjects[i]->SetTranslate(followPos);
+
+			if (i == textindex && easeTimer_ == 1.0f) {
+				TextObjects[i]->SetScale(Vector3(0.9f, 0.9f, 0.9f));
+			}
+			else {
+				Vector3 limitedScale = { std::min(currentScale, 0.6f), std::min(currentScale, 0.6f), std::min(currentScale, 0.6f) };
+				TextObjects[i]->SetScale(limitedScale);
+			}
+			TextObjects[i]->Update();
+		}
+	}
+}
+
+void PauseMenu::ControllerUpdate() {
+
+	// アニメーションが完了しているか
+	bool canInput = (easeTimer_ >= 1.0f);
+
+	// =========================
+	// ポーズ ON / OFF
+	// =========================
+	if ((canInput || easeTimer_ <= 0.0f) &&Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_START)|| Input::GetInstance()->TriggerKey(DIK_ESCAPE)){
+		isPaused_ = !isPaused_;
+	}
+
+
+
+	// =========================
+	// 入力まとめ
+	// =========================
+	bool upPressed =
+		Input::GetInstance()->TriggerKey(DIK_W) ||
+		Input::GetInstance()->TriggerKey(DIK_UP) ||
+		Input::GetInstance()->GetGamePadStickY() < -0.5f;
+
+	bool downPressed =
+		Input::GetInstance()->TriggerKey(DIK_S) ||
+		Input::GetInstance()->TriggerKey(DIK_DOWN) ||
+		Input::GetInstance()->GetGamePadStickY() > 0.5f;
+
+	bool okPressed =
+		Input::GetInstance()->TriggerKey(DIK_SPACE) ||
+		Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A);
+
+	// =========================
+	// 選択移動
+	// =========================
+	if (isPaused_ && canInput) {
+
+		if (upPressed && textindex > 0) {
+			textindex--;
+		}
+
+		if (downPressed && textindex < TextObjects.size() - 1) {
+			textindex++;
+		}
+
+		// =========================
+		// 決定
+		// =========================
+		if (okPressed) {
+
+			if (textindex == 0) {
+				// 戻る
+				isPaused_ = false;
+			}
+			else if (textindex == 1) {
+				// シーン遷移
+				if (pauseType_ == PauseType::GamePlayScene) {
+					SceneManager::GetInstance()->ChangeScene("STAGESELECT");
+				}
+				else if (pauseType_ == PauseType::StageSelectScene) {
+					SceneManager::GetInstance()->ChangeScene("TITELE");
+				}
+			}
+		}
+
+		// 色変更
+		for (size_t i = 0; i < TextObjects.size(); ++i) {
+			TextObjects[i]->SetColor(
+				(i == textindex)
+				? Vector4{ 1,0,0,1 }
+				: Vector4{ 1,1,1,1 }
+			);
+		}
+	}
+	else {
+		textindex = 0;
+		for (auto& t : TextObjects) {
+			t->SetColor({ 1,1,1,1 });
+		}
+	}
+}
+
+
+============================================================
+File Path: project/application/ui/PauseMenu.h
+============================================================
+#pragma once
+#include "Object3D.h"
+#include "Object3DCommon.h"
+#include "Input.h"
+#include "Camera.h"
+#include <Audio.h>
+#include "RenderingData.h"
+
+class Camera; // 前方宣言
+
+enum class PauseType {
+	StageSelectScene,
+	GamePlayScene
+};
+
+class PauseMenu
+{
+public:
+	//初期化
+	void Initialize(Object3DCommon* object3dcommon, PauseType type);
+	//更新
+	void Update();
+	//描画
+	void Draw();
+public:
+	bool IsPaused()const;
+
+	void SetCamera(Camera* camera) {
+		camera_ = camera;
+	}
+
+	// コントローラー操作
+	void ControllerUpdate();
+	// イージング移動
+	void PausedStartGamePlay();
+	// イージング移動
+	void PausedStartStageSelect();
+
+private:
+	PauseType pauseType_;
+	Object3DCommon* object3dcommon_;
+	Camera* camera_ = nullptr;
+	EulerTransform transform;
+	Input* input;
+	//ポーズ画面のオブジェクト
+	std::unique_ptr<Object3D>object;
+
+	// テキストオブジェクトのリスト
+	std::vector<std::unique_ptr<Object3D>> TextObjects;
+	EulerTransform texttransform[3]{};
+
+	uint32_t textindex = 0;
+
+	//ポーズ開く
+	bool isPaused_ = false;
+
+	//イージングタイマー
+	float easeTimer_ = 0.0f;
+
+	bool easingsceneFlag_ = false;
+	bool easingmoveFlag_ = false;
+
+	bool isClosing_ = false;
+
+	std::unique_ptr<Camera> pouseCamera_;
+
+	
+};
+
+
 
 ============================================================
 File Path: project/engine/2d/Sprite.cpp
@@ -17537,48 +18144,7 @@ void PlayerpaticleBehavior::Update(Particle& particle, float dt, Material* mater
 
 
 
-//#include <random>
-//#include <numbers>
-//#include "MyMath.h"
-//
-//Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime) {
-//	
-//	lifetime = lifetime;
-//	
-//	std::uniform_real_distribution<float> distOffset(-0.1f, 0.1f);
-//	std::uniform_real_distribution<float> distScale(0.2f, 0.4f);
-//	std::uniform_real_distribution<float> distRotate(-0.1f, 0.1f);
-//	std::uniform_real_distribution<float> distGray(0.1f, 0.3f);
-//
-//	Particle particle;
-//	particle.transform.translate = transform.translate + Vector3(distOffset(rng), distOffset(rng), distOffset(rng));
-//	particle.transform.scale = Vector3(1,1,1);
-//	particle.transform.rotate = Vector3(0,0,0);
-//	particle.Velocity = Vector3(0.0f, 0.01f, 0.0f); // 上昇
-//
-//	float gray = distGray(rng);
-//	particle.color = { gray, gray, gray, 0.6f }; // 半透明の灰色
-//
-//	particle.lifetime = 1.5f;
-//	particle.currentTime = 0.0f;
-//
-//	return particle;
-//}
-//
-//void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha) {
-//	//float t = particle.currentTime / particle.lifetime;
-//	materialData = materialData;
-//
-//	// 時間と共に拡大していく（少し縦長）
-//	//float scale = 0.2f + 0.6f * t;
-//	
-//	alpha = alpha;
-//	// 上昇
-//	particle.transform.translate += particle.Velocity;
-//
-//	// 時間更新
-//	particle.currentTime += dt;
-//}
+
 
 ============================================================
 File Path: project/engine/particle/PlayerpaticleBehavior.h
