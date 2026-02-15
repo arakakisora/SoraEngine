@@ -41,10 +41,10 @@ void PlayerBullet::Update() {
 	// マップチップのインデックスを取得
 	if (mapChipField_) {
 		IndexSet idx = mapChipField_->GetMapChipIndexSetByPosition(rayEnd);
-		int chipType = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
+		MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
 
 		// タイルが存在する場合はダメージを与える（hp>0 のタイルのみ）
-		if (chipType == 1|| chipType==6) {
+		if (chipType == MapChipType ::Block|| chipType== MapChipType::UnbreakableBlock) {
 			int hp = mapChipField_->GetMapChipHPByIndex(idx.xIndex, idx.yIndex);
 			if (hp > 0) {
 				// 1ダメージ（必要なら量を変える）
@@ -109,7 +109,7 @@ int PlayerBullet::GetRayMapChipNumber(MapChipField* mapChipField) {
 	IndexSet index = mapChipField->GetMapChipIndexSetByPosition(rayEndPosition);
 
 	// マップチップの種類を取得
-	int chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+	MapChipType chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
 
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);

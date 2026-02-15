@@ -98,7 +98,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 	for (uint32_t y = 0; y < numBlokVirtical; ++y) {
 		for (uint32_t x = 0; x < numBlokHorizontal; ++x) {
 
-			int type = mapChipField_->GetMapChipTypeByIndex(x, y);
+			MapChipType type = mapChipField_->GetMapChipTypeByIndex(x, y);
 			Object3D* obj = nullptr;
 			Object3D* unbreakableObj = nullptr;
 
@@ -110,7 +110,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 			}
 
 			// タイプ 1 はブロック（必要に応じ他のIDも対応）
-			if (type == 1) {
+			if (type == MapChipType::Block) {
 				// ブロックが存在すべきだがオブジェクトが無ければ作る
 				if (!obj) {
 					auto newObj = std::make_unique<Object3D>();
@@ -127,7 +127,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 					}
 				}
 			}
-			else if (type == 6) {
+			else if (type == MapChipType::UnbreakableBlock) {
 
 				if (!unbreakableObj) {
 					auto newObj = std::make_unique<Object3D>();

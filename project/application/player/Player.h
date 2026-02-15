@@ -53,26 +53,26 @@ enum class CollisionType {
 struct PlayerParameter {
 	//プレイヤーパラメータ
 //speedパラメータ
-	float kAccleration = 0.05f;  // 定数加速度
-	float kAttenuation = 0.2f;   // 速度減衰率
-	float kLimitRunSpeed = 0.2f; // 最大速度制限
+	float kAcceleration = 0.02f;  // 定数加速度
+	float kAttenuation = 0.9f;   // 速度減衰率
+	float kLimitRunSpeed = 0.15f; // 最大速度制限
 	//jannpパラメータ
-	float kGravityAccleration = 0.05f; // 重力加速度
+	float kGravityAcceleration = 0.02f; // 重力加速度
 	float kLimitFallSpeed = 1.0f;      // 最大落下速度
-	float kJampAcceleration = 0.5f;    // ジャンプ初速
-	float kJampBlockAcceleration = 0.8f;//ジャンプブロックのジャンプ初速
-	float kAccumulateJumpTime_ = 0.2f;   //溜め時間
+	float kJumpAcceleration = 0.3f;    // ジャンプ初速
 	//当たり判定パラメータ
 	float kWidth = 0.8f;//当たり判定の幅
 	float kHeight = 0.8f;//当たり判定の高さ
 	float kBlank = 2.0;//当たり判定の余裕
-	float kCollisionsmallnumber = 0.1f;//当たり判定の余裕
+	float kCollisionEpsilon = 0.1f;//当たり判定の余裕
 	//減衰パラメータ
-	float kAttenuationLanding = 0.1f;//着地時の減衰率
-	float kAttenuationWall = 1.0f;//壁に当たった時の減衰率
+	float kAttenuationLanding = 0.5f;//着地時の減衰率
+	float kAttenuationWall = 0.1f;//壁に当たった時の減衰率
 	// 振り向きパラメータ
-	float KtimeTurn = 1.0f; // 角度補間タイム
+	float kTimeTurn = 1.0f; // 角度補間タイム
 };
+
+
 
 class Enemy;
 class MapChipField;
@@ -160,10 +160,28 @@ public:
 	/// </summary>
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
+	bool IsHittableBlock(MapChipType type);
+
+	bool CheckCollisionPoints(
+		const std::array<Vector3, 2>& posList,
+		CollisionType type,
+		CollisionMapInfo& info
+	);
+
+	void CollisionMapInfoDirection(
+		CollisionMapInfo& info,
+		CollisionType dir,
+		const std::array<Corner, 2>& checkCorners,
+		const Vector3& offset,
+		std::function<bool(const CollisionMapInfo&)> moveCondition
+	);
+
+
 	/// <summary>
 	// map衝突判定
 	/// </summary>
 	void MapCollision(CollisionMapInfo& info);
+
 	/// <summary>
 	/// コーナーのワールド座標を取得
 	/// </summary>
@@ -187,35 +205,46 @@ public:
 	/// <param name="info"></param>
 	void OnGroundSwitching(const CollisionMapInfo& info);
 	/// <summary>
+	// 地面があるかどうか
+	/// </summary>
+	/// <param name="movedCenterPos"></param>
+	bool HasGroundBelow(const Vector3& movedCenterPos);
+	/// <summary>
 	// 壁衝突時の移動処理
 	/// </summary>
 	/// <param name="info"></param>
 	void HitWallCollisionMove(const CollisionMapInfo& info);
 
-	// 当たり判定
-	/// <summary>
-	/// 上衝突時の当たり判定
-	/// </summary>
-	/// <param name="info"></param>
-	void CollisionMapInfoTop(CollisionMapInfo& info);
 
-	/// <summary>
-	/// 底衝突時の当たり判定
-	/// </summary>
-	/// <param name="info"></param>
-	void CollisionMapInfoBottom(CollisionMapInfo& info);
 
-	/// <summary>
-	/// 右衝突時の当たり判定
-	/// </summary>
-	/// <param name="info"></param>
-	void CollisionMapInfoRight(CollisionMapInfo& info);
 
-	/// <summary>
-	/// 左衝突時の当たり判定
-	/// </summary>
-	/// <param name="info"></param>
-	void CollisionMapInfoLeft(CollisionMapInfo& info);
+	//// 当たり判定
+	///// <summary>
+	///// 上衝突時の当たり判定
+	///// </summary>
+	///// <param name="info"></param>
+	//void CollisionMapInfoTop(CollisionMapInfo& info);
+
+	///// <summary>
+	///// 底衝突時の当たり判定
+	///// </summary>
+	///// <param name="info"></param>
+	//void CollisionMapInfoBottom(CollisionMapInfo& info);
+
+	///// <summary>
+	///// 右衝突時の当たり判定
+	///// </summary>
+	///// <param name="info"></param>
+	//void CollisionMapInfoRight(CollisionMapInfo& info);
+
+	///// <summary>
+	///// 左衝突時の当たり判定
+	///// </summary>
+	///// <param name="info"></param>
+	//void CollisionMapInfoLeft(CollisionMapInfo& info);
+
+
+
 
 	/// <summary>
 	/// world座標を取得します
@@ -290,12 +319,8 @@ private:
 	
 	std::unique_ptr<Object3D> object3D_;
 	Vector3 playerPosition_ = {};
-
-	
 	Vector3 velocity_ = {};                          // 速度
-	static inline const float kAcceleration = 0.02f; // 0.01 -> 0.03 で止まりも改善
-	static inline const float kAttenuation = 0.9f;   // 速度減衰率
-	static inline const float kLimitRunSpeed = 0.15f; // 0.5 -> 0.25 で半分
+	PlayerParameter parameter_;// プレイヤーパラメータ
 
 	// 数学的定数
 	static inline constexpr float kPi = std::numbers::pi_v<float>;
@@ -304,20 +329,13 @@ private:
 	LRDirecion lrDirection_ = LRDirecion::kright;
 	float turnFirstRotationY_ = 0.0f;           // 現在の向き
 	float turnTimer_ = 0.0f;                    // 振り向き時間
-	static inline const float kTimeTurn = 0.5f; // 角度補間タイム
+	
 	// ジャンプ
 	bool onGround_ = true;                                 // 接点状態フラグ
-	static inline const float kGravityAcceleration = 0.02f; // 重力加速度
-	static inline const float kLimitFallSpeed = 1.0f;      // 最大落下速度
-	static inline const float kJumpAcceleration = 0.3f;    // ジャンプ初速
+	
 	// 当たり判定
 	MapChipField* mapChipField_ = nullptr;
-	static inline const float kWidth = 0.8f;
-	static inline const float kHeight = 0.8f;
-	static inline const float kBlank = 1.0f;
-	static inline const float kAttenuationLanding = 0.5f;
-	static inline const float kCollisionEpsilon = 0.1f;
-	static inline const float kAttenuationWall = 0.1f;
+	
 
 	//死んだ
 	bool isDead_ = false;

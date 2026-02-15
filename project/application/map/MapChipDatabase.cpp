@@ -55,7 +55,7 @@ void MapChipDatabase::LoadJson(const std::string& path)
 
 }
 
-const MapChipInfo* MapChipDatabase::GetById(int id) const
+const MapChipInfo* MapChipDatabase::GetById(MapChipType id) const
 {
 	auto it = chipsById_.find(id);
 	if (it == chipsById_.end()) {
