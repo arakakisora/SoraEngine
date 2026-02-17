@@ -18,11 +18,7 @@ void Game::Initialize()
 	//"GAMEPLAY"
 	//GAMEOVER
 	//"GAMECLEAR"
-#ifdef _DEBUG
-	SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-#else
-	SceneManager::GetInstance()->ChangeScene("TITLE");
-#endif
+	SceneManager::GetInstance()->ChangeScene("TITELE");
 
 
 }
