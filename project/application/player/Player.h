@@ -38,11 +38,6 @@ enum Corner {
 	kNumCorner // 要素数
 };
 
-enum class WeaponType {
-	Gatling,
-	Cannon,
-};
-
 enum class CollisionType {
 	Top,
 	Bottom,
@@ -214,35 +209,6 @@ public:
 	/// </summary>
 	/// <param name="info"></param>
 	void HitWallCollisionMove(const CollisionMapInfo& info);
-
-
-
-
-	//// 当たり判定
-	///// <summary>
-	///// 上衝突時の当たり判定
-	///// </summary>
-	///// <param name="info"></param>
-	//void CollisionMapInfoTop(CollisionMapInfo& info);
-
-	///// <summary>
-	///// 底衝突時の当たり判定
-	///// </summary>
-	///// <param name="info"></param>
-	//void CollisionMapInfoBottom(CollisionMapInfo& info);
-
-	///// <summary>
-	///// 右衝突時の当たり判定
-	///// </summary>
-	///// <param name="info"></param>
-	//void CollisionMapInfoRight(CollisionMapInfo& info);
-
-	///// <summary>
-	///// 左衝突時の当たり判定
-	///// </summary>
-	///// <param name="info"></param>
-	//void CollisionMapInfoLeft(CollisionMapInfo& info);
-
 
 
 
