@@ -5,6 +5,11 @@
 #include "Collider.h"
 #include <memory>
 
+enum class WeaponType {
+	Gatling,
+	Cannon,
+};
+
 /// <summary>
 /// プレイヤーの弾クラス
 /// </summary>
@@ -74,10 +79,20 @@ public:
 	// Object3D の生ポインタ参照を返す（所有は PlayerBullet）
 	Object3D* Getobject3DBullet_() { return object3D_.get(); }
 
+	void SetWeaponType(WeaponType type) { weaponType_ = type; }
 
 private:
+    /// <summary>
+	// ブロックに当たったかどうかをレイで判定
+    /// </summary>
+    /// <returns></returns>
+	bool HitBlockSwept(const Vector3& from, const Vector3& to);
+
+private:
+	WeaponType weaponType_;
 	AABB aabb_;
 	std::unique_ptr<Object3D> object3D_; // 所有（unique_ptr）
+	Vector3 prevPos_{};
 	//textureHandle
 	//uint32_t textureHandle_ = 0u;
 	//速度
@@ -90,6 +105,6 @@ private:
 	int power_ = 1; // 弾の威力
 
 	// 定数化（マジックナンバー削減）
-	static inline constexpr float kAABBHalf = 0.1f; // AABB の半幅
+	//static inline constexpr float kAABBHalf = 0.1f; // AABB の半幅
 	static inline constexpr float kRayLength = 0.5f; // レイ長さ
 };

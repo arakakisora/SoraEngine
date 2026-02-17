@@ -83,14 +83,14 @@ int EnemyBase::GetRayMapChipNumber(MapChipField* mapChipField)
 	IndexSet index = mapChipField->GetMapChipIndexSetByPosition(rayEndPosition);
 
 	// マップチップの種類を取得
-	int chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+	MapChipType chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
 
 	// マップチップ番号を返す
 	return static_cast<int>(chipType);
 }
 
 // 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
-int EnemyBase::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
+MapChipType EnemyBase::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
 {
 	// 現在位置（SetTranslate直後でも反映されるTransform位置を使用）
 	Vector3 pos = object3D_->GetTransform().translate;
@@ -121,7 +121,7 @@ int EnemyBase::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
 // 指定タイル先が固い（壁）かどうかを返すヘルパ
 bool EnemyBase::IsTileAheadSolid(MapChipField* map, int lookAheadTiles /*= 1*/)
 {
-	int type = GetTileAheadType(map, lookAheadTiles);
+	MapChipType type = GetTileAheadType(map, lookAheadTiles);
 	// Map の仕様により「1 がブロック」な既存コードに合わせる（必要なら修正）
 	IndexSet aheadIndex = map->GetMapChipIndexSetByPosition(
 		Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth * 0.5f) + lookAheadTiles * map->GetBlockWidth()),

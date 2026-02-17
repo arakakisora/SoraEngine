@@ -1,8 +1,23 @@
 #pragma once
 #include "MyMath.h"
+
+
+enum class MapChipType : int {
+
+	Empty = 0,
+	Block,
+	Enemy1,
+	Enemy2,
+	Goal,
+	Player,
+	UnbreakableBlock,
+
+
+};
+
 #include <unordered_map>
 	struct MapChipInfo {
-		int id;// マップチップID
+		MapChipType id;// マップチップID
 		std::string label;// マップチップラベル
 		Vector4 color;// マップチップカラー
 		std::string collision;// 衝突情報
@@ -25,7 +40,7 @@ public:
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	const MapChipInfo* GetById(int id) const;
+	const MapChipInfo* GetById(MapChipType id) const;
 	/// <summary>
 	/// すべてのマップチップ情報を取得します
 	/// </summary>
@@ -33,6 +48,6 @@ public:
 	const std::vector<MapChipInfo>& GetAll() const { return chips_; }
 private:
 	std::vector<MapChipInfo> chips_;// マップチップ情報リスト
-	std::unordered_map<int, MapChipInfo> chipsById_;// IDによるマップチップ情報マップ
+	std::unordered_map<MapChipType, MapChipInfo> chipsById_;// IDによるマップチップ情報マップ
 
 };

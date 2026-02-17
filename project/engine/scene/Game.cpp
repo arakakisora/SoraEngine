@@ -20,6 +20,7 @@ void Game::Initialize()
 	//"GAMECLEAR"
 	SceneManager::GetInstance()->ChangeScene("TITELE");
 
+
 }
 
 void Game::Finalize()

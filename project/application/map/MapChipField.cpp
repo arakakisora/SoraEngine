@@ -12,7 +12,7 @@ void MapChipField::ResetMapChipData() {
 	mapChipData_.data.resize(kNumBlockVirtical);
 	for (auto& line : mapChipData_.data) {
 		line.clear();
-		line.resize(kNumBlockHorizontal, 0);
+		line.resize(kNumBlockHorizontal, MapChipType::Empty);
 	}
 
 	// hpData_ のリセット
@@ -51,7 +51,7 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 		while (std::getline(lineStream, cell, ',')) {
 			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
 				// CSV の文字列をそのまま int に変換して保存
-				int id = std::stoi(cell);
+				MapChipType id = static_cast<MapChipType>(std::stoi(cell));
 				mapChipData_.data[y][x] = id;
 
 				
@@ -69,11 +69,11 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	}
 }
 
-int MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
+MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
 
 	// 範囲チェック（unsigned なので 0 未満チェックは不要）
 	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) {
-		return 0; // 範囲外は Empty 扱い（id 0 を想定）
+		return MapChipType::Empty; // 範囲外は Empty 扱い（id 0 を想定）
 	}
 	return mapChipData_.data[yIndex][xIndex];
 }
@@ -115,7 +115,7 @@ std::vector<Vector3> MapChipField::GetEnemyPositions()
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
 
-			int typeId = GetMapChipTypeByIndex(x, y);
+			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
 			if (!info) {
 				continue;
@@ -137,7 +137,7 @@ Vector3 MapChipField::GetGoalPosition() {
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
 
-			int typeId = GetMapChipTypeByIndex(x, y);
+			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
 			if (!info) {
 				continue;
@@ -155,7 +155,7 @@ Vector3 MapChipField::GetGoalPosition() {
 
 bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex) 
 {
-	int typeId = GetMapChipTypeByIndex(xIndex, yIndex);
+	MapChipType typeId = GetMapChipTypeByIndex(xIndex, yIndex);
 	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
 	if (!info) {
 		return false;
@@ -171,7 +171,7 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
 
-			int typeId = GetMapChipTypeByIndex(x, y);
+			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
 
 			if (info->spawn == spawnTag) {
@@ -183,13 +183,13 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 	return result;
 }
 
-// 追加: 指定インデックスのHPを取得
+//  指定インデックスのHPを取得
 int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
 	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return 0;
 	return hpData_[yIndex][xIndex];
 }
 
-// 追加: 指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
+//  指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
 void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage) {
 	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return;
 
@@ -198,7 +198,7 @@ void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int da
 	hp -= damage;
 	if (hp <= 0) {
 		// 壊れた -> 空にする
-		mapChipData_.data[yIndex][xIndex] = 0;
+		mapChipData_.data[yIndex][xIndex] = MapChipType::Empty;
 		hp = 0;
 	}
 }
