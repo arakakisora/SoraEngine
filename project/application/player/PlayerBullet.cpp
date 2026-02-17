@@ -109,24 +109,24 @@ bool PlayerBullet::HitBlockSwept(const Vector3& from, const Vector3& to)
 {
 	if (!mapChipField_) return false;
 
-	// 半径（ワールド単位に合わせる）
-	// scale/2 はワールド半径じゃないので、係数で合わせるのが安全
-	constexpr float kRadiusPerScale = 0.25f; // ここ調整（0.2〜0.4）
+	constexpr float kRadiusPerScale = 0.25f; // 調整（0.2〜0.4）
 	const float r = object3D_->GetTransform().scale.x * kRadiusPerScale;
 
-	// 移動距離に応じてサンプル数を増やす（境界拾い漏れ防止）
 	Vector3 d = to - from;
 	float dist = d.Length();
-	int steps = std::max(1, (int)std::ceil(dist / (r * 0.5f))); // 半径の半分刻み
+	int steps = std::max(1, (int)std::ceil(dist / (r * 0.5f)));
 	Vector3 step = d * (1.0f / float(steps));
 
-	bool hitAny = false;
+	auto pack = [](int x, int y) -> uint64_t {
+		return (uint64_t(uint32_t(x)) << 32) | uint32_t(y);
+		};
 
-	// 触れたタイルを重複なく処理したいなら set でまとめてもOK
+	std::unordered_set<uint64_t> touched;
+
+	// まず “触れたタイル” を全部集める（ここでは Damage しない）
 	for (int i = 0; i <= steps; ++i) {
 		Vector3 center = from + step * float(i);
 
-		// 半径ぶんのタイル範囲
 		IndexSet minIdx = mapChipField_->GetMapChipIndexSetByPosition(center + Vector3{ -r, -r, 0 });
 		IndexSet maxIdx = mapChipField_->GetMapChipIndexSetByPosition(center + Vector3{ +r, +r, 0 });
 
@@ -143,7 +143,6 @@ bool PlayerBullet::HitBlockSwept(const Vector3& from, const Vector3& to)
 
 				Rect rect = mapChipField_->GetRectByIndex(x, y);
 
-				// 円 vs 矩形（触れてるか）
 				float cx = std::clamp(center.x, rect.left, rect.right);
 				float cy = std::clamp(center.y, rect.bottom, rect.top);
 
@@ -151,13 +150,26 @@ bool PlayerBullet::HitBlockSwept(const Vector3& from, const Vector3& to)
 				float dy = center.y - cy;
 
 				if (dx * dx + dy * dy <= r * r) {
-					int hp = mapChipField_->GetMapChipHPByIndex(x, y);
-					if (hp > 0) {
-						mapChipField_->DamageMapChipByIndex(x, y, power_);
-					}
-					hitAny = true;
+					touched.insert(pack(x, y));
 				}
 			}
+		}
+	}
+
+	bool hitAny = false;
+
+	// 最後に “各タイル1回だけ” Damage
+	for (uint64_t key : touched) {
+		int x = int(key >> 32);
+		int y = int(uint32_t(key));
+
+		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(x, y);
+		if (chip == MapChipType::Block || chip == MapChipType::UnbreakableBlock) {
+			int hp = mapChipField_->GetMapChipHPByIndex(x, y);
+			if (hp > 0) {
+				mapChipField_->DamageMapChipByIndex(x, y, power_);
+			}
+			hitAny = true;
 		}
 	}
 
