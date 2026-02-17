@@ -64,7 +64,7 @@ public:
 	/// <summary>
 	/// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
 	/// </summary>
-	int GetTileAheadType(MapChipField* map, int lookAheadTiles = 1);
+	MapChipType GetTileAheadType(MapChipField* map, int lookAheadTiles = 1);
 
 	/// <summary>
 	/// 指定タイル先が固い（壁）かどうかを返すヘルパ

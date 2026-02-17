@@ -110,7 +110,7 @@ void StageEditor::RenderUI() {
 	}
 
 	for (const auto& info : MapChipDatabase::GetInstance()->GetAll()) {
-		ImGui::RadioButton(info.label.c_str(), &selectedType_, info.id);
+		ImGui::RadioButton(info.label.c_str(), &selectedType_, static_cast<int>(info.id));
 	}
 
 	ImGui::End();
@@ -134,7 +134,7 @@ void StageEditor::RenderUI() {
 		for (int x = 0; x < static_cast<int>(grid_[y].size()); ++x) {
 
 			// セルのタイプ（＝ JSON で定義した id）
-			int typeId = grid_[y][x].type;
+			MapChipType typeId = static_cast<MapChipType>( grid_[y][x].type);
 
 			// DB から色を取得
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
@@ -163,7 +163,7 @@ void StageEditor::RenderUI() {
 			ImVec2 p1 = ImGui::GetItemRectMax();
 
 			// タイル情報
-			const MapChipInfo* cellInfo = MapChipDatabase::GetInstance()->GetById(grid_[y][x].type);
+			const MapChipInfo* cellInfo = MapChipDatabase::GetInstance()->GetById(static_cast<MapChipType>(grid_[y][x].type));
 
 			// 1) 当たり判定があるなら枠表示
 			if (cellInfo && cellInfo->collision != "none") {

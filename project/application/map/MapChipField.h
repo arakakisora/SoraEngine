@@ -11,7 +11,7 @@
 /// </summary>
 struct MapChipData {
 
-	std::vector<std::vector<int>> data;
+	std::vector<std::vector<MapChipType>> data;
 };
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
@@ -48,7 +48,7 @@ public:
 	/// <summary>
 	/// 指定したインデックスのマップチップID（= JSON の id）を取得
 	/// </summary>
-	int  GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
+	MapChipType  GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
 	/// <summary>
 	/// 指定したインデックスのマップチップのワールド座標を取得
 	/// </summary>
