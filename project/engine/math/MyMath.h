@@ -78,7 +78,7 @@ namespace MyMath {
 	/// </summary>
 	/// <param name="vector"></param>
 	/// <returns></returns>
-	Vector3 Normlize(const Vector3& vector);
+	Vector3 Normalize(const Vector3& vector);
 	/// <summary>
 	/// ベクトルの加算
 	/// </summary>
@@ -193,7 +193,7 @@ namespace MyMath {
 	Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
 
 	//クオタニオンの正規化
-	Quaternion Normalize(const Quaternion& quaternion);
+	Quaternion NormalizeQuaternion(const Quaternion& quaternion);
 
 	Vector3 GetTranslate( const Matrix4x4& matrix);
 

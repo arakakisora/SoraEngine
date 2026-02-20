@@ -91,11 +91,11 @@ Vector3 MyMath::Transform(const Vector3& vector, const Matrix4x4& matrix)
 
 }
 
-Vector3 MyMath::Normlize(const Vector3& vector)
+Vector3 MyMath::Normalize(const Vector3& vector)
 {
-	// ベクトルの長さを計算
-	float length = std::sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
-	return Vector3(vector.x / length, vector.y / length, vector.z / length);
+	float len = std::sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+	if (len < 1e-6f) return { 0,0,0 };
+	return { vector.x / len, vector.y / len, vector.z / len };
 }
 
 //Add
@@ -468,7 +468,7 @@ bool MyMath::IsCollision(const Segment& segment, const Triangle& triangle)
 	Vector3 v2 = triangle.vertices[2] - triangle.vertices[1];
 	Vector3 v3 = triangle.vertices[0] - triangle.vertices[2];
 	Plane plane;
-	plane.normal = Normlize(v1.Cross(v2));
+	plane.normal = Normalize(v1.Cross(v2));
 	plane.distance = Dot(plane.normal, triangle.vertices[0]);
 
 	float dot = Dot(plane.normal, segment.diff);
@@ -611,8 +611,8 @@ Matrix4x4 MyMath::MakeRotateAxisAngle(const Vector3& axis, float angle)
 
 Matrix4x4 MyMath::DirectionToDirection(const Vector3& from, const Vector3& to)
 {
-	Vector3 f = MyMath::Normlize(from);
-	Vector3 t = MyMath::Normlize(to);
+	Vector3 f = MyMath::Normalize(from);
+	Vector3 t = MyMath::Normalize(to);
 	float dot = MyMath::Dot(f, t);
 
 	// ほぼ同じ方向なら単位行列
@@ -625,13 +625,13 @@ Matrix4x4 MyMath::DirectionToDirection(const Vector3& from, const Vector3& to)
 		// from と直交する適当なベクトルを選ぶ
 		Vector3 ortho = (std::abs(f.x) < 0.1f) ? Vector3{ 1, 0, 0 } : Vector3{ 0, 1, 0 };
 		Vector3 axis = MyMath::Cross(f, ortho);
-		axis = MyMath::Normlize(axis);
+		axis = MyMath::Normalize(axis);
 		return MakeRotateAxisAngle(axis, std::numbers::pi_v<float>);
 	}
 
 	// 通常回転
 	Vector3 axis = MyMath::Cross(f, t);
-	axis = MyMath::Normlize(axis);
+	axis = MyMath::Normalize(axis);
 	float angle = std::acos(std::clamp(dot, -1.0f, 1.0f)); // NaN対策
 
 	return MakeRotateAxisAngle(axis, angle);
@@ -677,7 +677,7 @@ Quaternion MyMath::Slerp(const Quaternion& start, const Quaternion& end, float t
 	}
 	// 内積が 1 に近い場合は、線形補間
 	if (dot > 0.9995f) {
-		return Normalize(start + (endQuat - start) * t);
+		return NormalizeQuaternion(start + (endQuat - start) * t);
 	}
 	// クォータニオンの角度を計算
 	float theta = acosf(dot);
@@ -689,7 +689,7 @@ Quaternion MyMath::Slerp(const Quaternion& start, const Quaternion& end, float t
 
 }
 
-Quaternion MyMath::Normalize(const Quaternion& quaternion)
+Quaternion MyMath::NormalizeQuaternion(const Quaternion& quaternion)
 {
 
 	float length = sqrtf(quaternion.x * quaternion.x + quaternion.y * quaternion.y + quaternion.z * quaternion.z + quaternion.w * quaternion.w);

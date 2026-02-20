@@ -53,7 +53,7 @@ void Object3D::Initialize(Object3DCommon* object3DCommon)
 	spotLightData->color = { 1.0f,1.0f,1.0f,1.0f };//色
 	spotLightData->position = { 0.0f,2.0f,0.0f };//ライトの位置
 	spotLightData->intensity = 4.0f;//明るさ
-	spotLightData->direction = MyMath::Normlize({ 0.0f,-1.0f,0.0f });//ライトの方向
+	spotLightData->direction = MyMath::Normalize({ 0.0f,-1.0f,0.0f });//ライトの方向
 	spotLightData->distance = 7.0f;//ライトの届く最大距離
 	spotLightData->decay = 2.0f;//減衰率
 	spotLightData->consAngle = std::cos(std::numbers::pi_v<float> / 3.0f);//スポットライトの余弦

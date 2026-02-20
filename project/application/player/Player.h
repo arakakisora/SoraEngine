@@ -22,12 +22,18 @@ enum class LRDirecion {
 	kLeft,
 };
 
-struct CollisionMapInfo {
+enum class PlayerState {
+	hard,
+	sticky,
+};
 
+struct CollisionMapInfo {
 	bool ceiling = false; // 天井衝突
 	bool landing = false; // 着地
 	bool hitWall = false; // 壁接触
 	Vector3 move;         // 移動量
+	Vector3 normal;       // 法線
+	bool hasNormal = false;
 };
 
 enum Corner {
@@ -64,9 +70,8 @@ struct PlayerParameter {
 	float kAttenuationLanding = 0.5f;//着地時の減衰率
 	float kAttenuationWall = 0.1f;//壁に当たった時の減衰率
 	// 振り向きパラメータ
-	float kTimeTurn = 1.0f; // 角度補間タイム
+	float kTimeTurn = 0.5; // 角度補間タイム
 };
-
 
 
 class Enemy;
@@ -118,12 +123,26 @@ public:
 	/// <summary>
 	/// 自機の動き
 	/// </summary>
-	void PrayerMove(); // 自機の動き
+	void PlayerMove(); // 自機の動き
+	/// <summary>
+	/// 衝突の法線をタイプから取得
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
+	static Vector3 NormalFromType(CollisionType type);
+	void Reflect(const CollisionMapInfo& info);
+
+	/// <summary>
+	/// プレイヤーの移動ライン描画
+	/// </summary>
+	void Playerline(); // プレイヤーの移動ライン描画
 
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void PrayerTurn(); // 自機の振り向き
+	void PlayerTurn(); // 自機の振り向き
+
+	void BulletUpdate();
 
 	/// <summary>
 	//攻撃
@@ -140,29 +159,31 @@ public:
 	float EaseOutSine(float x);
 
 	/// <summary>
-	// トランスフォーム取得
-	///< / summary>
-	///<returns>トランスフォームを返す</returns>
-	const EulerTransform& GetTransform() { return object3D_->GetTransform(); }
-
-	/// <summary>
-	// 速度取得
-	///< summary>
-	const Vector3& GetVelocity() const { return velocity_; }
-
-	/// <summary>
-	// 速度設定
+	/// 当たるブロックかどうか
 	/// </summary>
-	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
-
+	/// <param name="type"></param>
+	/// <returns></returns>
 	bool IsHittableBlock(MapChipType type);
-
+	/// <summary>
+	/// 衝突判定の共通処理
+	/// </summary>
+	/// <param name="posList"></param>
+	/// <param name="type"></param>
+	/// <param name="info"></param>
+	/// <returns></returns>
 	bool CheckCollisionPoints(
 		const std::array<Vector3, 2>& posList,
 		CollisionType type,
 		CollisionMapInfo& info
 	);
-
+	/// <summary>
+	/// 衝突判定の共通処理
+	/// </summary>
+	/// <param name="info"></param>
+	/// <param name="dir"></param>
+	/// <param name="checkCorners"></param>
+	/// <param name="offset"></param>
+	/// <param name="moveCondition"></param>
 	void CollisionMapInfoDirection(
 		CollisionMapInfo& info,
 		CollisionType dir,
@@ -170,7 +191,6 @@ public:
 		const Vector3& offset,
 		std::function<bool(const CollisionMapInfo&)> moveCondition
 	);
-
 
 	/// <summary>
 	// map衝突判定
@@ -184,7 +204,6 @@ public:
 	/// <param name="corner"></param>
 	/// <returns></returns>
 	Vector3 CornerPosition(const Vector3& centor, Corner corner);
-
 	/// <summary>
 	// プレイヤーの移動処理
 	/// </summary>
@@ -198,7 +217,7 @@ public:
 	// 着地時の移動処理
 	/// </summary>
 	/// <param name="info"></param>
-	void OnGroundSwitching(const CollisionMapInfo& info);
+	void LandingCollisionMove(const CollisionMapInfo& info);
 	/// <summary>
 	// 地面があるかどうか
 	/// </summary>
@@ -209,44 +228,17 @@ public:
 	/// </summary>
 	/// <param name="info"></param>
 	void HitWallCollisionMove(const CollisionMapInfo& info);
-
-
-
 	/// <summary>
-	/// world座標を取得します
+	/// コライダーの登録
 	/// </summary>
-	Vector3 GetWorldPosition();
+	void RegisterColliders();
 
+	//====================アクセッサ======================//
+	///////////////======getter======///////////////
 	/// <summary>
-	// 死亡しているかどうかを取得
+	// ゴールに到達したかどうか
 	/// </summary>
-	/// <returns></returns>
-	bool GetIsDead_() const { return isDead_; }
-
-	/// <summary>
-	/// 死亡しているかどうかを設定
-	/// </summary>
-	/// <param name="isDead"></param>
-	void SetIsDead(bool isDead) { isDead_ = isDead; }
-
-	/// <summary>
-	// 落下死の高さを設定
-	/// </summary>
-	void SetDeathHeight(float height) { deathHeight_ = height; }
-
-	// Getter
-
-	/// <summary>
-	/// 現在の武器タイプを取得します
-	/// </summary>
-	/// <returns> </returns>
-	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
-
-	/// <summary>
-	/// Object3Dを取得します（所有は Player） 
-	/// </summary>
-	Object3D* GetObject3D() const { return object3D_.get(); }
-
+	bool GetGoal() const { return goal_; }
 	/// <summary>
 	/// 右移動フラグを取得します
 	/// </summary>
@@ -258,6 +250,40 @@ public:
 	/// <returns></returns>
 	bool GetPrayerMoveLeft() { return playerMoveLeft; }
 	/// <summary>
+	/// Object3Dを取得します（所有は Player） 
+	/// </summary>
+	Object3D* GetObject3D() const { return object3D_.get(); }
+	/// <summary>
+	/// 現在の武器タイプを取得します
+	/// </summary>
+	/// <returns> </returns>
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
+	/// <summary>
+	/// world座標を取得します
+	/// </summary>
+	Vector3 GetWorldPosition();
+	/// <summary>
+	// 死亡しているかどうかを取得
+	/// </summary>
+	/// <returns></returns>
+	bool GetIsDead_() const { return isDead_; }
+	/// <summary>
+	// トランスフォーム取得
+	///< / summary>
+	///<returns>トランスフォームを返す</returns>
+	const EulerTransform& GetTransform() { return object3D_->GetTransform(); }
+
+	/// <summary>
+	// 速度取得
+	///< summary>
+	const Vector3& GetVelocity() const { return velocity_; }
+	///////////////======setter======///////////////
+	/// <summary>
+	/// 死亡しているかどうかを設定
+	/// </summary>
+	/// <param name="isDead"></param>
+	void SetIsDead(bool isDead) { isDead_ = isDead; }
+	/// <summary>
 	/// 右移動フラグを設定します
 	/// </summary>
 	/// <param name="right"></param>
@@ -268,65 +294,56 @@ public:
 	/// <param name="left"></param>
 	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
 	/// <summary>
-	// ゴールに到達したかどうか
+	// 落下死の高さを設定
 	/// </summary>
-	bool GetGoal() const { return goal_; }
-
+	void SetDeathHeight(float height) { deathHeight_ = height; }
 	/// <summary>
-	// ゴールに到達したかどうかを設定します
+	// 速度設定
 	/// </summary>
-	void StartDirection();
+	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
-	void SetOnGround(bool onground) { onGround_ = onground; }
-	// 自分と弾を CollisionManager に登録する
-	void RegisterColliders();
 private:
 
-	
-	std::unique_ptr<Object3D> object3D_;
-	Vector3 playerPosition_ = {};
-	Vector3 velocity_ = {};                          // 速度
+	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
+	PlayerState playerState_ = PlayerState::hard;//プレイヤーステート
+	Vector3 playerPosition_ = {};// プレイヤーの位置
+	Vector3 velocity_ = {};// 速度
 	PlayerParameter parameter_;// プレイヤーパラメータ
-
-	// 数学的定数
-	static inline constexpr float kPi = std::numbers::pi_v<float>;
-
-	// 振り向き
-	LRDirecion lrDirection_ = LRDirecion::kright;
-	float turnFirstRotationY_ = 0.0f;           // 現在の向き
-	float turnTimer_ = 0.0f;                    // 振り向き時間
-	
-	// ジャンプ
-	bool onGround_ = true;                                 // 接点状態フラグ
-	
-	// 当たり判定
-	MapChipField* mapChipField_ = nullptr;
-	
-
-	//死んだ
-	bool isDead_ = false;
-
-	//落下死高さ
+	AABB aabb_;// 当たり判定用AABB
+	LRDirecion lrDirection_ = LRDirecion::kright;// 振り向き
 	float deathHeight_; // 落下死の高さ
 
-	//弾
+	//振り向き
+	float turnFirstRotationY_ = 0.0f;           // 現在の向き
+	float turnTimer_ = 0.0f;                    // 振り向き時間
+
+	//マップ
+	MapChipField* mapChipField_ = nullptr;
+
+	//Particle
+	float exhaustTimer_ = 0.0f;//パーティクルの間隔
+
+	//攻撃
+	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
+	std::unique_ptr<Line> line_; // 角度表示用ライン
 	WeaponType currentWeaponType_ = WeaponType::Gatling; // 現在の武器タイプ
-	std::list<std::unique_ptr<PlayerBullet>> bullets_;
+	std::list<std::unique_ptr<PlayerBullet>> bullets_;//弾
 	int32_t fireTimer = 0;
 
-	// プレイヤー移動フラグ
+	
+
+	//フラグ
+	bool goal_ = false; // ゴールに到達したかどうか
 	bool playerMoveRight_ = false;
 	bool playerMoveLeft = false;
-	// Player.h の private:
-	float exhaustTimer_ = 0.0f;
+	bool isDead_ = false;//死んだ
+	int hitCount = 0; // 衝突した数
+	bool wasTouching_ = false;
+	
+	//定数
+	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
-	bool goal_ = false; // ゴールに到達したかどうか
-	AABB aabb_;
-	//大砲の角度（度単位）と調整ステップ
-	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
-	static inline constexpr float kCannonAngleStepDeg = 2.0f; // 1回あたりの変更量（度）
-
-	// ライン描画用
-	std::unique_ptr<Line> line_; // 角度表示用ライン
-
+	static inline constexpr float kPi = std::numbers::pi_v<float>;//π
+	static inline constexpr float kAimMinDeg = -45.0f;//仰角の上限
+	static inline constexpr float kAimMaxDeg = 45.0f;//仰角の下限
 };

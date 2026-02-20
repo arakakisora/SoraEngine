@@ -59,7 +59,7 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 
 	// --- ランダムな方向とスピード（ゆっくり広がる） ---
 	std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
-	Vector3 dir = MyMath::Normlize(Vector3{ dist(rng), dist(rng) * 0.5f, dist(rng) }); // Y成分は少し抑える
+	Vector3 dir = MyMath::Normalize(Vector3{ dist(rng), dist(rng) * 0.5f, dist(rng) }); // Y成分は少し抑える
 	std::uniform_real_distribution<float> speedDist(0.3f, 1.0f);
 	particle.Velocity = dir * speedDist(rng);
 
