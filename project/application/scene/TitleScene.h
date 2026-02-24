@@ -10,6 +10,8 @@
 #include <numbers> // 追加
 #include <memory>
 
+
+
 enum class TitleAnimState {
 	IntroRun,   // プレイヤーが走り始める（タイトルはまだオフスクリーン）
 	HookTitle,  // フックが掛かった瞬間（ワンショットで次へ）
@@ -43,20 +45,26 @@ public:
 
 	// 1周分の初期化
 	void ResetTitleAnimation();
+	
+	void PlayerParticle();
 
 	void ImguiDraw();
+private:
 
-public:
-
+	enum class LRDirecion {
+		kright,
+		kLeft,
+	};
 	
 	std::unique_ptr<Sprite> titleSprite_;
-
+	float exhaustTimer_ = 0.0f;
 	FadeManager fadeManager_;
 
 	std::unique_ptr<Object3D> object3D_;
 	std::unique_ptr<Object3D> titleObj_;
 	std::unique_ptr<Camera> camera;
-
+	// ディレクションライトの向き（右 or 左）
+	LRDirecion lrDirection_;
 	TitleAnimState state_ = TitleAnimState::IntroRun;
 
 	// プレイヤーのX座標（簡単のためフレーム固定Δで進める）
@@ -86,7 +94,7 @@ public:
 	float playerReturnSpeed_ = 0.08f;        // 戻る速さ
 
 
-	// レイヤーの向き定数 ---（既存）
+	// レイヤーの向き定数 
 	float kYawFront = 3.1f; // 正面
 	float kYawRight = kYawFront - std::numbers::pi_v<float> *0.5f; // 右
 	float kYawLeft = kYawFront + std::numbers::pi_v<float> *0.5f; // 左
@@ -115,5 +123,9 @@ public:
 	static inline constexpr float kSpringVelThresh2 = 0.02f;
 	static inline constexpr float kPlayerReturnEpsilon = 0.001f;
 
+	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
+
+	bool loopFadePlaying_ = false;
+	bool loopDoReset_ = false;
 };
 
