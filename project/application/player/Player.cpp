@@ -22,7 +22,7 @@ void Player::Initialize(const Vector3& position) {
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player.obj");
-	object3D_->SetScale(Vector3{ 0.25f,0.25f,0.25f });
+	object3D_->SetScale(Vector3{ 0.125f,0.125f,0.125f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
@@ -109,8 +109,8 @@ void Player::Update() {
 	wasTouching_ = touchingNow;
 
 
-	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
 	Reflect(collisionMapInfo);
+	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
@@ -201,11 +201,13 @@ void Player::PlayerMove() {
 
 		v.z = 0.0f;
 		if (velocity_.x == 0 && velocity_.y == 0) {
+		}
 			playerState_ = PlayerState::hard;
 			velocity_ = v;
+			shotVel_ = v;
+			hasShotVel_ = true;
 			hitCount = 0;
 			wasTouching_ = false;
-		}
 
 	}
 
@@ -300,38 +302,19 @@ Vector3 Player::NormalFromType(CollisionType type)
 
 void Player::Reflect(const CollisionMapInfo& info)
 {
-	if (!info.hasNormal) return;
+	if (!hasShotVel_) return;
+	if (playerState_ == PlayerState::sticky) return;
 
-	Vector3 n = MyMath::Normalize(info.normal);
-	if (n.x == 0 && n.y == 0 && n.z == 0) return;
+	const bool reflectX = info.hitWall;
+	const bool reflectY = (info.ceiling || info.landing);
 
-	// 速度が面に向かってる時だけ反射
-	const float vn = MyMath::Dot(velocity_, n);
-	if (vn >= 0.0f) return;
+	if (!reflectX && !reflectY) return;
 
-	// 完全反射（減速なし）
-	velocity_ = velocity_ - n * (2.0f * vn);
+	if (reflectX) shotVel_.x = -shotVel_.x;
+	if (reflectY) shotVel_.y = -shotVel_.y;
 
-	// めり込み連打防止の押し出し（epsilon）
-	Vector3 pos = object3D_->GetTransform().translate;
-	pos = pos + n * (parameter_.kCollisionEpsilon * 2.0f);
-	object3D_->SetTranslate(pos);
-
-	// ほぼ0のときは向きを変えない
-	const float dirEps = 1e-4f;
-
-	LRDirecion currentDir = lrDirection_;
-	if (velocity_.x > dirEps) {
-		currentDir = LRDirecion::kright;
-	} else if (velocity_.x < -dirEps) {
-		currentDir = LRDirecion::kLeft;
-	}
-
-	if (currentDir != lrDirection_) {
-		lrDirection_ = currentDir;
-		turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-		turnTimer_ = parameter_.kTimeTurn; // 既存の PlayerTurn() が回転させる
-	}
+	velocity_ = shotVel_;
+	velocity_ = shotVel_; 
 
 }
 
@@ -712,6 +695,7 @@ bool Player::CheckCollisionPoints(const std::array<Vector3, 2>& posList, Collisi
 		case CollisionType::Right:
 			info.move.x = std::max(0.0f, rect.left - position.x - (parameter_.kWidth / 2.0f + parameter_.kBlank));
 			info.hitWall = true;
+			
 			break;
 		case CollisionType::Left:
 			info.move.x = std::min(0.0f, rect.right - position.x + (parameter_.kWidth / 2.0f + parameter_.kBlank));
