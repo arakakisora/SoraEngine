@@ -83,6 +83,7 @@ void Player::Update() {
 	aabb_ = GetPlayerAABB();// AABB 更新
 	//Attack();// 攻撃
 	Playerline();// プレイヤーの移動ライン描画
+	DrawPredictLine();
 
 	BulletUpdate();// 弾の更新
 
@@ -93,12 +94,17 @@ void Player::Update() {
 
 	// マップ衝突チェック
 	MapCollision(collisionMapInfo);
+	Reflect(collisionMapInfo);
 
+	// 停止判定
+	isStopped_ =
+		std::abs(collisionMapInfo.move.x) < kStopEps &&
+		std::abs(collisionMapInfo.move.y) < kStopEps;
 
 	const bool touchingNow =
 		collisionMapInfo.ceiling || collisionMapInfo.landing || collisionMapInfo.hitWall;
 
-	// 非接触→接触になった瞬間だけカウント
+	// 接触になった瞬間だけカウント
 	if (touchingNow && !wasTouching_) {
 		hitCount++;
 		if (hitCount >= 2) {
@@ -109,12 +115,11 @@ void Player::Update() {
 	wasTouching_ = touchingNow;
 
 
-	Reflect(collisionMapInfo);
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
-	PlayerTurn();
+	Playerdirection(collisionMapInfo);// プレイヤーの振り向き
 	object3D_->Update();
 	PlayerParticle();
 
@@ -162,131 +167,57 @@ void Player::PlayerMove() {
 	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
 	const float spd = parameter_.kLimitRunSpeed;
 
-	// XY平面で作る（横移動 = X、仰角 = Y、Zは常に0）
-	Vector3 v{};
-	Vector3 v2{};
-	v.y = std::sinf(rad) * spd;
-	v.x = std::cosf(rad) * spd;
-	v.z = 0.0f;
+	Vector3 localDir{};
+	localDir.y = std::sinf(rad);
+	localDir.z = std::cosf(rad);
+	localDir.x = 0.0f;
+
+	// ワールド変換（回転を考慮）
+	Vector3 worldDir = MyMath::TransformNormal(
+		localDir,
+		object3D_->GetWorldMatrix()
+	);
+
+	Vector3 v = worldDir.Normalize() * spd;
 
 
-	if (Input::GetInstance()->TriggerKey(DIK_D)) {
-		if (lrDirection_ != LRDirecion::kright) {
-			lrDirection_ = LRDirecion::kright;
-			turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-			turnTimer_ = parameter_.kTimeTurn;
-		}
-	}
+	//if (Input::GetInstance()->TriggerKey(DIK_D)) {
+	//	if (lrDirection_ != LRDirecion::kright) {
+	//		lrDirection_ = LRDirecion::kright;
+	//		turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
+	//		turnTimer_ = parameter_.kTimeTurn;
+	//	}
+	//}
 
-	if (Input::GetInstance()->TriggerKey(DIK_A)) {
-		if (lrDirection_ != LRDirecion::kLeft) {
-			lrDirection_ = LRDirecion::kLeft;
-			turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-			turnTimer_ = parameter_.kTimeTurn;
-		}
-	}
+	//if (Input::GetInstance()->TriggerKey(DIK_A)) {
+	//	if (lrDirection_ != LRDirecion::kLeft) {
+	//		lrDirection_ = LRDirecion::kLeft;
+	//		turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
+	//		turnTimer_ = parameter_.kTimeTurn;
+	//	}
+	//}
 
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 
-	if (Input::GetInstance()->PushKey(DIK_SPACE)) {
+		const bool canShoot =
+			(playerState_ == PlayerState::sticky) || isStopped_;
 
-		// XY平面だけ
-		Vector3 v{};
-		v.y = std::sinf(rad) * spd;
-		v.x = std::cosf(rad) * spd;
+		if (canShoot) {
 
-		// 左向きならX反転（右=+、左=-）
-		if (lrDirection_ == LRDirecion::kLeft) {
-			v.x = -v.x;
-		}
-
-		v.z = 0.0f;
-		if (velocity_.x == 0 && velocity_.y == 0) {
-		}
 			playerState_ = PlayerState::hard;
+
+			
+			Vector3 v = MakeShotVelocity();
+
 			velocity_ = v;
 			shotVel_ = v;
 			hasShotVel_ = true;
+
 			hitCount = 0;
 			wasTouching_ = false;
-
+		}
 	}
 
-
-	//if (onGround_) {
-	//	// 移動入力 を WASD に変更（A/D 左右、W ジャンプ）
-	//	if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_A)) {
-	//		// 左右加速
-	//		Vector3 acceleration = {};
-	//		if (Input::GetInstance()->PushKey(DIK_D)) {
-
-	//			if (velocity_.x < 0.0f) {
-	//				velocity_.x *= (1.0f - parameter_.kAttenuation);
-	//			}
-
-	//			if (lrDirection_ != LRDirecion::kright) {
-	//				lrDirection_ = LRDirecion::kright;
-	//				turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-	//				turnTimer_ = parameter_.kTimeTurn;
-	//			}
-	//			// 右移動
-	//			acceleration.x += parameter_.kAcceleration;
-	//			playerMoveRight_ = true;
-	//			playerMoveLeft = false;
-
-	//		}
-	//		else if (Input::GetInstance()->PushKey(DIK_A)) {
-
-	//			if (velocity_.x > 0.0f) {
-	//				velocity_.x *= (1.0f - parameter_.kAttenuation);
-	//			}
-	//			if (lrDirection_ != LRDirecion::kLeft) {
-	//				lrDirection_ = LRDirecion::kLeft;
-	//				turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-	//				turnTimer_ = parameter_.kTimeTurn;
-	//			}
-	//			// 左移動
-	//			acceleration.x -= parameter_.kAcceleration;
-	//			playerMoveLeft = true;
-	//			playerMoveRight_ = false;
-
-	//		}
-	//		velocity_.x += acceleration.x;
-	//		velocity_.y += acceleration.y;
-	//		velocity_.z += acceleration.z;
-
-	//		velocity_.x = std::clamp(velocity_.x, -parameter_.kLimitRunSpeed, parameter_.kLimitRunSpeed);
-
-	//	}
-	//	else {
-
-	//		velocity_.x *= (1.0f -  parameter_.kAttenuation);
-	//		velocity_.y *= (1.0f -  parameter_.kAttenuation);
-	//		velocity_.z *= (1.0f -  parameter_.kAttenuation);
-	//		// スティックが真ん中なら両方falseにする
-	//		playerMoveRight_ = false;
-	//		playerMoveLeft = false;
-	//	}
-
-
-	//	// ジャンプを W に変更
-	//	if (Input::GetInstance()->PushKey(DIK_W)) {
-
-	//		velocity_.x += 0;
-	//		velocity_.y += parameter_.kJumpAcceleration;
-	//		velocity_.z += 0;
-
-	//	}
-
-	//}
-	//else {
-	//	// 落下速度
-	//	velocity_.x += 0;
-	//	velocity_.y += -parameter_.kGravityAcceleration;
-	//	velocity_.z += 0;
-	//	// 落下速度制限
-
-	//	velocity_.y = std::max(velocity_.y, -parameter_.kLimitFallSpeed);
-	//}
 }
 
 Vector3 Player::NormalFromType(CollisionType type)
@@ -302,19 +233,39 @@ Vector3 Player::NormalFromType(CollisionType type)
 
 void Player::Reflect(const CollisionMapInfo& info)
 {
-	if (!hasShotVel_) return;
 	if (playerState_ == PlayerState::sticky) return;
+	if (!info.hasNormal) return;
 
-	const bool reflectX = info.hitWall;
-	const bool reflectY = (info.ceiling || info.landing);
+	Vector3 n{};
 
-	if (!reflectX && !reflectY) return;
+	const bool hitX = info.hitWall;
+	const bool hitY = (info.ceiling || info.landing);
 
-	if (reflectX) shotVel_.x = -shotVel_.x;
-	if (reflectY) shotVel_.y = -shotVel_.y;
+	if (hitX && hitY) {
+		if (info.penX >= info.penY) {
+			// 壁で反射
+			n = { (velocity_.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
+		}
+		else {
+			// 天井/床で反射
+			n = { 0.0f, (velocity_.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
+		}
+	}
+	else {
+		// 合成法線
+		n = MyMath::Normalize(info.normal);
+	}
 
-	velocity_ = shotVel_;
-	velocity_ = shotVel_; 
+	if (n.x == 0 && n.y == 0 && n.z == 0) return;
+
+	const float vn = MyMath::Dot(velocity_, n);
+	if (vn >= 0.0f) return;
+
+	velocity_ = velocity_ - n * (2.0f * vn);
+
+
+	shotVel_ = velocity_;
+	hasShotVel_ = true;
 
 }
 
@@ -356,39 +307,200 @@ void Player::Playerline()
 	}
 }
 
-void Player::PlayerTurn() {
+void Player::DrawPredictLine()
+{
+	if (!line_) return;
+	if (!mapChipField_) return;
+
+	// 速度0のとき（発射前）だけ予測線を見せたいならこれ
+	if (!(velocity_.x == 0.0f && velocity_.y == 0.0f)) return;
+
+	// 発射ベクトル（予測用）
+	Vector3 simVel = MakeShotVelocity();
+	Vector3 simPos = object3D_->GetTransform().translate;
+
+	// 2回触れたらsticky
+	int hitCountSim = 0;
+	bool wasTouchingSim = false;
+
+	// 色（好きに）
+	Vector4 color = { 1.0f, 1.0f, 0.0f, 1.0f };
+
+	// 何ステップ先まで描くか
+	const int kMaxSteps = 240; // 30fps想定なら8秒
+	const float epsPush = parameter_.kCollisionEpsilon * 2.0f;
+
+	Vector3 prev = simPos;
+
+	for (int step = 0; step < kMaxSteps; ++step) {
+
+		CollisionMapInfo info{};
+		info.move = simVel;         
+		info.normal = { 0,0,0 };
+		info.hasNormal = false;
+
+		// マップ判定（既存を流用！）
+		MapCollisionAt(simPos, info,false);
+
+		const bool touchingNow = info.ceiling || info.landing || info.hitWall;
+
+		// 接触カウント
+		if (touchingNow && !wasTouchingSim) {
+			hitCountSim++;
+		}
+		wasTouchingSim = touchingNow;
+
+		// 移動（押し戻し込み）
+		simPos = simPos + info.move;
+
+		// 線分描画
+		line_->Draw(prev, simPos, color);
+		prev = simPos;
+
+		// 2回触れたら終了（sticky地点まで描く）
+		if (hitCountSim >= 2) break;
+
+		// 反射
+		if (info.hasNormal) {
+			Vector3 n{};
+			const bool hitX = info.hitWall;
+			const bool hitY = (info.ceiling || info.landing);
+
+			if (hitX && hitY) {
+				if (info.penX >= info.penY) {
+					n = { (simVel.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
+				}
+				else {
+					n = { 0.0f, (simVel.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
+				}
+			}
+			else {
+				n = MyMath::Normalize(info.normal);
+			}
+
+			ReflectVelocity(simVel, n);
+		}
+
+		// 速度がほぼゼロなら終了
+		if (std::abs(simVel.x) < 1e-6f && std::abs(simVel.y) < 1e-6f) {
+			break;
+		}
+	}
+
+}
+
+void Player::ReflectVelocity(Vector3& v, const Vector3& normal)
+{
+	Vector3 n = MyMath::Normalize(normal);
+	if (n.x == 0 && n.y == 0 && n.z == 0) return;
+
+	const float vn = MyMath::Dot(v, n);
+	if (vn >= 0.0f) return; // 面から離れてるなら反射しない
+
+	v = v - n * (2.0f * vn);
+}
+
+Vector3 Player::MakeShotVelocity()
+{
+	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
+	const float spd = parameter_.kLimitRunSpeed;
+
+	Vector3 localDir{};
+	localDir.y = std::sinf(rad);
+	localDir.z = std::cosf(rad);
+	localDir.x = 0.0f;
+
+	Vector3 worldDir = MyMath::TransformNormal(
+		localDir,
+		object3D_->GetWorldMatrix()
+	);
+
+	return worldDir.Normalize() * spd;
+}
+
+void Player::Playerdirection(const CollisionMapInfo& info) {
+	LRTBDirecion targetDir = direction_;
+
+	if (info.hasNormal) {
+
+		if (info.normal.x < 0.0f) {
+			targetDir = LRTBDirecion::kLeft;
+		}
+		else if (info.normal.x > 0.0f) {
+			targetDir = LRTBDirecion::kRight;
+		}
+
+		if (info.normal.y > 0.0f) {
+			targetDir = LRTBDirecion::kTop;
+		}
+		else if (info.normal.y < 0.0f) {
+			targetDir = LRTBDirecion::kBottom;
+		}
+	}
+
+	if (targetDir != direction_) {
+		direction_ = targetDir;
+		turnTimer_ = parameter_.kTimeTurn;
+	}
+
+	EulerTransform tr = object3D_->GetTransform();
+
+	// 回転角決定
+	float targetY = tr.rotate.y;
+	float targetZ = tr.rotate.z;
+
+	// 方向ごとの目標角度
+	switch (direction_) {
+
+	case LRTBDirecion::kRight:
+		targetY = std::numbers::pi_v<float> / 2.0f;
+		targetZ = 0.0f;
+		break;
+
+	case LRTBDirecion::kLeft:
+		targetY = std::numbers::pi_v<float> *3.0f / 2.0f;
+		targetZ = 0.0f;
+		break;
+
+	case LRTBDirecion::kTop:
+		targetY = std::numbers::pi_v<float> / 2.0f; 
+		targetZ = std::numbers::pi_v<float> / 2.0f;
+		break;
+
+	case LRTBDirecion::kBottom:
+		targetY = std::numbers::pi_v<float> / 2.0f; 
+		targetZ = -std::numbers::pi_v<float> / 2.0f;
+		break;
+	}
+
+	// 補間
 	if (turnTimer_ > 0.0f) {
-		// 固定フレーム前提の dt（現状コードの多くが 1/60 を使っているため合わせる）
+
 		const float dt = 1.0f / 30.0f;
 		turnTimer_ -= dt;
 
-		// 左右の角度テーブル
-		float destinationRotationYTable[] = {
-			std::numbers::pi_v<float> / 2.0f,
-			std::numbers::pi_v<float> *3.0f / 2.0f,
-		};
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-
-		// turnTimer_ を kTimeTurn に対して正規化して進行率 t を得る（0..1）
-		const float total = parameter_.kTimeTurn;
-		float t = 1.0f - (turnTimer_ / total);
+		float t = 1.0f - (turnTimer_ / parameter_.kTimeTurn);
 		t = std::clamp(t, 0.0f, 1.0f);
-
-		// イージング（正しい EaseOutSine）
 		float eased = EaseOutSine(t);
 
-		// 開始角度から目標角度へ補間
-		float startY = turnFirstRotationY_;
-		float newY = startY + (destinationRotationY - startY) * eased;
-		object3D_->SetRotate({ 0.0f, newY, 0.0f });
+		tr = object3D_->GetTransform();
 
-		// 終了時に角度を厳密に合わせる
+		tr.rotate.y += (targetY - tr.rotate.y) * eased;
+		tr.rotate.z += (targetZ - tr.rotate.z) * eased;
+
+		object3D_->SetRotate(tr.rotate);
+
 		if (turnTimer_ <= 0.0f) {
-			object3D_->SetRotate({ 0.0f, destinationRotationY, 0.0f });
 			turnTimer_ = 0.0f;
+
+			tr.rotate.y = targetY;
+			tr.rotate.z = targetZ;
+			object3D_->SetRotate(tr.rotate);
 		}
 	}
 }
+
+
 
 void Player::BulletUpdate()
 {
@@ -407,43 +519,85 @@ void Player::BulletUpdate()
 void Player::MapCollision(CollisionMapInfo& info) {
 
 	const Vector3 position = object3D_->GetTransform().translate;
-	MapCollisionAt(position, info);
+	MapCollisionAt(position, info,true);
 }
 
-void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info) 
+void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal)
 {
+	Vector3 base = position;
+
+	// --------------------
+	// X解く
+	// --------------------
+	CollisionMapInfo xInfo{};
+	xInfo.move = { info.move.x, 0.0f, 0.0f };
+	xInfo.normal = { 0,0,0 };
+	xInfo.hasNormal = false;
+	xInfo.penX = 0.0f;
+	xInfo.penY = 0.0f;
+
 	CollisionMapInfoDirection(
-		position, info, CollisionType::Right,
+		base, xInfo, CollisionType::Right,
 		{ kRightTop, kRightBottom },
 		Vector3(parameter_.kCollisionEpsilon, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.x > 0; }
+		[](const CollisionMapInfo& i) { return i.move.x > 0; },
+		enableGoal
 	);
-
 	CollisionMapInfoDirection(
-		position, info, CollisionType::Left,
+		base, xInfo, CollisionType::Left,
 		{ kLeftTop, kLeftBottom },
 		Vector3(-parameter_.kCollisionEpsilon, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.x < 0; }
+		[](const CollisionMapInfo& i) { return i.move.x < 0; },
+		enableGoal
 	);
 
+	// X反映
+	base.x += xInfo.move.x;
+	info.move.x = xInfo.move.x;
+
+	if (xInfo.hasNormal) {
+		info.normal = info.normal + xInfo.normal;
+		info.hasNormal = true;
+	}
+	info.hitWall = info.hitWall || xInfo.hitWall;
+	info.penX = std::max(info.penX, xInfo.penX);
+
+	// --------------------
+	// Y（X反映後の位置で）
+	// --------------------
+	CollisionMapInfo yInfo{};
+	yInfo.move = { 0.0f, info.move.y, 0.0f };
+	yInfo.normal = { 0,0,0 };
+	yInfo.hasNormal = false;
+	yInfo.penX = 0.0f;
+	yInfo.penY = 0.0f;
+
 	CollisionMapInfoDirection(
-		position, info, CollisionType::Top,
+		base, yInfo, CollisionType::Top,
 		{ kLeftTop, kRightTop },
-		Vector3(0, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.y > 0; }
+		Vector3(0, parameter_.kCollisionEpsilon, 0),
+		[](const CollisionMapInfo& i) { return i.move.y > 0; },
+		enableGoal
 	);
-
 	CollisionMapInfoDirection(
-		position, info, CollisionType::Bottom,
+		base, yInfo, CollisionType::Bottom,
 		{ kLeftBottom, kRightBottom },
-		Vector3(0, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.y < 0; }
+		Vector3(0, -parameter_.kCollisionEpsilon, 0),
+		[](const CollisionMapInfo& i) { return i.move.y < 0; },
+		enableGoal
 	);
 
+	// Y反映
+	base.y += yInfo.move.y;
+	info.move.y = yInfo.move.y;
 
-
-
-
+	if (yInfo.hasNormal) {
+		info.normal = info.normal + yInfo.normal;
+		info.hasNormal = true;
+	}
+	info.ceiling = info.ceiling || yInfo.ceiling;
+	info.landing = info.landing || yInfo.landing;
+	info.penY = std::max(info.penY, yInfo.penY);
 
 }
 
@@ -492,23 +646,7 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 
 void Player::LandingCollisionMove(const CollisionMapInfo& info) {
 
-	//// 上向き速度が出たら地上扱い解除（ジャンプ開始）
-	//if (onGround_) {
-	//	if (velocity_.y > 0.0f) {
-	//		onGround_ = false;
-	//		return;
-	//	}
-
-	//	// 移動後の中心座標
-	//	Vector3 movedPos = object3D_->GetTransform().translate + info.move;
-
-	//	// 足元に床が無ければ落下開始
-	//	if (!HasGroundBelow(movedPos)) {
-	//		onGround_ = false;
-	//	}
-	//	return;
-	//}
-	// 着地フラグが立ったら着地
+	
 	if (info.landing) {
 
 		if (playerState_ == PlayerState::sticky) {
@@ -634,7 +772,7 @@ void Player::PlayerParticle()
 			smokeTransform.translate = object3D_->GetTransform().translate;
 
 			// 進行方向のちょい後ろに出すと“排気”感が出る
-			if (lrDirection_ == LRDirecion::kright) {
+			if (direction_ == LRTBDirecion::kRight) {
 				smokeTransform.translate.x -= 0.15f;
 			} else {
 				smokeTransform.translate.x += 0.15f;
@@ -664,62 +802,116 @@ bool Player::IsHittableBlock(MapChipType type)
 	}
 }
 
-bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info)
+bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info, bool enableGoal)
 {
+	const Vector3 movedCenter = basePos + info.move;
+
 	bool hit = false;
 
-	for (const auto& pos : posList) {
-		IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(pos);
-		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+	bool hasBest = false;
+	Rect bestRect{};
+	float bestPen = -1.0f;
 
+	for (const auto& p : posList) {
+		IndexSet idx = mapChipField_->GetMapChipIndexSetByPosition(p);
+		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
 
-		if (IsHittableBlock(chip)) {
-			hit = true;
-		} else if (chip == MapChipType::Goal) {
-			goal_ = true;
-		}
-	}
+		Rect r = mapChipField_->GetRectByIndex(idx.xIndex, idx.yIndex);
 
-	if (hit) {
-		
-		IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(basePos);
-		Rect rect = mapChipField_->GetRectByIndex(index.xIndex, index.yIndex);
-
-		Vector3 n = NormalFromType(type);
-		info.normal = info.normal + n;
-		info.hasNormal = true;
-
+		float pen = 0.0f;
 		switch (type) {
-		case CollisionType::Top:
-			info.move.y = std::max(0.0f, rect.bottom - basePos.y - (parameter_.kHeight / 2.0f + parameter_.kBlank));
-			info.ceiling = true;
-			break;
-		case CollisionType::Bottom:
-			info.move.y = std::min(0.0f, rect.top - basePos.y + (parameter_.kHeight / 2.0f + parameter_.kBlank));
-			info.landing = true;
-			break;
 		case CollisionType::Right:
-			info.move.x = std::max(0.0f, rect.left - basePos.x - (parameter_.kWidth / 2.0f + parameter_.kBlank));
-			info.hitWall = true;
-			
+			pen = (movedCenter.x + parameter_.kWidth * 0.5f) - r.left;
 			break;
 		case CollisionType::Left:
-			info.move.x = std::min(0.0f, rect.right - basePos.x + (parameter_.kWidth / 2.0f + parameter_.kBlank));
-			info.hitWall = true;
+			pen = r.right - (movedCenter.x - parameter_.kWidth * 0.5f);
 			break;
+		case CollisionType::Top:
+			pen = (movedCenter.y + parameter_.kHeight * 0.5f) - r.bottom;
+			break;
+		case CollisionType::Bottom:
+			pen = r.top - (movedCenter.y - parameter_.kHeight * 0.5f);
+			break;
+		}
+
+		if (chip == MapChipType::Goal) {
+			if (enableGoal) {
+				if (pen > -parameter_.kCollisionEpsilon) { // 少し甘くする
+					goal_ = true;
+				}
+			}
+			continue;
+		}
+
+		// 壁になるブロック以外は無視
+		if (!IsHittableBlock(chip)) continue;
+
+		hit = true;
+
+		// めり込みがある時だけ採用
+		if (pen > 0.0f) {
+			if (type == CollisionType::Right || type == CollisionType::Left) {
+				info.penX = std::max(info.penX, pen);
+			}
+			else {
+				info.penY = std::max(info.penY, pen);
+			}
+
+			if (!hasBest || pen > bestPen) {
+				hasBest = true;
+				bestPen = pen;
+				bestRect = r;
+			}
 		}
 	}
 
-	return hit;
+	if (!hit || !hasBest) return false;
+
+	// 法線加算
+	Vector3 n = NormalFromType(type);
+	info.normal = info.normal + n;
+	info.hasNormal = true;
+
+	// 押し戻し（bestRect 基準）
+	switch (type) {
+	case CollisionType::Top:
+		// 天井：ブロックの bottom に合わせる
+		info.move.y = bestRect.bottom - basePos.y - (parameter_.kHeight * 0.5f + parameter_.kBlank);
+		info.ceiling = true;
+		break;
+
+	case CollisionType::Bottom:
+		// 床：ブロックの top に合わせる
+		info.move.y = bestRect.top - basePos.y + (parameter_.kHeight * 0.5f + parameter_.kBlank);
+		info.landing = true;
+		break;
+
+	case CollisionType::Right:
+		// 右壁：ブロックの left に合わせる
+		info.move.x = bestRect.left - basePos.x - (parameter_.kWidth * 0.5f + parameter_.kBlank);
+		info.hitWall = true;
+		break;
+
+	case CollisionType::Left:
+		// 左壁：ブロックの right に合わせる
+		info.move.x = bestRect.right - basePos.x + (parameter_.kWidth * 0.5f + parameter_.kBlank);
+		info.hitWall = true;
+		break;
+	}
+
+	return true;
 }
 
+
 void Player::CollisionMapInfoDirection(
-	const Vector3& basePos, 
-	CollisionMapInfo& info, 
-	CollisionType dir, 
-	const std::array<Corner, 2>& checkCorners, 
-	const Vector3& offset, 
-	std::function<bool(const CollisionMapInfo&)> moveCondition)
+	const Vector3& basePos,
+	CollisionMapInfo& info,
+	CollisionType dir,
+	const std::array<Corner, 2>& checkCorners,
+	const Vector3& offset,
+	std::function<bool(const CollisionMapInfo&)> moveCondition,
+	bool enableGoal
+)
 {
 	if (!moveCondition(info)) return;
 
@@ -730,7 +922,7 @@ void Player::CollisionMapInfoDirection(
 		CornerPosition(position, checkCorners[1]) + offset
 	};
 
-	CheckCollisionPoints(basePos, points, dir, info);
+	CheckCollisionPoints(basePos, points, dir, info, enableGoal); 
 }
 
 void Player::RegisterColliders()

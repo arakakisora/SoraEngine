@@ -213,6 +213,10 @@ namespace MyMath {
         x = x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x);
         return x * x * (3.0f - 2.0f * x);
     }
+
+	static bool IsNearlyZero2D(const Vector3& v, float eps = 1e-4f) {
+		return (std::abs(v.x) < eps) && (std::abs(v.y) < eps);
+	}
 }
 
 

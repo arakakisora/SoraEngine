@@ -17,9 +17,11 @@
 #include "Line.h"            // 追加: ライン描画
 #include <memory>           // 追加: std::unique_ptr を使用
 
-enum class LRDirecion {
-	kright,
+enum class LRTBDirecion {
+	kRight,
 	kLeft,
+	kTop,
+	kBottom
 };
 
 enum class PlayerState {
@@ -34,6 +36,9 @@ struct CollisionMapInfo {
 	Vector3 move;         // 移動量
 	Vector3 normal;       // 法線
 	bool hasNormal = false;
+
+	float penX = 0.0f; //壁方向めり込み
+	float penY = 0.0f; //天井/床方向めり込み
 };
 
 enum Corner {
@@ -64,7 +69,7 @@ struct PlayerParameter {
 	//当たり判定パラメータ
 	float kWidth = 0.4f;//当たり判定の幅
 	float kHeight = 0.4f;//当たり判定の高さ
-	float kBlank = 2.0;//当たり判定の余裕
+	float kBlank = 0.05f;//当たり判定の余裕
 	float kCollisionEpsilon = 0.1f;//当たり判定の余裕
 	//減衰パラメータ
 	float kAttenuationLanding = 0.5f;//着地時の減衰率
@@ -120,29 +125,52 @@ public:
 	// 描画
 	/// </summary>
 	void Draw();
-	/// <summary>
-	/// 自機の動き
-	/// </summary>
-	void PlayerMove(); // 自機の動き
+
 	/// <summary>
 	/// 衝突の法線をタイプから取得
 	/// </summary>
 	/// <param name="type"></param>
 	/// <returns></returns>
 	static Vector3 NormalFromType(CollisionType type);
-	
+	/// <summary>
+	/// 衝突の法線をタイプから取得
+	/// </summary>
+	/// <param name="info"></param>
 	void Reflect(const CollisionMapInfo& info);
 
+	////////////======ライン描画======///////////////
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
 	void Playerline(); // プレイヤーの移動ライン描画
+	/// <summary>
+	/// プレイヤーの移動予測ライン描画
+	/// </summary>
+	void DrawPredictLine();
+	/// <summary>
+	/// ベクトルを法線で反射させる
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="normal"></param>
+	static void ReflectVelocity(Vector3& v, const Vector3& normal);
+	/// <summary>
+	/// 砲台の角度を更新
+	/// </summary>
+	/// <returns></returns>
+	Vector3 MakeShotVelocity();
 	/////////////======ライン描画======///////////////
 
+	/////////////======プレイヤーの動き======///////////////
+	/// <summary>
+	/// 自機の動き
+	/// </summary>
+	void PlayerMove(); // 自機の動き
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void PlayerTurn(); // 自機の振り向き
+	void Playerdirection(const CollisionMapInfo& info); // 自機の振り向き
+
+	/////////////======プレイヤーの動き======///////////////
 
 	void BulletUpdate();
 
@@ -177,7 +205,8 @@ public:
 		const Vector3& basePos,
 		const std::array<Vector3, 2>& posList,
 		CollisionType type,
-		CollisionMapInfo& info
+		CollisionMapInfo& info,
+		bool enableGoal
 	);
 	/// <summary>
 	/// 衝突判定の共通処理
@@ -193,7 +222,8 @@ public:
 		CollisionType dir,
 		const std::array<Corner, 2>& checkCorners,
 		const Vector3& offset,
-		std::function<bool(const CollisionMapInfo&)> moveCondition
+		std::function<bool(const CollisionMapInfo&)> moveCondition,
+		bool enableGoal
 	);
 
 	/// <summary>
@@ -201,7 +231,7 @@ public:
 	/// </summary>
 	void MapCollision(CollisionMapInfo& info);
 
-	void MapCollisionAt(const Vector3& position, CollisionMapInfo& info) ;
+	void MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal = true);
 
 	/// <summary>
 	/// コーナーのワールド座標を取得
@@ -316,11 +346,11 @@ private:
 	Vector3 velocity_ = {};// 速度
 	PlayerParameter parameter_;// プレイヤーパラメータ
 	AABB aabb_;// 当たり判定用AABB
-	LRDirecion lrDirection_ = LRDirecion::kright;// 振り向き
+	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
 	float deathHeight_; // 落下死の高さ
 
+
 	//振り向き
-	float turnFirstRotationY_ = 0.0f;           // 現在の向き
 	float turnTimer_ = 0.0f;                    // 振り向き時間
 
 	//マップ
@@ -336,7 +366,7 @@ private:
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;//弾
 	int32_t fireTimer = 0;
 
-	
+
 
 	//フラグ
 	bool goal_ = false; // ゴールに到達したかどうか
@@ -345,14 +375,16 @@ private:
 	bool isDead_ = false;//死んだ
 	int hitCount = 0; // 衝突した数
 	bool wasTouching_ = false;
-	
+
 	//定数
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
 	static inline constexpr float kPi = std::numbers::pi_v<float>;//π
-	static inline constexpr float kAimMinDeg = -45.0f;//仰角の上限
-	static inline constexpr float kAimMaxDeg = 45.0f;//仰角の下限
+	static inline constexpr float kAimMinDeg = -60.0f;//仰角の上限
+	static inline constexpr float kAimMaxDeg = 60.0f;//仰角の下限
+	static inline constexpr float kStopEps = 1e-4f;//停止判定のための微小値
 
 	Vector3 shotVel_{};
 	bool hasShotVel_ = false;
+	bool isStopped_ = false;
 };
