@@ -130,12 +130,14 @@ public:
 	/// <param name="type"></param>
 	/// <returns></returns>
 	static Vector3 NormalFromType(CollisionType type);
+	
 	void Reflect(const CollisionMapInfo& info);
 
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
 	void Playerline(); // プレイヤーの移動ライン描画
+	/////////////======ライン描画======///////////////
 
 	/// <summary>
 	// 自機の振り向き
@@ -172,6 +174,7 @@ public:
 	/// <param name="info"></param>
 	/// <returns></returns>
 	bool CheckCollisionPoints(
+		const Vector3& basePos,
 		const std::array<Vector3, 2>& posList,
 		CollisionType type,
 		CollisionMapInfo& info
@@ -185,6 +188,7 @@ public:
 	/// <param name="offset"></param>
 	/// <param name="moveCondition"></param>
 	void CollisionMapInfoDirection(
+		const Vector3& basePos,
 		CollisionMapInfo& info,
 		CollisionType dir,
 		const std::array<Corner, 2>& checkCorners,
@@ -196,6 +200,8 @@ public:
 	// map衝突判定
 	/// </summary>
 	void MapCollision(CollisionMapInfo& info);
+
+	void MapCollisionAt(const Vector3& position, CollisionMapInfo& info) ;
 
 	/// <summary>
 	/// コーナーのワールド座標を取得

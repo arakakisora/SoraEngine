@@ -423,43 +423,48 @@ void Player::BulletUpdate()
 
 void Player::MapCollision(CollisionMapInfo& info) {
 
-	// 4点のワールド座標を計算
-	// 右上、左上、右下、左下の順番で計算
+	const Vector3 position = object3D_->GetTransform().translate;
+	MapCollisionAt(position, info);
+}
 
-	CollisionMapInfoDirection(// 右
-		info,
-		CollisionType::Right,
+void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info) 
+{
+	CollisionMapInfoDirection(
+		position, info, CollisionType::Right,
 		{ kRightTop, kRightBottom },
 		Vector3(parameter_.kCollisionEpsilon, 0, 0),
 		[](const CollisionMapInfo& i) { return i.move.x > 0; }
 	);
 
-	CollisionMapInfoDirection(// 左
-		info,
-		CollisionType::Left,
+	CollisionMapInfoDirection(
+		position, info, CollisionType::Left,
 		{ kLeftTop, kLeftBottom },
 		Vector3(-parameter_.kCollisionEpsilon, 0, 0),
 		[](const CollisionMapInfo& i) { return i.move.x < 0; }
 	);
 
-	CollisionMapInfoDirection(// 上
-		info,
-		CollisionType::Top,
+	CollisionMapInfoDirection(
+		position, info, CollisionType::Top,
 		{ kLeftTop, kRightTop },
 		Vector3(0, 0, 0),
 		[](const CollisionMapInfo& i) { return i.move.y > 0; }
 	);
 
-	CollisionMapInfoDirection(// 下
-		info,
-		CollisionType::Bottom,
+	CollisionMapInfoDirection(
+		position, info, CollisionType::Bottom,
 		{ kLeftBottom, kRightBottom },
 		Vector3(0, 0, 0),
 		[](const CollisionMapInfo& i) { return i.move.y < 0; }
 	);
+
+
+
+
+
+
 }
 
-Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
+Vector3 Player::CornerPosition(const Vector3& center, Corner corner)  {
 
 	Vector3 offseetTable[kNumCorner] = {
 
@@ -676,7 +681,7 @@ bool Player::IsHittableBlock(MapChipType type)
 	}
 }
 
-bool Player::CheckCollisionPoints(const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info)
+bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info)
 {
 	bool hit = false;
 
@@ -693,28 +698,29 @@ bool Player::CheckCollisionPoints(const std::array<Vector3, 2>& posList, Collisi
 	}
 
 	if (hit) {
-		Vector3 position = object3D_->GetTransform().translate;
-		IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
+		
+		IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(basePos);
 		Rect rect = mapChipField_->GetRectByIndex(index.xIndex, index.yIndex);
-		// 衝突した面の法線を加算
+
 		Vector3 n = NormalFromType(type);
 		info.normal = info.normal + n;
 		info.hasNormal = true;
+
 		switch (type) {
 		case CollisionType::Top:
-			info.move.y = std::max(0.0f, rect.bottom - position.y - (parameter_.kHeight / 2.0f + parameter_.kBlank));
+			info.move.y = std::max(0.0f, rect.bottom - basePos.y - (parameter_.kHeight / 2.0f + parameter_.kBlank));
 			info.ceiling = true;
 			break;
 		case CollisionType::Bottom:
-			info.move.y = std::min(0.0f, rect.top - position.y + (parameter_.kHeight / 2.0f + parameter_.kBlank));
+			info.move.y = std::min(0.0f, rect.top - basePos.y + (parameter_.kHeight / 2.0f + parameter_.kBlank));
 			info.landing = true;
 			break;
 		case CollisionType::Right:
-			info.move.x = std::max(0.0f, rect.left - position.x - (parameter_.kWidth / 2.0f + parameter_.kBlank));
+			info.move.x = std::max(0.0f, rect.left - basePos.x - (parameter_.kWidth / 2.0f + parameter_.kBlank));
 			info.hitWall = true;
 			break;
 		case CollisionType::Left:
-			info.move.x = std::min(0.0f, rect.right - position.x + (parameter_.kWidth / 2.0f + parameter_.kBlank));
+			info.move.x = std::min(0.0f, rect.right - basePos.x + (parameter_.kWidth / 2.0f + parameter_.kBlank));
 			info.hitWall = true;
 			break;
 		}
@@ -723,27 +729,24 @@ bool Player::CheckCollisionPoints(const std::array<Vector3, 2>& posList, Collisi
 	return hit;
 }
 
-void Player::CollisionMapInfoDirection(CollisionMapInfo& info, CollisionType dir, const std::array<Corner, 2>& checkCorners, const Vector3& offset, std::function<bool(const CollisionMapInfo&)> moveCondition)
+void Player::CollisionMapInfoDirection(
+	const Vector3& basePos, 
+	CollisionMapInfo& info, 
+	CollisionType dir, 
+	const std::array<Corner, 2>& checkCorners, 
+	const Vector3& offset, 
+	std::function<bool(const CollisionMapInfo&)> moveCondition)
 {
-	if (!moveCondition(info)) return;// 移動量が0なら何もしない
-	Vector3 position = object3D_->GetTransform().translate + info.move;// 現在の位置に移動量を加算
+	if (!moveCondition(info)) return;
 
-	// 2つのコーナー位置を計算
+	Vector3 position = basePos + info.move;
+
 	std::array<Vector3, 2> points = {
 		CornerPosition(position, checkCorners[0]) + offset,
 		CornerPosition(position, checkCorners[1]) + offset
 	};
-	// 衝突判定を行う
-	if (CheckCollisionPoints(points, static_cast<CollisionType>(dir), info)) {
-#ifdef _DEBUG
-		switch (dir) {
-		case CollisionType::Top: Logger::Log("hit ceiling\n"); break;
-		case CollisionType::Bottom: Logger::Log("hit landing\n"); break;
-		case CollisionType::Left:
-		case CollisionType::Right: Logger::Log("hit hitwall\n"); break;
-		}
-#endif
-	}
+
+	CheckCollisionPoints(basePos, points, dir, info);
 }
 
 void Player::RegisterColliders()
