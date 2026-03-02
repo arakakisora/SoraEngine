@@ -62,8 +62,8 @@ struct PlayerParameter {
 	float kLimitFallSpeed = 1.0f;      // 最大落下速度
 	float kJumpAcceleration = 0.3f;    // ジャンプ初速
 	//当たり判定パラメータ
-	float kWidth = 0.8f;//当たり判定の幅
-	float kHeight = 0.8f;//当たり判定の高さ
+	float kWidth = 0.4f;//当たり判定の幅
+	float kHeight = 0.4f;//当たり判定の高さ
 	float kBlank = 2.0;//当たり判定の余裕
 	float kCollisionEpsilon = 0.1f;//当たり判定の余裕
 	//減衰パラメータ
@@ -352,4 +352,7 @@ private:
 	static inline constexpr float kPi = std::numbers::pi_v<float>;//π
 	static inline constexpr float kAimMinDeg = -45.0f;//仰角の上限
 	static inline constexpr float kAimMaxDeg = 45.0f;//仰角の下限
+
+	Vector3 shotVel_{};
+	bool hasShotVel_ = false;
 };
