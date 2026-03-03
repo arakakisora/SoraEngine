@@ -76,6 +76,7 @@
     <FxCompile Include="Resources\Shaders\Vignette.VS.hlsl">
       <Filter>Resources\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\TransitionFade.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -274,6 +275,7 @@
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
     <ClCompile Include="application\ui\PauseMenu.cpp" />
+    <ClCompile Include="GateInOut.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -490,6 +492,7 @@
       <Filter>application\ヘッダーファイル\ui</Filter>
     </ClInclude>
     <ClInclude Include="application\ui\PauseMenu.h" />
+    <ClInclude Include="GateInOut.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

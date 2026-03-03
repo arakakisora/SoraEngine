@@ -7,8 +7,9 @@
 #include "Audio.h"
 #include "BaseScene.h"
 #include "FadeManager.h"
-#include <numbers> // 追加
+#include <numbers> 
 #include <memory>
+#include "GateInOut.h"   
 
 enum class TitleAnimState {
 	IntroRun,   // プレイヤーが走り始める（タイトルはまだオフスクリーン）
@@ -46,12 +47,17 @@ public:
 
 	void ImguiDraw();
 
-public:
+private:
 
 	
 	std::unique_ptr<Sprite> titleSprite_;
 
 	FadeManager fadeManager_;
+
+	std::unique_ptr<GateInOut> gate_; 
+	bool gateOutRequested_ = false;
+	bool fadeOutRequested_ = false;
+
 
 	std::unique_ptr<Object3D> object3D_;
 	std::unique_ptr<Object3D> titleObj_;

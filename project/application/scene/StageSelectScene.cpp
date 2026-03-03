@@ -76,6 +76,13 @@ void StageSelectScene::Initialize()
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
+	gate_ = std::make_unique<GateInOut>();
+	gate_->Initialize(SpriteCommon::GetInstance(),
+		"Resources/block.png", "Resources/block.png");
+	gate_->SetScreenSize(1280.0f, 720.0f); // WinAppから取れるならそれで
+	gate_->StartIn(0.6f);
+	gateOutRequested_ = false;
+
 }
 
 void StageSelectScene::Finalize()
@@ -91,6 +98,8 @@ void StageSelectScene::Update()
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	// フェード更新
 	fadeManager_.Update();
+	float dt = 1.0f / 60.0f;
+	if (gate_) gate_->Update(dt);
 
 	// PauseMenu の更新（先に更新してポーズ判定を反映）
 	pauseMenu_.Update();
@@ -101,19 +110,24 @@ void StageSelectScene::Update()
 		float targetOffset = -(float)currentIndex_ * inrerval_; // 中央に来るようにオフセット
 		scrollOffset_ += (targetOffset - scrollOffset_) * 0.1f; // イージング
 
-		if (
-
-			Input::GetInstance()->TriggerKey(DIK_SPACE) ||
-
-			Input::GetInstance()->Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_A)) {
-			if (!fadeManager_.IsFading()) {
-				fadeManager_.StartFadeOut();
-			}
+		
+		if (!gateOutRequested_ &&
+			(!gate_ || !gate_->IsPlaying()) &&
+			Input::GetInstance()->TriggerKey(DIK_SPACE))
+		{
+			gateOutRequested_ = true;
+			if (gate_) gate_->StartOut(0.6f);
 		}
 
-		// フェードアウトが完了したらシーン切り替え
-		if (fadeManager_.IsFadeOutFinished()) {
-			SceneManager::GetInstance()->SetStageIndex(currentIndex_);
+		if (gateOutRequested_ && !fadeOutRequested_ && gate_ && gate_->IsFinished()) {
+			fadeOutRequested_ = true;
+
+			gate_->HoldClosed(true);
+
+			fadeManager_.StartFadeOut();
+		}
+
+		if (fadeOutRequested_ && fadeManager_.IsFadeOutFinished()) {
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
 
@@ -189,6 +203,7 @@ void StageSelectScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
 }
 
