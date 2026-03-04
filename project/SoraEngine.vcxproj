@@ -127,6 +127,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
     <ClCompile Include="application\ui\ControlGuide.cpp" />
     <ClCompile Include="application\ui\PauseMenu.cpp" />
+    <ClCompile Include="engine\math\Easing.cpp" />
     <ClCompile Include="engine\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\particle\PlayerpaticleBehavior.cpp" />
@@ -314,6 +315,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\scene\StageSelectScene.h" />
     <ClInclude Include="application\ui\ControlGuide.h" />
     <ClInclude Include="application\ui\PauseMenu.h" />
+    <ClInclude Include="engine\math\Easing.h" />
     <ClInclude Include="engine\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />

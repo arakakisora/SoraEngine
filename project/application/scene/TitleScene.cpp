@@ -9,6 +9,8 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 #include <memory>
+#include <ParticleMnager.h>
+#include <ChargeBehabiaor.h>
 
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
@@ -69,6 +71,13 @@ void TitleScene::Initialize() {
 	// 状態初期化
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;
+	// プレイヤーパーティクル
+	ParticleMnager::GetInstance()->CreateParticleGroup(
+		"dash_smoke",
+		"Resources/smoke.png", // 使いたいテクスチャ
+		VerticesType::Quad,
+		std::make_unique<ExhaustGasBehavior>()
+	);
 }
 
 // 終了処理：CameraManager から削除し、unique_ptr が破棄してメモリ解放
@@ -189,12 +198,16 @@ void TitleScene::Update() {
 
 			float rotateY = (dir > 0) ? kYawRight : kYawLeft;
 
+			lrDirection_ = (dir > 0) ? LRDirecion::kright : LRDirecion::kLeft;
+
+
 			EulerTransform tr = object3D_->GetTransform();
 			tr.translate.x = playerX_;
 			tr.translate.y = playerTargetUnderTitleY_;
 			tr.rotate.y = rotateY;
 			object3D_->SetTransform(tr);
-		} else {
+		}
+		else {
 			// 中央に到達 → 正面で停止
 			EulerTransform tr = object3D_->GetTransform();
 			tr.translate.x = playerX_;
@@ -204,17 +217,28 @@ void TitleScene::Update() {
 			state_ = TitleAnimState::Idle;
 		}
 	} break;
-
 	case TitleAnimState::Idle: {
 		// ループ制御：一定時間待ってリセットする
 		if (!loop_) break;
-		idleTimer_ += 1.0f / 60.0f;        // 固定フレーム想定
-		if (idleTimer_ > loopWaitSec_) {
-			ResetTitleAnimation();
-			// state_ は Reset で IntroRun に戻る
+
+		idleTimer_ += 1.0f / 30.0f;
+
+		if (!loopFadePlaying_ && idleTimer_ > loopWaitSec_) {
+			// まず暗転(or白転)開始して“リセットの瞬間”を隠す
+			loopFadePlaying_ = true;
+			loopDoReset_ = true;
+			fadeManager_.StartFadeOut(0.5f);
 		}
+
+		// フェードアウトが終わった瞬間にリセットを実行
+		if (loopFadePlaying_ && loopDoReset_ && fadeManager_.IsFadeOutFinished()) {
+			ResetTitleAnimation();           // 瞬間移動しても見えない
+			fadeManager_.StartFadeIn();      // そのままフェードインで復帰
+		}
+	
 	} break;
 	}
+
 
 	if (!gateOutRequested_ &&
 		(!gate_ || !gate_->IsPlaying()) &&
@@ -233,17 +257,21 @@ void TitleScene::Update() {
 	}
 
 	if (fadeOutRequested_ && fadeManager_.IsFadeOutFinished()) {
+
 		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 
 	ImguiDraw();
+	PlayerParticle();
 }
 
-// 描画：3D -> 2D の順で描画
+// 描画
 void TitleScene::Draw() {
 	Object3DCommon::GetInstance()->CommonDraw();
 	if (titleObj_) titleObj_->Draw();
 	if (object3D_) object3D_->Draw();
+
+	ParticleMnager::GetInstance()->Draw();
 
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (titleSprite_) titleSprite_->Draw();
@@ -251,9 +279,44 @@ void TitleScene::Draw() {
 	fadeManager_.Draw();
 }
 
+void TitleScene::PlayerParticle()
+{
+
+
+	const float dt = 1.0f / 60.0f;
+
+
+	exhaustTimer_ += dt;
+
+	// 一定間隔ごとにだけ煙を出す
+	if (exhaustTimer_ >= kExhaustInterval) {
+		exhaustTimer_ = 0.0f;
+
+		EulerTransform smokeTransform{};
+		smokeTransform.translate = object3D_->GetTransform().translate;
+
+		// 進行方向のちょい後ろに出すと“排気”感が出る
+		if (lrDirection_ == LRDirecion::kright) {
+			smokeTransform.translate.x -= 0.15f;
+		}
+		else {
+			smokeTransform.translate.x += 0.15f;
+		}
+
+		// 1回に2粒くらい
+		ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+	}
+
+}
+
 // アンカー／初期化を揃える（1周分リセット）
 void TitleScene::ResetTitleAnimation()
 {
+
+	// フェード用フラグも戻す
+	loopFadePlaying_ = false;
+	loopDoReset_ = false;
+
 	// 状態とパラメータを初期化して再スタートできる状態へ戻す
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;

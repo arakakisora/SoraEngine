@@ -275,7 +275,9 @@
       <Filter>application\ソースファイル\scene</Filter>
     </ClCompile>
     <ClCompile Include="application\ui\PauseMenu.cpp" />
+ 00_09_01_newPlayer
     <ClCompile Include="GateInOut.cpp" />
+    <ClCompile Include="engine\math\Easing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\particle\IParticleBehavior.h">
@@ -492,7 +494,11 @@
       <Filter>application\ヘッダーファイル\ui</Filter>
     </ClInclude>
     <ClInclude Include="application\ui\PauseMenu.h" />
+
     <ClInclude Include="GateInOut.h" />
+
+    <ClInclude Include="engine\math\Easing.h" />
+
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\models\player.gltf">

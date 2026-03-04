@@ -759,7 +759,7 @@ void Player::PlayerParticle()
 	// 地面にいて、左右どちらかに動いているときだけ排気ガス
 	bool isMoving = playerMoveRight_ || playerMoveLeft;
 
-	const float dt = 1.0f / 60.0f; // 固定フレーム前提ならこれでOK
+	const float dt = 1.0f / 60.0f; 
 
 	if (isMoving) {
 		exhaustTimer_ += dt;
