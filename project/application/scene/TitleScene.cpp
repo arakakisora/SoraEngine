@@ -22,6 +22,14 @@ void TitleScene::Initialize() {
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
+	// 2Dゲート遷移（IN）
+	gate_ = std::make_unique<GateInOut>();
+	gate_->Initialize(SpriteCommon::GetInstance(),
+		"Resources/block.png", "Resources/block.png");
+	gate_->SetScreenSize(1280.0f, 720.0f); // WinAppから取れるならそれで
+	gateOutRequested_ = false;
+	fadeOutRequested_ = false;
+
 	// タイトルスプライトを作成して初期パラメータ設定
 	titleSprite_ = std::make_unique<Sprite>();
 	titleSprite_->Initialize(SpriteCommon::GetInstance(), "Resources/space.png");
@@ -87,6 +95,9 @@ void TitleScene::Finalize() {
 void TitleScene::Update() {
 	// カメラ更新・フェード更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
+	float dt = 1.0f / 60.0f;
+	if (gate_) gate_->Update(dt);
 	fadeManager_.Update();
 
 	// オブジェクト更新（存在チェック）
@@ -228,14 +239,25 @@ void TitleScene::Update() {
 	} break;
 	}
 
-	// スペースキーでシーン遷移（フェード開始）
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		requestSceneChange_ = true;
+
+	if (!gateOutRequested_ &&
+		(!gate_ || !gate_->IsPlaying()) &&
+		Input::GetInstance()->TriggerKey(DIK_SPACE))
+	{
+		gateOutRequested_ = true;
+		if (gate_) gate_->StartOut(0.6f);
+	}
+
+	if (gateOutRequested_ && !fadeOutRequested_ && gate_ && gate_->IsFinished()) {
+		fadeOutRequested_ = true;
+
+		gate_->HoldClosed(true);
+
 		fadeManager_.StartFadeOut();
 	}
 
-	// スペースで開始したフェードアウトの時だけ遷移する
-	if (requestSceneChange_ && fadeManager_.IsFadeOutFinished()) {
+	if (fadeOutRequested_ && fadeManager_.IsFadeOutFinished()) {
+
 		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 
@@ -253,6 +275,7 @@ void TitleScene::Draw() {
 
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (titleSprite_) titleSprite_->Draw();
+	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
 }
 

@@ -7,8 +7,9 @@
 #include "Audio.h"
 #include "BaseScene.h"
 #include "FadeManager.h"
-#include <numbers> // 追加
+#include <numbers> 
 #include <memory>
+#include "GateInOut.h"   
 
 
 
@@ -51,14 +52,24 @@ public:
 	void ImguiDraw();
 private:
 
+
+private:
+
+
 	enum class LRDirecion {
 		kright,
 		kLeft,
 	};
+
 	
 	std::unique_ptr<Sprite> titleSprite_;
 	float exhaustTimer_ = 0.0f;
 	FadeManager fadeManager_;
+
+	std::unique_ptr<GateInOut> gate_; 
+	bool gateOutRequested_ = false;
+	bool fadeOutRequested_ = false;
+
 
 	std::unique_ptr<Object3D> object3D_;
 	std::unique_ptr<Object3D> titleObj_;

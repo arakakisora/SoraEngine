@@ -23,7 +23,7 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 0,0,-10, });
+	camera->SetTranslate({ 15,13,-60, });
 	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 
 	debugCamera = std::make_unique<Camera>();
@@ -72,7 +72,7 @@ void GamePlayScene::Initialize()
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
 	player->SetDeathHeight(0.0f);
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ playerPostion.x,playerPostion.y,-10, });
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 8,6,-20, });
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
@@ -95,11 +95,11 @@ void GamePlayScene::Initialize()
 	object3D2nd->SetModel("plane.obj");
 
 	//フォローカメラ設定
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 1, -12 });
-	CameraManager::GetInstance()->GetCamera("maincam")->SetRotate({ 0.15f,0,0 });
+	/*CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 8, 6, -20 });
+	CameraManager::GetInstance()->GetCamera("maincam")->SetRotate({ 0.0f,0,0 });
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBoundsEnabled(false);
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBounds({ 4.0f, 5.0f, -100.0f }, { 47.0f, 20.0f, 50.0f });
+	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBounds({ 4.0f, 5.0f, -100.0f }, { 47.0f, 20.0f, 50.0f });*/
 
 	//ゴールの初期化
 	goal = std::make_unique<Goal>();
@@ -135,7 +135,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
-			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
 		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
@@ -234,7 +234,7 @@ void GamePlayScene::Draw()
 		{
 			stageStartEffect_->Draw();
 		} // ←ゲートのみ描画
-		player->Draw();            // ←プレイヤーを別に描画
+		player->Draw();            
 	}
 	else {
 
@@ -317,7 +317,7 @@ void GamePlayScene::Imguidebug()
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
 			CameraManager::GetInstance()->SetActiveCamera("maincam");
-			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(true);
+			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
 		}
 		if (ImGui::Button("Switch to Sub Camera")) {
 			CameraManager::GetInstance()->SetActiveCamera("debugcam");

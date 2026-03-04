@@ -2,6 +2,8 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include <memory>
+#include <FadeManager.h>
+#include "GateInOut.h"
 
 class Camera;
 class GameClearScene :public BaseScene
@@ -33,6 +35,12 @@ public:
 	std::unique_ptr<Sprite> sprite = nullptr;
 
 	std::unique_ptr<Camera> camera = nullptr;
+
+	FadeManager fadeManager_;
+
+	std::unique_ptr<GateInOut> gate_;
+	bool gateOutRequested_ = false;
+	bool fadeOutRequested_ = false;
 
 
 };
