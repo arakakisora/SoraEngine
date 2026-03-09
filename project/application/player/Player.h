@@ -58,7 +58,7 @@ enum class CollisionType {
 
 struct PlayerParameter {
 	//プレイヤーパラメータ
-//speedパラメータ
+	//speedパラメータ
 	float kAcceleration = 0.02f;  // 定数加速度
 	float kAttenuation = 0.9f;   // 速度減衰率
 	float kLimitRunSpeed = 0.15f; // 最大速度制限
@@ -76,8 +76,13 @@ struct PlayerParameter {
 	float kAttenuationWall = 0.1f;//壁に当たった時の減衰率
 	// 振り向きパラメータ
 	float kTimeTurn = 0.5; // 角度補間タイム
-};
 
+	struct DeathHeight {
+		float min=0.0f; // 落下死の高さ
+		float max=20.0f; // 落下死の有効/無効
+	};
+	DeathHeight deathHeight;
+};
 
 class Enemy;
 class MapChipField;
@@ -165,28 +170,21 @@ public:
 	/// 自機の動き
 	/// </summary>
 	void PlayerMove(); // 自機の動き
+	void PlayerCondition(const CollisionMapInfo& info);
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void Playerdirection(const CollisionMapInfo& info); // 自機の振り向き
+	void Playerdirection(const CollisionMapInfo& info); 
+	/// <summary>
+	// 死亡条件しているかどうか
+	/// </summary>
+	void PlayerDeathTerms();
+
+	
 
 	/////////////======プレイヤーの動き======///////////////
 
-	void BulletUpdate();
-
-	/// <summary>
-	//攻撃
-	/// </summary>
-	void Attack();
-
 	void PlayerParticle();
-
-	/// <summary>
-	/// イーズアウトサイン関数
-	/// </summary>
-	/// <param name="x"></param>
-	/// <returns></returns>
-	float EaseOutSine(float x);
 
 	/// <summary>
 	/// 当たるブロックかどうか
@@ -255,11 +253,6 @@ public:
 	/// <param name="info"></param>
 	void LandingCollisionMove(const CollisionMapInfo& info);
 	/// <summary>
-	// 地面があるかどうか
-	/// </summary>
-	/// <param name="movedCenterPos"></param>
-	bool HasGroundBelow(const Vector3& movedCenterPos);
-	/// <summary>
 	// 壁衝突時の移動処理
 	/// </summary>
 	/// <param name="info"></param>
@@ -289,11 +282,6 @@ public:
 	/// Object3Dを取得します（所有は Player） 
 	/// </summary>
 	Object3D* GetObject3D() const { return object3D_.get(); }
-	/// <summary>
-	/// 現在の武器タイプを取得します
-	/// </summary>
-	/// <returns> </returns>
-	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets_; }
 	/// <summary>
 	/// world座標を取得します
 	/// </summary>
@@ -329,10 +317,7 @@ public:
 	/// </summary>
 	/// <param name="left"></param>
 	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
-	/// <summary>
-	// 落下死の高さを設定
-	/// </summary>
-	void SetDeathHeight(float height) { deathHeight_ = height; }
+	
 	/// <summary>
 	// 速度設定
 	/// </summary>
@@ -347,7 +332,7 @@ private:
 	PlayerParameter parameter_;// プレイヤーパラメータ
 	AABB aabb_;// 当たり判定用AABB
 	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
-	float deathHeight_; // 落下死の高さ
+	
 
 
 	//振り向き
@@ -362,11 +347,7 @@ private:
 	//攻撃
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
 	std::unique_ptr<Line> line_; // 角度表示用ライン
-	WeaponType currentWeaponType_ = WeaponType::Gatling; // 現在の武器タイプ
-	std::list<std::unique_ptr<PlayerBullet>> bullets_;//弾
 	int32_t fireTimer = 0;
-
-
 
 	//フラグ
 	bool goal_ = false; // ゴールに到達したかどうか

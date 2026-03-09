@@ -71,7 +71,6 @@ void GamePlayScene::Initialize()
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
-	player->SetDeathHeight(0.0f);
 	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 8,6,-20, });
 
 	// スタート演出生成
@@ -150,7 +149,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 
 		// 衝突周りはゲームロジック
 		CollisionManager::GetInstance()->Clear();
-		player->RegisterColliders();
 		enemyManager_->RegisterColliders();
 		CollisionManager::GetInstance()->Update();
 
@@ -170,7 +168,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 void GamePlayScene::UpdateObjects(float dt)
 {
 	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
-	// 例: Object3D の更新、エネミーの transform 更新、ブロックのビジュアル更新、パーティクル
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
 		player->GetObject3D()->Update();
@@ -275,7 +272,6 @@ void GamePlayScene::Imguidebug()
 {
 	//マップ作製エディタ
 	editor.Run();
-
 
 	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
 	if (editor.GetReloadRequested() == true) {

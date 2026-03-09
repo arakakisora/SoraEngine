@@ -14,6 +14,7 @@
 #include "CollisionManager.h"
 #include "LineCommon.h" 
 #include <memory>      
+#include "Easing.h"
 
 void Player::Initialize(const Vector3& position) {
 
@@ -85,57 +86,31 @@ void Player::Update() {
 	Playerline();// プレイヤーの移動ライン描画
 	DrawPredictLine();
 
-	BulletUpdate();// 弾の更新
-
 	// 衝突判定を初期化
 	CollisionMapInfo collisionMapInfo;
 	// 移動量に速度の値をコピー
 	collisionMapInfo.move = velocity_;
 
 	// マップ衝突チェック
-	MapCollision(collisionMapInfo);
-	Reflect(collisionMapInfo);
-
-	// 停止判定
-	isStopped_ =
-		std::abs(collisionMapInfo.move.x) < kStopEps &&
-		std::abs(collisionMapInfo.move.y) < kStopEps;
-
-	const bool touchingNow =
-		collisionMapInfo.ceiling || collisionMapInfo.landing || collisionMapInfo.hitWall;
-
-	// 接触になった瞬間だけカウント
-	if (touchingNow && !wasTouching_) {
-		hitCount++;
-		if (hitCount >= 2) {
-			playerState_ = PlayerState::sticky;
-			velocity_ = { 0,0,0 }; // くっついた瞬間止めるなら
-		}
-	}
-	wasTouching_ = touchingNow;
-
-
+	MapCollision(collisionMapInfo);// マップとの衝突判定と情報の取得
+	Reflect(collisionMapInfo);// 反射処理
+	PlayerCondition(collisionMapInfo);// プレイヤーの状態更新	
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
 	Playerdirection(collisionMapInfo);// プレイヤーの振り向き
+	// プレイヤーのワールド位置を更新
 	object3D_->Update();
+	// パーティクルの更新
 	PlayerParticle();
-
-	// 落下による死亡判定
-	if (object3D_->GetTransform().translate.y < deathHeight_) {
-		isDead_ = true;
-	}
+	// 死亡条件の判定
+	PlayerDeathTerms();
 
 }
 
 void Player::Draw() {
 	if (object3D_) object3D_->Draw();
-
-	for (auto& bullet : bullets_) {
-		if (bullet) bullet->Draw();
-	}
 }
 
 void Player::PlayerMove() {
@@ -181,22 +156,6 @@ void Player::PlayerMove() {
 	Vector3 v = worldDir.Normalize() * spd;
 
 
-	//if (Input::GetInstance()->TriggerKey(DIK_D)) {
-	//	if (lrDirection_ != LRDirecion::kright) {
-	//		lrDirection_ = LRDirecion::kright;
-	//		turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-	//		turnTimer_ = parameter_.kTimeTurn;
-	//	}
-	//}
-
-	//if (Input::GetInstance()->TriggerKey(DIK_A)) {
-	//	if (lrDirection_ != LRDirecion::kLeft) {
-	//		lrDirection_ = LRDirecion::kLeft;
-	//		turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-	//		turnTimer_ = parameter_.kTimeTurn;
-	//	}
-	//}
-
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 
 		const bool canShoot =
@@ -217,6 +176,29 @@ void Player::PlayerMove() {
 			wasTouching_ = false;
 		}
 	}
+
+}
+
+void Player::PlayerCondition(const CollisionMapInfo& info)
+{
+	// 停止判定
+	isStopped_ =
+		std::abs(info.move.x) < kStopEps &&
+		std::abs(info.move.y) < kStopEps;
+
+	const bool touchingNow =
+		info.ceiling || info.landing || info.hitWall;
+
+	// 接触になった瞬間だけカウント
+	if (touchingNow && !wasTouching_) {
+		hitCount++;
+		if (hitCount >= 2) {
+			playerState_ = PlayerState::sticky;
+			velocity_ = { 0,0,0 }; // くっついた瞬間止めるなら
+		}
+	}
+	wasTouching_ = touchingNow;
+
 
 }
 
@@ -402,19 +384,20 @@ void Player::ReflectVelocity(Vector3& v, const Vector3& normal)
 
 Vector3 Player::MakeShotVelocity()
 {
+	// 仰角をラジアンに変換してローカル方向を作成（ローカル座標系: +Z 前方, +Y 上）
 	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
 	const float spd = parameter_.kLimitRunSpeed;
-
+	// ローカル→ワールド変換（回転の影響を受ける）
 	Vector3 localDir{};
 	localDir.y = std::sinf(rad);
 	localDir.z = std::cosf(rad);
 	localDir.x = 0.0f;
-
+	// ワールド変換（回転を考慮）
 	Vector3 worldDir = MyMath::TransformNormal(
 		localDir,
 		object3D_->GetWorldMatrix()
 	);
-
+	// 正規化して速度を掛ける
 	return worldDir.Normalize() * spd;
 }
 
@@ -481,7 +464,8 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 
 		float t = 1.0f - (turnTimer_ / parameter_.kTimeTurn);
 		t = std::clamp(t, 0.0f, 1.0f);
-		float eased = EaseOutSine(t);
+		// ライブラリの関数を使う
+		float eased = Easing::EaseOutSine(t);
 
 		tr = object3D_->GetTransform();
 
@@ -500,19 +484,15 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 	}
 }
 
-
-
-void Player::BulletUpdate()
+void Player::PlayerDeathTerms()
 {
 
-	for (auto& bullet : bullets_) {
-		if (bullet) bullet->Update();
+	// 落下による死亡判定
+	if (object3D_->GetTransform().translate.y < parameter_.deathHeight.min
+		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max)
+	{
+		isDead_ = true;
 	}
-
-	// 弾削除: unique_ptr を使うので delete は不要
-	bullets_.remove_if([](const std::unique_ptr<PlayerBullet>& bullet) {
-		return bullet->GetIsDead();
-		});
 
 }
 
@@ -692,68 +672,6 @@ Vector3 Player::GetWorldPosition() {
 	return worldPos;
 }
 
-void Player::Attack()
-{
-	if (Input::GetInstance()->TriggerKey(DIK_1)) {
-		currentWeaponType_ = WeaponType::Gatling;
-
-	}
-	if (Input::GetInstance()->TriggerKey(DIK_2)) {
-		currentWeaponType_ = WeaponType::Cannon;
-		//弾のサイズを大きくする
-
-	}
-
-	if (turnTimer_ > 0.0f) return;
-
-	int32_t fireInterval = 0;
-	int damage = 1;
-	Vector3 bulletScale{ 0.4f, 0.4f, 0.4f };
-
-	switch (currentWeaponType_) {
-	case WeaponType::Gatling:
-		fireInterval = 10;
-		damage = 1;
-		bulletScale = { 0.4f, 0.4f, 0.4f };
-		break;
-
-	case WeaponType::Cannon:
-		fireInterval = 120;
-		damage = 3;
-		bulletScale = { 1.5f, 1.5f, 1.5f };
-		break;
-	}
-
-	if (fireTimer > 0) --fireTimer;
-
-	if (Input::GetInstance()->PushKey(DIK_SPACE) && fireTimer <= 0) {
-		fireTimer = fireInterval;
-
-		const float bulletSpeed = 1.0f;
-
-		Vector3 localVelocity(0, 0, bulletSpeed);
-		const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
-		localVelocity.y = std::sinf(rad) * bulletSpeed;
-		localVelocity.z = std::cosf(rad) * bulletSpeed;
-
-		Vector3 velocity = MyMath::TransformNormal(localVelocity, object3D_->GetWorldMatrix());
-
-		auto obj = std::make_unique<Object3D>();
-		obj->Initialize(Object3DCommon::GetInstance());
-		obj->SetModel("bullet.obj");
-		obj->SetScale(bulletScale);
-
-		auto newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(std::move(obj), GetWorldPosition(), velocity, mapChipField_);
-
-		newBullet->SetWeaponType(currentWeaponType_);
-		newBullet->SetPower(damage);
-
-		CollisionManager::GetInstance()->AddCollider(newBullet.get());
-		bullets_.push_back(std::move(newBullet));
-	}
-}
-
 void Player::PlayerParticle()
 {
 	// 地面にいて、左右どちらかに動いているときだけ排気ガス
@@ -786,10 +704,6 @@ void Player::PlayerParticle()
 		exhaustTimer_ = 0.0f;
 	}
 }
-
-
-
-float Player::EaseOutSine(float x) { return std::sinf((x * std::numbers::pi_v<float>) * 0.5f); }
 
 bool Player::IsHittableBlock(MapChipType type)
 {
@@ -923,15 +837,4 @@ void Player::CollisionMapInfoDirection(
 	};
 
 	CheckCollisionPoints(basePos, points, dir, info, enableGoal); 
-}
-
-void Player::RegisterColliders()
-{
-	auto* cm = CollisionManager::GetInstance();
-	// 自身を登録
-	cm->AddCollider(this);
-	// 弾をすべて登録
-	for (auto& b : bullets_) {
-		if (b) cm->AddCollider(b.get());
-	}
 }
