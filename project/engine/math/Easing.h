@@ -21,6 +21,8 @@ namespace Easing {
     float EaseOutBounce(float time, float start, float change, float duration);
     // 線形補間（Lerp）
     float Lerp(float a, float b, float t);
+    // EaseOutSine
+    float EaseOutSine(float t);
 
     // イージング付き補間：EasingLerp
     float EaseLerp(float a, float b, float t, EasingFunction easingFunc);

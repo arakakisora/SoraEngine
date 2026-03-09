@@ -61,16 +61,16 @@ namespace Easing {
         };
     }
 
-	float EaseInOutBack(float t) {
-		const float c1 = 1.70158f;
-		const float c2 = c1 * 1.525f;
+    float EaseInOutBack(float t) {
+        const float c1 = 1.70158f;
+        const float c2 = c1 * 1.525f;
 
-		if (t < 0.5f) {
-			return (powf(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2;
-		} else {
-			return (powf(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
-		}
-	}
+        if (t < 0.5f) {
+            return (powf(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2;
+        } else {
+            return (powf(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
+        }
+    }
 
     Vector3 SmoothLerp(const Vector3& a, const Vector3& b, float t) {
         Vector3 ans;
@@ -78,6 +78,11 @@ namespace Easing {
         ans.y = a.y + t * (b.y - a.y);
         ans.z = a.z + t * (b.z - a.z);
         return ans;
+    }
+
+    //EaseOutSine 
+    float EaseOutSine(float t) {
+        return sinf((t * static_cast<float>(M_PI)) * 0.5f);
     }
 
     float EaseOutElastic(float t, float b, float c, float d, float amplitudeScale) {
