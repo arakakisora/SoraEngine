@@ -74,10 +74,10 @@ private:
 	// オブジェクト・見た目の更新（ポーズ中でも常に呼ぶ）
 	void UpdateObjects(float dt);
 
+	void StartCameraBlend(const Vector3& start, const Vector3& end, float duration);
+	void UpdateCameraBlend(float dt);
+
 public:
-
-
-
 
 	//カメラのポインタ
 	std::unique_ptr<Camera> camera = nullptr;
@@ -107,6 +107,12 @@ public:
 	//スタート演出
 	std::unique_ptr<StageStartEffect> stageStartEffect_;
 	bool isStageStartPlaying_ = false;
+	bool isCameraBlending_ = false;
+	float cameraBlendTimer_ = 0.0f;
+	float cameraBlendDuration_ = 1.0f;
+
+	Vector3 cameraBlendStartPos_ = {};
+	Vector3 cameraBlendEndPos_ = {};
 	
 	//ゲームオーバー演出
 	std::unique_ptr<GameOverEffect> gameOverEffect_;

@@ -82,9 +82,6 @@ void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
     struct Setup { const char* icon; Vector2 iconSize; Entry::Side side; float localScale; };
     // 左下グループ： W/A/D/Space、右下グループ：マウスホイール/上下キー
     const Setup setups[] = {
-        { "Resources/key_w.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/key_a.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/key_d.jpg",    {64,64}, Entry::Side::Left },
         { "Resources/space.jpg",    {64,64}, Entry::Side::Left },
 
         { "Resources/mouse_wheel.jpg", {64,64}, Entry::Side::Right },
