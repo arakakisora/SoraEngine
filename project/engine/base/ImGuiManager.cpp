@@ -17,9 +17,6 @@ void ImGuiManager::Initialize(DirectXCommon* dxCommon, WinApp* winapp)
 	//imguiのスタイルを設定
 	ImGui::StyleColorsDark();
 
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
 	ImGui_ImplWin32_Init(winapp_->GetHwnd());
 	//デスクリプタヒープ設定
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -45,17 +42,10 @@ void ImGuiManager::Initialize(DirectXCommon* dxCommon, WinApp* winapp)
 void ImGuiManager::Finalize()
 {
 #ifdef _DEBUG
-	if (ImGui::GetCurrentContext()) {
 
-		ImGuiIO& io = ImGui::GetIO();
-
-		// 念のため残っている PlatformWindow を先に破棄
-		ImGui::DestroyPlatformWindows();
-
-		ImGui_ImplDX12_Shutdown();
-		ImGui_ImplWin32_Shutdown();
-		ImGui::DestroyContext();
-	}
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 
 	srvHeap_.Reset();
 #endif // _DEBUG
