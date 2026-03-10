@@ -14,6 +14,9 @@
 #include "LineCommon.h"
 #include "ControlGuide.h"
 
+#include "Easing.h"
+#include <algorithm>
+
 
 void GamePlayScene::Initialize()
 {
@@ -71,7 +74,7 @@ void GamePlayScene::Initialize()
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 8,6,-20, });
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
@@ -127,19 +130,39 @@ void GamePlayScene::UpdateGameLogic(float dt)
 {
 	
 	goal->Update(player->GetGoal(), dt);
-
 	const float fixedDt = dt;
+	Vector3 offset = { 0, 0, -20 };
+	Vector3 playerPostion = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	if (!spawnPositions.empty()) {
+		// マップに player スポーンが複数ある場合は最初のものを使用
+		playerPostion = spawnPositions.front();
+	}
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
-
+	
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(playerPostion + offset);
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
 			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+
+			Vector3 startPos = playerPostion + offset;
+			Vector3 endPos = { 13, 6.85f, -32.0f };
+			StartCameraBlend(startPos, endPos, 1.0f);
+			
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
 		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
 	}
 	else {
+
+		if (isCameraBlending_) {
+			UpdateCameraBlend(dt);
+		}
+		else {
+			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
+		}
+
 		// ゲーム進行系（ポーズ中は実行しない）
 		if (!player->GetIsDead_()) {
 			player->Update();
@@ -181,6 +204,44 @@ void GamePlayScene::UpdateObjects(float dt)
 
 	// ブロックやパーティクルなどは常に更新
 	generateBlock_.Update();
+
+}
+
+void GamePlayScene::StartCameraBlend(const Vector3& start, const Vector3& end, float duration)
+{
+	isCameraBlending_ = true;
+	cameraBlendTimer_ = 0.0f;
+	cameraBlendDuration_ = duration;
+	cameraBlendStartPos_ = start;
+	cameraBlendEndPos_ = end;
+
+}
+
+void GamePlayScene::UpdateCameraBlend(float dt)
+{
+
+	if (!isCameraBlending_) {
+		return;
+	}
+
+	cameraBlendTimer_ += dt;
+
+	float t = cameraBlendTimer_ / cameraBlendDuration_;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	Vector3 pos = Easing::EaseLerp(
+		cameraBlendStartPos_,
+		cameraBlendEndPos_,
+		t,
+		Easing::EaseOutSine
+	);
+
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(pos);
+
+	if (t >= 1.0f) {
+		isCameraBlending_ = false;
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(cameraBlendEndPos_);
+	}
 
 }
 
