@@ -57,7 +57,7 @@ AABB Player::GetPlayerAABB()
 void Player::Update() {
 
 #ifdef _DEBUG
-
+	ImGui::Begin("PlayerDebug");
 	if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		EulerTransform transform = object3D_->GetTransform();
@@ -76,6 +76,7 @@ void Player::Update() {
 		ImGui::Text("CannonAngle: %.1f deg", cannonAngleDeg_);
 
 	}
+	ImGui::End();
 #endif // DEBUG_
 
 

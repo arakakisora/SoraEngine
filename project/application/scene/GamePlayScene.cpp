@@ -371,6 +371,7 @@ void GamePlayScene::Imguidebug()
 #ifdef USE_IMGUI
 	ControlGuide::GetInstance()->DebugImGui();
 
+	ImGui::Begin("Camera Menu");
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
 			CameraManager::GetInstance()->SetActiveCamera("maincam");
@@ -381,6 +382,7 @@ void GamePlayScene::Imguidebug()
 			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
 		}
 	}
+	ImGui::End();
 
 	if (ImGui::Button("TITELEScene"))
 	{

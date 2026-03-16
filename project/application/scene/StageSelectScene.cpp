@@ -140,7 +140,7 @@ void StageSelectScene::Update()
 	}
 
 #ifdef _DEBUG
-
+	ImGui::Begin("STAGESELECT");
 	if (ImGui::CollapsingHeader("Model", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("sutage%d", currentIndex_);
@@ -178,6 +178,7 @@ void StageSelectScene::Update()
 		}
 
 	}
+	ImGui::End();
 #endif // _DEBUG
 }
 

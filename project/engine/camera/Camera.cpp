@@ -44,7 +44,7 @@ void Camera::Update()
 	// ビュー射影行列を計算
 	viewProjectionMatrix = viewMatrix * projectionMatrix;
 #ifdef _DEBUG
-
+	ImGui::Begin("Camera");
 	if (ImGui::CollapsingHeader("Camera", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 
@@ -53,6 +53,7 @@ void Camera::Update()
 
 
 	}
+	ImGui::End();
 #endif // DEBUG_
 
 
