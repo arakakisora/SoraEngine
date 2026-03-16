@@ -148,6 +148,13 @@ public:
 	/// getscissorRect
 	/// </summary>
 	D3D12_RECT GetScissorRect() const { return scissorRect; }
+
+	/// <summary>
+	/// コマンドキューを取得する
+	/// </summary>
+	/// <returns></returns>
+	ID3D12CommandQueue* GetCommandQueue() const { return commandQueue.Get(); }
+
 	/// <summary>
 	/// CompileShader関数の作成
 	/// </summary>
