@@ -38,6 +38,13 @@ void Player::Initialize(const Vector3& position) {
 		VerticesType::Quad,
 		std::make_unique<ExhaustGasBehavior>()
 	);
+	exhaustEmitter_=std::make_unique<ParticleEmitter>(
+		EulerTransform{ position, {0,0,0}, {1,1,1} },
+		1.0f, // lifetime
+		0.0f, // currentTime
+		100,   // count
+		"dash_smoke"
+	);
 
 	line_ = std::make_unique<Line>();
 
@@ -676,7 +683,7 @@ Vector3 Player::GetWorldPosition() {
 void Player::PlayerParticle()
 {
 	// 地面にいて、左右どちらかに動いているときだけ排気ガス
-	bool isMoving = playerMoveRight_ || playerMoveLeft;
+	bool isMoving =true;
 
 	const float dt = 1.0f / 60.0f; 
 
@@ -698,7 +705,8 @@ void Player::PlayerParticle()
 			}
 
 			// 1回に2粒くらい
-			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+			exhaustEmitter_->SetPosition(smokeTransform.translate);
+			exhaustEmitter_->Emit();
 		}
 	} else {
 		// 止まったらタイマーリセット

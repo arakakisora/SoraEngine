@@ -96,6 +96,8 @@ public:
 	/// <param name="max"></param>
 	void SetFollowBounds(const Vector3& min, const Vector3& max) { followMin_ = min; followMax_ = max; }
 
+	Matrix4x4 GetprojectionMatrix() const { return projectionMatrix; }
+	
 
 private:
 

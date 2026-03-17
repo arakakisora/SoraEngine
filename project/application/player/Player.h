@@ -343,6 +343,7 @@ private:
 
 	//Particle
 	float exhaustTimer_ = 0.0f;//パーティクルの間隔
+	std::unique_ptr<ParticleEmitter> exhaustEmitter_;//排気ガスエミッター 
 
 	//攻撃
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
