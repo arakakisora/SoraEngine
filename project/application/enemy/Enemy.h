@@ -40,6 +40,11 @@ public:
 	/// </summary>
 	void Draw()override;
 
+	/// <summary>
+	// 当たったときコールバック
+	/// </summary>
+	void ReceiveDamage(int damage);
+
 private:
 
 

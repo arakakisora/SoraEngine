@@ -26,7 +26,7 @@ public:
 	/// 更新
 	/// - ゴール判定、エフェクト開始、フェード制御などを行います
 	/// </summary>
-	void Update(bool isGoal, float deltaTime);
+	void Update(bool isGoal, float deltaTime,Vector3 goalpos);
 
 	/// <summary>
 	/// 3D 描画

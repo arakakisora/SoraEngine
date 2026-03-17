@@ -327,7 +327,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	particleGroups.at(name).behavior = std::move(behavior);
 
 
-	uint32_t defaultCount = 10;
+	uint32_t defaultCount = 100;
 	float    defaultLifetime = 1.0f;
 	particleGroups.at(name).defaultCount = defaultCount;
 	particleGroups.at(name).defaultLifetime = defaultLifetime;

@@ -129,18 +129,18 @@ void GamePlayScene::Finalize()
 void GamePlayScene::UpdateGameLogic(float dt)
 {
 	
-	goal->Update(player->GetGoal(), dt);
+	goal->Update(player->GetGoal(), dt,player->GetObject3D()->GetTransform().translate);
 	const float fixedDt = dt;
 	Vector3 offset = { 0, 0, -20 };
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
 	}
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 	
-		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(playerPostion + offset);
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player->GetObject3D()->GetTransform().translate + offset);
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
@@ -407,5 +407,6 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("sphere.obj");
 	ModelManager::GetInstance()->LoadModel("gate.obj");
 	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
+	ModelManager::GetInstance()->LoadModel("damageblock.obj");
 }
 

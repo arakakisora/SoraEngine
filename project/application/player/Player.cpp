@@ -46,8 +46,34 @@ void Player::Initialize(const Vector3& position) {
 		"dash_smoke"
 	);
 
+	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	deatheEffect = std::make_unique<ParticleEmitter>(
+		EulerTransform{ position, {0,0,0}, {1,1,1} },
+		1.0f, // lifetime
+		0.0f, // currentTime
+		100,   // count
+		"enemydeath"
+	);;
+
+
 	line_ = std::make_unique<Line>();
 
+}
+
+void Player::OnCollision(Collider* other)
+{
+	switch (other->GetLayer()) {
+	case Layer::Enemy:
+	case Layer::Enemy2:
+		if (playerState_ == PlayerState::sticky) {
+			SetIsDead(true);
+		}
+		
+		break;
+
+	default:
+		break;
+	}
 }
 
 AABB Player::GetPlayerAABB()
@@ -103,6 +129,37 @@ void Player::Update() {
 	MapCollision(collisionMapInfo);// マップとの衝突判定と情報の取得
 	Reflect(collisionMapInfo);// 反射処理
 	PlayerCondition(collisionMapInfo);// プレイヤーの状態更新	
+
+	if (collisionMapInfo.hitDamageBlock) {
+		SetIsDead(true);
+	}
+	if (collisionMapInfo.hasBreakBlock && playerState_ == PlayerState::hard) {
+		const uint32_t bx = collisionMapInfo.breakBlockX;
+		const uint32_t by = collisionMapInfo.breakBlockY;
+
+		int beforeHp = mapChipField_->GetMapChipHPByIndex(bx, by);
+		if (beforeHp > 0) {
+			mapChipField_->DamageMapChipByIndex(bx, by, 1);
+
+			int afterHp = mapChipField_->GetMapChipHPByIndex(bx, by);
+
+			// 壊れた瞬間だけエフェクト
+			if (afterHp <= 0 && deatheEffect) {
+				Rect r = mapChipField_->GetRectByIndex(bx, by);
+
+				Vector3 breakPos{};
+				breakPos.x = (r.left + r.right) * 0.5f;
+				breakPos.y = (r.top + r.bottom) * 0.5f;
+				breakPos.z = object3D_->GetTransform().translate.z;
+
+				deatheEffect->SetPosition(breakPos);
+				deatheEffect->Emit();
+			}
+		}
+	}
+	
+	
+
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
@@ -497,7 +554,9 @@ void Player::PlayerDeathTerms()
 
 	// 落下による死亡判定
 	if (object3D_->GetTransform().translate.y < parameter_.deathHeight.min
-		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max)
+		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max
+		|| object3D_->GetTransform().translate.x < parameter_.deathwidth.min
+		|| object3D_->GetTransform().translate.x > parameter_.deathwidth.max)
 	{
 		isDead_ = true;
 	}
@@ -549,6 +608,16 @@ void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, boo
 	}
 	info.hitWall = info.hitWall || xInfo.hitWall;
 	info.penX = std::max(info.penX, xInfo.penX);
+	// ブロック破壊情報反映
+	if (xInfo.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = xInfo.breakBlockX;
+		info.breakBlockY = xInfo.breakBlockY;
+		
+	}
+	if (xInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
 
 	// --------------------
 	// Y（X反映後の位置で）
@@ -586,7 +655,17 @@ void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, boo
 	info.ceiling = info.ceiling || yInfo.ceiling;
 	info.landing = info.landing || yInfo.landing;
 	info.penY = std::max(info.penY, yInfo.penY);
+	// ブロック破壊情報反映
+	if (yInfo.hasBreakBlock && !info.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = yInfo.breakBlockX;
+		info.breakBlockY = yInfo.breakBlockY;
+		
+	}
 
+	if (yInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
 }
 
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner)  {
@@ -719,6 +798,7 @@ bool Player::IsHittableBlock(MapChipType type)
 	switch (type) {
 	case MapChipType::Block:
 	case MapChipType::UnbreakableBlock:
+	case MapChipType::damageBlock:
 		return true;
 	default:
 		return false;
@@ -764,6 +844,25 @@ bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vecto
 				}
 			}
 			continue;
+		}
+
+		if (chip == MapChipType::damageBlock) {
+			if (pen > 0.0f) {
+				info.hitDamageBlock = true;
+				
+			}
+		}
+
+		if (chip == MapChipType::Block) {
+			if (enableGoal && playerState_ == PlayerState::hard) {
+				if (pen > 0.0f) {
+					if (!info.hasBreakBlock) {
+						info.hasBreakBlock = true;
+						info.breakBlockX = idx.xIndex;
+						info.breakBlockY = idx.yIndex;
+					}
+				}
+			}
 		}
 
 		// 壁になるブロック以外は無視

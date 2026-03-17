@@ -32,6 +32,7 @@ void StageSelectScene::Initialize()
 	ModelManager::GetInstance()->LoadModel("stage1.obj");
 	ModelManager::GetInstance()->LoadModel("stage2.obj");
 	ModelManager::GetInstance()->LoadModel("stage3.obj");
+	ModelManager::GetInstance()->LoadModel("stage4.obj");
 
 	ModelManager::GetInstance()->LoadModel("player.obj");
 	playerobj = std::make_unique<Object3D>();
@@ -43,7 +44,8 @@ void StageSelectScene::Initialize()
 	std::vector<std::string> stageModels = {
 	"stage1.obj",
 	"stage2.obj",
-	"stage3.obj"
+	"stage3.obj",
+	"stage4.obj"
 	// 必要ならさらに追加
 	};
 
@@ -128,7 +130,9 @@ void StageSelectScene::Update()
 		}
 
 		if (fadeOutRequested_ && fadeManager_.IsFadeOutFinished()) {
+			SceneManager::GetInstance()->SetStageIndex(currentIndex_);
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+
 		}
 
 		SelectMove();
