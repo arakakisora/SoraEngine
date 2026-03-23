@@ -5,6 +5,9 @@
 #include "Camera.h"
 #include <Audio.h>
 #include "RenderingData.h"
+#include <functional>
+#include <string>
+#include <vector>
 
 class Camera; // 前方宣言
 
@@ -47,7 +50,7 @@ private:
 
 	// テキストオブジェクトのリスト
 	std::vector<std::unique_ptr<Object3D>> TextObjects;
-	EulerTransform texttransform[3]{};
+	EulerTransform texttransform[8]{};
 
 	uint32_t textindex = 0;
 
@@ -64,6 +67,16 @@ private:
 
 	std::unique_ptr<Camera> pouseCamera_;
 
-	
+	// データ駆動：メニュー項目
+	struct MenuItem {
+		std::string modelPath;
+		std::function<void()> action;
+		// 描画・イージングパラメータ（個別に調整可）
+		float maxScale = 1.0f;       // 非選択時の最大スケール（easedValue をクリップ）
+		float selectedScale = 1.0f;  // 選択時の明示的スケール（ease 完了時）
+		float offsetY = 1.0f;        // 項目間の垂直間隔（この値は Initialize 時に override 可能）
+	};
+
+	std::vector<MenuItem> menuItems_;
 };
 

@@ -4,12 +4,14 @@
 #include "PlayerBullet.h"
 #include "MyMath.h"
 #include <assert.h>
+#include <array>
 
-// 修正: std::unique_ptr に合わせて定義
+
 std::unique_ptr<CollisionManager> CollisionManager::instance_ = nullptr;
 
 CollisionManager* CollisionManager::GetInstance()
 {
+	// シングルトン実体がなければ生成して返す
 	if (!instance_) {
 		instance_ = std::make_unique<CollisionManager>();
 	}
@@ -23,6 +25,7 @@ void CollisionManager::Finalize()
 
 void CollisionManager::AddCollider(Collider* collider)
 {
+	// コライダーを登録
     colliders_.push_back(collider);
     
 }
@@ -55,23 +58,25 @@ void CollisionManager::Update()
 
 bool CollisionManager::CanCollide(Collider::Layer a, Collider::Layer b) const
 {
-    // 当たり判定を取りたい組み合わせだけ true にする
-    if (a == Collider::Layer::Player && b == Collider::Layer::Enemy) return true;
-    if (a == Collider::Layer::Enemy && b == Collider::Layer::Player) return true;
-	if (a == Collider::Layer::Player && b == Collider::Layer::Enemy2) return true;
-	if (a == Collider::Layer::Enemy2 && b == Collider::Layer::Player) return true;
+	// レイヤー同士の当たり判定を定義するテーブル
+    constexpr std::size_t LAYER_COUNT = 5;
+    static constexpr std::array<std::array<bool, LAYER_COUNT>, LAYER_COUNT> table{{
+        /* Player      */ std::array<bool, LAYER_COUNT>{ false, true,  true,  false, true  },
+        /* Enemy       */ std::array<bool, LAYER_COUNT>{ true,  false, false, true,  false },
+        /* Enemy2      */ std::array<bool, LAYER_COUNT>{ true,  false, false, true,  false },
+        /* PlayerBullet*/ std::array<bool, LAYER_COUNT>{ false, true,  true,  false, false },
+        /* EnemyBullet */ std::array<bool, LAYER_COUNT>{ true,  false, false, false, false },
+    }};
 
-    if (a == Collider::Layer::Player && b == Collider::Layer::EnemyBullet) return true;
-    if (a == Collider::Layer::EnemyBullet && b == Collider::Layer::Player) return true;
+    const auto ia = static_cast<std::size_t>(a);
+    const auto ib = static_cast<std::size_t>(b);
 
+    if (ia >= LAYER_COUNT || ib >= LAYER_COUNT) {
+        // 未知のレイヤーは false を返す（安全側）
+        return false;
+    }
 
-    if (a == Collider::Layer::PlayerBullet && b == Collider::Layer::Enemy) return true;
-    if (a == Collider::Layer::Enemy && b == Collider::Layer::PlayerBullet) return true;
-	if (a == Collider::Layer::PlayerBullet && b == Collider::Layer::Enemy2) return true;
-	if (a == Collider::Layer::Enemy2 && b == Collider::Layer::PlayerBullet) return true;
-
-
-    return false;
+    return table[ia][ib];
 }
 
 void CollisionManager::Clear() {

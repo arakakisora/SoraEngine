@@ -15,6 +15,7 @@
 #include "LineCommon.h" 
 #include <memory>      
 #include "Easing.h"
+#include <array> // 追加: テーブル駆動用
 
 void Player::Initialize(const Vector3& position) {
 
@@ -62,28 +63,33 @@ void Player::Initialize(const Vector3& position) {
 
 void Player::OnCollision(Collider* other)
 {
-	switch (other->GetLayer()) {
-	case Layer::Enemy:
-	case Layer::Enemy2:
-		if (playerState_ == PlayerState::sticky) {
-			SetIsDead(true);
-		}
-		
-		break;
+    // データ駆動: レイヤーごとに sticky 時に致命扱いかをテーブルで管理
+    // Collider::Layer の列挙順に合わせる (Player, Enemy, Enemy2, PlayerBullet, EnemyBullet)
+    constexpr std::size_t LAYER_COUNT = 5;
+    static constexpr std::array<bool, LAYER_COUNT> lethalWhenSticky{{
+        /* Player       */ false,
+        /* Enemy        */ true,
+        /* Enemy2       */ true,
+        /* PlayerBullet */ false,
+        /* EnemyBullet  */ false
+    }};
 
-	default:
-		break;
-	}
+    const auto idx = static_cast<std::size_t>(other->GetLayer());
+    if (idx < LAYER_COUNT && lethalWhenSticky[idx]) {
+        if (playerState_ == PlayerState::sticky) {
+            SetIsDead(true);
+        }
+    }
 }
 
 AABB Player::GetPlayerAABB()
 {
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	aabb.min = { worldPos.x - parameter_.kWidth / 2.0f, worldPos.y - parameter_.kHeight / 2.0f, worldPos.z - parameter_.kWidth / 2.0f };
-	aabb.max = { worldPos.x + parameter_.kWidth / 2.0f, worldPos.y + parameter_.kHeight / 2.0f, worldPos.z + parameter_.kWidth / 2.0f };
+    Vector3 worldPos = GetWorldPosition();
+    AABB aabb;
+    aabb.min = { worldPos.x - parameter_.kWidth / 2.0f, worldPos.y - parameter_.kHeight / 2.0f, worldPos.z - parameter_.kWidth / 2.0f };
+    aabb.max = { worldPos.x + parameter_.kWidth / 2.0f, worldPos.y + parameter_.kHeight / 2.0f, worldPos.z + parameter_.kWidth / 2.0f };
 
-	return aabb;
+    return aabb;
 
 }
 
@@ -269,13 +275,17 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 
 Vector3 Player::NormalFromType(CollisionType type)
 {
-	switch (type) {
-	case CollisionType::Top:    return { 0, -1, 0 };
-	case CollisionType::Bottom: return { 0,  1, 0 };
-	case CollisionType::Right:  return { -1, 0, 0 };
-	case CollisionType::Left:   return { 1, 0, 0 };
-	default: return { 0,0,0 };
-	}
+    //CollisionType の順序 (Top, Bottom, Right, Left) に合わせたルックアップテーブル
+    static const std::array<Vector3, 4> normals{{
+        /* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
+        /* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
+        /* Right  */ Vector3{ -1.0f, 0.0f, 0.0f },
+        /* Left   */ Vector3{ 1.0f,  0.0f, 0.0f }
+    }};
+
+    const auto idx = static_cast<std::size_t>(type);
+    if (idx < normals.size()) return normals[idx];
+    return { 0.0f, 0.0f, 0.0f };
 }
 
 void Player::Reflect(const CollisionMapInfo& info)
