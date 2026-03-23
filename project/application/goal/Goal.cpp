@@ -3,6 +3,7 @@
 #include "MapChipField.h"
 #include "SceneManager.h"
 #include <memory>
+#include <CameraManager.h>
 
 void Goal::Initialize(MapChipField* map, Player* paleyr)
 {
@@ -24,7 +25,7 @@ void Goal::Initialize(MapChipField* map, Player* paleyr)
 	
 }
 
-void Goal::Update(bool isGoal, float deltaTime)
+void Goal::Update(bool isGoal, float deltaTime, Vector3 goalpos)
 {
 	fadeManager_.Update();
 	// オブジェクトの更新
@@ -33,8 +34,12 @@ void Goal::Update(bool isGoal, float deltaTime)
 	}
 
 	// ゴールに到達したかどうかの更新
+
+	Vector3 offset = { 0, 0, -20 };
+	
 	isGoal_ = isGoal;
 	if (isGoal_ && !isEffectStarted_) {
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(goalpos + offset);
 		isEffectStarted_ = true;
 		if (stageClearEffect_) {
 			stageClearEffect_->Begin();

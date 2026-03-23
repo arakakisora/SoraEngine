@@ -101,5 +101,6 @@ private:
 	bool isStrokeActive_ = false;// ストロークがアクティブかどうか
 	// すでに記録したセルの重複防止
 	std::vector<std::vector<bool>> strokeVisited_;
+	bool showStagewindow_ = true;
 
 };

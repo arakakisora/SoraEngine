@@ -15,6 +15,7 @@
 #include "LineCommon.h" 
 #include <memory>      
 #include "Easing.h"
+#include <array> // 追加: テーブル駆動用
 
 void Player::Initialize(const Vector3& position) {
 
@@ -38,26 +39,64 @@ void Player::Initialize(const Vector3& position) {
 		VerticesType::Quad,
 		std::make_unique<ExhaustGasBehavior>()
 	);
+	exhaustEmitter_=std::make_unique<ParticleEmitter>(
+		EulerTransform{ position, {0,0,0}, {1,1,1} },
+		1.0f, // lifetime
+		0.0f, // currentTime
+		100,   // count
+		"dash_smoke"
+	);
+
+	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	deatheEffect = std::make_unique<ParticleEmitter>(
+		EulerTransform{ position, {0,0,0}, {1,1,1} },
+		1.0f, // lifetime
+		0.0f, // currentTime
+		100,   // count
+		"enemydeath"
+	);;
+
 
 	line_ = std::make_unique<Line>();
 
 }
 
+void Player::OnCollision(Collider* other)
+{
+    // データ駆動: レイヤーごとに sticky 時に致命扱いかをテーブルで管理
+    // Collider::Layer の列挙順に合わせる (Player, Enemy, Enemy2, PlayerBullet, EnemyBullet)
+    constexpr std::size_t LAYER_COUNT = 5;
+    static constexpr std::array<bool, LAYER_COUNT> lethalWhenSticky{{
+        /* Player       */ false,
+        /* Enemy        */ true,
+        /* Enemy2       */ true,
+        /* PlayerBullet */ false,
+        /* EnemyBullet  */ false
+    }};
+
+    const auto idx = static_cast<std::size_t>(other->GetLayer());
+    if (idx < LAYER_COUNT && lethalWhenSticky[idx]) {
+        if (playerState_ == PlayerState::sticky) {
+            SetIsDead(true);
+        }
+    }
+}
+
 AABB Player::GetPlayerAABB()
 {
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	aabb.min = { worldPos.x - parameter_.kWidth / 2.0f, worldPos.y - parameter_.kHeight / 2.0f, worldPos.z - parameter_.kWidth / 2.0f };
-	aabb.max = { worldPos.x + parameter_.kWidth / 2.0f, worldPos.y + parameter_.kHeight / 2.0f, worldPos.z + parameter_.kWidth / 2.0f };
+    Vector3 worldPos = GetWorldPosition();
+    AABB aabb;
+    aabb.min = { worldPos.x - parameter_.kWidth / 2.0f, worldPos.y - parameter_.kHeight / 2.0f, worldPos.z - parameter_.kWidth / 2.0f };
+    aabb.max = { worldPos.x + parameter_.kWidth / 2.0f, worldPos.y + parameter_.kHeight / 2.0f, worldPos.z + parameter_.kWidth / 2.0f };
 
-	return aabb;
+    return aabb;
 
 }
 
 void Player::Update() {
 
 #ifdef _DEBUG
-
+	ImGui::Begin("PlayerDebug");
 	if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		EulerTransform transform = object3D_->GetTransform();
@@ -76,6 +115,7 @@ void Player::Update() {
 		ImGui::Text("CannonAngle: %.1f deg", cannonAngleDeg_);
 
 	}
+	ImGui::End();
 #endif // DEBUG_
 
 
@@ -95,6 +135,37 @@ void Player::Update() {
 	MapCollision(collisionMapInfo);// マップとの衝突判定と情報の取得
 	Reflect(collisionMapInfo);// 反射処理
 	PlayerCondition(collisionMapInfo);// プレイヤーの状態更新	
+
+	if (collisionMapInfo.hitDamageBlock) {
+		SetIsDead(true);
+	}
+	if (collisionMapInfo.hasBreakBlock && playerState_ == PlayerState::hard) {
+		const uint32_t bx = collisionMapInfo.breakBlockX;
+		const uint32_t by = collisionMapInfo.breakBlockY;
+
+		int beforeHp = mapChipField_->GetMapChipHPByIndex(bx, by);
+		if (beforeHp > 0) {
+			mapChipField_->DamageMapChipByIndex(bx, by, 1);
+
+			int afterHp = mapChipField_->GetMapChipHPByIndex(bx, by);
+
+			// 壊れた瞬間だけエフェクト
+			if (afterHp <= 0 && deatheEffect) {
+				Rect r = mapChipField_->GetRectByIndex(bx, by);
+
+				Vector3 breakPos{};
+				breakPos.x = (r.left + r.right) * 0.5f;
+				breakPos.y = (r.top + r.bottom) * 0.5f;
+				breakPos.z = object3D_->GetTransform().translate.z;
+
+				deatheEffect->SetPosition(breakPos);
+				deatheEffect->Emit();
+			}
+		}
+	}
+	
+	
+
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
@@ -204,13 +275,17 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 
 Vector3 Player::NormalFromType(CollisionType type)
 {
-	switch (type) {
-	case CollisionType::Top:    return { 0, -1, 0 };
-	case CollisionType::Bottom: return { 0,  1, 0 };
-	case CollisionType::Right:  return { -1, 0, 0 };
-	case CollisionType::Left:   return { 1, 0, 0 };
-	default: return { 0,0,0 };
-	}
+    //CollisionType の順序 (Top, Bottom, Right, Left) に合わせたルックアップテーブル
+    static const std::array<Vector3, 4> normals{{
+        /* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
+        /* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
+        /* Right  */ Vector3{ -1.0f, 0.0f, 0.0f },
+        /* Left   */ Vector3{ 1.0f,  0.0f, 0.0f }
+    }};
+
+    const auto idx = static_cast<std::size_t>(type);
+    if (idx < normals.size()) return normals[idx];
+    return { 0.0f, 0.0f, 0.0f };
 }
 
 void Player::Reflect(const CollisionMapInfo& info)
@@ -489,7 +564,9 @@ void Player::PlayerDeathTerms()
 
 	// 落下による死亡判定
 	if (object3D_->GetTransform().translate.y < parameter_.deathHeight.min
-		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max)
+		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max
+		|| object3D_->GetTransform().translate.x < parameter_.deathwidth.min
+		|| object3D_->GetTransform().translate.x > parameter_.deathwidth.max)
 	{
 		isDead_ = true;
 	}
@@ -541,6 +618,16 @@ void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, boo
 	}
 	info.hitWall = info.hitWall || xInfo.hitWall;
 	info.penX = std::max(info.penX, xInfo.penX);
+	// ブロック破壊情報反映
+	if (xInfo.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = xInfo.breakBlockX;
+		info.breakBlockY = xInfo.breakBlockY;
+		
+	}
+	if (xInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
 
 	// --------------------
 	// Y（X反映後の位置で）
@@ -578,7 +665,17 @@ void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, boo
 	info.ceiling = info.ceiling || yInfo.ceiling;
 	info.landing = info.landing || yInfo.landing;
 	info.penY = std::max(info.penY, yInfo.penY);
+	// ブロック破壊情報反映
+	if (yInfo.hasBreakBlock && !info.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = yInfo.breakBlockX;
+		info.breakBlockY = yInfo.breakBlockY;
+		
+	}
 
+	if (yInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
 }
 
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner)  {
@@ -675,7 +772,7 @@ Vector3 Player::GetWorldPosition() {
 void Player::PlayerParticle()
 {
 	// 地面にいて、左右どちらかに動いているときだけ排気ガス
-	bool isMoving = playerMoveRight_ || playerMoveLeft;
+	bool isMoving =true;
 
 	const float dt = 1.0f / 60.0f; 
 
@@ -697,7 +794,8 @@ void Player::PlayerParticle()
 			}
 
 			// 1回に2粒くらい
-			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+			exhaustEmitter_->SetPosition(smokeTransform.translate);
+			exhaustEmitter_->Emit();
 		}
 	} else {
 		// 止まったらタイマーリセット
@@ -710,6 +808,7 @@ bool Player::IsHittableBlock(MapChipType type)
 	switch (type) {
 	case MapChipType::Block:
 	case MapChipType::UnbreakableBlock:
+	case MapChipType::damageBlock:
 		return true;
 	default:
 		return false;
@@ -755,6 +854,25 @@ bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vecto
 				}
 			}
 			continue;
+		}
+
+		if (chip == MapChipType::damageBlock) {
+			if (pen > 0.0f) {
+				info.hitDamageBlock = true;
+				
+			}
+		}
+
+		if (chip == MapChipType::Block) {
+			if (enableGoal && playerState_ == PlayerState::hard) {
+				if (pen > 0.0f) {
+					if (!info.hasBreakBlock) {
+						info.hasBreakBlock = true;
+						info.breakBlockX = idx.xIndex;
+						info.breakBlockY = idx.yIndex;
+					}
+				}
+			}
 		}
 
 		// 壁になるブロック以外は無視

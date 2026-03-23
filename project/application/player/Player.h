@@ -39,6 +39,11 @@ struct CollisionMapInfo {
 
 	float penX = 0.0f; //壁方向めり込み
 	float penY = 0.0f; //天井/床方向めり込み
+
+	bool hasBreakBlock = false;
+	uint32_t breakBlockX = 0;
+	uint32_t breakBlockY = 0;
+	bool hitDamageBlock = false;
 };
 
 enum Corner {
@@ -81,7 +86,12 @@ struct PlayerParameter {
 		float min=0.0f; // 落下死の高さ
 		float max=20.0f; // 落下死の有効/無効
 	};
+	struct Deathwidth {
+		float min = -3.0f; // 落下死の高さ
+		float max = 26.0f; // 落下死の有効/無効
+	};
 	DeathHeight deathHeight;
+	Deathwidth deathwidth;
 };
 
 class Enemy;
@@ -99,18 +109,7 @@ public:
 		return aabb_;
 	}
 
-	void OnCollision(Collider* other) override {
-		switch (other->GetLayer()) {
-		case Layer::Enemy:
-			SetIsDead(true);
-			break;
-		case Layer::Enemy2:
-			SetIsDead(true);
-			break;
-		default:
-			break;
-		}
-	}
+	void OnCollision(Collider* other) override;
 	AABB GetPlayerAABB();
 
 	~Player() = default; // unique_ptr により自動解放
@@ -262,6 +261,8 @@ public:
 	/// </summary>
 	void RegisterColliders();
 
+	bool DamageBreakableBlocksSwept(const Vector3& from, const Vector3& to);
+
 	//====================アクセッサ======================//
 	///////////////======getter======///////////////
 	/// <summary>
@@ -301,6 +302,12 @@ public:
 	// 速度取得
 	///< summary>
 	const Vector3& GetVelocity() const { return velocity_; }
+
+	/// <summary>
+	// プレイヤーステート取得
+	/// </summary>
+	PlayerState GetPlayerState() const { return playerState_; }
+	
 	///////////////======setter======///////////////
 	/// <summary>
 	/// 死亡しているかどうかを設定
@@ -343,6 +350,8 @@ private:
 
 	//Particle
 	float exhaustTimer_ = 0.0f;//パーティクルの間隔
+	std::unique_ptr<ParticleEmitter> exhaustEmitter_;//排気ガスエミッター 
+	std::unique_ptr<ParticleEmitter> deatheEffect;//排気ガスエミッター 
 
 	//攻撃
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
@@ -356,6 +365,7 @@ private:
 	bool isDead_ = false;//死んだ
 	int hitCount = 0; // 衝突した数
 	bool wasTouching_ = false;
+	bool hitDamageBlock = false;
 
 	//定数
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数

@@ -57,8 +57,8 @@ void StageEditor::RenderUI() {
 	if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z)) { Undo(); }
 	if (io.KeyCtrl && (ImGui::IsKeyPressed(ImGuiKey_Y) || (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_Z)))) { Redo(); }
 
+	ImGui::Checkbox("Show Stage Window", &showStagewindow_);
 
-	// 新規作成
 	ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
 	if (ImGui::Button("New")) {
 		for (auto& row : grid_) {
@@ -116,121 +116,87 @@ void StageEditor::RenderUI() {
 	ImGui::End();
 
 	ImGui::Begin("Stage");
-	//bool canEdit = !ImGui::IsAnyItemActive();
 
-	// ストローク開始/終了（Stageウィンドウ上での左/右操作）
-	if (ImGui::IsWindowHovered()) {
+	const float kCellSize = 15.0f;
+	const int rows = static_cast<int>(grid_.size());
+	const int cols = rows > 0 ? static_cast<int>(grid_[0].size()) : 0;
+
+	ImGui::BeginChild("StageCanvasChild", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+	ImDrawList* dl = ImGui::GetWindowDrawList();
+	ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+	ImVec2 scroll = ImVec2(ImGui::GetScrollX(), ImGui::GetScrollY());
+
+	// キャンバス全体サイズ
+	ImVec2 canvasSize(cols * kCellSize, rows * kCellSize);
+
+	// 1個だけ入力用の透明ボタンを置く
+	ImGui::InvisibleButton("StageCanvasButton", canvasSize,
+		ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
+
+	bool isHovered = ImGui::IsItemHovered();
+	bool isActive = ImGui::IsItemActive();
+
+	ImVec2 mousePos = ImGui::GetIO().MousePos;
+
+	// 背景
+	dl->AddRectFilled(
+		canvasPos,
+		ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y),
+		IM_COL32(40, 40, 40, 255));
+
+	// 見えてる範囲だけ描画する
+	ImVec2 winPos = ImGui::GetWindowPos();
+	ImVec2 winSize = ImGui::GetWindowSize();
+
+	float visibleMinX = scroll.x;
+	float visibleMinY = scroll.y;
+	float visibleMaxX = scroll.x + winSize.x;
+	float visibleMaxY = scroll.y + winSize.y;
+
+	int startX = std::max(0, static_cast<int>(visibleMinX / kCellSize));
+	int startY = std::max(0, static_cast<int>(visibleMinY / kCellSize));
+	int endX = std::min(cols, static_cast<int>(visibleMaxX / kCellSize) + 2);
+	int endY = std::min(rows, static_cast<int>(visibleMaxY / kCellSize) + 2);
+
+	// マウス座標→セル座標
+	int hoverX = -1;
+	int hoverY = -1;
+	if (isHovered) {
+		hoverX = static_cast<int>((mousePos.x - canvasPos.x) / kCellSize);
+		hoverY = static_cast<int>((mousePos.y - canvasPos.y) / kCellSize);
+		if (hoverX < 0 || hoverX >= cols || hoverY < 0 || hoverY >= rows) {
+			hoverX = -1;
+			hoverY = -1;
+		}
+	}
+
+	// ストローク開始/終了
+	if (isHovered) {
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 			BeginStroke();
+			isEditingDrag_ = true;
+			dragButton_ = ImGui::IsMouseClicked(ImGuiMouseButton_Left) ? ImGuiMouseButton_Left : ImGuiMouseButton_Right;
 		}
-		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
-			EndStroke();
+
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle) && hoverX >= 0 && hoverY >= 0) {
+			selectedType_ = grid_[hoverY][hoverX].type;
 		}
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-	// マップ描画エリア
-	for (int y = 0; y < static_cast<int>(grid_.size()); ++y) {
-		for (int x = 0; x < static_cast<int>(grid_[y].size()); ++x) {
-
-			// セルのタイプ（＝ JSON で定義した id）
-			MapChipType typeId = static_cast<MapChipType>( grid_[y][x].type);
-
-			// DB から色を取得
-			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-
-			ImVec4 color(1, 1, 1, 1);
-			if (info) {
-				color = ImVec4(
-					info->color.x,
-					info->color.y,
-					info->color.z,
-					info->color.w
-				);
-			}
-
-			constexpr float kCellSize = 12.0f;
-			// 普通のクリックでも反応させる（既存動作）
-			if (ImGui::ColorButton(
-				("##" + std::to_string(x) + "_" + std::to_string(y)).c_str(),
-				color, 0, ImVec2(kCellSize, kCellSize))) {
-				ApplyCellWithUndo(x, y, selectedType_);
-				
-			}
-
-			ImDrawList* dl = ImGui::GetWindowDrawList();
-			ImVec2 p0 = ImGui::GetItemRectMin();
-			ImVec2 p1 = ImGui::GetItemRectMax();
-
-			// タイル情報
-			const MapChipInfo* cellInfo = MapChipDatabase::GetInstance()->GetById(static_cast<MapChipType>(grid_[y][x].type));
-
-			// 1) 当たり判定があるなら枠表示
-			if (cellInfo && cellInfo->collision != "none") {
-				dl->AddRect(p0, p1, IM_COL32(0, 0, 0, 255), 0.0f, 0, 1.0f);
-			}
-
-			// 2) 壊せる（HP>0）なら「斜線」1本（まずは簡易でOK）
-			if (cellInfo && cellInfo->hitPoints > 0) {
-				dl->AddLine(ImVec2(p0.x, p1.y), ImVec2(p1.x, p0.y), IM_COL32(0, 0, 0, 255), 1.0f);
-			}
-
-			// 3) スポーン系なら小さい点（player/goal/enemyなど）
-			if (cellInfo && !cellInfo->spawn.empty() && cellInfo->spawn != "none") {
-				ImVec2 c((p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f);
-				dl->AddCircleFilled(c, 2.0f, IM_COL32(0, 0, 0, 255));
-			}
-			// ツールチップ表示
-			if (ImGui::IsItemHovered() && cellInfo) {
-				ImGui::BeginTooltip();// ツールチップ開始
-				ImGui::Text("id:%d  %s", cellInfo->id, cellInfo->label.c_str());// ラベル表示
-				ImGui::Text("collision: %s", cellInfo->collision.c_str());// 当たり判定表示
-				ImGui::Text("hp: %d", cellInfo->hitPoints);// HP表示
-				ImGui::Text("spawn: %s", cellInfo->spawn.c_str());// スポーン情報表示	
-				ImGui::EndTooltip();
-			}
-
-			
-			
-
-			// マウス操作処理
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
-				ImGuiHoveredFlags_RectOnly)) {
-
-				// セル上で押し始めたら編集ドラッグ開始
-				if (!isEditingDrag_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-					isEditingDrag_ = true;
-					dragButton_ = ImGuiMouseButton_Left;
-					BeginStroke();
-				}
-				if (!isEditingDrag_ && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
-					isEditingDrag_ = true;
-					dragButton_ = ImGuiMouseButton_Right;
-					BeginStroke();
-				}
-
-				// 編集ドラッグ中だけ塗る
-				if (isEditingDrag_) {
-					if (dragButton_ == ImGuiMouseButton_Left && io.MouseDown[ImGuiMouseButton_Left]) {
-						ApplyCellWithUndo(x, y, selectedType_);
-					}
-					if (dragButton_ == ImGuiMouseButton_Right && io.MouseDown[ImGuiMouseButton_Right]) {
-						ApplyCellWithUndo(x, y, 0);
-					}
-				}
-
-				// スポイトはそのまま
-				if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle)) {
-					selectedType_ = grid_[y][x].type;
-				}
-			}
-
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-	}
-	// どこで離しても編集終了
 	if (isEditingDrag_) {
+		if ((dragButton_ == ImGuiMouseButton_Left && ImGui::IsMouseDown(ImGuiMouseButton_Left)) ||
+			(dragButton_ == ImGuiMouseButton_Right && ImGui::IsMouseDown(ImGuiMouseButton_Right))) {
+			if (hoverX >= 0 && hoverY >= 0) {
+				if (dragButton_ == ImGuiMouseButton_Left) {
+					ApplyCellWithUndo(hoverX, hoverY, selectedType_);
+				}
+				if (dragButton_ == ImGuiMouseButton_Right) {
+					ApplyCellWithUndo(hoverX, hoverY, 0);
+				}
+			}
+		}
+
 		if ((dragButton_ == ImGuiMouseButton_Left && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) ||
 			(dragButton_ == ImGuiMouseButton_Right && ImGui::IsMouseReleased(ImGuiMouseButton_Right))) {
 			isEditingDrag_ = false;
@@ -238,7 +204,62 @@ void StageEditor::RenderUI() {
 			EndStroke();
 		}
 	}
-	ImGui::PopStyleVar();
+
+	// セル描画
+	for (int y = startY; y < endY; ++y) {
+		for (int x = startX; x < endX; ++x) {
+			const GridCell& cell = grid_[y][x];
+			MapChipType typeId = static_cast<MapChipType>(cell.type);
+			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+
+			ImVec4 colorV = ImVec4(1, 1, 1, 1);
+			if (info) {
+				colorV = ImVec4(info->color.x, info->color.y, info->color.z, info->color.w);
+			}
+
+			ImU32 fillColor = ImGui::ColorConvertFloat4ToU32(colorV);
+
+			ImVec2 p0(canvasPos.x + x * kCellSize, canvasPos.y + y * kCellSize);
+			ImVec2 p1(p0.x + kCellSize, p0.y + kCellSize);
+
+			dl->AddRectFilled(p0, p1, fillColor);
+			dl->AddRect(p0, p1, IM_COL32(25, 25, 25, 255));
+
+			if (info && info->collision != "none") {
+				dl->AddRect(p0, p1, IM_COL32(0, 0, 0, 255), 0.0f, 0, 1.0f);
+			}
+
+			if (info && info->hitPoints > 0) {
+				dl->AddLine(ImVec2(p0.x, p1.y), ImVec2(p1.x, p0.y), IM_COL32(0, 0, 0, 255), 1.0f);
+			}
+
+			if (info && !info->spawn.empty() && info->spawn != "none") {
+				ImVec2 c((p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f);
+				dl->AddCircleFilled(c, 3.0f, IM_COL32(0, 0, 0, 255));
+			}
+		}
+	}
+
+	// ホバー中セルを強調
+	if (hoverX >= 0 && hoverY >= 0) {
+		ImVec2 p0(canvasPos.x + hoverX * kCellSize, canvasPos.y + hoverY * kCellSize);
+		ImVec2 p1(p0.x + kCellSize, p0.y + kCellSize);
+		dl->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
+
+		const MapChipInfo* hoverInfo =
+			MapChipDatabase::GetInstance()->GetById(static_cast<MapChipType>(grid_[hoverY][hoverX].type));
+
+		if (hoverInfo) {
+			ImGui::BeginTooltip();
+			ImGui::Text("id:%d  %s", hoverInfo->id, hoverInfo->label.c_str());
+			ImGui::Text("collision: %s", hoverInfo->collision.c_str());
+			ImGui::Text("hp: %d", hoverInfo->hitPoints);
+			ImGui::Text("spawn: %s", hoverInfo->spawn.c_str());
+			ImGui::EndTooltip();
+		}
+	}
+
+	ImGui::EndChild();
 	ImGui::End();
 
 #endif // USE_IMGUI

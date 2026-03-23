@@ -1,29 +1,35 @@
 #include "EnemyBase.h"
+#include "Player.h"
 
 void EnemyBase::OnCollision(Collider* other)
 {
 	// 死亡中は当たり判定無視
 	if (hitDeath_.IsDead()) return;
 
+	// --------------------------------
+	// Player が当たったとき
+	// --------------------------------
+	if (other->GetLayer() == Layer::Player) {
+		Player* player = dynamic_cast<Player*>(other);
+		if (!player) {
+			return;
+		}
 
-	if (other->GetLayer() == Layer::PlayerBullet) {
-		//PlayerBullet* hitBullet = static_cast<PlayerBullet*>(other);
-		// 赤くしてノックバックを渡す
-		object3D_->SetColor(kDamageColor);
-		damageTimer_ = kDamageDisplayTime;
+		// hard のときだけ敵にダメージ
+		if (player->GetPlayerState() == PlayerState::hard) {
+			object3D_->SetColor(kDamageColor);
+			damageTimer_ = kDamageDisplayTime;
 
-	
-		// カメラに映る程度の動きに抑えるため控えめな値にする
-		const float horizontalKnock = kHorizontalKnock; // 水平方向速度 (units/sec)
-		const float verticalKnock = kVerticalKnock;   // 上方向初速度 (units/sec)
-		float dir = (velocity_.x > 0.0f) ? -1.0f : 1.0f; // 移動方向の逆（後方へ飛ばす）
-		Vector3 knock = { dir * horizontalKnock, verticalKnock, 0.0f };
+			const float horizontalKnock = kHorizontalKnock;
+			const float verticalKnock = kVerticalKnock;
+			float dir = (velocity_.x > 0.0f) ? -1.0f : 1.0f;
+			Vector3 knock = { dir * horizontalKnock, verticalKnock, 0.0f };
 
-		// 内部モーションを使うようにしてノックバックを渡す
-		hitDeath_.SetUseExternalDeathMotion(false);
-		int hitPower = kDefaultHitPower;
-		hitDeath_.OnHit(hitPower, knock);
-		// コンポーネント側で isDead_ を立てるので Update の次回で演出が始まる
+			hitDeath_.SetUseExternalDeathMotion(false);
+			int hitPower = kDefaultHitPower;
+			hitDeath_.OnHit(hitPower, knock);
+			return;
+		}
 	}
 
 }
