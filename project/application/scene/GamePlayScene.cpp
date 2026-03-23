@@ -129,6 +129,7 @@ void GamePlayScene::Finalize()
 void GamePlayScene::UpdateGameLogic(float dt)
 {
 	
+
 	goal->Update(player->GetGoal(), dt,player->GetObject3D()->GetTransform().translate);
 	const float fixedDt = dt;
 	Vector3 offset = { 0, 0, -20 };
@@ -139,7 +140,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 		playerPostion = spawnPositions.front();
 	}
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
-	
 		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player->GetObject3D()->GetTransform().translate + offset);
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
