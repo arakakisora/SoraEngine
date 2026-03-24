@@ -181,7 +181,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 	// プレイヤーが死んだらゲームオーバー演出
 	if (player->GetIsDead_()) {
 		gameOverEffect_->Update(dt);
-		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 	}
 	if (!gameOverEffect_->IsPlaying()) {
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
