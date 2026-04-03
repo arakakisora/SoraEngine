@@ -21,3 +21,12 @@ std::unique_ptr<IParticleBehavior> ParticleBehaviorFactory::Create(const std::st
     assert(false && "Unknown behaviorType in ParticleBehaviorFactory::Create()");
     return nullptr;
 }
+
+std::vector<std::string> ParticleBehaviorFactory::GetBehaviorNames()
+{
+    return {
+        "Explosion",
+        "Charge",
+        "ExhaustGas"
+    };
+}

@@ -307,7 +307,7 @@ void GamePlayScene::Draw()
 	pauseMenu->Draw();
 
 	//object3D2nd->Draw();
-	ParticleMnager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 	LineCommon::GetInstance()->Draw();
 #pragma endregion
 
@@ -388,6 +388,8 @@ void GamePlayScene::Imguidebug()
 	{
 		SceneManager::GetInstance()->ChangeScene("TITELE");
 	}
+
+	ParticleManager::GetInstance()->ImguiDrawEditor();
 #endif // USE_IMGUI
 
 }

@@ -33,12 +33,12 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 
-	ParticleMnager::GetInstance()->CreateParticleGroup(
-		"dash_smoke",
-		"Resources/smoke.png", // 使いたいテクスチャ
-		VerticesType::Quad,
-		std::make_unique<ExhaustGasBehavior>()
-	);
+	//ParticleManager::GetInstance()->CreateParticleGroup(
+	//	"dash_smoke",
+	//	"Resources/smoke.png", // 使いたいテクスチャ
+	//	VerticesType::Quad,
+	//	std::make_unique<ExhaustGasBehavior>()
+	//);
 	exhaustEmitter_=std::make_unique<ParticleEmitter>(
 		EulerTransform{ position, {0,0,0}, {1,1,1} },
 		1.0f, // lifetime
@@ -47,7 +47,7 @@ void Player::Initialize(const Vector3& position) {
 		"dash_smoke"
 	);
 
-	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/ParticleTexture/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	deatheEffect = std::make_unique<ParticleEmitter>(
 		EulerTransform{ position, {0,0,0}, {1,1,1} },
 		1.0f, // lifetime

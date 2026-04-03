@@ -98,6 +98,7 @@
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
     <ClCompile Include="engine\particle\ParticleEditor.cpp" />
+    <ClCompile Include="engine\particle\ParticleBehaviorFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\enemy\Enemy.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="application\map\GenerateBlock.h" />
     <ClInclude Include="GateInOut.h" />
     <ClInclude Include="engine\particle\ParticleEditor.h" />
+    <ClInclude Include="engine\particle\ParticleBehaviorFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />

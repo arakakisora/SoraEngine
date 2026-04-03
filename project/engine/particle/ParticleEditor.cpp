@@ -1,6 +1,7 @@
 #define NOMINMAX 
 #include "ParticleEditor.h"
 #include "ParticleMnager.h"
+#include "ParticleBehaviorFactory.h"
 #include <algorithm> // 追加
 #include <filesystem>
 #include "imgui.h"
@@ -18,18 +19,25 @@ void ParticleEditor::DrawImguiEditor()
 
 	ImGui::Begin("Particle Editor");
 
-	if (groups.empty()) {
-		ImGui::Text("No particle groups.");
-		ImGui::End();
-		return;
-	}
-
 	// 最初だけテクスチャ一覧を読む
 	if (textureFilePaths_.empty()) {
 		LoadTexturesFromDirectory("Resources/ParticleTexture");
 	}
 
-	// 名前一覧
+	//新規作成UI
+	CreateEffectIMGui();
+
+	if (ImGui::Button("Save To Json")) {
+		manager_->SaveToJson("Resources/Data/Particles.json");
+	}
+
+	if (groups.empty()) {
+		ImGui::Text("No particle groups.");
+		ImGui::End();
+		return;
+	}
+	
+	// 名前一覧:編集UI
 	std::vector<std::string> names;
 	names.reserve(groups.size());
 	for (const auto& [name, group] : groups) {
@@ -68,7 +76,6 @@ void ParticleEditor::BasicIMGui(const std::string& currentName)
 	auto& currentGroup = groups.at(currentName);
 
 	//基本設定
-	ImGui::SeparatorText("Basic");//基本設定
 	ImGui::Text("ID: %s", currentName.c_str());//名前表示
 
 	//デフォルト　カウント・ライフタイム
@@ -198,6 +205,145 @@ void ParticleEditor::BehaviorIMGui(const std::string& currentName)
 			manager_->EmitAtCamera(currentName);
 		}
 	}
+}
+
+void ParticleEditor::CreateEffectIMGui()
+{
+	ImGui::SeparatorText("Create New Effect");
+
+	// 名前入力
+	ImGui::InputText("New Name", newEffectName_, IM_ARRAYSIZE(newEffectName_));
+
+	// Behavior 一覧
+	const auto& behaviorNames = ParticleBehaviorFactory::GetBehaviorNames();
+	std::vector<const char*> behaviorItems;
+	behaviorItems.reserve(behaviorNames.size());
+	for (const auto& name : behaviorNames) {
+		behaviorItems.push_back(name.c_str());
+	}
+
+	if (!behaviorItems.empty()) {
+		if (newBehaviorIndex_ >= (int)behaviorItems.size()) {
+			newBehaviorIndex_ = 0;
+		}
+		ImGui::Combo("Behavior", &newBehaviorIndex_,
+			behaviorItems.data(), (int)behaviorItems.size());
+	}
+
+	// Mesh 一覧
+	static const char* meshItems[] = {
+		"Ring",
+		"Cylinder",
+		"Quad",
+		"Triangle",
+	};
+
+	ImGui::Combo("New Mesh", &newMeshIndex_, meshItems, IM_ARRAYSIZE(meshItems));
+
+	// Texture 一覧
+	std::vector<const char*> textureItems;
+	textureItems.reserve(textureFilePaths_.size());
+	for (const auto& path : textureFilePaths_) {
+		textureItems.push_back(path.c_str());
+	}
+
+	if (!textureItems.empty()) {
+		if (newTextureIndex_ >= (int)textureItems.size()) {
+			newTextureIndex_ = 0;
+		}
+		ImGui::Combo("New Texture", &newTextureIndex_,
+			textureItems.data(), (int)textureItems.size());
+	}
+
+	// Create ボタン
+	if (ImGui::Button("Create Effect")) {
+
+		std::string effectName = newEffectName_;
+		if (effectName.empty()) {
+			return;
+		}
+
+		// 同名があるなら作らない
+		if (manager_->particleGroups.contains(effectName)) {
+			return;
+		}
+
+		// Behavior 生成
+		if (behaviorNames.empty()) {
+			return;
+		}
+		const std::string& behaviorType = behaviorNames[newBehaviorIndex_];
+		auto behavior = ParticleBehaviorFactory::Create(behaviorType);
+		if (!behavior) {
+			return;
+		}
+
+		// Mesh 変換
+		VerticesType meshType = VerticesType::Quad;
+		switch (newMeshIndex_) {
+		case 0: meshType = VerticesType::Ring;     break;
+		case 1: meshType = VerticesType::Cylinder; break;
+		case 2: meshType = VerticesType::Quad;     break;
+		case 3: meshType = VerticesType::Triangle; break;
+		}
+
+		// Texture フルパス
+		std::string texturePath;
+		if (!textureFilePaths_.empty()) {
+			texturePath = (fs::path(textureDirectory_) / textureFilePaths_[newTextureIndex_]).string();
+		} else {
+			texturePath = "Resources/ParticleTexture/default.png";
+		}
+
+		// ParticleGroup 作成
+		manager_->CreateParticleGroup(effectName, texturePath, meshType, std::move(behavior));
+
+		
+	}
+
+	if (ImGui::Button("Preview Emit")) {
+
+		const std::string previewName = "__preview_effect__";
+
+		// Behavior 生成
+		if (behaviorNames.empty()) {
+			return;
+		}
+		const std::string& behaviorType = behaviorNames[newBehaviorIndex_];
+		auto behavior = ParticleBehaviorFactory::Create(behaviorType);
+		if (!behavior) {
+			return;
+		}
+
+		// Mesh 変換
+		VerticesType meshType = VerticesType::Quad;
+		switch (newMeshIndex_) {
+		case 0: meshType = VerticesType::Ring;     break;
+		case 1: meshType = VerticesType::Cylinder; break;
+		case 2: meshType = VerticesType::Quad;     break;
+		case 3: meshType = VerticesType::Triangle; break;
+		}
+
+		// Texture
+		std::string texturePath;
+		if (!textureFilePaths_.empty()) {
+			texturePath = (fs::path(textureDirectory_) / textureFilePaths_[newTextureIndex_]).string();
+		} else {
+			texturePath = "Resources/ParticleTexture/default.png";
+		}
+
+		// 初回だけ作成
+		if (!manager_->particleGroups.contains(previewName)) {
+			manager_->CreateParticleGroup(previewName, texturePath, meshType, std::move(behavior));
+		} else {
+			manager_->SetBehavior(previewName, std::move(behavior));
+			manager_->SetGroupVerticesType(previewName, meshType);
+			manager_->SetGroupTexture(previewName, texturePath);
+		}
+
+		manager_->EmitAtCamera(previewName);
+	}
+
 }
 
 #endif // USE_IMGUI

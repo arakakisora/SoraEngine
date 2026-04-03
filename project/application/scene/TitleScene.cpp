@@ -72,12 +72,12 @@ void TitleScene::Initialize() {
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;
 	// プレイヤーパーティクル
-	ParticleMnager::GetInstance()->CreateParticleGroup(
-		"dash_smoke",
-		"Resources/smoke.png", // 使いたいテクスチャ
-		VerticesType::Quad,
-		std::make_unique<ExhaustGasBehavior>()
-	);
+	//ParticleManager::GetInstance()->CreateParticleGroup(
+	//	"dash_smoke",
+	//	"Resources/ParticleTexture/smoke.png", // 使いたいテクスチャ
+	//	VerticesType::Quad,
+	//	std::make_unique<ExhaustGasBehavior>()
+	//);
 }
 
 // 終了処理：CameraManager から削除し、unique_ptr が破棄してメモリ解放
@@ -271,7 +271,7 @@ void TitleScene::Draw() {
 	if (titleObj_) titleObj_->Draw();
 	if (object3D_) object3D_->Draw();
 
-	ParticleMnager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (titleSprite_) titleSprite_->Draw();
@@ -302,9 +302,9 @@ void TitleScene::PlayerParticle()
 		else {
 			smokeTransform.translate.x += 0.15f;
 		}
-
+		
 		// 1回に2粒くらい
-		ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform);
+		ParticleManager::GetInstance()->Emit("dash_smoke", smokeTransform);
 	}
 
 }

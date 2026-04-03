@@ -39,12 +39,12 @@ void GameOverScene::Initialize()
 	playerObj->SetScale({ 0.5f, 0.5f, 0.5f });
 
 
-	ParticleMnager::GetInstance()->CreateParticleGroup(
+	/*ParticleManager::GetInstance()->CreateParticleGroup(
 		"enemydeath",
 		"Resources/honoo.png",
 		VerticesType::Quad,
 		std::make_unique<ExplosionBehavior>()
-	);
+	);*/
 }
 
 void GameOverScene::Finalize()
@@ -95,7 +95,7 @@ void GameOverScene::Update()
 		smokeTransform.translate.x -= 0.2f;
 
 		for (int i = 0; i < 3; i++) {
-			ParticleMnager::GetInstance()->Emit("enemydeath", smokeTransform);
+			ParticleManager::GetInstance()->Emit("enemydeath", smokeTransform);
 		}
 
 	}
@@ -148,7 +148,7 @@ void GameOverScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 	playerObj->Draw();
 
-	ParticleMnager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 #pragma endregion
 
 

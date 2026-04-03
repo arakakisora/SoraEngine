@@ -1,0 +1,20 @@
+{
+    "effects": [
+        {
+            "behaviorType": "Explosion",
+            "defaultCount": 100,
+            "defaultLifetime": 1.0,
+            "id": "enemydeath",
+            "mesh": "Quad",
+            "texture": "honoo.png"
+        },
+        {
+            "behaviorType": "ExhaustGas",
+            "defaultCount": 100,
+            "defaultLifetime": 1.0,
+            "id": "dash_smoke",
+            "mesh": "Quad",
+            "texture": "smoke.png"
+        }
+    ]
+}

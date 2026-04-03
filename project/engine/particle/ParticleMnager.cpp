@@ -14,6 +14,8 @@
 #include <ChargeBehabiaor.h>
 #include "ParticleEditor.h"
 
+#include <filesystem>
+
 
 using json = nlohmann::json;
 
@@ -51,21 +53,18 @@ namespace
 }
 
 //シングルトンインスタンスの取得
-ParticleMnager* ParticleMnager::instance_ = nullptr;
-ParticleMnager* ParticleMnager::GetInstance()
+ParticleManager* ParticleManager::instance_ = nullptr;
+ParticleManager* ParticleManager::GetInstance()
 {
 	if (instance_ == nullptr) {
-		instance_ = new ParticleMnager();
+		instance_ = new ParticleManager();
 	}
 	return instance_;
 
 
 }
 
-
-
-
-void ParticleMnager::ImguiDrawEditor()
+void ParticleManager::ImguiDrawEditor()
 {
 #ifdef USE_IMGUI
 	//Editorが生成されていたら描画
@@ -74,7 +73,7 @@ void ParticleMnager::ImguiDrawEditor()
 
 }
 
-void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
+void ParticleManager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
 
 
@@ -105,12 +104,12 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 }
 
 
-void ParticleMnager::LoadFromJson(const std::string& filepath)
+void ParticleManager::LoadFromJson(const std::string& filepath)
 {
 	// ファイルを開く
 	std::ifstream ifs(filepath);
 	if (!ifs) {
-		// 見つからない場合はとりあえず assert しておく（後でログに変えても良い）
+		// 見つからない場合 assert 
 		assert(false && "Failed to open particle json file");
 		return;
 	}
@@ -152,20 +151,63 @@ void ParticleMnager::LoadFromJson(const std::string& filepath)
 		if (!behavior) {
 			continue;
 		}
+		std::string fullTexturePath = "Resources/ParticleTexture/" + texture;
+		//CreateParticleGroup を呼んで登録
+		CreateParticleGroup(id, fullTexturePath, verticesType, std::move(behavior));
+		particleGroups[id].defaultCount = e.value("defaultCount", 100);
+		particleGroups[id].defaultLifetime = e.value("defaultLifetime", 1.0f);
 
-		// TODO: params 読み込みは後でやる
-		// if (e.contains("params")) {
-		//     behavior->LoadParams(e["params"]);
-		// }
-
-		// いつもの CreateParticleGroup を呼んで登録
-		CreateParticleGroup(id, texture, verticesType, std::move(behavior));
 	}
 
 
 }
 
-void ParticleMnager::Finalize()
+void ParticleManager::SaveToJson(const std::string& filepath)
+{
+	json root;
+	root["effects"] = json::array();
+
+	for (const auto& [name,group]:particleGroups) {
+		json effectJson;
+		effectJson["id"] = name;
+
+		// ビヘイビアの種類を文字列で保存
+		std::string behaviorTypeStr = "Unknown";
+		if (dynamic_cast<ExplosionBehavior*>(group.behavior.get())) {
+			behaviorTypeStr = "Explosion";
+		}
+		else if (dynamic_cast<ChargeBehabiaor*>(group.behavior.get())) {
+			behaviorTypeStr = "Charge";
+		}
+		else if (dynamic_cast<ExhaustGasBehavior*>(group.behavior.get())) {
+			behaviorTypeStr = "ExhaustGas";
+		}
+		effectJson["behaviorType"] = behaviorTypeStr;
+
+		// 頂点形状を文字列で保存
+		std::string meshStr = "Quad";
+		switch (group.verticesType) {
+		case VerticesType::Ring:     meshStr = "Ring"; break;
+		case VerticesType::Cylinder: meshStr = "Cylinder"; break;
+		case VerticesType::Triangle: meshStr = "Triangle"; break;
+		case VerticesType::Quad:     meshStr = "Quad"; break;	
+		}
+		effectJson["mesh"] = meshStr;
+
+		// テクスチャのファイルパスを保存
+		effectJson["texture"] = std::filesystem::path(group.materialdata.textureFilePath).filename().string();
+		effectJson["defaultCount"] = group.defaultCount;
+		effectJson["defaultLifetime"] = group.defaultLifetime;
+
+		root["effects"].push_back(effectJson);
+	
+	}
+	std::ofstream ofs(filepath);
+	ofs << root.dump(4); // インデント幅4で整形して保存
+
+}
+
+void ParticleManager::Finalize()
 {
 
 	delete instance_;
@@ -175,7 +217,7 @@ void ParticleMnager::Finalize()
 }
 
 
-void ParticleMnager::Update()
+void ParticleManager::Update()
 {
 	//カメラからビュープロジェクション行列を取得
 	//ビルボード行列の計算
@@ -232,7 +274,7 @@ void ParticleMnager::Update()
 
 }
 
-void ParticleMnager::Draw()
+void ParticleManager::Draw()
 {
 
 
@@ -272,7 +314,7 @@ void ParticleMnager::Draw()
 
 }
 
-void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesTypeValue, std::unique_ptr<IParticleBehavior> behavior)
+void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesTypeValue, std::unique_ptr<IParticleBehavior> behavior)
 {
 	//登録済みなら早期リターン
 	if (particleGroups.contains(name)) {
@@ -298,7 +340,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	SetGroupVerticesType(name,verticesTypeValue);
 
 	//テクスチャの設定
-	SetGroupTexture(name, textureFilePath);
+	SetGroupTexture(name,textureFilePath);
 
 	//最大インスタンスカウント
 	uint32_t MaxInstanceCount = kMaxInstanceCount;
@@ -334,7 +376,7 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const EulerTransform transform)
+void ParticleManager::Emit(const std::string& name, const EulerTransform transform)
 {
 	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
@@ -347,7 +389,7 @@ void ParticleMnager::Emit(const std::string& name, const EulerTransform transfor
 
 }
 
-void ParticleMnager::EmitAtCamera(const std::string& name)
+void ParticleManager::EmitAtCamera(const std::string& name)
 {
 	// グループ存在チェック
 	assert(particleGroups.contains(name));
@@ -365,7 +407,7 @@ void ParticleMnager::EmitAtCamera(const std::string& name)
 
 }
 
-std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
+std::vector<VertexData> ParticleManager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {
 
 	std::vector<VertexData> ringVertices;
@@ -405,7 +447,7 @@ std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, f
 
 }
 
-std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
+std::vector<VertexData> ParticleManager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
 {
 	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(cylinderDivide);
 
@@ -437,7 +479,7 @@ std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDi
 	return cylinderVertices;
 }
 
-std::vector<VertexData> ParticleMnager::MakeQuadVertices()
+std::vector<VertexData> ParticleManager::MakeQuadVertices()
 {
 	//クワッドの頂点情報を作成
 	std::vector<VertexData> vertices;
@@ -452,7 +494,7 @@ std::vector<VertexData> ParticleMnager::MakeQuadVertices()
 	return vertices;
 }
 
-std::vector<VertexData> ParticleMnager::MakeTriangleVertices()
+std::vector<VertexData> ParticleManager::MakeTriangleVertices()
 {
 	//三角形の頂点情報を作成
 	std::vector<VertexData> vertices;
@@ -466,24 +508,25 @@ std::vector<VertexData> ParticleMnager::MakeTriangleVertices()
 
 }
 
-void ParticleMnager::SetGroupTexture(const std::string& groupName, const std::string& textureFilePath)
+void ParticleManager::SetGroupTexture(const std::string& groupName, const std::string& textureFilePath)
 {
 	assert(particleGroups.contains(groupName));
 	auto& group = particleGroups.at(groupName);
 
 	// パスを登録
-	group.materialdata.textureFilePath = textureFilePath;
+	group.materialdata.textureFilePath =textureFilePath;
+	//"Resources/ParticleTexture/"
 
 	// テクスチャ読み込み（既に読まれていてもOKな設計ならそのまま）
-	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+	TextureManager::GetInstance()->LoadTexture(group.materialdata.textureFilePath);
 
 	// インデックス更新
 	group.materialdata.textureIndex =
-		TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+		TextureManager::GetInstance()->GetTextureIndexByFilePath(group.materialdata.textureFilePath);
 
 }
 
-void ParticleMnager::SetGroupVerticesType(const std::string& groupName, VerticesType verticesType)
+void ParticleManager::SetGroupVerticesType(const std::string& groupName, VerticesType verticesType)
 {
 	//グループが存在するかチェック
 	assert(particleGroups.contains(groupName));
@@ -522,7 +565,7 @@ void ParticleMnager::SetGroupVerticesType(const std::string& groupName, Vertices
 
 }
 
-void ParticleMnager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)
+void ParticleManager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)
 {
 	//グループが存在するかチェック
 	assert(particleGroups.contains(groupName) && "ParticleGroup does not exist!");

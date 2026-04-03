@@ -43,7 +43,7 @@ struct ParticleForGPU
 };
 
 class ParticleEditor;
-class ParticleMnager
+class ParticleManager
 {
 	friend class ParticleEditor;
 
@@ -78,17 +78,17 @@ class ParticleMnager
 	};
 public:
 
-	static ParticleMnager* GetInstance();
+	static ParticleManager* GetInstance();
 
 
 
 private:
 	// コンストラクタをプライベートにする
-	ParticleMnager() = default;
-	~ParticleMnager() = default;
+	ParticleManager() = default;
+	~ParticleManager() = default;
 	// コピーコンストラクタと代入演算子を削除する
-	ParticleMnager(const ParticleMnager&) = delete;
-	ParticleMnager& operator=(const ParticleMnager&) = delete;
+	ParticleManager(const ParticleManager&) = delete;
+	ParticleManager& operator=(const ParticleManager&) = delete;
 
 public:
 
@@ -105,6 +105,11 @@ public:
 	/// </summary>
 	/// <param name="filepath"></param>
 	void LoadFromJson(const std::string& filepath);
+	/// <summary>
+	/// JSONファイルにパーティクル設定を保存
+	/// </summary>
+	/// <param name="filepath"></param>
+	void SaveToJson(const std::string& filepath);
 	/// <summary>
 	/// 終了処理
 	///< / summary>
@@ -164,10 +169,9 @@ private:
 
 
 	//インスタンス
-	static ParticleMnager* instance_;
+	static ParticleManager* instance_;
 	DirectXCommon* dxCommon_ = nullptr;
 	SrvManager* srvManager_ = nullptr;
-
 
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 

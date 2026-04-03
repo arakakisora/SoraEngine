@@ -35,7 +35,7 @@ void Enemy::Initialize() {
 
 
 	//deatheffect
-	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	//ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	lifeTime = 1.0f;//パーティクルの寿命
 	currentTime = 1.0f;//現在の時間
 	maxParticles = 100;//最大パーティクル数
