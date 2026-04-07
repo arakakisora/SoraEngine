@@ -3,8 +3,8 @@
 #include "imgui.h"
 #include <vector>
 #include <string>
+#include "ParticleMnager.h"
 
-class ParticleManager;
 /// <summary>
 /// パーティクルエディタ（ImGui）
 /// ParticleManager の中身（particleGroups）をいじるためのツールクラス
@@ -47,7 +47,14 @@ public:
 	/// <summary>
 	/// エフェクト全体の設定UI
 	/// </summary>
-	void CreateEffectIMGui();
+	void CreateModeIMGui();
+	
+
+	// 共通部品
+	void DrawBehaviorSelector(const char* label, int& index);
+	void DrawMeshSelector(const char* label, int& index);
+	void DrawTextureSelector(const char* label, int& index);
+	VerticesType GetMeshTypeFromIndex(int index) const;
 
 private:
 	ParticleManager* manager_ = nullptr;
@@ -55,12 +62,13 @@ private:
 	std::vector<std::string> textureFilePaths_; // テクスチャファイルパス一覧
 	std::string textureDirectory_; // テクスチャディレクトリパス
 
+	// 新規作成用
 	char newEffectName_[128] = "NewEffect"; // 新規エフェクトの名前入力用バッファ
 	int newBehaviorIndex_ = 0; // 新規エフェクトのビヘイビア選択用インデックス
 	int newMeshIndex_ = 2;//Quadを初期化
 	int newTextureIndex_ = 0;//テクスチャ選択の初期化
 
-
+	int editBehaviorIndex_ = 0;
 
 };
 #endif // USE_IMGUI

@@ -75,6 +75,12 @@ class ParticleManager
 		float defaultLifetime;
 		VerticesType verticesType = VerticesType::Quad;//頂点の種類
 
+		Vector4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		bool isLoop = false;
+		float loopInterval = 1.0f;
+		float loopTimer = 0.0f;
+		
+
 	};
 public:
 
@@ -193,6 +199,8 @@ private:
 
 	// 頂点の種類
 	VerticesType verticesType = VerticesType::Quad;
+
+
 
 	
 

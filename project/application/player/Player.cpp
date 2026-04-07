@@ -796,6 +796,8 @@ void Player::PlayerParticle()
 			// 1回に2粒くらい
 			exhaustEmitter_->SetPosition(smokeTransform.translate);
 			exhaustEmitter_->Emit();
+
+			//ParticleManager::GetInstance()->Emit("barriering", object3D_->GetTransform());
 		}
 	} else {
 		// 止まったらタイマーリセット
