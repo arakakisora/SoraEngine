@@ -15,7 +15,7 @@
 #include "LineCommon.h" 
 #include <memory>      
 #include "Easing.h"
-#include <array> // 追加: テーブル駆動用
+#include <array> 
 
 void Player::Initialize(const Vector3& position) {
 
@@ -63,8 +63,7 @@ void Player::Initialize(const Vector3& position) {
 
 void Player::OnCollision(Collider* other)
 {
-    // データ駆動: レイヤーごとに sticky 時に致命扱いかをテーブルで管理
-    // Collider::Layer の列挙順に合わせる (Player, Enemy, Enemy2, PlayerBullet, EnemyBullet)
+	
     constexpr std::size_t LAYER_COUNT = 5;
     static constexpr std::array<bool, LAYER_COUNT> lethalWhenSticky{{
         /* Player       */ false,
@@ -226,9 +225,9 @@ void Player::PlayerMove() {
 
 	Vector3 v = worldDir.Normalize() * spd;
 
-
+	//スペースで発射
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-
+	
 		const bool canShoot =
 			(playerState_ == PlayerState::sticky) || isStopped_;
 

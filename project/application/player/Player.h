@@ -14,8 +14,8 @@
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
 #include "Collider.h"
-#include "Line.h"            // 追加: ライン描画
-#include <memory>           // 追加: std::unique_ptr を使用
+#include "Line.h"       
+#include <memory>       
 
 enum class LRTBDirecion {
 	kRight,
@@ -227,7 +227,12 @@ public:
 	// map衝突判定
 	/// </summary>
 	void MapCollision(CollisionMapInfo& info);
-
+	/// <summary>
+	/// map衝突判定（位置指定版）
+	/// </summary>
+	/// <param name="position"></param>
+	/// <param name="info"></param>
+	/// <param name="enableGoal"></param>
 	void MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal = true);
 
 	/// <summary>
@@ -260,8 +265,6 @@ public:
 	/// コライダーの登録
 	/// </summary>
 	void RegisterColliders();
-
-	bool DamageBreakableBlocksSwept(const Vector3& from, const Vector3& to);
 
 	//====================アクセッサ======================//
 	///////////////======getter======///////////////
