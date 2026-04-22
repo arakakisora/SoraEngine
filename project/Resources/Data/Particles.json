@@ -1,20 +1,20 @@
 {
     "effects": [
         {
-            "behaviorType": "Explosion",
+            "behaviorType": "BarrierBreak",
             "color": [
+                0.9117647409439087,
                 1.0,
-                1.0,
-                1.0,
+                0.0,
                 1.0
             ],
             "defaultCount": 100,
             "defaultLifetime": 1.0,
-            "id": "enemydeath",
+            "id": "BarrierBreak",
             "isLoop": false,
             "loopInterval": 1.0,
-            "mesh": "Quad",
-            "texture": "honoo.png"
+            "mesh": "Triangle",
+            "texture": "gradationLine.png"
         },
         {
             "behaviorType": "ExhaustGas",
@@ -33,20 +33,20 @@
             "texture": "smoke.png"
         },
         {
-            "behaviorType": "BarrierBreak",
+            "behaviorType": "Explosion",
             "color": [
-                0.9117647409439087,
                 1.0,
-                0.0,
+                1.0,
+                1.0,
                 1.0
             ],
             "defaultCount": 100,
             "defaultLifetime": 1.0,
-            "id": "BarrierBreak",
+            "id": "enemydeath",
             "isLoop": false,
             "loopInterval": 1.0,
-            "mesh": "Triangle",
-            "texture": "gradationLine.png"
+            "mesh": "Quad",
+            "texture": "honoo.png"
         },
         {
             "behaviorType": "BarrierRing",

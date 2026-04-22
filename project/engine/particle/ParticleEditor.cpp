@@ -6,6 +6,8 @@
 #include <filesystem>
 #include "imgui.h"
 #include <ChargeBehabiaor.h>
+#include <cassert>
+#include "CameraManager.h"
 
 #ifdef USE_IMGUI
 
@@ -81,6 +83,12 @@ void ParticleEditor::CreateModeIMGui()
 	DrawMeshSelector("Mesh", newMeshIndex_);
 	DrawTextureSelector("Texture", newTextureIndex_);
 
+	ImGui::SeparatorText("Preview");
+	ImGui::Checkbox("Show AABB", &showPreviewAABB_);
+	ImGui::DragFloat("Preview Distance", &previewDistance_, 0.1f, 0.1f, 50.0f);
+	ImGui::DragFloat3("Preview Scale", &previewScale_.x, 0.1f, 0.01f, 100.0f);
+	DrawPreviewAABB();
+
 	// Preview Emit
 	if (ImGui::Button("Preview Emit")) {
 		const std::string previewName = "__preview_effect__";
@@ -113,7 +121,8 @@ void ParticleEditor::CreateModeIMGui()
 			manager_->particleGroups[previewName].particles.clear();
 		}
 
-		manager_->EmitAtCamera(previewName);
+		EulerTransform previewTransform = MakePreviewTransform();
+		manager_->Emit(previewName, previewTransform);
 	}
 
 	ImGui::SameLine();
@@ -153,6 +162,35 @@ void ParticleEditor::CreateModeIMGui()
 		manager_->SaveToJson("Resources/Data/Particles.json");
 	}
 }
+
+EulerTransform ParticleEditor::MakePreviewTransform() const
+{
+	EulerTransform t;
+	t.scale = previewScale_;
+	t.rotate = { 0.0f, 0.0f, 0.0f };
+	t.translate = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate;
+	t.translate.z += previewDistance_;
+	return t;
+
+}
+
+void ParticleEditor::DrawPreviewAABB()
+{
+
+	if (!showPreviewAABB_) {
+	
+		return;
+	}
+
+	EulerTransform t = MakePreviewTransform();
+	Vector3 c = t.translate;
+	Vector3 h = t.scale * 0.5f;
+
+	line_.DrawAABB(c, h, { 1.0f,1.0f,0.0f,1.0f });
+
+}
+
+
 
 void ParticleEditor::BasicIMGui(const std::string& currentName)
 {
@@ -277,7 +315,10 @@ void ParticleEditor::BehaviorIMGui(const std::string& currentName)
 
 		if (ImGui::Button("Test Emit (Camera)")) {
 			currentGroup.particles.clear();
-			manager_->EmitAtCamera(currentName);
+			
+			EulerTransform previewTransform = MakePreviewTransform();
+			manager_->Emit(currentName, previewTransform);
+
 		}
 	}
 }
