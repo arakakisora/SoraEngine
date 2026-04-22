@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "ParticleMnager.h"
+#include "Line.h"
 
 /// <summary>
 /// パーティクルエディタ（ImGui）
@@ -48,6 +49,13 @@ public:
 	/// エフェクト全体の設定UI
 	/// </summary>
 	void CreateModeIMGui();
+	/// <summary>
+	/// プレビュー用のTransformを作成
+	/// </summary>
+	/// <returns></returns>
+	EulerTransform MakePreviewTransform()const;
+
+	void DrawPreviewAABB();
 	
 
 	// 共通部品
@@ -69,6 +77,13 @@ private:
 	int newTextureIndex_ = 0;//テクスチャ選択の初期化
 
 	int editBehaviorIndex_ = 0;
+
+	//プレビュー用
+	Line line_;
+	bool showPreviewAABB_ = false;
+	float previewDistance_ = 5.0f;
+	Vector3 previewScale_ = { 1.0f,1.0f,1.0f };
+
 
 };
 #endif // USE_IMGUI

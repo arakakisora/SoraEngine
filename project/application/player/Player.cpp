@@ -250,6 +250,7 @@ void Player::PlayerMove() {
 
 }
 
+
 void Player::PlayerCondition(const CollisionMapInfo& info)
 {
 	// 停止判定
@@ -279,8 +280,8 @@ Vector3 Player::NormalFromType(CollisionType type)
     static const std::array<Vector3, 4> normals{{
         /* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
         /* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
-        /* Right  */ Vector3{ -1.0f, 0.0f, 0.0f },
-        /* Left   */ Vector3{ 1.0f,  0.0f, 0.0f }
+        /* Left   */ Vector3{ 1.0f,  0.0f, 0.0f },
+        /* Right  */ Vector3{ -1.0f, 0.0f, 0.0f }
     }};
 
     const auto idx = static_cast<std::size_t>(type);

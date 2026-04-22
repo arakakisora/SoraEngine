@@ -279,8 +279,9 @@ void ParticleManager::Update()
 
 			if (particleGroup.loopTimer >= particleGroup.loopInterval) {
 
-				// カメラ位置に出す
-				EmitAtCamera(name);
+
+				EulerTransform previewTransform = editor_->MakePreviewTransform();
+				Emit(name, previewTransform);
 
 				particleGroup.loopTimer = 0.0f;
 			}
@@ -448,23 +449,7 @@ void ParticleManager::Emit(const std::string& name, const EulerTransform transfo
 
 }
 
-void ParticleManager::EmitAtCamera(const std::string& name)
-{
-	// グループ存在チェック
-	assert(particleGroups.contains(name));
 
-	// アクティブカメラから位置を取る
-	auto* camera = CameraManager::GetInstance()->GetActiveCamera();
-	EulerTransform t{};
-	t.scale = { 1.0f, 1.0f, 1.0f };
-	t.rotate = { 0.0f, 0.0f, 0.0f };
-	t.translate = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate; // 位置の取り方はエンジンに合わせて
-	float offsetDistance = 5.0f;
-	t.translate.z += offsetDistance; // カメラの前方にオフセット
-	// 既存の Emit をそのまま使う
-	Emit(name, t);
-
-}
 
 std::vector<VertexData> ParticleManager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {
