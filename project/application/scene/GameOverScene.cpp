@@ -66,7 +66,7 @@ void GameOverScene::Update()
 	// 回転処理だけ
 	EulerTransform tr = playerObj->GetTransform();
 
-	tr.rotate.y += 0.03f; // ← 回転速度（調整ポイント）
+	tr.rotate.y += 0.03f; 
 
 	playerObj->SetRotate(tr.rotate);
 

@@ -63,8 +63,7 @@ void Player::Initialize(const Vector3& position) {
 
 void Player::OnCollision(Collider* other)
 {
-    // データ駆動: レイヤーごとに sticky 時に致命扱いかをテーブルで管理
-    // Collider::Layer の列挙順に合わせる (Player, Enemy, Enemy2, PlayerBullet, EnemyBullet)
+   
     constexpr std::size_t LAYER_COUNT = 5;
     static constexpr std::array<bool, LAYER_COUNT> lethalWhenSticky{{
         /* Player       */ false,
@@ -275,17 +274,17 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 
 Vector3 Player::NormalFromType(CollisionType type)
 {
-    //CollisionType の順序 (Top, Bottom, Right, Left) に合わせたルックアップテーブル
-    static const std::array<Vector3, 4> normals{{
-        /* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
-        /* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
-        /* Right  */ Vector3{ -1.0f, 0.0f, 0.0f },
-        /* Left   */ Vector3{ 1.0f,  0.0f, 0.0f }
-    }};
+	//CollisionType の順序 (Top, Bottom, Right, Left) に合わせたルックアップテーブル
+	static const std::array<Vector3, 4> normals{ {
+			/* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
+			/* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
+			/* Left   */ Vector3{ 1.0f,  0.0f, 0.0f },
+			/* Right  */ Vector3{ -1.0f, 0.0f, 0.0f }
+		} };
 
-    const auto idx = static_cast<std::size_t>(type);
-    if (idx < normals.size()) return normals[idx];
-    return { 0.0f, 0.0f, 0.0f };
+	const auto idx = static_cast<std::size_t>(type);
+	if (idx < normals.size()) return normals[idx];
+	return { 0.0f, 0.0f, 0.0f };
 }
 
 void Player::Reflect(const CollisionMapInfo& info)
