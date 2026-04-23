@@ -83,11 +83,7 @@ void ParticleEditor::CreateModeIMGui()
 	DrawMeshSelector("Mesh", newMeshIndex_);
 	DrawTextureSelector("Texture", newTextureIndex_);
 
-	ImGui::SeparatorText("Preview");
-	ImGui::Checkbox("Show AABB", &showPreviewAABB_);
-	ImGui::DragFloat("Preview Distance", &previewDistance_, 0.1f, 0.1f, 50.0f);
-	ImGui::DragFloat3("Preview Scale", &previewScale_.x, 0.1f, 0.01f, 100.0f);
-	DrawPreviewAABB();
+	
 
 	// Preview Emit
 	if (ImGui::Button("Preview Emit")) {
@@ -184,9 +180,9 @@ void ParticleEditor::DrawPreviewAABB()
 
 	EulerTransform t = MakePreviewTransform();
 	Vector3 c = t.translate;
-	Vector3 h = t.scale * 0.5f;
+	Vector3 h = t.scale;
 
-	line_.DrawAABB(c, h, { 1.0f,1.0f,0.0f,1.0f });
+	line_.DrawAABBVector3(c, h.x, { 1.0f,1.0f,0.0f,1.0f });
 
 }
 
@@ -204,12 +200,31 @@ void ParticleEditor::BasicIMGui(const std::string& currentName)
 	if (ImGui::DragInt("Count", &count, 1, 1, 1000)) {
 		currentGroup.defaultCount = (uint32_t)std::max(count, 1);
 	}
+	//寿命無限のチェックボックス
+	ImGui::Checkbox("Infinite Lifetime", &currentGroup.isInfinite);
+	//寿命の編集UI。無限のときは編集不可にする
+	if (currentGroup.isInfinite) {
+		ImGui::BeginDisabled();
+	}
 	ImGui::DragFloat("Lifetime", &currentGroup.defaultLifetime, 0.1f, 0.1f, 10.0f);
+	if (currentGroup.isInfinite) {
+		ImGui::EndDisabled();
+	}
+
+	//色の編集UI
 	ImGui::ColorEdit4("Color", &currentGroup.defaultColor.x);
+	//ループのチェックボックス
 	ImGui::Checkbox("Loop", &currentGroup.isLoop);
 	if (currentGroup.isLoop) {
+		//ループ間隔の編集UI
 		ImGui::DragFloat("Loop Interval", &currentGroup.loopInterval, 0.01f, 0.05f, 10.0f);
 	}
+	//プレビュー用UI
+	ImGui::SeparatorText("Preview");
+	ImGui::Checkbox("Show AABB", &showPreviewAABB_);
+	ImGui::DragFloat("Preview Distance", &previewDistance_, 0.1f, 0.1f, 50.0f);
+	ImGui::DragFloat("Preview radius", &previewScale_.x, 0.1f, 0.01f, 100.0f);
+	DrawPreviewAABB();
 }
 
 void ParticleEditor::VertexTypeIMGui(const std::string& currentName)

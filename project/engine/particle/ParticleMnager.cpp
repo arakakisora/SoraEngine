@@ -153,10 +153,6 @@ void ParticleManager::LoadFromJson(const std::string& filepath)
 		if (texture.empty()) {
 			continue;
 		}
-
-
-
-
 		// ビヘイビアインスタンス生成
 		auto behavior = CreateBehaviorByName(behaviorType);
 		if (!behavior) {
@@ -167,6 +163,7 @@ void ParticleManager::LoadFromJson(const std::string& filepath)
 		CreateParticleGroup(id, fullTexturePath, verticesType, std::move(behavior));
 		particleGroups[id].defaultCount = e.value("defaultCount", 100);
 		particleGroups[id].defaultLifetime = e.value("defaultLifetime", 1.0f);
+		particleGroups[id].isInfinite = e.value("isInfiniteLifetime", false);
 
 		// 色
 		if (e.contains("color") && e["color"].is_array() && e["color"].size() == 4) {
@@ -178,7 +175,7 @@ void ParticleManager::LoadFromJson(const std::string& filepath)
 			};
 		}
 
-		
+
 
 	}
 
@@ -198,17 +195,13 @@ void ParticleManager::SaveToJson(const std::string& filepath)
 		std::string behaviorTypeStr = "Unknown";
 		if (dynamic_cast<ExplosionBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "Explosion";
-		}
-		else if (dynamic_cast<ChargeBehabiaor*>(group.behavior.get())) {
+		} else if (dynamic_cast<ChargeBehabiaor*>(group.behavior.get())) {
 			behaviorTypeStr = "Charge";
-		}
-		else if (dynamic_cast<ExhaustGasBehavior*>(group.behavior.get())) {
+		} else if (dynamic_cast<ExhaustGasBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "ExhaustGas";
-		}
-		else if (dynamic_cast<BarrierBreakBehavior*>(group.behavior.get())) {
+		} else if (dynamic_cast<BarrierBreakBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "BarrierBreak";
-		}
-		else if (dynamic_cast<BarrierRingBehavior*>(group.behavior.get())) {
+		} else if (dynamic_cast<BarrierRingBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "BarrierRing";
 		}
 		effectJson["behaviorType"] = behaviorTypeStr;
@@ -225,19 +218,23 @@ void ParticleManager::SaveToJson(const std::string& filepath)
 
 		// テクスチャのファイルパスを保存
 		effectJson["texture"] = std::filesystem::path(group.materialdata.textureFilePath).filename().string();
+		// カウント
 		effectJson["defaultCount"] = group.defaultCount;
+		//ライフム
 		effectJson["defaultLifetime"] = group.defaultLifetime;
-
+		effectJson["isInfiniteLifetime"] = group.isInfinite;// 無限寿命かどうか
+		// 色
 		effectJson["color"] = {
 			group.defaultColor.x,
 			group.defaultColor.y,
 			group.defaultColor.z,
 			group.defaultColor.w
 		};
-
+		// ループ設定
 		effectJson["isLoop"] = group.isLoop;
+		//ループ間隔
 		effectJson["loopInterval"] = group.loopInterval;
-		
+		// JSONの配列に追加
 		root["effects"].push_back(effectJson);
 
 	}
@@ -289,10 +286,11 @@ void ParticleManager::Update()
 
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
-			//寿命に達していたらグループから外す
-			if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
-				particleIterator = particleGroup.particles.erase(particleIterator);
-				continue;
+			if (!(*particleIterator).isInfiniteLifetime) {
+				if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
+					particleIterator = particleGroup.particles.erase(particleIterator);
+					continue;
+				}
 			}
 			float alpha1 = 0.5;
 
@@ -440,9 +438,16 @@ void ParticleManager::Emit(const std::string& name, const EulerTransform transfo
 	auto& group = particleGroups.at(name);
 
 	for (uint32_t i = 0; i < group.defaultCount; ++i) {
-		Particle particle = group.behavior->Create(
-			randomEngine, transform, group.defaultLifetime);
+		//Particleを作成
+		float lifetime = group.defaultLifetime;
+		if (group.isInfinite) {
+			lifetime = 999999.0f; // ほぼ無限
+		}
 
+		Particle particle = group.behavior->Create(
+			randomEngine, transform, lifetime);
+	
+		particle.isInfiniteLifetime = group.isInfinite;
 		particle.color = group.defaultColor;
 		group.particles.push_back(particle);
 	}

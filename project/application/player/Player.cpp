@@ -775,6 +775,7 @@ void Player::PlayerParticle()
 	bool isMoving =true;
 
 	const float dt = 1.0f / 60.0f; 
+	ParticleManager::GetInstance()->Emit("barriering", object3D_->GetTransform());
 
 	if (isMoving) {
 		exhaustTimer_ += dt;
@@ -797,8 +798,9 @@ void Player::PlayerParticle()
 			exhaustEmitter_->SetPosition(smokeTransform.translate);
 			exhaustEmitter_->Emit();
 
-			//ParticleManager::GetInstance()->Emit("barriering", object3D_->GetTransform());
+			
 		}
+		
 	} else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;

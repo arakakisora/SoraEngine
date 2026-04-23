@@ -23,13 +23,13 @@ enum class VerticesType
 
 struct Particle {
 
-	EulerTransform transform;
-	Vector3 Velocity;
-	float lifetime;
-	float currentTime;
-	Vector3 center; // ← 発生中心を記録
-
-	Vector4 color = { 0,0,0 };
+	EulerTransform transform;//スケール、回転、平行移動
+	Vector3 Velocity;//速度
+	float lifetime;//寿命
+	bool isInfiniteLifetime;//寿命無限フラグ
+	float currentTime;//経過時間
+	Vector3 center; //中心位置
+	Vector4 color;//色
 
 
 };
@@ -73,19 +73,23 @@ class ParticleManager
 		//std::string textureFilePath_;
 		uint32_t defaultCount;
 		float defaultLifetime;
+
+		bool isInfinite = false;
+
 		VerticesType verticesType = VerticesType::Quad;//頂点の種類
 
 		Vector4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		bool isLoop = false;
 		float loopInterval = 1.0f;
 		float loopTimer = 0.0f;
-		
+
+
+
 
 	};
 public:
 
 	static ParticleManager* GetInstance();
-
 
 
 private:
@@ -160,7 +164,7 @@ public:
 	//頂点タイプ設定
 	void SetGroupVerticesType(const std::string& groupName, VerticesType verticesType);
 
-	
+
 	/// <summary>
 	// Behavior設定（明示的に設定する用）
 	/// </summary>
@@ -201,10 +205,10 @@ private:
 
 
 
-	
+
 
 #ifdef USE_IMGUI
-	
+
 	std::unique_ptr<ParticleEditor> editor_;
 #endif
 

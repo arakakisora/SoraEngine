@@ -152,7 +152,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\GraphicsPipeline.cpp" />
     <ClCompile Include="engine\Line\Line.cpp" />
     <ClCompile Include="engine\Line\LineCommon.cpp" />
-    <ClCompile Include="application\particle\IParticleBehavior.cpp" />
+    <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\fade\FadeManager.cpp" />
     <ClCompile Include="application\goal\Goal.cpp" />
@@ -373,7 +373,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\base\OfscreenRenderManager.h" />
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
-    <ClInclude Include="application\particle\IParticleBehavior.h" />
+    <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
