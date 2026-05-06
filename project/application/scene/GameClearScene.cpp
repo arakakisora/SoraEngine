@@ -37,7 +37,7 @@ void GameClearScene::Initialize()
 	basePos_ = { 0.0f, -0.7f, 11.0f };
 	playerObj->SetTranslate(basePos_);
 	playerObj->SetRotate({ 0.0f, baseRotateY_, 0.0f });
-	playerObj->SetScale({ 0.5f, 0.5f, 0.5f });
+	playerObj->SetScale({ 1.0f, 1.0f, 1.0f });
 	playerObj->SetDirectionalLightDirection({ -1.0f,1.0f, -1.0f });
 
 	clearAnimTimer_ = 0.0f;

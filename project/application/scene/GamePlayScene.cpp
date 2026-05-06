@@ -96,19 +96,14 @@ void GamePlayScene::Initialize()
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
 	object3D2nd->SetModel("plane.obj");
 
-	//フォローカメラ設定
-	/*CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 8, 6, -20 });
-	CameraManager::GetInstance()->GetCamera("maincam")->SetRotate({ 0.0f,0,0 });
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBoundsEnabled(false);
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBounds({ 4.0f, 5.0f, -100.0f }, { 47.0f, 20.0f, 50.0f });*/
+	
 
 	//ゴールの初期化
 	goal = std::make_unique<Goal>();
 	goal->Initialize(mapChipField_.get(), player.get());
 
-	// ControlGuide の初期化
-	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
+	//// ControlGuide の初期化
+	//ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
 
 	//ポーズメニュー
 	pauseMenu = std::make_unique<PauseMenu>();
@@ -261,6 +256,13 @@ void GamePlayScene::Update()
 	// 固定 dt
 	const float dt = 1.0f / 60.0f;
 
+	if (!isPaused &&
+		Input::GetInstance()->TriggerKey(DIK_R)) {
+
+		ResetStage();
+	
+	}
+
 	// ゲームロジックはポーズ時に止める
 	if (!isPaused) {
 		UpdateGameLogic(dt);
@@ -316,8 +318,8 @@ void GamePlayScene::Draw()
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (!pauseMenu->IsPaused()) {
-		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
-		ControlGuide::GetInstance()->Render();
+		//// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+		//ControlGuide::GetInstance()->Render();
 	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
@@ -369,7 +371,7 @@ void GamePlayScene::Imguidebug()
 	}
 
 #ifdef USE_IMGUI
-	ControlGuide::GetInstance()->DebugImGui();
+	//ControlGuide::GetInstance()->DebugImGui();
 
 	ImGui::Begin("Camera Menu");
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -401,6 +403,7 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("axis.obj");
 	ModelManager::GetInstance()->LoadModel("cube.obj");
 	ModelManager::GetInstance()->LoadModel("player.obj");
+
 	ModelManager::GetInstance()->LoadModel("blokc.obj");
 	ModelManager::GetInstance()->LoadModel("skyplane.obj");
 	ModelManager::GetInstance()->LoadModel("enemy.obj");
@@ -410,5 +413,52 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("gate.obj");
 	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
 	ModelManager::GetInstance()->LoadModel("damageblock.obj");
+}
+
+void GamePlayScene::ResetStage()
+{
+
+	const int stageIndex = SceneManager::GetInstance()->GetStageIndex();
+	const int kAvailableMaps = 12;
+
+	std::string stagePath;
+	if (stageIndex >= 0 && stageIndex < kAvailableMaps) {
+		stagePath = "Resources/Mapdata/Map" + std::to_string(stageIndex + 1) + ".csv";
+	} else {
+		stagePath = "Resources/Mapdata/Map1.csv";
+	}
+
+	// マップをCSVから戻す
+	mapChipField_->LoadMapChipCsv(stagePath);
+
+	// ブロックを作り直す
+	generateBlock_.Initialize(mapChipField_.get());
+	generateBlock_.GenerateObject3D();
+
+	// プレイヤースポーン取得
+	Vector3 playerPosition{};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
+	if (!spawnPositions.empty()) {
+		playerPosition = spawnPositions.front();
+	}
+
+	player = std::make_unique<Player>();
+	player->SetMapChipField(mapChipField_.get());
+	player->Initialize(playerPosition);
+
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Initialize(mapChipField_.get());
+
+	goal = std::make_unique<Goal>();
+	goal->Initialize(mapChipField_.get(), player.get());
+
+	gameOverEffect_ = std::make_unique<GameOverEffect>();
+	gameOverEffect_->Initialize(player->GetObject3D());
+
+	isStageStartPlaying_ = false;
+	isCameraBlending_ = false;
+
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13, 6.85f, -32.0f });
+
 }
 

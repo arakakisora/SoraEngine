@@ -47,6 +47,7 @@ void StageEndEffect::Update(float dt) {
 		tr.translate.x = basePos_.x;
 		tr.translate.y = basePos_.y;
 		tr.translate.z = basePos_.z + (playerEndPos_.z - basePos_.z) * u;
+		tr.rotate = { 0.0f, 3.0f, 0.0f };
 		player_->SetTransform(tr);
 
 		if (t >= 1.0f) {

@@ -12,13 +12,13 @@ public:
 #endif
 
 private:
-    Vector3 baseScale_ = { 2.0f, 2.0f, 1.0f };
+    Vector3 baseScale_ = { 0.5f, 0.5f, 0.5f };
     Vector3 baseRotate_ = { 0.0f, 0.0f, 0.0f };
 
-    float pulseSpeed_ = 8.0f;     // じりじり感
+    float pulseSpeed_ = 0;     // じりじり感
     float pulseWidth_ = 0.12f;    // 脈動幅
     float alphaMin_ = 0.55f;
     float alphaMax_ = 0.95f;
-    float rotateSpeed_ = 1.2f;    // じわっと回る
-    float uvScrollSpeed_ = 0.8f;  // テクスチャ流し
+    float rotateSpeed_ = 0;    // じわっと回る
+    float uvScrollSpeed_ = 0.5f;  // テクスチャ流し
 };

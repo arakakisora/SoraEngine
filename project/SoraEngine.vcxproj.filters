@@ -101,6 +101,7 @@
     <ClCompile Include="application\particle\PlayerpaticleBehavior.cpp" />
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
+    <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\enemy\Enemy.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="application\particle\PlayerpaticleBehavior.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
+    <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />
