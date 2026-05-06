@@ -775,7 +775,7 @@ void Player::PlayerParticle()
 	bool isMoving =true;
 
 	const float dt = 1.0f / 60.0f; 
-	ParticleManager::GetInstance()->Emit("barriering", object3D_->GetTransform());
+	//ParticleManager::GetInstance()->Emit("barriering", object3D_->GetTransform());
 
 	if (isMoving) {
 		exhaustTimer_ += dt;

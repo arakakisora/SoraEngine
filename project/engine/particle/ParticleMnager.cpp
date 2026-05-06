@@ -277,8 +277,8 @@ void ParticleManager::Update()
 			if (particleGroup.loopTimer >= particleGroup.loopInterval) {
 
 
-				EulerTransform previewTransform = editor_->MakePreviewTransform();
-				Emit(name, previewTransform);
+				//EulerTransform previewTransform = editor_->MakePreviewTransform();
+				//Emit(name, previewTransform);
 
 				particleGroup.loopTimer = 0.0f;
 			}

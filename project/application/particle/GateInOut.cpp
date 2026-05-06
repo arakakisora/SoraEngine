@@ -58,19 +58,10 @@ void GateInOut::StartOut(float durationSec) {
     // OUT開始は「開いた状態」から
     ApplyPositionsFromCloseAmount(0.0f);
 }
-
-// closeAmount01: 0=完全に開いてる, 1=完全に閉じてる
 void GateInOut::ApplyPositionsFromCloseAmount(float closeAmount01) {
     closeAmount01 = std::clamp(closeAmount01, 0.0f, 1.0f);
 
-    // あなたの Sprite が「左上基準」想定で配置
-    // 開いてる時：
-    //  left  = -gateW_
-    //  right = screenW_
-    //
-    // 閉じてる時：
-    //  left  = screenW_/2 - gateW_
-    //  right = screenW_/2
+
     const float leftOpenX = -gateW_;
     const float rightOpenX = screenW_;
 
@@ -108,17 +99,17 @@ void GateInOut::Update(float dt) {
         finished_ = true;
 
         if (lastWasOut_) {
-            // ★OUT完了なら閉じたまま保持
+            
             ApplyPositionsFromCloseAmount(1.0f);
             holdClosed_ = true;
         }
         else {
-            // IN完了なら開いた状態で保持しなくてOK
+           
             ApplyPositionsFromCloseAmount(0.0f);
             holdClosed_ = false;
         }
 
-        mode_ = Mode::kNone; // “再生”は終わり
+        mode_ = Mode::kNone; 
     }
 }
 

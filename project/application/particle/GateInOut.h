@@ -6,9 +6,6 @@
 #include "Sprite.h"
 #include "SpriteCommon.h"
 
-// nextScene切替なし：ただの「被せ演出」
-// - IN  : 画面中央から開いていく（開始は閉じた状態）
-// - OUT : 画面左右から閉じていく（開始は開いた状態）
 class GateInOut {
 public:
     enum class Mode { kNone, kIn, kOut };
@@ -61,7 +58,7 @@ private:
     float duration_ = 0.5f;
 
     bool finished_ = true;
-    float progress01_ = 0.0f; // 0→1
+    float progress01_ = 0.0f; 
 
     bool holdClosed_ = false;
     bool lastWasOut_ = false;
