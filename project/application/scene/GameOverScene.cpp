@@ -36,7 +36,7 @@ void GameOverScene::Initialize()
 	// 画面中央に配置
 	playerObj->SetTranslate({ 0.0f, -0.7f, 11.0f });
 	playerObj->SetRotate({ 2.6f, 0.0f, 0.0f });
-	playerObj->SetScale({ 0.5f, 0.5f, 0.5f });
+	playerObj->SetScale({ 2.0f, 2.0f, 2.0f });
 
 
 	/*ParticleManager::GetInstance()->CreateParticleGroup(

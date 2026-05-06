@@ -150,6 +150,10 @@ public:
 	void Emit(const std::string& name, const EulerTransform transform);
 	//void Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime);
 
+
+	void EmitFollowOne(const std::string& name, const EulerTransform& transform);
+	void StopFollow(const std::string& name);
+
 	//リングの頂点情報を作成
 	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 32, float outerRadius = 1.0f, float innerRadius = 0.2f);
 	//シリンダーの頂点情報を作成

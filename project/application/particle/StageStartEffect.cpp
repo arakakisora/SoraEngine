@@ -42,6 +42,7 @@ void StageStartEffect::Begin() {
 
     auto tr = player_->GetTransform();
     tr.translate = playerStartPos_;
+
     player_->SetTransform(tr);
 }
 

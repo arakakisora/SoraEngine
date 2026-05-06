@@ -277,8 +277,8 @@ void ParticleManager::Update()
 			if (particleGroup.loopTimer >= particleGroup.loopInterval) {
 
 
-				EulerTransform previewTransform = editor_->MakePreviewTransform();
-				Emit(name, previewTransform);
+				/*EulerTransform previewTransform = editor_->MakePreviewTransform();
+				Emit(name, previewTransform);*/
 
 				particleGroup.loopTimer = 0.0f;
 			}
@@ -441,7 +441,7 @@ void ParticleManager::Emit(const std::string& name, const EulerTransform transfo
 		//Particleを作成
 		float lifetime = group.defaultLifetime;
 		if (group.isInfinite) {
-			lifetime = 999999.0f; // ほぼ無限
+			lifetime = 999999.0f; 
 		}
 
 		Particle particle = group.behavior->Create(
@@ -451,6 +451,40 @@ void ParticleManager::Emit(const std::string& name, const EulerTransform transfo
 		particle.color = group.defaultColor;
 		group.particles.push_back(particle);
 	}
+
+}
+
+void ParticleManager::EmitFollowOne(const std::string& name, const EulerTransform& transform)
+{
+
+
+	assert(particleGroups.contains(name));
+
+	auto& group = particleGroups.at(name);
+
+	// まだ無ければ1個だけ作る
+	if (group.particles.empty()) {
+		float lifetime = group.isInfinite ? 999999.0f : group.defaultLifetime;
+
+		Particle particle = group.behavior->Create(randomEngine, transform, lifetime);
+		particle.isInfiniteLifetime = true; // 追従中は消えない
+		particle.color = group.defaultColor;
+
+		group.particles.push_back(particle);
+	}
+
+	// 既存の1個をプレイヤー位置へ更新
+	Particle& p = group.particles.front();
+	p.transform.translate = transform.translate;
+	p.currentTime = 0.0f;
+}
+
+void ParticleManager::StopFollow(const std::string& name)
+{
+	if (!particleGroups.contains(name)) return;
+
+	auto& group = particleGroups.at(name);
+	group.particles.clear();
 
 }
 

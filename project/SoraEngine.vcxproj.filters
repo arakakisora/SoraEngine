@@ -66,7 +66,7 @@
     <ClCompile Include="application\goal\Goal.cpp" />
     <ClCompile Include="application\particle\GameOverEffect.cpp" />
     <ClCompile Include="application\map\GenerateBlock.cpp" />
-    <ClCompile Include="GateInOut.cpp" />
+    <ClCompile Include="application\particle\GateInOut.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -95,12 +95,13 @@
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
     <ClCompile Include="engine\particle\ParticleEditor.cpp" />
     <ClCompile Include="engine\particle\ParticleBehaviorFactory.cpp" />
-    <ClCompile Include="BarrierBreakBehavior.cpp" />
-    <ClCompile Include="BarrierRingBehavior.cpp" />
+    <ClCompile Include="application\particle\BarrierBreakBehavior.cpp" />
+    <ClCompile Include="application\particle\BarrierRingBehavior.cpp" />
     <ClCompile Include="application\particle\AttackBehavior.cpp" />
     <ClCompile Include="application\particle\PlayerpaticleBehavior.cpp" />
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
+    <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\enemy\Enemy.h" />
@@ -172,15 +173,16 @@
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
-    <ClInclude Include="GateInOut.h" />
+    <ClInclude Include="application\particle\GateInOut.h" />
     <ClInclude Include="engine\particle\ParticleEditor.h" />
     <ClInclude Include="engine\particle\ParticleBehaviorFactory.h" />
-    <ClInclude Include="BarrierBreakBehavior.h" />
-    <ClInclude Include="BarrierRingBehavior.h" />
+    <ClInclude Include="application\particle\BarrierBreakBehavior.h" />
+    <ClInclude Include="application\particle\BarrierRingBehavior.h" />
     <ClInclude Include="application\particle\AttackBehavior.h" />
     <ClInclude Include="application\particle\PlayerpaticleBehavior.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
+    <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />

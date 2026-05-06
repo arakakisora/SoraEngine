@@ -40,7 +40,7 @@ void TitleScene::Initialize() {
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player.obj");
-	object3D_->SetScale(Vector3{ 0.25f, 0.25f, 0.25f });
+	object3D_->SetScale(Vector3{ 1.0f, 1.0f, 1.0f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f, -1.82f, -4.77f });
