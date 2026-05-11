@@ -68,6 +68,9 @@ public:
 	/// </summary>
 	void Road();
 
+	//ステージreset
+	void ResetStage();
+
 private:
 	// ゲームのロジック更新（ポーズ時は呼ばない）
 	void UpdateGameLogic(float dt);

@@ -144,7 +144,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				if (!obj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("blokc.obj");
+					newObj->SetModel("block");
 					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
 					newObj->SetLighting(true);
 					newObj->SetDirectionalLightEnable(true);
@@ -164,7 +164,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				if (!unbreakableObj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("unbreakableBlokc.obj");
+					newObj->SetModel("unbreakableBlokc");
 					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
 					newObj->SetLighting(true);
 					newObj->SetDirectionalLightEnable(true);
@@ -183,7 +183,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				if (!damageBlockObj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("damageblock.obj");
+					newObj->SetModel("damageblock");
 					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
 					newObj->SetLighting(true);
 					newObj->SetDirectionalLightEnable(true);

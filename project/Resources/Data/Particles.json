@@ -1,0 +1,89 @@
+{
+    "effects": [
+        {
+            "behaviorType": "Explosion",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "defaultCount": 100,
+            "defaultLifetime": 1.0,
+            "id": "enemydeath",
+            "isInfiniteLifetime": false,
+            "isLoop": false,
+            "loopInterval": 1.0,
+            "mesh": "Quad",
+            "texture": "honoo.png"
+        },
+        {
+            "behaviorType": "ExhaustGas",
+            "color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "defaultCount": 100,
+            "defaultLifetime": 1.0,
+            "id": "dash_smoke",
+            "isInfiniteLifetime": false,
+            "isLoop": false,
+            "loopInterval": 1.0,
+            "mesh": "Quad",
+            "texture": "smoke.png"
+        },
+        {
+            "behaviorType": "BarrierBreak",
+            "color": [
+                0.9117647409439087,
+                1.0,
+                0.0,
+                1.0
+            ],
+            "defaultCount": 100,
+            "defaultLifetime": 1.0,
+            "id": "BarrierBreak",
+            "isInfiniteLifetime": false,
+            "isLoop": false,
+            "loopInterval": 1.0,
+            "mesh": "Triangle",
+            "texture": "gradationLine.png"
+        },
+        {
+            "behaviorType": "BarrierRing",
+            "color": [
+                0.970588207244873,
+                1.0,
+                0.0,
+                1.0
+            ],
+            "defaultCount": 1,
+            "defaultLifetime": 1.0,
+            "id": "barriering",
+            "isInfiniteLifetime": true,
+            "isLoop": false,
+            "loopInterval": 1.0,
+            "mesh": "Ring",
+            "texture": "gradationLine.png"
+        },
+        {
+            "behaviorType": "BarrierBreak",
+            "color": [
+                1.0,
+                0.9705882668495178,
+                0.0,
+                1.0
+            ],
+            "defaultCount": 100,
+            "defaultLifetime": 2.0,
+            "id": "clear",
+            "isInfiniteLifetime": false,
+            "isLoop": false,
+            "loopInterval": 1.0,
+            "mesh": "Triangle",
+            "texture": "gradationLine.png"
+        }
+    ]
+}

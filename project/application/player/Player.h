@@ -310,6 +310,13 @@ public:
 	// プレイヤーステート取得
 	/// </summary>
 	PlayerState GetPlayerState() const { return playerState_; }
+
+
+	/// <summary>
+	/// プレイヤーの発射アニメーション
+	/// </summary>
+	void PlayerShotAnimation();
+
 	
 	///////////////======setter======///////////////
 	/// <summary>
@@ -343,7 +350,10 @@ private:
 	AABB aabb_;// 当たり判定用AABB
 	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
 	
-
+	//Animation
+	Vector3 shotAnimationRotate_ = {};//発射アニメーションの回転
+	float shotAnimationTimer_ = 0.0f; //発射アニメーションのタイマー
+	bool isShotAnimation_ = false; //発射アニメーション中かどうか
 
 	//振り向き
 	float turnTimer_ = 0.0f;                    // 振り向き時間
@@ -381,4 +391,5 @@ private:
 	Vector3 shotVel_{};
 	bool hasShotVel_ = false;
 	bool isStopped_ = false;
+	bool isBarrierActive_ = false;
 };

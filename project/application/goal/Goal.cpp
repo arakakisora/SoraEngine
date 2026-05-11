@@ -11,7 +11,7 @@ void Goal::Initialize(MapChipField* map, Player* paleyr)
 	// ゴールの生成（unique_ptr で所有）
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("goal.obj");
+	object3D_->SetModel("goal");
 	// スケールの設定
 	goalPosition_ = map->GetGoalPosition();
 	object3D_->SetTranslate(goalPosition_);

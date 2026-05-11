@@ -29,7 +29,8 @@ void Framework::Initialize()
 	//Audio初期化
 	Audio::GetInstance()->Initialize();
 	//パーティクル
-	ParticleMnager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
+	ParticleManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
+	ParticleManager::GetInstance()->LoadFromJson("Resources/Data/Particles.json");
 	//camera初期化
 	CameraManager::GetInstance()->Initialize();
 
@@ -73,7 +74,7 @@ void Framework::Finalize()
 	//カメラの解放
 	CameraManager::GetInstance()->Finalize();
 	//パーティクルの解放
-	ParticleMnager::GetInstance()->Finalize();
+	ParticleManager::GetInstance()->Finalize();
 
 	SkyBoxCommon::GetInstance()->Finalize();
 
@@ -100,7 +101,7 @@ void Framework::Update()
 	}
 
 	Input::GetInstance()->Update();
-	ParticleMnager::GetInstance()->Update();
+	ParticleManager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 	LineCommon::GetInstance()->Update();
 	

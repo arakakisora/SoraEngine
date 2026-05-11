@@ -25,10 +25,10 @@ void GameOverScene::Initialize()
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
-	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("player");
 	playerObj = std::make_unique<Object3D>();
 	playerObj->Initialize(Object3DCommon::GetInstance());
-	playerObj->SetModel("player.obj");
+	playerObj->SetModel("player");
 	playerObj->SetLighting(true);
 	playerObj->SetEnableLighting(true);
 	playerObj->SetDirectionalLightEnable(true);
@@ -36,15 +36,15 @@ void GameOverScene::Initialize()
 	// 画面中央に配置
 	playerObj->SetTranslate({ 0.0f, -0.7f, 11.0f });
 	playerObj->SetRotate({ 2.6f, 0.0f, 0.0f });
-	playerObj->SetScale({ 0.5f, 0.5f, 0.5f });
+	playerObj->SetScale({ 2.0f, 2.0f, 2.0f });
 
 
-	ParticleMnager::GetInstance()->CreateParticleGroup(
+	/*ParticleManager::GetInstance()->CreateParticleGroup(
 		"enemydeath",
 		"Resources/honoo.png",
 		VerticesType::Quad,
 		std::make_unique<ExplosionBehavior>()
-	);
+	);*/
 }
 
 void GameOverScene::Finalize()
@@ -66,7 +66,7 @@ void GameOverScene::Update()
 	// 回転処理だけ
 	EulerTransform tr = playerObj->GetTransform();
 
-	tr.rotate.y += 0.03f; // ← 回転速度（調整ポイント）
+	tr.rotate.y += 0.03f; 
 
 	playerObj->SetRotate(tr.rotate);
 
@@ -95,7 +95,7 @@ void GameOverScene::Update()
 		smokeTransform.translate.x -= 0.2f;
 
 		for (int i = 0; i < 3; i++) {
-			ParticleMnager::GetInstance()->Emit("enemydeath", smokeTransform);
+			ParticleManager::GetInstance()->Emit("enemydeath", smokeTransform);
 		}
 
 	}
@@ -148,7 +148,7 @@ void GameOverScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 	playerObj->Draw();
 
-	ParticleMnager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 #pragma endregion
 
 

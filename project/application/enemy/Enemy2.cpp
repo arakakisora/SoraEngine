@@ -21,7 +21,7 @@ void Enemy2::Initialize() {
 			// Object3Dの生成と初期化
 	object3D_ = std::make_unique<Object3D>();;
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("enemy.obj");
+	object3D_->SetModel("enemy");
 
 	//エネミーの初期位置
 	object3D_->SetTranslate(position_);
@@ -35,10 +35,10 @@ void Enemy2::Initialize() {
 	defaultColor_ = object3D_->GetColor(); // 初期色を保存
 
 	//deatheffect
-	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
-	lifeTime = 1.0f;//パーティクルの寿命
-	currentTime = 1.0f;//現在の時間
-	maxParticles = 100;//最大パーティクル数
+	//ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	//lifeTime = 1.0f;//パーティクルの寿命
+	//currentTime = 1.0f;//現在の時間
+	//maxParticles = 100;//最大パーティクル数
 	deatheEffect= std::make_unique< ParticleEmitter>(effectPosition_, lifeTime, currentTime, maxParticles, "enemydeath");
 
 	// Hit/Death コンポーネント初期化（初期HP = 3）

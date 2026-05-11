@@ -21,7 +21,7 @@ void Enemy::Initialize() {
 			// Object3Dの生成と初期化
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("enemy.obj");
+	object3D_->SetModel("enemy");
 	//エネミーの初期位置
 	object3D_->SetTranslate(position_);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
@@ -35,7 +35,7 @@ void Enemy::Initialize() {
 
 
 	//deatheffect
-	ParticleMnager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	//ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
 	lifeTime = 1.0f;//パーティクルの寿命
 	currentTime = 1.0f;//現在の時間
 	maxParticles = 100;//最大パーティクル数

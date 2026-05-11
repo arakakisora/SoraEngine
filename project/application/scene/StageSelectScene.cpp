@@ -26,26 +26,26 @@ void StageSelectScene::Initialize()
 	int stageIndex = SceneManager::GetInstance()->GetStageIndex();
 	currentIndex_ = stageIndex;	// 現在のステージを設定	 (ステージ1)
 
-	ModelManager::GetInstance()->LoadModel("plane.obj");
+	ModelManager::GetInstance()->LoadModel("plane");
 
 	//背景
-	ModelManager::GetInstance()->LoadModel("stage1.obj");
-	ModelManager::GetInstance()->LoadModel("stage2.obj");
-	ModelManager::GetInstance()->LoadModel("stage3.obj");
-	ModelManager::GetInstance()->LoadModel("stage4.obj");
+	ModelManager::GetInstance()->LoadModel("stage1");
+	ModelManager::GetInstance()->LoadModel("stage2");
+	ModelManager::GetInstance()->LoadModel("stage3");
+	ModelManager::GetInstance()->LoadModel("stage4");
 
-	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("player");
 	playerobj = std::make_unique<Object3D>();
 	playerobj->Initialize(Object3DCommon::GetInstance());
-	playerobj->SetModel("player.obj");
+	playerobj->SetModel("player");
 	playerobj->SetScale({ 0.25f,0.25f,0.25f });
 
 
 	std::vector<std::string> stageModels = {
-	"stage1.obj",
-	"stage2.obj",
-	"stage3.obj",
-	"stage4.obj"
+	"stage1",
+	"stage2",
+	"stage3",
+	"stage4"
 	// 必要ならさらに追加
 	};
 
@@ -60,7 +60,7 @@ void StageSelectScene::Initialize()
 			stage.object->SetModel(stageModels[i]);
 		} else {
 			// モデルが足りない場合はデフォルトを入れる
-			stage.object->SetModel("stage1.obj");
+			stage.object->SetModel("stage1");
 		}
 		stage.object->SetEnableLighting(true);
 

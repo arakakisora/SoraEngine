@@ -15,8 +15,8 @@
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
 	// モデル読み込み（ModelManager は単一インスタンス）
-	ModelManager::GetInstance()->LoadModel("player.obj");
-	ModelManager::GetInstance()->LoadModel("title.obj"); // タイトルモデル
+	ModelManager::GetInstance()->LoadModel("player");
+	ModelManager::GetInstance()->LoadModel("title"); // タイトルモデル
 
 	// フェードの初期化（白）
 	fadeManager_.Initialize("Resources/white.png");
@@ -39,8 +39,8 @@ void TitleScene::Initialize() {
 	// プレイヤー Object3D を生成してセットアップ
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("player.obj");
-	object3D_->SetScale(Vector3{ 0.25f, 0.25f, 0.25f });
+	object3D_->SetModel("player");
+	object3D_->SetScale(Vector3{ 1.0f, 1.0f, 1.0f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f, -1.82f, -4.77f });
@@ -49,7 +49,7 @@ void TitleScene::Initialize() {
 	// タイトルモデル生成・配置
 	titleObj_ = std::make_unique<Object3D>();
 	titleObj_->Initialize(Object3DCommon::GetInstance());
-	titleObj_->SetModel("title.obj");
+	titleObj_->SetModel("title");
 	titleObj_->SetLighting(false);
 	titleObj_->SetRotate({ 0, kYawFront, 0 });
 
@@ -72,12 +72,12 @@ void TitleScene::Initialize() {
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;
 	// プレイヤーパーティクル
-	ParticleMnager::GetInstance()->CreateParticleGroup(
-		"dash_smoke",
-		"Resources/smoke.png", // 使いたいテクスチャ
-		VerticesType::Quad,
-		std::make_unique<ExhaustGasBehavior>()
-	);
+	//ParticleManager::GetInstance()->CreateParticleGroup(
+	//	"dash_smoke",
+	//	"Resources/ParticleTexture/smoke.png", // 使いたいテクスチャ
+	//	VerticesType::Quad,
+	//	std::make_unique<ExhaustGasBehavior>()
+	//);
 }
 
 // 終了処理：CameraManager から削除し、unique_ptr が破棄してメモリ解放
@@ -271,7 +271,7 @@ void TitleScene::Draw() {
 	if (titleObj_) titleObj_->Draw();
 	if (object3D_) object3D_->Draw();
 
-	ParticleMnager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (titleSprite_) titleSprite_->Draw();
@@ -302,9 +302,9 @@ void TitleScene::PlayerParticle()
 		else {
 			smokeTransform.translate.x += 0.15f;
 		}
-
+		
 		// 1回に2粒くらい
-		ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform);
+		ParticleManager::GetInstance()->Emit("dash_smoke", smokeTransform);
 	}
 
 }

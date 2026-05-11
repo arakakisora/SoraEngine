@@ -23,13 +23,13 @@ enum class VerticesType
 
 struct Particle {
 
-	EulerTransform transform;
-	Vector3 Velocity;
-	float lifetime;
-	float currentTime;
-	Vector3 center; // ← 発生中心を記録
-
-	Vector4 color = { 0,0,0 };
+	EulerTransform transform;//スケール、回転、平行移動
+	Vector3 Velocity;//速度
+	float lifetime;//寿命
+	bool isInfiniteLifetime;//寿命無限フラグ
+	float currentTime;//経過時間
+	Vector3 center; //中心位置
+	Vector4 color;//色
 
 
 };
@@ -43,7 +43,7 @@ struct ParticleForGPU
 };
 
 class ParticleEditor;
-class ParticleMnager
+class ParticleManager
 {
 	friend class ParticleEditor;
 
@@ -73,22 +73,32 @@ class ParticleMnager
 		//std::string textureFilePath_;
 		uint32_t defaultCount;
 		float defaultLifetime;
+
+		bool isInfinite = false;
+
 		VerticesType verticesType = VerticesType::Quad;//頂点の種類
+
+		Vector4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		bool isLoop = false;
+		float loopInterval = 1.0f;
+		float loopTimer = 0.0f;
+
+
+
 
 	};
 public:
 
-	static ParticleMnager* GetInstance();
-
+	static ParticleManager* GetInstance();
 
 
 private:
 	// コンストラクタをプライベートにする
-	ParticleMnager() = default;
-	~ParticleMnager() = default;
+	ParticleManager() = default;
+	~ParticleManager() = default;
 	// コピーコンストラクタと代入演算子を削除する
-	ParticleMnager(const ParticleMnager&) = delete;
-	ParticleMnager& operator=(const ParticleMnager&) = delete;
+	ParticleManager(const ParticleManager&) = delete;
+	ParticleManager& operator=(const ParticleManager&) = delete;
 
 public:
 
@@ -105,6 +115,11 @@ public:
 	/// </summary>
 	/// <param name="filepath"></param>
 	void LoadFromJson(const std::string& filepath);
+	/// <summary>
+	/// JSONファイルにパーティクル設定を保存
+	/// </summary>
+	/// <param name="filepath"></param>
+	void SaveToJson(const std::string& filepath);
 	/// <summary>
 	/// 終了処理
 	///< / summary>
@@ -134,7 +149,10 @@ public:
 	/// <param name="lifetime"></param>
 	void Emit(const std::string& name, const EulerTransform transform);
 	//void Emit(const std::string& name, const EulerTransform transform, uint32_t count, float lifetime);
-	void EmitAtCamera(const std::string& name);
+
+
+	void EmitFollowOne(const std::string& name, const EulerTransform& transform);
+	void StopFollow(const std::string& name);
 
 	//リングの頂点情報を作成
 	std::vector<VertexData> MakeRingVertices(uint32_t RingDivide = 32, float outerRadius = 1.0f, float innerRadius = 0.2f);
@@ -150,7 +168,7 @@ public:
 	//頂点タイプ設定
 	void SetGroupVerticesType(const std::string& groupName, VerticesType verticesType);
 
-	
+
 	/// <summary>
 	// Behavior設定（明示的に設定する用）
 	/// </summary>
@@ -164,10 +182,9 @@ private:
 
 
 	//インスタンス
-	static ParticleMnager* instance_;
+	static ParticleManager* instance_;
 	DirectXCommon* dxCommon_ = nullptr;
 	SrvManager* srvManager_ = nullptr;
-
 
 	std::unique_ptr<GraphicsPipeline> graphicsPipeline_;
 
@@ -190,10 +207,12 @@ private:
 	// 頂点の種類
 	VerticesType verticesType = VerticesType::Quad;
 
-	
+
+
+
 
 #ifdef USE_IMGUI
-	
+
 	std::unique_ptr<ParticleEditor> editor_;
 #endif
 

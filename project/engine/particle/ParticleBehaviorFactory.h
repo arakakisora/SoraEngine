@@ -1,10 +1,12 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "IParticleBehavior.h"
+#include <vector>
 
+class IParticleBehavior;
 class ParticleBehaviorFactory
 {
+public:
 	/// <summary>
 	/// ビヘイビアの名前から生成
 	/// </summary>
@@ -17,6 +19,8 @@ class ParticleBehaviorFactory
 	/// </summary>
 	/// <returns></returns>
 	static std::vector<std::string> GetBehaviorNames();
+
+
 
 };
 

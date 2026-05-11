@@ -14,6 +14,10 @@
 #include <ChargeBehabiaor.h>
 #include "ParticleEditor.h"
 
+#include <filesystem>
+#include <BarrierBreakBehavior.h>
+#include <BarrierRingBehavior.h>
+
 
 using json = nlohmann::json;
 
@@ -41,6 +45,12 @@ namespace
 		if (name == "ExhaustGas") {
 			return std::make_unique<ExhaustGasBehavior>();
 		}
+		if (name == "BarrierBreak") {
+			return std::make_unique<BarrierBreakBehavior>();
+		}
+		if (name == "BarrierRing") {
+			return std::make_unique<BarrierRingBehavior>();
+		}
 
 		// ここに新しいビヘイビアを追加していく
 		// if (name == "Falling") { return std::make_unique<FallingBehavior>(); }
@@ -51,21 +61,18 @@ namespace
 }
 
 //シングルトンインスタンスの取得
-ParticleMnager* ParticleMnager::instance_ = nullptr;
-ParticleMnager* ParticleMnager::GetInstance()
+ParticleManager* ParticleManager::instance_ = nullptr;
+ParticleManager* ParticleManager::GetInstance()
 {
 	if (instance_ == nullptr) {
-		instance_ = new ParticleMnager();
+		instance_ = new ParticleManager();
 	}
 	return instance_;
 
 
 }
 
-
-
-
-void ParticleMnager::ImguiDrawEditor()
+void ParticleManager::ImguiDrawEditor()
 {
 #ifdef USE_IMGUI
 	//Editorが生成されていたら描画
@@ -74,7 +81,7 @@ void ParticleMnager::ImguiDrawEditor()
 
 }
 
-void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
+void ParticleManager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 {
 
 
@@ -105,12 +112,12 @@ void ParticleMnager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 }
 
 
-void ParticleMnager::LoadFromJson(const std::string& filepath)
+void ParticleManager::LoadFromJson(const std::string& filepath)
 {
 	// ファイルを開く
 	std::ifstream ifs(filepath);
 	if (!ifs) {
-		// 見つからない場合はとりあえず assert しておく（後でログに変えても良い）
+		// 見つからない場合 assert 
 		assert(false && "Failed to open particle json file");
 		return;
 	}
@@ -146,26 +153,97 @@ void ParticleMnager::LoadFromJson(const std::string& filepath)
 		if (texture.empty()) {
 			continue;
 		}
-
 		// ビヘイビアインスタンス生成
 		auto behavior = CreateBehaviorByName(behaviorType);
 		if (!behavior) {
 			continue;
 		}
+		std::string fullTexturePath = "Resources/ParticleTexture/" + texture;
+		//CreateParticleGroup を呼んで登録
+		CreateParticleGroup(id, fullTexturePath, verticesType, std::move(behavior));
+		particleGroups[id].defaultCount = e.value("defaultCount", 100);
+		particleGroups[id].defaultLifetime = e.value("defaultLifetime", 1.0f);
+		particleGroups[id].isInfinite = e.value("isInfiniteLifetime", false);
 
-		// TODO: params 読み込みは後でやる
-		// if (e.contains("params")) {
-		//     behavior->LoadParams(e["params"]);
-		// }
+		// 色
+		if (e.contains("color") && e["color"].is_array() && e["color"].size() == 4) {
+			particleGroups[id].defaultColor = {
+				e["color"][0].get<float>(),
+				e["color"][1].get<float>(),
+				e["color"][2].get<float>(),
+				e["color"][3].get<float>()
+			};
+		}
 
-		// いつもの CreateParticleGroup を呼んで登録
-		CreateParticleGroup(id, texture, verticesType, std::move(behavior));
+
+
 	}
 
 
 }
 
-void ParticleMnager::Finalize()
+void ParticleManager::SaveToJson(const std::string& filepath)
+{
+	json root;
+	root["effects"] = json::array();
+
+	for (const auto& [name, group] : particleGroups) {
+		json effectJson;
+		effectJson["id"] = name;
+
+		// ビヘイビアの種類を文字列で保存
+		std::string behaviorTypeStr = "Unknown";
+		if (dynamic_cast<ExplosionBehavior*>(group.behavior.get())) {
+			behaviorTypeStr = "Explosion";
+		} else if (dynamic_cast<ChargeBehabiaor*>(group.behavior.get())) {
+			behaviorTypeStr = "Charge";
+		} else if (dynamic_cast<ExhaustGasBehavior*>(group.behavior.get())) {
+			behaviorTypeStr = "ExhaustGas";
+		} else if (dynamic_cast<BarrierBreakBehavior*>(group.behavior.get())) {
+			behaviorTypeStr = "BarrierBreak";
+		} else if (dynamic_cast<BarrierRingBehavior*>(group.behavior.get())) {
+			behaviorTypeStr = "BarrierRing";
+		}
+		effectJson["behaviorType"] = behaviorTypeStr;
+
+		// 頂点形状を文字列で保存
+		std::string meshStr = "Quad";
+		switch (group.verticesType) {
+		case VerticesType::Ring:     meshStr = "Ring"; break;
+		case VerticesType::Cylinder: meshStr = "Cylinder"; break;
+		case VerticesType::Triangle: meshStr = "Triangle"; break;
+		case VerticesType::Quad:     meshStr = "Quad"; break;
+		}
+		effectJson["mesh"] = meshStr;
+
+		// テクスチャのファイルパスを保存
+		effectJson["texture"] = std::filesystem::path(group.materialdata.textureFilePath).filename().string();
+		// カウント
+		effectJson["defaultCount"] = group.defaultCount;
+		//ライフム
+		effectJson["defaultLifetime"] = group.defaultLifetime;
+		effectJson["isInfiniteLifetime"] = group.isInfinite;// 無限寿命かどうか
+		// 色
+		effectJson["color"] = {
+			group.defaultColor.x,
+			group.defaultColor.y,
+			group.defaultColor.z,
+			group.defaultColor.w
+		};
+		// ループ設定
+		effectJson["isLoop"] = group.isLoop;
+		//ループ間隔
+		effectJson["loopInterval"] = group.loopInterval;
+		// JSONの配列に追加
+		root["effects"].push_back(effectJson);
+
+	}
+	std::ofstream ofs(filepath);
+	ofs << root.dump(4); // インデント幅4で整形して保存
+
+}
+
+void ParticleManager::Finalize()
 {
 
 	delete instance_;
@@ -175,7 +253,7 @@ void ParticleMnager::Finalize()
 }
 
 
-void ParticleMnager::Update()
+void ParticleManager::Update()
 {
 	//カメラからビュープロジェクション行列を取得
 	//ビルボード行列の計算
@@ -187,21 +265,37 @@ void ParticleMnager::Update()
 	Matrix4x4 viewMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetViewMatrix();
 	Matrix4x4 projectionMatrix = CameraManager::GetInstance()->GetActiveCamera()->GetProjectionMatrix();
 
+
+
 	//全パーティクル	グループ内の全パーティクルについて二重処理する
 	for (auto& [name, particleGroup] : particleGroups) {
 		auto& behavior = particleGroup.behavior;
 		uint32_t counter = 0;
+		if (particleGroup.isLoop) {
+			particleGroup.loopTimer += 1.0f / 60.0f;
+
+			if (particleGroup.loopTimer >= particleGroup.loopInterval) {
+
+
+				/*EulerTransform previewTransform = editor_->MakePreviewTransform();
+				Emit(name, previewTransform);*/
+
+				particleGroup.loopTimer = 0.0f;
+			}
+		}
+
 		for (std::list<Particle>::iterator particleIterator = particleGroup.particles.begin(); particleIterator != particleGroup.particles.end();) {
 
-			//寿命に達していたらグループから外す
-			if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
-				particleIterator = particleGroup.particles.erase(particleIterator);
-				continue;
+			if (!(*particleIterator).isInfiniteLifetime) {
+				if ((*particleIterator).lifetime <= (*particleIterator).currentTime) {
+					particleIterator = particleGroup.particles.erase(particleIterator);
+					continue;
+				}
 			}
-			float alpha1 =0.5;
-			
+			float alpha1 = 0.5;
+
 			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha1);
-			
+
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
 			//ワールド行列を計算
@@ -232,7 +326,7 @@ void ParticleMnager::Update()
 
 }
 
-void ParticleMnager::Draw()
+void ParticleManager::Draw()
 {
 
 
@@ -272,7 +366,7 @@ void ParticleMnager::Draw()
 
 }
 
-void ParticleMnager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesTypeValue, std::unique_ptr<IParticleBehavior> behavior)
+void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath, VerticesType verticesTypeValue, std::unique_ptr<IParticleBehavior> behavior)
 {
 	//登録済みなら早期リターン
 	if (particleGroups.contains(name)) {
@@ -294,8 +388,11 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 	particleGroups.at(name).materialData->enableLighting = false;//有効にするか否か
 	particleGroups.at(name).materialData->uvTransform = particleGroups.at(name).materialData->uvTransform.MakeIdentity4x4();
 
+	particleGroups.at(name).isLoop = false;
+	particleGroups.at(name).loopInterval = 1.0f;
+
 	//頂点タイプの設定
-	SetGroupVerticesType(name,verticesTypeValue);
+	SetGroupVerticesType(name, verticesTypeValue);
 
 	//テクスチャの設定
 	SetGroupTexture(name, textureFilePath);
@@ -334,38 +431,66 @@ void ParticleMnager::CreateParticleGroup(const std::string name, const std::stri
 
 }
 
-void ParticleMnager::Emit(const std::string& name, const EulerTransform transform)
+void ParticleManager::Emit(const std::string& name, const EulerTransform transform)
 {
-	//パーティクルグループが存在するかチェックしてassert
 	assert(particleGroups.contains(name));
 
-	for (uint32_t i = 0; i < particleGroups.at(name).defaultCount; ++i) {
-		particleGroups.at(name).particles.push_back(
-			particleGroups.at(name).behavior->Create(
-				randomEngine, transform, particleGroups.at(name).defaultLifetime));
+	auto& group = particleGroups.at(name);
+
+	for (uint32_t i = 0; i < group.defaultCount; ++i) {
+		//Particleを作成
+		float lifetime = group.defaultLifetime;
+		if (group.isInfinite) {
+			lifetime = 999999.0f; 
+		}
+
+		Particle particle = group.behavior->Create(
+			randomEngine, transform, lifetime);
+	
+		particle.isInfiniteLifetime = group.isInfinite;
+		particle.color = group.defaultColor;
+		group.particles.push_back(particle);
 	}
 
 }
 
-void ParticleMnager::EmitAtCamera(const std::string& name)
+void ParticleManager::EmitFollowOne(const std::string& name, const EulerTransform& transform)
 {
-	// グループ存在チェック
+
+
 	assert(particleGroups.contains(name));
 
-	// アクティブカメラから位置を取る
-	auto* camera = CameraManager::GetInstance()->GetActiveCamera();
-	EulerTransform t{};
-	t.scale = { 1.0f, 1.0f, 1.0f };
-	t.rotate = { 0.0f, 0.0f, 0.0f };
-	t.translate =CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate; // 位置の取り方はエンジンに合わせて
-	float offsetDistance = 5.0f;
-	t.translate.z += offsetDistance; // カメラの前方にオフセット
-	// 既存の Emit をそのまま使う
-	Emit(name, t);
+	auto& group = particleGroups.at(name);
+
+	// まだ無ければ1個だけ作る
+	if (group.particles.empty()) {
+		float lifetime = group.isInfinite ? 999999.0f : group.defaultLifetime;
+
+		Particle particle = group.behavior->Create(randomEngine, transform, lifetime);
+		particle.isInfiniteLifetime = true; // 追従中は消えない
+		particle.color = group.defaultColor;
+
+		group.particles.push_back(particle);
+	}
+
+	// 既存の1個をプレイヤー位置へ更新
+	Particle& p = group.particles.front();
+	p.transform.translate = transform.translate;
+	p.currentTime = 0.0f;
+}
+
+void ParticleManager::StopFollow(const std::string& name)
+{
+	if (!particleGroups.contains(name)) return;
+
+	auto& group = particleGroups.at(name);
+	group.particles.clear();
 
 }
 
-std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
+
+
+std::vector<VertexData> ParticleManager::MakeRingVertices(uint32_t  RingDivide, float outerRadius, float innerRadius)
 {
 
 	std::vector<VertexData> ringVertices;
@@ -405,7 +530,7 @@ std::vector<VertexData> ParticleMnager::MakeRingVertices(uint32_t  RingDivide, f
 
 }
 
-std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
+std::vector<VertexData> ParticleManager::MakeCylinderVertices(uint32_t cylinderDivide, float topRadius, float bottomRadius, float height)
 {
 	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / static_cast<float>(cylinderDivide);
 
@@ -437,7 +562,7 @@ std::vector<VertexData> ParticleMnager::MakeCylinderVertices(uint32_t cylinderDi
 	return cylinderVertices;
 }
 
-std::vector<VertexData> ParticleMnager::MakeQuadVertices()
+std::vector<VertexData> ParticleManager::MakeQuadVertices()
 {
 	//クワッドの頂点情報を作成
 	std::vector<VertexData> vertices;
@@ -452,7 +577,7 @@ std::vector<VertexData> ParticleMnager::MakeQuadVertices()
 	return vertices;
 }
 
-std::vector<VertexData> ParticleMnager::MakeTriangleVertices()
+std::vector<VertexData> ParticleManager::MakeTriangleVertices()
 {
 	//三角形の頂点情報を作成
 	std::vector<VertexData> vertices;
@@ -466,24 +591,25 @@ std::vector<VertexData> ParticleMnager::MakeTriangleVertices()
 
 }
 
-void ParticleMnager::SetGroupTexture(const std::string& groupName, const std::string& textureFilePath)
+void ParticleManager::SetGroupTexture(const std::string& groupName, const std::string& textureFilePath)
 {
 	assert(particleGroups.contains(groupName));
 	auto& group = particleGroups.at(groupName);
 
 	// パスを登録
 	group.materialdata.textureFilePath = textureFilePath;
+	//"Resources/ParticleTexture/"
 
 	// テクスチャ読み込み（既に読まれていてもOKな設計ならそのまま）
-	TextureManager::GetInstance()->LoadTexture(textureFilePath);
+	TextureManager::GetInstance()->LoadTexture(group.materialdata.textureFilePath);
 
 	// インデックス更新
 	group.materialdata.textureIndex =
-		TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+		TextureManager::GetInstance()->GetTextureIndexByFilePath(group.materialdata.textureFilePath);
 
 }
 
-void ParticleMnager::SetGroupVerticesType(const std::string& groupName, VerticesType verticesType)
+void ParticleManager::SetGroupVerticesType(const std::string& groupName, VerticesType verticesType)
 {
 	//グループが存在するかチェック
 	assert(particleGroups.contains(groupName));
@@ -522,7 +648,7 @@ void ParticleMnager::SetGroupVerticesType(const std::string& groupName, Vertices
 
 }
 
-void ParticleMnager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)
+void ParticleManager::SetBehavior(const std::string& groupName, std::unique_ptr<IParticleBehavior> behavior)
 {
 	//グループが存在するかチェック
 	assert(particleGroups.contains(groupName) && "ParticleGroup does not exist!");
