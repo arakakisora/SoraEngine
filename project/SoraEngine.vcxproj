@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -127,9 +127,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
     <ClCompile Include="application\ui\ControlGuide.cpp" />
     <ClCompile Include="application\ui\PauseMenu.cpp" />
-    <ClCompile Include="engine\particle\AttackBehavior.cpp" />
+    <ClCompile Include="application\particle\BarrierBreakBehavior.cpp" />
+    <ClCompile Include="application\particle\BarrierRingBehavior.cpp" />
+    <ClCompile Include="engine\math\Easing.cpp" />
+    <ClCompile Include="application\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
-    <ClCompile Include="engine\particle\PlayerpaticleBehavior.cpp" />
+    <ClCompile Include="engine\particle\ParticleBehaviorFactory.cpp" />
+    <ClCompile Include="engine\particle\ParticleEditor.cpp" />
+    <ClCompile Include="application\particle\PlayerpaticleBehavior.cpp" />
     <ClCompile Include="engine\scene\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\scene\BaseScene.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
@@ -148,11 +153,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\Line\Line.cpp" />
     <ClCompile Include="engine\Line\LineCommon.cpp" />
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
-    <ClCompile Include="engine\particle\MagicCircleBehavior.cpp" />
+    <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="engine\fade\FadeManager.cpp" />
     <ClCompile Include="application\goal\Goal.cpp" />
     <ClCompile Include="application\particle\GameOverEffect.cpp" />
     <ClCompile Include="application\map\GenerateBlock.cpp" />
+    <ClCompile Include="application\particle\GateInOut.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\3d\Model.cpp" />
     <ClCompile Include="engine\3d\ModelCommon.cpp" />
@@ -179,6 +185,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
+    <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -285,6 +292,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\TransitionFade.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Resources\Shaders\Vignette.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -309,10 +320,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\scene\StageSelectScene.h" />
     <ClInclude Include="application\ui\ControlGuide.h" />
     <ClInclude Include="application\ui\PauseMenu.h" />
-    <ClInclude Include="engine\particle\AttackBehavior.h" />
+    <ClInclude Include="application\particle\BarrierBreakBehavior.h" />
+    <ClInclude Include="application\particle\BarrierRingBehavior.h" />
+    <ClInclude Include="engine\math\Easing.h" />
+    <ClInclude Include="application\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="engine\math\Quaternion.h" />
-    <ClInclude Include="engine\particle\PlayerpaticleBehavior.h" />
+    <ClInclude Include="engine\particle\ParticleBehaviorFactory.h" />
+    <ClInclude Include="engine\particle\ParticleEditor.h" />
+    <ClInclude Include="application\particle\PlayerpaticleBehavior.h" />
     <ClInclude Include="engine\scene\AbstractSceneFactory.h" />
     <ClInclude Include="engine\scene\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
@@ -359,7 +375,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
-    <ClInclude Include="engine\particle\MagicCircleBehavior.h" />
+    <ClInclude Include="application\particle\MagicCircleBehavior.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
     <ClInclude Include="engine\skybox\SkyBoxCommon.h" />
     <ClInclude Include="application\particle\GameOverEffect.h" />
@@ -367,6 +383,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
+    <ClInclude Include="UI.h" />
+    <ClInclude Include="application\particle\GateInOut.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

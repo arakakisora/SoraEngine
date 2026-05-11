@@ -23,6 +23,8 @@ void GameOverEffect::Initialize(Object3D *obj)
 void GameOverEffect::Update(float dt)
 {
 	if (!isPlaying_) return;
+	//プレイヤーの位置をエフェクトが見えるようにエックスを真ん中に移動
+	playerobject3D_->SetTranslate({ 13.0f, playerobject3D_->GetTransform().translate.y, playerobject3D_->GetTransform().translate.z });
 
 	// 経過時間を更新
 	timer_ += dt;

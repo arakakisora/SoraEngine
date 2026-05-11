@@ -76,6 +76,12 @@ public:
 	/// </summary>
 	void SetPower(int p) { power_ = p; }
 
+	/// <summary>
+	//プレイヤーの状態を取得
+	/// </summary>
+	WeaponType GetWeaponType() const { return weaponType_; }
+
+
 	// Object3D の生ポインタ参照を返す（所有は PlayerBullet）
 	Object3D* Getobject3DBullet_() { return object3D_.get(); }
 

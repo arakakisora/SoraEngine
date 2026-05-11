@@ -78,7 +78,7 @@ namespace MyMath {
 	/// </summary>
 	/// <param name="vector"></param>
 	/// <returns></returns>
-	Vector3 Normlize(const Vector3& vector);
+	Vector3 Normalize(const Vector3& vector);
 	/// <summary>
 	/// ベクトルの加算
 	/// </summary>
@@ -193,7 +193,7 @@ namespace MyMath {
 	Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
 
 	//クオタニオンの正規化
-	Quaternion Normalize(const Quaternion& quaternion);
+	Quaternion NormalizeQuaternion(const Quaternion& quaternion);
 
 	Vector3 GetTranslate( const Matrix4x4& matrix);
 
@@ -213,6 +213,10 @@ namespace MyMath {
         x = x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x);
         return x * x * (3.0f - 2.0f * x);
     }
+
+	static bool IsNearlyZero2D(const Vector3& v, float eps = 1e-4f) {
+		return (std::abs(v.x) < eps) && (std::abs(v.y) < eps);
+	}
 }
 
 

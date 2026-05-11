@@ -7,7 +7,7 @@
 #include "BaseScene.h"
 #include <FadeManager.h>
 #include "application\\ui\\PauseMenu.h"
-
+#include "GateInOut.h"
 struct StageObject {
 	std::unique_ptr<Object3D> object;
 	Vector3 basePos;  // 並べる基準位置
@@ -41,7 +41,7 @@ private:
 
 	std::unique_ptr<Camera> camera1;
 
-	int MaxSelectIndex_ = 3;	// 最大ステージ数
+	int MaxSelectIndex_ = 4;	// 最大ステージ数
 	int currentIndex_ = 0;	// 現在のステージ
 	float deltaTime_ = 1.0f / 60.0f;	// デルタタイム
 
@@ -55,6 +55,10 @@ private:
 
 	// PauseMenu を追加
 	PauseMenu pauseMenu_;
+
+	std::unique_ptr<GateInOut> gate_;
+	bool gateOutRequested_ = false;
+	bool fadeOutRequested_ = false;
 	
 };
 

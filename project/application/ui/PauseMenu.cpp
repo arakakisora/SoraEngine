@@ -5,6 +5,7 @@
 #endif // _DEBUG
 #include <ModelManager.h>
 #include <CameraManager.h>
+#include <algorithm>
 
 double easeInOutCirc(double x) {
 	return (x < 0.5)
@@ -15,8 +16,6 @@ double easeInOutCirc(double x) {
 //初期化
 void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 
-
-
 	//カメラの生成	
 	pouseCamera_ = std::make_unique<Camera>();
 	pouseCamera_->SetRotate({ 0,0,0, });
@@ -25,34 +24,63 @@ void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 
 	object3dcommon_ = object3dcommon;
 	pauseType_ = type;
-	ModelManager::GetInstance()->LoadModel("PauseMenu/Pause.obj");
-	ModelManager::GetInstance()->LoadModel("PauseMenu/return.obj");
-	ModelManager::GetInstance()->LoadModel("PauseMenu/StageSelect.obj");
-	ModelManager::GetInstance()->LoadModel("PauseMenu/title.obj");
+
+	// ベースオブジェクト準備
+	ModelManager::GetInstance()->LoadModel("Pause");
+	ModelManager::GetInstance()->LoadModel("return");
+	ModelManager::GetInstance()->LoadModel("StageSelect");
+	ModelManager::GetInstance()->LoadModel("titlemenu");
 
 	transform.translate = { -2.6f,1.5f,0.0f };
 	object = std::make_unique<Object3D>();
 	object->Initialize(object3dcommon_);
-	object->SetModel("PauseMenu/Pause.obj");
-	object->SetScale({ 1.0f,2.0f,1.0f });
+	object->SetModel("Pause");
+	object->SetScale({ 1.0f,1.0f,1.0f });
 	input = Input::GetInstance();
 
-	// 作成してでリストに追加
-	for (uint32_t i = 0; i < 2; ++i) {
+	// メニュー項目をデータで構築
+	menuItems_.clear();
+	if (pauseType_ == PauseType::GamePlayScene) {
+		menuItems_.push_back({
+			"return",
+			// 戻るアクション
+			[this]() { isPaused_ = false; },
+			1.0f,   // maxScale
+			1.5f,   // selectedScale
+			1.8f    // offsetY
+		});
+		menuItems_.push_back({
+			"StageSelect",
+			// ステージセレクトへ遷移
+			[this]() { SceneManager::GetInstance()->ChangeScene("STAGESELECT"); },
+			0.6f,   // maxScale (非選択での上限)
+			0.9f,   // selectedScale (選択時)
+			1.8f    // offsetY
+		});
+	}
+	else { // StageSelectScene
+		menuItems_.push_back({
+			"return",
+			[this]() { isPaused_ = false; },
+			1.0f,
+			0.9f,
+			1.3f
+		});
+		menuItems_.push_back({
+			"titlemenu",
+			[this]() { SceneManager::GetInstance()->ChangeScene("TITELE"); },
+			0.6f,
+			0.9f,
+			1.3f
+		});
+	}
+
+	// TextObjects を menuItems_ に合わせて作成
+	TextObjects.clear();
+	for (size_t i = 0; i < menuItems_.size(); ++i) {
 		std::unique_ptr<Object3D> newObject = std::make_unique<Object3D>();
 		newObject->Initialize(Object3DCommon::GetInstance());
-		if (i == 0) {
-			newObject->SetModel("PauseMenu/return.obj");
-		}
-		else if (i == 1) {
-			if (pauseType_ == PauseType::GamePlayScene) {
-				newObject->SetModel("PauseMenu/StageSelect.obj");
-			}
-			else if (pauseType_ == PauseType::StageSelectScene) {
-				newObject->SetModel("PauseMenu/title.obj");
-			}
-		}
-
+		newObject->SetModel(menuItems_[i].modelPath);
 		texttransform[i] = { transform.translate };
 		texttransform[i].translate.y = 0.0f;
 		newObject->SetTranslate(texttransform[i].translate);
@@ -60,17 +88,12 @@ void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 		newObject->SetLighting(false);
 		TextObjects.push_back(std::move(newObject));
 	}
-
-
 }
 
 //更新
 void PauseMenu::Update() {
 
-
-
 	object->SetTranslate(transform.translate);
-
 	object->Update();
 
 #ifdef _DEBUG
@@ -94,21 +117,48 @@ void PauseMenu::Update() {
 	else {
 		easeTimer_ -= easeSpeed;
 		if (easeTimer_ < 0.0f) easeTimer_ = 0.0f;
-		
 	}
 
-	if (pauseType_ == PauseType::GamePlayScene) {
-		// ゲームシーンのポーズ画面表示
-		PausedStartGamePlay();
+	// 汎用化されたポーズ描画処理（タイプ別分岐は Initialize 時に解決済み）
+	if (isPaused_ || easeTimer_ > 0.0f) {
+		// イージングの値（0.0〜1.0）の計算（※逆再生に対応）
+		float easedValue = float(easeInOutCirc(easeTimer_));
+		CameraManager::GetInstance()->SetActiveCamera("pouseCamera");
+
+		Vector3 cameraPos = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate;
+		transform.translate.x = cameraPos.x;
+		transform.translate.y = cameraPos.y;
+		transform.translate.z = 5.0f + (-7.0f * easedValue);
+
+		// ベース描画更新
+		float minScale = 0.0f;
+		float currentScale = (easedValue > minScale) ? easedValue : minScale;
+
+		// 各項目を menuItems_ のデータに従って配置・スケール制御
+		Vector3 basePos = object->GetTransform().translate;
+		for (size_t i = 0; i < TextObjects.size(); ++i) {
+			const auto& item = menuItems_[i];
+			Vector3 followPos = basePos;
+			followPos.z -= 5.0f;
+			followPos.y += 1.0f + (item.offsetY * -static_cast<float>(i));
+			TextObjects[i]->SetTranslate(followPos);
+
+			// 選択時は選択用スケール（ease 完了時）を優先、未選択は easedValue を項目の maxScale でクリップ
+			if (i == textindex && easeTimer_ == 1.0f) {
+				TextObjects[i]->SetScale(Vector3(item.selectedScale, item.selectedScale, item.selectedScale));
+			}
+			else {
+				float limited = std::min(currentScale, item.maxScale);
+				TextObjects[i]->SetScale(Vector3(limited, limited, limited));
+			}
+			TextObjects[i]->Update();
+		}
 	}
-	if (pauseType_ == PauseType::StageSelectScene) {
-		// ゲームセレクトのポーズ画面表示
-		PausedStartStageSelect();
-	}
-	// コントローラの動き
+
+	// 入力処理
 	ControllerUpdate();
-	if (!isPaused_) {
 
+	if (!isPaused_) {
 		CameraManager::GetInstance()->SetActiveCamera("maincam");
 	}
 }
@@ -133,119 +183,6 @@ bool PauseMenu::IsPaused()const {
 	return isPaused_ || easeTimer_ > 0.0f;
 }
 
-void PauseMenu::PausedStartGamePlay() {
-	if (isPaused_ || easeTimer_ > 0.0f) {
-		// イージングの値（0.0〜1.0）の計算（※逆再生に対応）
-		float easedValue = float(easeInOutCirc(easeTimer_));
-
-		CameraManager::GetInstance()->SetActiveCamera("pouseCamera");
-
-		Vector3 cameraPos = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate;
-		transform.translate.x = cameraPos.x;
-		transform.translate.y = cameraPos.y;
-		transform.translate.z = 5.0f + (-7.0f * easedValue);
-
-		float minScale = 0.0f;
-		float limitedScale = (easedValue > 1.0f) ? 1.0f :
-			(easedValue < minScale) ? minScale : easedValue;
-
-		// ポーズを閉じている途中なら、0.0f までしっかり戻す
-		if (easeTimer_ < 1.0f && !isPaused_) {
-			limitedScale = (easedValue > 0.0f) ? easedValue : 0.0f;
-		}
-		else if (easeTimer_ >= 1.0f) {
-			limitedScale = 1.0f;
-		}
-
-		transform.scale = { limitedScale, limitedScale, limitedScale };
-
-		object->SetTranslate(transform.translate);
-		object->SetScale(transform.scale);
-		object->Update();
-
-		Vector3 basePos = object->GetTransform().translate;
-
-		float currentScale = (easedValue > minScale) ? easedValue : minScale;
-		float offsetY = 1.8f;
-		for (size_t i = 0; i < TextObjects.size(); ++i) {
-			Vector3 followPos = basePos;
-			followPos.z -= 5.0f;
-			followPos.y += 1.0f + (offsetY * -static_cast<float>(i));
-
-			TextObjects[i]->SetTranslate(followPos);
-
-			if (i == textindex && easeTimer_ == 1.0f) {
-				if (pauseType_ == PauseType::GamePlayScene) {
-					TextObjects[i]->SetScale(Vector3(1.5f, 1.5f, 1.5f));
-				}
-				else if (pauseType_ == PauseType::StageSelectScene) {
-					TextObjects[i]->SetScale(Vector3(0.8f, 0.8f, 0.8f));
-				}
-			}
-			else {
-				Vector3 limitedScale = { std::min(currentScale, 1.0f), std::min(currentScale, 1.0f), std::min(currentScale, 1.0f) };
-				TextObjects[i]->SetScale(limitedScale);
-			}
-			TextObjects[i]->Update();
-		}
-	}
-}
-
-void PauseMenu::PausedStartStageSelect() {
-	if (isPaused_ || easeTimer_ > 0.0f) {
-		// イージングの値（0.0〜1.0）の計算（※逆再生に対応）
-		float easedValue = float(easeInOutCirc(easeTimer_));
-
-
-		CameraManager::GetInstance()->SetActiveCamera("pouseCamera");
-
-		Vector3 cameraPos = CameraManager::GetInstance()->GetActiveCamera()->GetTransform().translate;
-		transform.translate.x = cameraPos.x;
-		transform.translate.y = cameraPos.y;
-		transform.translate.z = 5.0f + (-7.0f * easedValue);
-
-		float minScale = 0.0f;
-		float const maxScale = 0.6f;
-		float limitedScale = (easedValue > maxScale) ? maxScale :
-			(easedValue < minScale) ? minScale : easedValue;
-
-		// ポーズを閉じている途中なら、0.0f までしっかり戻す
-		if (easeTimer_ < maxScale && !isPaused_) {
-			limitedScale = (easedValue > 0.0f) ? easedValue : 0.0f;
-		}
-		else if (easeTimer_ >= maxScale) {
-			limitedScale = maxScale;
-		}
-
-		transform.scale = { limitedScale, limitedScale, limitedScale };
-
-		object->SetTranslate(transform.translate);
-		object->SetScale(transform.scale);
-		object->Update();
-
-		Vector3 basePos = object->GetTransform().translate;
-
-		float currentScale = (easedValue > minScale) ? easedValue : minScale;
-		float offsetY = 1.3f;
-		for (size_t i = 0; i < TextObjects.size(); ++i) {
-			Vector3 followPos = basePos;
-			followPos.z -= 5.0f;
-			followPos.y += 0.8f + (offsetY * -static_cast<float>(i));
-
-			TextObjects[i]->SetTranslate(followPos);
-
-			if (i == textindex && easeTimer_ == 1.0f) {
-				TextObjects[i]->SetScale(Vector3(0.9f, 0.9f, 0.9f));
-			}
-			else {
-				Vector3 limitedScale = { std::min(currentScale, 0.6f), std::min(currentScale, 0.6f), std::min(currentScale, 0.6f) };
-				TextObjects[i]->SetScale(limitedScale);
-			}
-			TextObjects[i]->Update();
-		}
-	}
-}
-
 void PauseMenu::ControllerUpdate() {
 
 	// アニメーションが完了しているか
@@ -254,11 +191,9 @@ void PauseMenu::ControllerUpdate() {
 	// =========================
 	// ポーズ ON / OFF
 	// =========================
-	if ((canInput || easeTimer_ <= 0.0f) &&Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_START)|| Input::GetInstance()->TriggerKey(DIK_ESCAPE)){
+	if ((canInput || easeTimer_ <= 0.0f) && Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_START) || Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 		isPaused_ = !isPaused_;
 	}
-
-
 
 	// =========================
 	// 入力まとめ
@@ -291,26 +226,16 @@ void PauseMenu::ControllerUpdate() {
 		}
 
 		// =========================
-		// 決定
+		// 決定（データ駆動）
 		// =========================
 		if (okPressed) {
-
-			if (textindex == 0) {
-				// 戻る
-				isPaused_ = false;
-			}
-			else if (textindex == 1) {
-				// シーン遷移
-				if (pauseType_ == PauseType::GamePlayScene) {
-					SceneManager::GetInstance()->ChangeScene("STAGESELECT");
-				}
-				else if (pauseType_ == PauseType::StageSelectScene) {
-					SceneManager::GetInstance()->ChangeScene("TITELE");
-				}
+			if (textindex < menuItems_.size()) {
+				// メニュー項目に紐づくアクションを呼ぶ
+				menuItems_[textindex].action();
 			}
 		}
 
-		// 色変更
+		// 色変更（選択可視化）
 		for (size_t i = 0; i < TextObjects.size(); ++i) {
 			TextObjects[i]->SetColor(
 				(i == textindex)

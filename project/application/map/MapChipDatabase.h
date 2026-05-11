@@ -11,6 +11,7 @@ enum class MapChipType : int {
 	Goal,
 	Player,
 	UnbreakableBlock,
+	damageBlock,
 
 
 };

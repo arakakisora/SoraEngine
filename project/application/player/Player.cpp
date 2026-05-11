@@ -7,14 +7,15 @@
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif // USE_IMGUI
-
 #include "Object3DCommon.h"
 #include "ParticleMnager.h"
 #include "PlayerpaticleBehavior.h"
 #include "ChargeBehabiaor.h"
 #include "CollisionManager.h"
-#include "LineCommon.h" // 追加: ライン描画
-#include <memory>      // std::make_unique を明示
+#include "LineCommon.h" 
+#include <memory>      
+#include "Easing.h"
+#include <array> 
 
 void Player::Initialize(const Vector3& position) {
 
@@ -22,8 +23,8 @@ void Player::Initialize(const Vector3& position) {
 	playerPosition_ = position;
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("player.obj");
-	object3D_->SetScale(Vector3{ 0.25f,0.25f,0.25f });
+	object3D_->SetModel("player");
+	object3D_->SetScale(Vector3{ 0.5f,0.5f,0.5f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
@@ -32,15 +33,52 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
 
-	ParticleMnager::GetInstance()->CreateParticleGroup(
-		"dash_smoke",
-		"Resources/smoke.png", // 使いたいテクスチャ
-		VerticesType::Quad,
-		std::make_unique<ExhaustGasBehavior>()
+	//ParticleManager::GetInstance()->CreateParticleGroup(
+	//	"dash_smoke",
+	//	"Resources/smoke.png", // 使いたいテクスチャ
+	//	VerticesType::Quad,
+	//	std::make_unique<ExhaustGasBehavior>()
+	//);
+	exhaustEmitter_ = std::make_unique<ParticleEmitter>(
+		EulerTransform{ position, {0,0,0}, {1,1,1} },
+		1.0f, // lifetime
+		0.0f, // currentTime
+		100,   // count
+		"dash_smoke"
 	);
+
+	ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/ParticleTexture/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
+	deatheEffect = std::make_unique<ParticleEmitter>(
+		EulerTransform{ position, {0,0,0}, {1,1,1} },
+		1.0f, // lifetime
+		0.0f, // currentTime
+		100,   // count
+		"enemydeath"
+	);;
+
 
 	line_ = std::make_unique<Line>();
 
+}
+
+void Player::OnCollision(Collider* other)
+{
+
+	constexpr std::size_t LAYER_COUNT = 5;
+	static constexpr std::array<bool, LAYER_COUNT> lethalWhenSticky{ {
+			/* Player       */ false,
+			/* Enemy        */ true,
+			/* Enemy2       */ true,
+			/* PlayerBullet */ false,
+			/* EnemyBullet  */ false
+		} };
+
+	const auto idx = static_cast<std::size_t>(other->GetLayer());
+	if (idx < LAYER_COUNT && lethalWhenSticky[idx]) {
+		if (playerState_ == PlayerState::sticky) {
+			SetIsDead(true);
+		}
+	}
 }
 
 AABB Player::GetPlayerAABB()
@@ -57,7 +95,7 @@ AABB Player::GetPlayerAABB()
 void Player::Update() {
 
 #ifdef _DEBUG
-
+	ImGui::Begin("PlayerDebug");
 	if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		EulerTransform transform = object3D_->GetTransform();
@@ -76,34 +114,16 @@ void Player::Update() {
 		ImGui::Text("CannonAngle: %.1f deg", cannonAngleDeg_);
 
 	}
+	ImGui::End();
 #endif // DEBUG_
 
 
 
-	PrayerMove();
-
-	aabb_ = GetPlayerAABB();
-
-	if (Input::GetInstance()->TriggerKey(DIK_1)) {
-		currentWeaponType_ = WeaponType::Gatling;
-
-	}
-	if (Input::GetInstance()->TriggerKey(DIK_2)) {
-		currentWeaponType_ = WeaponType::Cannon;
-		//弾のサイズを大きくする
-
-	}
-
-	Attack();
-
-	for (auto& bullet : bullets_) {
-		if (bullet) bullet->Update();
-	}
-
-	// 弾削除: unique_ptr を使うので delete は不要
-	bullets_.remove_if([](const std::unique_ptr<PlayerBullet>& bullet) {
-		return bullet->GetIsDead();
-		});
+	PlayerMove();// 自機の動き
+	aabb_ = GetPlayerAABB();// AABB 更新
+	//Attack();// 攻撃
+	Playerline();// プレイヤーの移動ライン描画
+	DrawPredictLine();
 
 	// 衝突判定を初期化
 	CollisionMapInfo collisionMapInfo;
@@ -111,20 +131,61 @@ void Player::Update() {
 	collisionMapInfo.move = velocity_;
 
 	// マップ衝突チェック
-	MapCollision(collisionMapInfo);
-	// 移動
-	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
-	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
-	OnGroundSwitching(collisionMapInfo);// 着地時の移動処理
-	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
-	PrayerTurn();
-	object3D_->Update();
-	PlayerParticle();
+	MapCollision(collisionMapInfo);// マップとの衝突判定と情報の取得
+	Reflect(collisionMapInfo);// 反射処理
+	PlayerCondition(collisionMapInfo);// プレイヤーの状態更新	
 
-	// 落下による死亡判定
-	if (object3D_->GetTransform().translate.y < deathHeight_) {
-		isDead_ = true;
+	if (collisionMapInfo.hitDamageBlock) {
+		SetIsDead(true);
 	}
+	if (collisionMapInfo.hasBreakBlock && playerState_ == PlayerState::hard) {
+		const uint32_t bx = collisionMapInfo.breakBlockX;
+		const uint32_t by = collisionMapInfo.breakBlockY;
+
+		int beforeHp = mapChipField_->GetMapChipHPByIndex(bx, by);
+		if (beforeHp > 0) {
+			mapChipField_->DamageMapChipByIndex(bx, by, 1);
+
+			int afterHp = mapChipField_->GetMapChipHPByIndex(bx, by);
+
+			// 壊れた瞬間だけエフェクト
+			if (afterHp <= 0 && deatheEffect) {
+				Rect r = mapChipField_->GetRectByIndex(bx, by);
+
+				Vector3 breakPos{};
+				breakPos.x = (r.left + r.right) * 0.5f;
+				breakPos.y = (r.top + r.bottom) * 0.5f;
+				breakPos.z = object3D_->GetTransform().translate.z;
+
+				deatheEffect->SetPosition(breakPos);
+				deatheEffect->Emit();
+			}
+		}
+	}
+
+	PlayerShotAnimation();
+
+	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
+	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
+	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
+	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
+	Playerdirection(collisionMapInfo);// プレイヤーの振り向き
+
+	// プレイヤーのワールド位置を更新
+	object3D_->Update();
+	// パーティクルの更新
+	PlayerParticle();
+	// 死亡条件の判定
+	PlayerDeathTerms();
+
+}
+
+void Player::Draw() {
+	if (object3D_) object3D_->Draw();
+}
+
+void Player::PlayerMove() {
+
 
 	// 上キーで仰角を増やし、下キーで仰角を減らす。連続入力に対応。
 	if (Input::GetInstance()->PushKey(DIK_UP)) {
@@ -145,12 +206,148 @@ void Player::Update() {
 		}
 	}
 
-	// 過度な角度にならないように制限（-90〜+90度）
-	cannonAngleDeg_ = std::clamp(cannonAngleDeg_, -90.0f, 90.0f);
+
+	// 角度更新はそのまま（UP/DOWN + ホイール）
+	cannonAngleDeg_ = std::clamp(cannonAngleDeg_, kAimMinDeg, kAimMaxDeg);
+
+	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
+	const float spd = parameter_.kLimitRunSpeed;
+
+	Vector3 localDir{};
+	localDir.y = std::sinf(rad);
+	localDir.z = std::cosf(rad);
+	localDir.x = 0.0f;
+
+	// ワールド変換（回転を考慮）
+	Vector3 worldDir = MyMath::TransformNormal(
+		localDir,
+		object3D_->GetWorldMatrix()
+	);
+
+	Vector3 v = worldDir.Normalize() * spd;
+
+	//スペースで発射
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	
+		const bool canShoot =
+			(playerState_ == PlayerState::sticky) || isStopped_;
+
+		if (canShoot) {
+
+			playerState_ = PlayerState::hard;
+			isBarrierActive_ = true;
+
+
+			// 発射アニメ開始
+			isShotAnimation_ = true;
+			shotAnimationTimer_ = 0.0f;
+
+			Vector3 v = MakeShotVelocity();
+
+			velocity_ = v;
+			shotVel_ = v;
+			hasShotVel_ = true;
+
+			hitCount = 0;
+			wasTouching_ = false;
+		}
+	}
+
+}
+
+
+void Player::PlayerCondition(const CollisionMapInfo& info)
+{
+	// 停止判定
+	isStopped_ =
+		std::abs(info.move.x) < kStopEps &&
+		std::abs(info.move.y) < kStopEps;
+
+	const bool touchingNow =
+		info.ceiling || info.landing || info.hitWall;
+
+	// 接触になった瞬間だけカウント
+	if (touchingNow && !wasTouching_) {
+		hitCount++;
+
+		// 1回目に壁・床・天井へ触れた瞬間
+		if (hitCount == 1 && playerState_ == PlayerState::hard) {
+			isBarrierActive_ = false;
+
+			if (playerState_ == PlayerState::hard) {
+				ParticleManager::GetInstance()->Emit("BarrierBreak", object3D_->GetTransform());
+			}
+		}
+
+		if (hitCount >= 2) {
+			
+
+			playerState_ = PlayerState::sticky;
+			velocity_ = { 0,0,0 };
+		}
+	}
+	wasTouching_ = touchingNow;
+
+
+}
+
+Vector3 Player::NormalFromType(CollisionType type)
+{
+	//CollisionType の順序 (Top, Bottom, Right, Left) に合わせたルックアップテーブル
+	static const std::array<Vector3, 4> normals{ {
+			/* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
+			/* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
+			/* Left   */ Vector3{ 1.0f,  0.0f, 0.0f },
+			/* Right  */ Vector3{ -1.0f, 0.0f, 0.0f }
+		} };
+
+	const auto idx = static_cast<std::size_t>(type);
+	if (idx < normals.size()) return normals[idx];
+	return { 0.0f, 0.0f, 0.0f };
+}
+
+void Player::Reflect(const CollisionMapInfo& info)
+{
+	if (playerState_ == PlayerState::sticky) return;
+	if (!info.hasNormal) return;
+
+	Vector3 n{};
+
+	const bool hitX = info.hitWall;
+	const bool hitY = (info.ceiling || info.landing);
+
+	if (hitX && hitY) {
+		if (info.penX >= info.penY) {
+			// 壁で反射
+			n = { (velocity_.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
+		} else {
+			// 天井/床で反射
+			n = { 0.0f, (velocity_.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
+		}
+	} else {
+		// 合成法線
+		n = MyMath::Normalize(info.normal);
+	}
+
+	if (n.x == 0 && n.y == 0 && n.z == 0) return;
+
+	const float vn = MyMath::Dot(velocity_, n);
+	if (vn >= 0.0f) return;
+
+	velocity_ = velocity_ - n * (2.0f * vn);
+
+
+	shotVel_ = velocity_;
+	hasShotVel_ = true;
+
+}
+
+void Player::Playerline()
+{
 
 	// 始点はプレイヤーのワールド位置（発射位置）
 	Vector3 start = GetWorldPosition();
-	start.y += 0.5f; // 少し上から発射するイメージ
+	start.y += 0; // 少し上から発射するイメージ
 	// 仰角をラジアンに変換してローカル方向を作成（ローカル座標系: +Z 前方, +Y 上）
 	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
 	Vector3 localDir = { 0.0f, std::sinf(rad), std::cosf(rad) };
@@ -181,176 +378,339 @@ void Player::Update() {
 		line_->Draw(end, arrow1, color);
 		line_->Draw(end, arrow2, color);
 	}
-
 }
 
-void Player::Draw() {
-	if (object3D_) object3D_->Draw();
+void Player::DrawPredictLine()
+{
+	if (!line_) return;
+	if (!mapChipField_) return;
 
-	for (auto& bullet : bullets_) {
-		if (bullet) bullet->Draw();
-	}
-}
+	// 速度0のとき（発射前）だけ予測線を見せたいならこれ
+	if (!(velocity_.x == 0.0f && velocity_.y == 0.0f)) return;
 
-void Player::PrayerMove() {
+	// 発射ベクトル（予測用）
+	Vector3 simVel = MakeShotVelocity();
+	Vector3 simPos = object3D_->GetTransform().translate;
 
-	if (onGround_) {
-		// 移動入力 を WASD に変更（A/D 左右、W ジャンプ）
-		if (Input::GetInstance()->PushKey(DIK_D) || Input::GetInstance()->PushKey(DIK_A)) {
-			// 左右加速
-			Vector3 acceleration = {};
-			if (Input::GetInstance()->PushKey(DIK_D)) {
+	// 2回触れたらsticky
+	int hitCountSim = 0;
+	bool wasTouchingSim = false;
 
-				if (velocity_.x < 0.0f) {
-					velocity_.x *= (1.0f - parameter_.kAttenuation);
+	// 色（好きに）
+	Vector4 color = { 1.0f, 1.0f, 0.0f, 1.0f };
+
+	// 何ステップ先まで描くか
+	const int kMaxSteps = 240; // 30fps想定なら8秒
+	const float epsPush = parameter_.kCollisionEpsilon * 2.0f;
+
+	Vector3 prev = simPos;
+
+	for (int step = 0; step < kMaxSteps; ++step) {
+
+		CollisionMapInfo info{};
+		info.move = simVel;
+		info.normal = { 0,0,0 };
+		info.hasNormal = false;
+
+		// マップ判定（既存を流用！）
+		MapCollisionAt(simPos, info, false);
+
+		const bool touchingNow = info.ceiling || info.landing || info.hitWall;
+
+		// 接触カウント
+		if (touchingNow && !wasTouchingSim) {
+			hitCountSim++;
+		}
+		wasTouchingSim = touchingNow;
+
+		// 移動（押し戻し込み）
+		simPos = simPos + info.move;
+
+		// 線分描画
+		line_->Draw(prev, simPos, color);
+		prev = simPos;
+
+		// 2回触れたら終了（sticky地点まで描く）
+		if (hitCountSim >= 2) break;
+
+		// 反射
+		if (info.hasNormal) {
+			Vector3 n{};
+			const bool hitX = info.hitWall;
+			const bool hitY = (info.ceiling || info.landing);
+
+			if (hitX && hitY) {
+				if (info.penX >= info.penY) {
+					n = { (simVel.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
+				} else {
+					n = { 0.0f, (simVel.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 				}
-
-				if (lrDirection_ != LRDirecion::kright) {
-					lrDirection_ = LRDirecion::kright;
-					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-					turnTimer_ = parameter_.kTimeTurn;
-				}
-				// 右移動
-				acceleration.x += parameter_.kAcceleration;
-				playerMoveRight_ = true;
-				playerMoveLeft = false;
-
+			} else {
+				n = MyMath::Normalize(info.normal);
 			}
-			else if (Input::GetInstance()->PushKey(DIK_A)) {
 
-				if (velocity_.x > 0.0f) {
-					velocity_.x *= (1.0f - parameter_.kAttenuation);
-				}
-				if (lrDirection_ != LRDirecion::kLeft) {
-					lrDirection_ = LRDirecion::kLeft;
-					turnFirstRotationY_ = object3D_->GetTransform().rotate.y;
-					turnTimer_ = parameter_.kTimeTurn;
-				}
-				// 左移動
-				acceleration.x -= parameter_.kAcceleration;
-				playerMoveLeft = true;
-				playerMoveRight_ = false;
-
-			}
-			velocity_.x += acceleration.x;
-			velocity_.y += acceleration.y;
-			velocity_.z += acceleration.z;
-
-			velocity_.x = std::clamp(velocity_.x, -parameter_.kLimitRunSpeed, parameter_.kLimitRunSpeed);
-
-		}
-		else {
-
-			velocity_.x *= (1.0f -  parameter_.kAttenuation);
-			velocity_.y *= (1.0f -  parameter_.kAttenuation);
-			velocity_.z *= (1.0f -  parameter_.kAttenuation);
-			// スティックが真ん中なら両方falseにする
-			playerMoveRight_ = false;
-			playerMoveLeft = false;
+			ReflectVelocity(simVel, n);
 		}
 
-
-		// ジャンプを W に変更
-		if (Input::GetInstance()->PushKey(DIK_W)) {
-
-			velocity_.x += 0;
-			velocity_.y += parameter_.kJumpAcceleration;
-			velocity_.z += 0;
-
+		// 速度がほぼゼロなら終了
+		if (std::abs(simVel.x) < 1e-6f && std::abs(simVel.y) < 1e-6f) {
+			break;
 		}
-
 	}
-	else {
-		// 落下速度
-		velocity_.x += 0;
-		velocity_.y += -parameter_.kGravityAcceleration;
-		velocity_.z += 0;
-		// 落下速度制限
 
-		velocity_.y = std::max(velocity_.y, -parameter_.kLimitFallSpeed);
-	}
 }
 
-void Player::PrayerTurn() {
+void Player::ReflectVelocity(Vector3& v, const Vector3& normal)
+{
+	Vector3 n = MyMath::Normalize(normal);
+	if (n.x == 0 && n.y == 0 && n.z == 0) return;
+
+	const float vn = MyMath::Dot(v, n);
+	if (vn >= 0.0f) return; // 面から離れてるなら反射しない
+
+	v = v - n * (2.0f * vn);
+}
+
+Vector3 Player::MakeShotVelocity()
+{
+	// 仰角をラジアンに変換してローカル方向を作成（ローカル座標系: +Z 前方, +Y 上）
+	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
+	const float spd = parameter_.kLimitRunSpeed;
+	// ローカル→ワールド変換（回転の影響を受ける）
+	Vector3 localDir{};
+	localDir.y = std::sinf(rad);
+	localDir.z = std::cosf(rad);
+	localDir.x = 0.0f;
+	// ワールド変換（回転を考慮）
+	Vector3 worldDir = MyMath::TransformNormal(
+		localDir,
+		object3D_->GetWorldMatrix()
+	);
+	// 正規化して速度を掛ける
+	return worldDir.Normalize() * spd;
+}
+
+void Player::Playerdirection(const CollisionMapInfo& info) {
+	LRTBDirecion targetDir = direction_;
+
+	if (info.hasNormal) {
+
+		if (info.normal.x < 0.0f) {
+			targetDir = LRTBDirecion::kLeft;
+		} else if (info.normal.x > 0.0f) {
+			targetDir = LRTBDirecion::kRight;
+		}
+
+		if (info.normal.y > 0.0f) {
+			targetDir = LRTBDirecion::kTop;
+		} else if (info.normal.y < 0.0f) {
+			targetDir = LRTBDirecion::kBottom;
+		}
+	}
+
+	if (targetDir != direction_) {
+		direction_ = targetDir;
+		turnTimer_ = parameter_.kTimeTurn;
+	}
+
+	EulerTransform tr = object3D_->GetTransform();
+
+	// 回転角決定
+	float targetY = tr.rotate.y;
+	float targetZ = tr.rotate.z;
+
+	// 方向ごとの目標角度
+	switch (direction_) {
+
+	case LRTBDirecion::kRight:
+		targetY = std::numbers::pi_v<float> / 2.0f;
+		targetZ = 0.0f;
+		break;
+
+	case LRTBDirecion::kLeft:
+		targetY = std::numbers::pi_v<float> *3.0f / 2.0f;
+		targetZ = 0.0f;
+		break;
+
+	case LRTBDirecion::kTop:
+		targetY = std::numbers::pi_v<float> / 2.0f;
+		targetZ = std::numbers::pi_v<float> / 2.0f;
+		break;
+
+	case LRTBDirecion::kBottom:
+		targetY = std::numbers::pi_v<float> / 2.0f;
+		targetZ = -std::numbers::pi_v<float> / 2.0f;
+		break;
+	}
+
+	// 補間
 	if (turnTimer_ > 0.0f) {
-		// 固定フレーム前提の dt（現状コードの多くが 1/60 を使っているため合わせる）
+
 		const float dt = 1.0f / 30.0f;
 		turnTimer_ -= dt;
 
-		// 左右の角度テーブル
-		float destinationRotationYTable[] = {
-			std::numbers::pi_v<float> / 2.0f,
-			std::numbers::pi_v<float> * 3.0f / 2.0f,
-		};
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-
-		// turnTimer_ を kTimeTurn に対して正規化して進行率 t を得る（0..1）
-		const float total = parameter_.kTimeTurn;
-		float t = 1.0f - (turnTimer_ / total);
+		float t = 1.0f - (turnTimer_ / parameter_.kTimeTurn);
 		t = std::clamp(t, 0.0f, 1.0f);
+		// ライブラリの関数を使う
+		float eased = Easing::EaseOutSine(t);
 
-		// イージング（正しい EaseOutSine）
-		float eased = EaseOutSine(t);
+		tr = object3D_->GetTransform();
 
-		// 開始角度から目標角度へ補間
-		float startY = turnFirstRotationY_;
-		float newY = startY + (destinationRotationY - startY) * eased;
-		object3D_->SetRotate({ 0.0f, newY, 0.0f });
+		tr.rotate.y += (targetY - tr.rotate.y) * eased;
+		tr.rotate.z += (targetZ - tr.rotate.z) * eased;
+		tr.rotate.x = shotAnimationRotate_.x;
 
-		// 終了時に角度を厳密に合わせる
+		object3D_->SetRotate(tr.rotate);
+
 		if (turnTimer_ <= 0.0f) {
-			object3D_->SetRotate({ 0.0f, destinationRotationY, 0.0f });
 			turnTimer_ = 0.0f;
+
+			tr.rotate.y = targetY;
+			tr.rotate.z = targetZ;
+			tr.rotate.x = shotAnimationRotate_.x;
+			object3D_->SetRotate(tr.rotate);
 		}
 	}
+
+	// turnTimer_ が 0 の時も発射アニメ回転を反映する
+	if (turnTimer_ <= 0.0f) {
+		tr.rotate.y = targetY;
+		tr.rotate.z = targetZ;
+		tr.rotate.x = shotAnimationRotate_.x;
+
+		object3D_->SetRotate(tr.rotate);
+	}
+
+
+}
+
+void Player::PlayerDeathTerms()
+{
+
+	// 落下による死亡判定
+	if (object3D_->GetTransform().translate.y < parameter_.deathHeight.min
+		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max
+		|| object3D_->GetTransform().translate.x < parameter_.deathwidth.min
+		|| object3D_->GetTransform().translate.x > parameter_.deathwidth.max)
+	{
+		isDead_ = true;
+	}
+
 }
 
 void Player::MapCollision(CollisionMapInfo& info) {
 
-	// 4点のワールド座標を計算
-	// 右上、左上、右下、左下の順番で計算
-	
-	CollisionMapInfoDirection(// 右
-		info,
-		CollisionType::Right,
+	const Vector3 position = object3D_->GetTransform().translate;
+	MapCollisionAt(position, info, true);
+}
+
+void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal)
+{
+	Vector3 base = position;
+
+	// --------------------
+	// X解く
+	// --------------------
+	CollisionMapInfo xInfo{};
+	xInfo.move = { info.move.x, 0.0f, 0.0f };
+	xInfo.normal = { 0,0,0 };
+	xInfo.hasNormal = false;
+	xInfo.penX = 0.0f;
+	xInfo.penY = 0.0f;
+
+	CollisionMapInfoDirection(
+		base, xInfo, CollisionType::Right,
 		{ kRightTop, kRightBottom },
 		Vector3(parameter_.kCollisionEpsilon, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.x > 0; }
+		[](const CollisionMapInfo& i) { return i.move.x > 0; },
+		enableGoal
 	);
-
-	CollisionMapInfoDirection(// 左
-		info,
-		CollisionType::Left,
+	CollisionMapInfoDirection(
+		base, xInfo, CollisionType::Left,
 		{ kLeftTop, kLeftBottom },
 		Vector3(-parameter_.kCollisionEpsilon, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.x < 0; }
+		[](const CollisionMapInfo& i) { return i.move.x < 0; },
+		enableGoal
 	);
 
-	CollisionMapInfoDirection(// 上
-		info,
-		CollisionType::Top,
+	// X反映
+	base.x += xInfo.move.x;
+	info.move.x = xInfo.move.x;
+
+	if (xInfo.hasNormal) {
+		info.normal = info.normal + xInfo.normal;
+		info.hasNormal = true;
+	}
+	info.hitWall = info.hitWall || xInfo.hitWall;
+	info.penX = std::max(info.penX, xInfo.penX);
+	// ブロック破壊情報反映
+	if (xInfo.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = xInfo.breakBlockX;
+		info.breakBlockY = xInfo.breakBlockY;
+
+	}
+	if (xInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
+
+	// --------------------
+	// Y（X反映後の位置で）
+	// --------------------
+	CollisionMapInfo yInfo{};
+	yInfo.move = { 0.0f, info.move.y, 0.0f };
+	yInfo.normal = { 0,0,0 };
+	yInfo.hasNormal = false;
+	yInfo.penX = 0.0f;
+	yInfo.penY = 0.0f;
+
+	CollisionMapInfoDirection(
+		base, yInfo, CollisionType::Top,
 		{ kLeftTop, kRightTop },
-		Vector3(0, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.y > 0; }
+		Vector3(0, parameter_.kCollisionEpsilon, 0),
+		[](const CollisionMapInfo& i) { return i.move.y > 0; },
+		enableGoal
+	);
+	CollisionMapInfoDirection(
+		base, yInfo, CollisionType::Bottom,
+		{ kLeftBottom, kRightBottom },
+		Vector3(0, -parameter_.kCollisionEpsilon, 0),
+		[](const CollisionMapInfo& i) { return i.move.y < 0; },
+		enableGoal
 	);
 
-	CollisionMapInfoDirection(// 下
-		info,
-		CollisionType::Bottom,
-		{ kLeftBottom, kRightBottom },
-		Vector3(0, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.y < 0; }
-	);
+	// Y反映
+	base.y += yInfo.move.y;
+	info.move.y = yInfo.move.y;
+
+	if (yInfo.hasNormal) {
+		info.normal = info.normal + yInfo.normal;
+		info.hasNormal = true;
+	}
+	info.ceiling = info.ceiling || yInfo.ceiling;
+	info.landing = info.landing || yInfo.landing;
+	info.penY = std::max(info.penY, yInfo.penY);
+	// ブロック破壊情報反映
+	if (yInfo.hasBreakBlock && !info.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = yInfo.breakBlockX;
+		info.breakBlockY = yInfo.breakBlockY;
+
+	}
+
+	if (yInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
 }
 
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 
 	Vector3 offseetTable[kNumCorner] = {
 
-		{+ parameter_.kWidth / 2.0f, - parameter_.kHeight / 2.0f, 0},
-		{- parameter_.kWidth / 2.0f, - parameter_.kHeight / 2.0f, 0},
-		{+ parameter_.kWidth / 2.0f, + parameter_.kHeight / 2.0f, 0},
-		{- parameter_.kWidth / 2.0f, + parameter_.kHeight / 2.0f, 0}
+		{+parameter_.kWidth / 2.0f, -parameter_.kHeight / 2.0f, 0},
+		{-parameter_.kWidth / 2.0f, -parameter_.kHeight / 2.0f, 0},
+		{+parameter_.kWidth / 2.0f, +parameter_.kHeight / 2.0f, 0},
+		{-parameter_.kWidth / 2.0f, +parameter_.kHeight / 2.0f, 0}
 	};
 
 	return center + offseetTable[static_cast<uint32_t>(corner)];
@@ -373,64 +733,53 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 
 	if (info.ceiling) {
 
-		Logger::Log("hit ceiling\n");
-		velocity_.y *= (1.0f - parameter_.kAttenuationLanding);
+		if (playerState_ == PlayerState::sticky) {
+
+			velocity_.x = 0.0f;
+			velocity_.y = 0.0f;
+			velocity_.z = 0.0f;
+		} else {
+
+			Logger::Log("hard\n");
+
+		}
 	}
 }
 
-void Player::OnGroundSwitching(const CollisionMapInfo& info) {
+void Player::LandingCollisionMove(const CollisionMapInfo& info) {
 
-	// 上向き速度が出たら地上扱い解除（ジャンプ開始）
-	if (onGround_) {
-		if (velocity_.y > 0.0f) {
-			onGround_ = false;
-			return;
-		}
 
-		// 移動後の中心座標
-		Vector3 movedPos = object3D_->GetTransform().translate + info.move;
-
-		// 足元に床が無ければ落下開始
-		if (!HasGroundBelow(movedPos)) {
-			onGround_ = false;
-		}
-		return;
-	}
-
-	// 空中：着地フラグが立ったら着地
 	if (info.landing) {
-		Logger::Log("hit landing\n");
-		velocity_.y = 0.0f;
-		onGround_ = true;
+
+		if (playerState_ == PlayerState::sticky) {
+
+			velocity_.x = 0.0f;
+			velocity_.y = 0.0f;
+			velocity_.z = 0.0f;
+		} else {
+
+			Logger::Log("hard\n");
+
+		}
 	}
 }
 
-bool Player::HasGroundBelow(const Vector3& movedCenterPos)
-{
-	const Vector3 left = CornerPosition(movedCenterPos, kLeftBottom) + Vector3(0, -parameter_.kCollisionEpsilon, 0);
-	const Vector3 right = CornerPosition(movedCenterPos, kRightBottom) + Vector3(0, -parameter_.kCollisionEpsilon, 0);
 
-	bool hit = false;
-
-	for (const auto& p : { left, right }) {
-		IndexSet idx = mapChipField_->GetMapChipIndexSetByPosition(p);
-		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
-
-		if (IsHittableBlock(chip)) { // Block/UnbreakableBlock
-			hit = true;
-		}
-		else if (chip == MapChipType::Goal) {
-			goal_ = true;
-		}
-	}
-	return hit;
-}
 
 void Player::HitWallCollisionMove(const CollisionMapInfo& info) {
 
 	if (info.hitWall) {
 
-		velocity_.x *= (1.0f - parameter_.kAttenuationWall);
+		if (playerState_ == PlayerState::sticky) {
+
+			velocity_.x = 0.0f;
+			velocity_.y = 0.0f;
+			velocity_.z = 0.0f;
+		} else {
+
+			Logger::Log("hard\n");
+
+		}
 	}
 }
 
@@ -445,65 +794,43 @@ Vector3 Player::GetWorldPosition() {
 	return worldPos;
 }
 
-void Player::Attack()
+void Player::PlayerShotAnimation()
 {
-
-	if (turnTimer_ > 0.0f) return;
-
-	int32_t fireInterval = 0;
-	int damage = 1;
-	Vector3 bulletScale{ 0.4f, 0.4f, 0.4f };
-
-	switch (currentWeaponType_) {
-	case WeaponType::Gatling:
-		fireInterval = 10;
-		damage = 1;
-		bulletScale = { 0.4f, 0.4f, 0.4f };
-		break;
-
-	case WeaponType::Cannon:
-		fireInterval = 120;
-		damage = 3;
-		bulletScale = { 1.5f, 1.5f, 1.5f };
-		break;
+	if (!isShotAnimation_) {
+		shotAnimationRotate_ = { 0,0,0 };
+		return;
 	}
 
-	if (fireTimer > 0) --fireTimer;
+	const float dt = 1.0f / 60.0f;
 
-	if (Input::GetInstance()->PushKey(DIK_SPACE) && fireTimer <= 0) {
-		fireTimer = fireInterval;
+	shotAnimationTimer_ += dt;
 
-		const float bulletSpeed = 1.0f;
+	float t = shotAnimationTimer_ / 0.4f;
 
-		Vector3 localVelocity(0, 0, bulletSpeed);
-		const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
-		localVelocity.y = std::sinf(rad) * bulletSpeed;
-		localVelocity.z = std::cosf(rad) * bulletSpeed;
-
-		Vector3 velocity = MyMath::TransformNormal(localVelocity, object3D_->GetWorldMatrix());
-
-		auto obj = std::make_unique<Object3D>();
-		obj->Initialize(Object3DCommon::GetInstance());
-		obj->SetModel("bullet.obj");
-		obj->SetScale(bulletScale);
-
-		auto newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(std::move(obj), GetWorldPosition(), velocity, mapChipField_);
-
-		newBullet->SetWeaponType(currentWeaponType_);
-		newBullet->SetPower(damage);
-
-		CollisionManager::GetInstance()->AddCollider(newBullet.get());
-		bullets_.push_back(std::move(newBullet));
+	if (t >= 1.0f) {
+		t = 1.0f;
+		isShotAnimation_ = false;
 	}
+
+	// スピン
+	shotAnimationRotate_.x = std::numbers::pi_v<float> *2.0f * t;
+	
+
+
 }
 
 void Player::PlayerParticle()
 {
 	// 地面にいて、左右どちらかに動いているときだけ排気ガス
-	bool isMoving = onGround_ && (playerMoveRight_ || playerMoveLeft);
+	bool isMoving = true;
 
-	const float dt = 1.0f / 60.0f; // 固定フレーム前提ならこれでOK
+	const float dt = 1.0f / 60.0f;
+
+	if (playerState_ == PlayerState::hard && isBarrierActive_) {
+		ParticleManager::GetInstance()->EmitFollowOne("barriering", object3D_->GetTransform());
+	} else {
+		ParticleManager::GetInstance()->StopFollow("barriering");
+	}
 
 	if (isMoving) {
 		exhaustTimer_ += dt;
@@ -516,114 +843,174 @@ void Player::PlayerParticle()
 			smokeTransform.translate = object3D_->GetTransform().translate;
 
 			// 進行方向のちょい後ろに出すと“排気”感が出る
-			if (lrDirection_ == LRDirecion::kright) {
+			if (direction_ == LRTBDirecion::kRight) {
 				smokeTransform.translate.x -= 0.15f;
-			}
-			else {
+			} else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
 			// 1回に2粒くらい
-			ParticleMnager::GetInstance()->Emit("dash_smoke", smokeTransform, 100, 0.8f);
+			exhaustEmitter_->SetPosition(smokeTransform.translate);
+			exhaustEmitter_->Emit();
+
+
 		}
-	}
-	else {
+
+	} else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
 }
-
-
-
-float Player::EaseOutSine(float x) { return std::sinf((x * std::numbers::pi_v<float>) * 0.5f); }
 
 bool Player::IsHittableBlock(MapChipType type)
 {
 	switch (type) {
 	case MapChipType::Block:
 	case MapChipType::UnbreakableBlock:
+	case MapChipType::damageBlock:
 		return true;
 	default:
 		return false;
 	}
 }
 
-bool Player::CheckCollisionPoints(const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info)
+bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info, bool enableGoal)
 {
+	const Vector3 movedCenter = basePos + info.move;
+
 	bool hit = false;
 
-	for (const auto& pos : posList) {
-		IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(pos);
-		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+	bool hasBest = false;
+	Rect bestRect{};
+	float bestPen = -1.0f;
 
-		
-		if (IsHittableBlock(chip)) {
-			hit = true;
-		}
-		else if (chip == MapChipType::Goal) {
-			goal_ = true;
-		}
-	}
+	for (const auto& p : posList) {
+		IndexSet idx = mapChipField_->GetMapChipIndexSetByPosition(p);
+		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
 
-	if (hit) {
-		Vector3 position = object3D_->GetTransform().translate;
-		IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
+		Rect r = mapChipField_->GetRectByIndex(idx.xIndex, idx.yIndex);
 
-		Rect rect = mapChipField_->GetRectByIndex(index.xIndex, index.yIndex);
-
+		float pen = 0.0f;
 		switch (type) {
-		case CollisionType::Top:
-			info.move.y = std::max(0.0f, rect.bottom - position.y - (parameter_.kHeight / 2.0f + parameter_.kBlank));
-			info.ceiling = true;
-			break;
-		case CollisionType::Bottom:
-			info.move.y = std::min(0.0f, rect.top - position.y + (parameter_.kHeight / 2.0f + parameter_.kBlank));
-			info.landing = true;
-			break;
 		case CollisionType::Right:
-			info.move.x = std::max(0.0f, rect.left - position.x - (parameter_.kWidth / 2.0f + parameter_.kBlank));
-			info.hitWall = true;
+			pen = (movedCenter.x + parameter_.kWidth * 0.5f) - r.left;
 			break;
 		case CollisionType::Left:
-			info.move.x = std::min(0.0f, rect.right - position.x + (parameter_.kWidth / 2.0f + parameter_.kBlank));
-			info.hitWall = true;
+			pen = r.right - (movedCenter.x - parameter_.kWidth * 0.5f);
 			break;
+		case CollisionType::Top:
+			pen = (movedCenter.y + parameter_.kHeight * 0.5f) - r.bottom;
+			break;
+		case CollisionType::Bottom:
+			pen = r.top - (movedCenter.y - parameter_.kHeight * 0.5f);
+			break;
+		}
+
+		if (chip == MapChipType::Goal) {
+			if (enableGoal) {
+				if (pen > -parameter_.kCollisionEpsilon) { // 少し甘くする
+					goal_ = true;
+				}
+			}
+			continue;
+		}
+
+		if (chip == MapChipType::damageBlock) {
+			if (pen > 0.0f) {
+				info.hitDamageBlock = true;
+
+			}
+		}
+
+		if (chip == MapChipType::Block) {
+			if (enableGoal && playerState_ == PlayerState::hard) {
+				if (pen > 0.0f) {
+					if (!info.hasBreakBlock) {
+						info.hasBreakBlock = true;
+						info.breakBlockX = idx.xIndex;
+						info.breakBlockY = idx.yIndex;
+					}
+				}
+			}
+		}
+
+		// 壁になるブロック以外は無視
+		if (!IsHittableBlock(chip)) continue;
+
+		hit = true;
+
+		// めり込みがある時だけ採用
+		if (pen > 0.0f) {
+			if (type == CollisionType::Right || type == CollisionType::Left) {
+				info.penX = std::max(info.penX, pen);
+			} else {
+				info.penY = std::max(info.penY, pen);
+			}
+
+			if (!hasBest || pen > bestPen) {
+				hasBest = true;
+				bestPen = pen;
+				bestRect = r;
+			}
 		}
 	}
 
-	return hit;
+	if (!hit || !hasBest) return false;
+
+	// 法線加算
+	Vector3 n = NormalFromType(type);
+	info.normal = info.normal + n;
+	info.hasNormal = true;
+
+	// 押し戻し（bestRect 基準）
+	switch (type) {
+	case CollisionType::Top:
+		// 天井：ブロックの bottom に合わせる
+		info.move.y = bestRect.bottom - basePos.y - (parameter_.kHeight * 0.5f + parameter_.kBlank);
+		info.ceiling = true;
+		break;
+
+	case CollisionType::Bottom:
+		// 床：ブロックの top に合わせる
+		info.move.y = bestRect.top - basePos.y + (parameter_.kHeight * 0.5f + parameter_.kBlank);
+		info.landing = true;
+		break;
+
+	case CollisionType::Right:
+		// 右壁：ブロックの left に合わせる
+		info.move.x = bestRect.left - basePos.x - (parameter_.kWidth * 0.5f + parameter_.kBlank);
+		info.hitWall = true;
+		break;
+
+	case CollisionType::Left:
+		// 左壁：ブロックの right に合わせる
+		info.move.x = bestRect.right - basePos.x + (parameter_.kWidth * 0.5f + parameter_.kBlank);
+		info.hitWall = true;
+		break;
+	}
+
+	return true;
 }
 
-void Player::CollisionMapInfoDirection(CollisionMapInfo& info, CollisionType dir, const std::array<Corner, 2>& checkCorners, const Vector3& offset, std::function<bool(const CollisionMapInfo&)> moveCondition)
-{
-	if (!moveCondition(info)) return;// 移動量が0なら何もしない
-	Vector3 position = object3D_->GetTransform().translate + info.move;// 現在の位置に移動量を加算
 
-	// 2つのコーナー位置を計算
+void Player::CollisionMapInfoDirection(
+	const Vector3& basePos,
+	CollisionMapInfo& info,
+	CollisionType dir,
+	const std::array<Corner, 2>& checkCorners,
+	const Vector3& offset,
+	std::function<bool(const CollisionMapInfo&)> moveCondition,
+	bool enableGoal
+)
+{
+	if (!moveCondition(info)) return;
+
+	Vector3 position = basePos + info.move;
+
 	std::array<Vector3, 2> points = {
 		CornerPosition(position, checkCorners[0]) + offset,
 		CornerPosition(position, checkCorners[1]) + offset
 	};
-	// 衝突判定を行う
-	if (CheckCollisionPoints(points, static_cast<CollisionType>(dir), info)) {
-#ifdef _DEBUG
-		switch (dir) {
-		case CollisionType::Top: Logger::Log("hit ceiling\n"); break;
-		case CollisionType::Bottom: Logger::Log("hit landing\n"); break;
-		case CollisionType::Left:
-		case CollisionType::Right: Logger::Log("hit hitwall\n"); break;
-		}
-#endif
-	}
-}
 
-void Player::RegisterColliders()
-{
-	auto* cm = CollisionManager::GetInstance();
-	// 自身を登録
-	cm->AddCollider(this);
-	// 弾をすべて登録
-	for (auto& b : bullets_) {
-		if (b) cm->AddCollider(b.get());
-	}
+	CheckCollisionPoints(basePos, points, dir, info, enableGoal);
 }

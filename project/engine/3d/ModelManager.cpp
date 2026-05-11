@@ -37,19 +37,25 @@ void ModelManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmnager)
 	modelCommon->Initialize(dxcommon, srvmanager_);
 }
 
-void ModelManager::LoadModel(const std::string& filePath)
+void ModelManager::LoadModel(const std::string& modelName)
 {
+
+	std::string directoryPath = "Resources/models/" + modelName+"/";
+	std::string fileName = modelName + ".obj";
+	std::string filePath = directoryPath + fileName;
+
 	// 読み込み済みモデルを検索
-	if (models.contains(filePath)) {
+	if (models.contains(modelName)) {
 		// 読み込み済みなら早期 return
 		return;
 	}
 	// モデルの生成とファイル読み込み、初期化（unique_ptr で所有）
 	std::unique_ptr<Model> model = std::make_unique<Model>();
-	model->Initialize(modelCommon.get(), "Resources", filePath);
+	model->Initialize(modelCommon.get(), directoryPath, fileName);
 
 	// モデルを map コンテナに格納する
-	models.insert(std::make_pair(filePath, std::move(model)));
+	// modelName をキーにして登録する
+	models.insert(std::make_pair(modelName, std::move(model)));
 }
 
 Model* ModelManager::FindModel(const std::string& filePath)

@@ -56,6 +56,9 @@ public:
 	/// </summary>
 	/// <param name="name"></param>
 	void SetActiveCamera(const std::string& name);
+	
+	
+
 
 
 

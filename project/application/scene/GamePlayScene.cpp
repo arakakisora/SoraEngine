@@ -14,6 +14,9 @@
 #include "LineCommon.h"
 #include "ControlGuide.h"
 
+#include "Easing.h"
+#include <algorithm>
+
 
 void GamePlayScene::Initialize()
 {
@@ -23,7 +26,7 @@ void GamePlayScene::Initialize()
 	//カメラの生成
 	camera = std::make_unique<Camera>();
 	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 0,0,-10, });
+	camera->SetTranslate({ 15,13,-60, });
 	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
 
 	debugCamera = std::make_unique<Camera>();
@@ -71,8 +74,7 @@ void GamePlayScene::Initialize()
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPostion);
-	player->SetDeathHeight(0.0f);
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ playerPostion.x,playerPostion.y,-10, });
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
@@ -92,14 +94,9 @@ void GamePlayScene::Initialize()
 	//3Dオブジェクトの初期化
 	object3D2nd = std::make_unique<Object3D>();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
-	object3D2nd->SetModel("plane.obj");
+	object3D2nd->SetModel("plane");
 
-	//フォローカメラ設定
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowTarget(player->GetObject3D(), { 0, 1, -12 });
-	CameraManager::GetInstance()->GetCamera("maincam")->SetRotate({ 0.15f,0,0 });
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBoundsEnabled(false);
-	CameraManager::GetInstance()->GetCamera("maincam")->SetFollowBounds({ 4.0f, 5.0f, -100.0f }, { 47.0f, 20.0f, 50.0f });
+	
 
 	//ゴールの初期化
 	goal = std::make_unique<Goal>();
@@ -127,20 +124,40 @@ void GamePlayScene::Finalize()
 void GamePlayScene::UpdateGameLogic(float dt)
 {
 	
-	goal->Update(player->GetGoal(), dt);
 
+	goal->Update(player->GetGoal(), dt,player->GetObject3D()->GetTransform().translate);
 	const float fixedDt = dt;
+	Vector3 offset = { 0, 0, -20 };
+	Vector3 playerPostion = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	if (!spawnPositions.empty()) {
+		// マップに player スポーンが複数ある場合は最初のものを使用
+		playerPostion = spawnPositions.front();
+	}
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
-
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player->GetObject3D()->GetTransform().translate + offset);
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
-			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
+			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+
+			Vector3 startPos = playerPostion + offset;
+			Vector3 endPos = { 13, 6.85f, -32.0f };
+			StartCameraBlend(startPos, endPos, 1.0f);
+			
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
 		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
 	}
 	else {
+
+		if (isCameraBlending_) {
+			UpdateCameraBlend(dt);
+		}
+		else {
+			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
+		}
+
 		// ゲーム進行系（ポーズ中は実行しない）
 		if (!player->GetIsDead_()) {
 			player->Update();
@@ -150,7 +167,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 
 		// 衝突周りはゲームロジック
 		CollisionManager::GetInstance()->Clear();
-		player->RegisterColliders();
 		enemyManager_->RegisterColliders();
 		CollisionManager::GetInstance()->Update();
 
@@ -160,7 +176,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 	// プレイヤーが死んだらゲームオーバー演出
 	if (player->GetIsDead_()) {
 		gameOverEffect_->Update(dt);
-		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
+		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 	}
 	if (!gameOverEffect_->IsPlaying()) {
 		SceneManager::GetInstance()->ChangeScene("GAMEOVER");
@@ -170,7 +186,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 void GamePlayScene::UpdateObjects(float dt)
 {
 	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
-	// 例: Object3D の更新、エネミーの transform 更新、ブロックのビジュアル更新、パーティクル
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
 		player->GetObject3D()->Update();
@@ -184,6 +199,44 @@ void GamePlayScene::UpdateObjects(float dt)
 
 	// ブロックやパーティクルなどは常に更新
 	generateBlock_.Update();
+
+}
+
+void GamePlayScene::StartCameraBlend(const Vector3& start, const Vector3& end, float duration)
+{
+	isCameraBlending_ = true;
+	cameraBlendTimer_ = 0.0f;
+	cameraBlendDuration_ = duration;
+	cameraBlendStartPos_ = start;
+	cameraBlendEndPos_ = end;
+
+}
+
+void GamePlayScene::UpdateCameraBlend(float dt)
+{
+
+	if (!isCameraBlending_) {
+		return;
+	}
+
+	cameraBlendTimer_ += dt;
+
+	float t = cameraBlendTimer_ / cameraBlendDuration_;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	Vector3 pos = Easing::EaseLerp(
+		cameraBlendStartPos_,
+		cameraBlendEndPos_,
+		t,
+		Easing::EaseOutSine
+	);
+
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(pos);
+
+	if (t >= 1.0f) {
+		isCameraBlending_ = false;
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(cameraBlendEndPos_);
+	}
 
 }
 
@@ -202,6 +255,13 @@ void GamePlayScene::Update()
 
 	// 固定 dt
 	const float dt = 1.0f / 60.0f;
+
+	if (!isPaused &&
+		Input::GetInstance()->TriggerKey(DIK_R)) {
+
+		ResetStage();
+	
+	}
 
 	// ゲームロジックはポーズ時に止める
 	if (!isPaused) {
@@ -234,7 +294,7 @@ void GamePlayScene::Draw()
 		{
 			stageStartEffect_->Draw();
 		} // ←ゲートのみ描画
-		player->Draw();            // ←プレイヤーを別に描画
+		player->Draw();            
 	}
 	else {
 
@@ -249,7 +309,7 @@ void GamePlayScene::Draw()
 	pauseMenu->Draw();
 
 	//object3D2nd->Draw();
-	ParticleMnager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 	LineCommon::GetInstance()->Draw();
 #pragma endregion
 
@@ -275,7 +335,6 @@ void GamePlayScene::Imguidebug()
 {
 	//マップ作製エディタ
 	editor.Run();
-
 
 	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
 	if (editor.GetReloadRequested() == true) {
@@ -314,21 +373,25 @@ void GamePlayScene::Imguidebug()
 #ifdef USE_IMGUI
 	ControlGuide::GetInstance()->DebugImGui();
 
+	ImGui::Begin("Camera Menu");
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (ImGui::Button("Switch to Main Camera")) {
 			CameraManager::GetInstance()->SetActiveCamera("maincam");
-			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(true);
+			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
 		}
 		if (ImGui::Button("Switch to Sub Camera")) {
 			CameraManager::GetInstance()->SetActiveCamera("debugcam");
 			CameraManager::GetInstance()->GetActiveCamera()->SetFollowMode(false);
 		}
 	}
+	ImGui::End();
 
 	if (ImGui::Button("TITELEScene"))
 	{
 		SceneManager::GetInstance()->ChangeScene("TITELE");
 	}
+
+	ParticleManager::GetInstance()->ImguiDrawEditor();
 #endif // USE_IMGUI
 
 }
@@ -336,17 +399,65 @@ void GamePlayScene::Imguidebug()
 void GamePlayScene::Road()
 {
 	//3Dオブジェクト読み込み
-	ModelManager::GetInstance()->LoadModel("plane.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
-	ModelManager::GetInstance()->LoadModel("cube.obj");
-	ModelManager::GetInstance()->LoadModel("player.obj");
-	ModelManager::GetInstance()->LoadModel("blokc.obj");
-	ModelManager::GetInstance()->LoadModel("skyplane.obj");
-	ModelManager::GetInstance()->LoadModel("enemy.obj");
-	ModelManager::GetInstance()->LoadModel("goal.obj");
-	ModelManager::GetInstance()->LoadModel("bullet.obj");
-	ModelManager::GetInstance()->LoadModel("sphere.obj");
-	ModelManager::GetInstance()->LoadModel("gate.obj");
-	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
+	ModelManager::GetInstance()->LoadModel("plane");
+	ModelManager::GetInstance()->LoadModel("axis");
+	ModelManager::GetInstance()->LoadModel("cube");
+
+	ModelManager::GetInstance()->LoadModel("player");
+	ModelManager::GetInstance()->LoadModel("block");
+	ModelManager::GetInstance()->LoadModel("skyplane");
+	ModelManager::GetInstance()->LoadModel("enemy");
+	ModelManager::GetInstance()->LoadModel("goal");
+	ModelManager::GetInstance()->LoadModel("sphere");
+	ModelManager::GetInstance()->LoadModel("gate");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlokc");
+	ModelManager::GetInstance()->LoadModel("damageblock");
+}
+
+void GamePlayScene::ResetStage()
+{
+
+	const int stageIndex = SceneManager::GetInstance()->GetStageIndex();
+	const int kAvailableMaps = 12;
+
+	std::string stagePath;
+	if (stageIndex >= 0 && stageIndex < kAvailableMaps) {
+		stagePath = "Resources/Mapdata/Map" + std::to_string(stageIndex + 1) + ".csv";
+	} else {
+		stagePath = "Resources/Mapdata/Map1.csv";
+	}
+
+	// マップをCSVから戻す
+	mapChipField_->LoadMapChipCsv(stagePath);
+
+	// ブロックを作り直す
+	generateBlock_.Initialize(mapChipField_.get());
+	generateBlock_.GenerateObject3D();
+
+	// プレイヤースポーン取得
+	Vector3 playerPosition{};
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
+	if (!spawnPositions.empty()) {
+		playerPosition = spawnPositions.front();
+	}
+
+	player = std::make_unique<Player>();
+	player->SetMapChipField(mapChipField_.get());
+	player->Initialize(playerPosition);
+
+	enemyManager_ = std::make_unique<EnemyManager>();
+	enemyManager_->Initialize(mapChipField_.get());
+
+	goal = std::make_unique<Goal>();
+	goal->Initialize(mapChipField_.get(), player.get());
+
+	gameOverEffect_ = std::make_unique<GameOverEffect>();
+	gameOverEffect_->Initialize(player->GetObject3D());
+
+	isStageStartPlaying_ = false;
+	isCameraBlending_ = false;
+
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13, 6.85f, -32.0f });
+
 }
 

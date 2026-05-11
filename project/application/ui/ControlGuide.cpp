@@ -8,8 +8,8 @@
 #include <imgui.h>
 #endif // _DEBUG
 
-// シングルトンの所有権を unique_ptr に移行。
-// ヘッダで `static std::unique_ptr<ControlGuide> instance_;` を宣言している前提。
+
+
 std::unique_ptr<ControlGuide> ControlGuide::instance_ = nullptr;
 
 ControlGuide* ControlGuide::GetInstance() {
@@ -40,6 +40,18 @@ void ControlGuide::DebugImGui() {
         ImGui::DragFloat("Row Spacing", &rowSpacing_, 0.5f, 0.0f, 80.0f);
         ImGui::DragFloat("Margin X", &marginX_, 0.5f, 0.0f, 300.0f);
         ImGui::DragFloat("Margin Y", &marginY_, 0.5f, 0.0f, 300.0f);
+
+        const char* items[] = { "Vertical", "Horizontal" };
+
+        int leftDir = static_cast<int>(leftStackDirection_);
+        if (ImGui::Combo("Left Stack", &leftDir, items, 2)) {
+            leftStackDirection_ = static_cast<StackDirection>(leftDir);
+        }
+
+        int rightDir = static_cast<int>(rightStackDirection_);
+        if (ImGui::Combo("Right Stack", &rightDir, items, 2)) {
+            rightStackDirection_ = static_cast<StackDirection>(rightDir);
+        }
 
         ImGui::Separator();
 
@@ -82,14 +94,11 @@ void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
     struct Setup { const char* icon; Vector2 iconSize; Entry::Side side; float localScale; };
     // 左下グループ： W/A/D/Space、右下グループ：マウスホイール/上下キー
     const Setup setups[] = {
-        { "Resources/key_w.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/key_a.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/key_d.jpg",    {64,64}, Entry::Side::Left },
-        { "Resources/space.jpg",    {64,64}, Entry::Side::Left },
+        { "Resources/UI/space.png",    {128,128}, Entry::Side::Left },
 
-        { "Resources/mouse_wheel.jpg", {64,64}, Entry::Side::Right },
-        { "Resources/arrow_up.jpg",    {64,64}, Entry::Side::Right },
-        { "Resources/arrow_down.jpg",  {64,64}, Entry::Side::Right },
+        { "Resources/UI/mouse.png", {128,128}, Entry::Side::Right },
+        { "Resources/UI/up.png",    {128,128}, Entry::Side::Right },
+        { "Resources/UI/down.png",  {128,128}, Entry::Side::Right },
     };
 
     // 既存エントリをクリアして再構築
@@ -166,15 +175,16 @@ void ControlGuide::UpdateLayout() {
     float leftStartX = marginX_ + offset_.x + leftOffset_.x;
     float leftStartY = screenH - marginY_ - leftH + offset_.y + leftOffset_.y;
 
+    float x = leftStartX; 
     float y = leftStartY;
     for (auto p : lefts) {
         Vector2 scaledSize = { p->size.x * scale_, p->size.y * scale_ };
 
         if (spritePivotIsCenter_) {
-            p->position.x = leftStartX + scaledSize.x * 0.5f;
+            p->position.x = x + scaledSize.x * 0.5f;
             p->position.y = y + scaledSize.y * 0.5f;
         } else {
-            p->position.x = leftStartX;
+            p->position.x = x;
             p->position.y = y;
         }
 
@@ -186,7 +196,11 @@ void ControlGuide::UpdateLayout() {
             p->position.y = std::clamp(p->position.y, 0.0f + halfH, screenH - halfH);
         }
 
-        y += scaledSize.y + rowSpacing_;
+        if (leftStackDirection_ == StackDirection::Vertical) {
+            y += scaledSize.y + rowSpacing_;
+        } else {
+            x += scaledSize.x + rowSpacing_;
+        }
     }
 
     // ---- 右下グループ配置
@@ -194,14 +208,15 @@ void ControlGuide::UpdateLayout() {
     float rightStartY = screenH - marginY_ - rightH + offset_.y + rightOffset_.y;
 
     y = rightStartY;
+	x = rightStartX;
     for (auto p : rights) {
         Vector2 scaledSize = { p->size.x * scale_, p->size.y * scale_ };
 
         if (spritePivotIsCenter_) {
-            p->position.x = rightStartX + scaledSize.x * 0.5f;
+            p->position.x = x + scaledSize.x * 0.5f;
             p->position.y = y + scaledSize.y * 0.5f;
         } else {
-            p->position.x = rightStartX;
+            p->position.x = x;
             p->position.y = y;
         }
 
@@ -212,7 +227,11 @@ void ControlGuide::UpdateLayout() {
             p->position.y = std::clamp(p->position.y, 0.0f + halfH, screenH - halfH);
         }
 
-        y += scaledSize.y + rowSpacing_;
+        if (rightStackDirection_ == StackDirection::Vertical) {
+            y += scaledSize.y + rowSpacing_;
+        } else {
+            x += scaledSize.x + rowSpacing_;
+        }
     }
 }
 

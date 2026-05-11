@@ -9,16 +9,26 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 #include <memory>
+#include <ParticleMnager.h>
+#include <ChargeBehabiaor.h>
 
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
 	// モデル読み込み（ModelManager は単一インスタンス）
-	ModelManager::GetInstance()->LoadModel("player.obj");
-	ModelManager::GetInstance()->LoadModel("title.obj"); // タイトルモデル
+	ModelManager::GetInstance()->LoadModel("player");
+	ModelManager::GetInstance()->LoadModel("title"); // タイトルモデル
 
 	// フェードの初期化（白）
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
+
+	// 2Dゲート遷移（IN）
+	gate_ = std::make_unique<GateInOut>();
+	gate_->Initialize(SpriteCommon::GetInstance(),
+		"Resources/block.png", "Resources/block.png");
+	gate_->SetScreenSize(1280.0f, 720.0f); // WinAppから取れるならそれで
+	gateOutRequested_ = false;
+	fadeOutRequested_ = false;
 
 	// タイトルスプライトを作成して初期パラメータ設定
 	titleSprite_ = std::make_unique<Sprite>();
@@ -29,8 +39,8 @@ void TitleScene::Initialize() {
 	// プレイヤー Object3D を生成してセットアップ
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("player.obj");
-	object3D_->SetScale(Vector3{ 0.25f, 0.25f, 0.25f });
+	object3D_->SetModel("player");
+	object3D_->SetScale(Vector3{ 1.0f, 1.0f, 1.0f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f, -1.82f, -4.77f });
@@ -39,7 +49,7 @@ void TitleScene::Initialize() {
 	// タイトルモデル生成・配置
 	titleObj_ = std::make_unique<Object3D>();
 	titleObj_->Initialize(Object3DCommon::GetInstance());
-	titleObj_->SetModel("title.obj");
+	titleObj_->SetModel("title");
 	titleObj_->SetLighting(false);
 	titleObj_->SetRotate({ 0, kYawFront, 0 });
 
@@ -61,6 +71,13 @@ void TitleScene::Initialize() {
 	// 状態初期化
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;
+	// プレイヤーパーティクル
+	//ParticleManager::GetInstance()->CreateParticleGroup(
+	//	"dash_smoke",
+	//	"Resources/ParticleTexture/smoke.png", // 使いたいテクスチャ
+	//	VerticesType::Quad,
+	//	std::make_unique<ExhaustGasBehavior>()
+	//);
 }
 
 // 終了処理：CameraManager から削除し、unique_ptr が破棄してメモリ解放
@@ -78,6 +95,9 @@ void TitleScene::Finalize() {
 void TitleScene::Update() {
 	// カメラ更新・フェード更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
+
+	float dt = 1.0f / 60.0f;
+	if (gate_) gate_->Update(dt);
 	fadeManager_.Update();
 
 	// オブジェクト更新（存在チェック）
@@ -178,12 +198,16 @@ void TitleScene::Update() {
 
 			float rotateY = (dir > 0) ? kYawRight : kYawLeft;
 
+			lrDirection_ = (dir > 0) ? LRDirecion::kright : LRDirecion::kLeft;
+
+
 			EulerTransform tr = object3D_->GetTransform();
 			tr.translate.x = playerX_;
 			tr.translate.y = playerTargetUnderTitleY_;
 			tr.rotate.y = rotateY;
 			object3D_->SetTransform(tr);
-		} else {
+		}
+		else {
 			// 中央に到達 → 正面で停止
 			EulerTransform tr = object3D_->GetTransform();
 			tr.translate.x = playerX_;
@@ -193,43 +217,106 @@ void TitleScene::Update() {
 			state_ = TitleAnimState::Idle;
 		}
 	} break;
-
 	case TitleAnimState::Idle: {
 		// ループ制御：一定時間待ってリセットする
 		if (!loop_) break;
-		idleTimer_ += 1.0f / 60.0f;        // 固定フレーム想定
-		if (idleTimer_ > loopWaitSec_) {
-			ResetTitleAnimation();
-			// state_ は Reset で IntroRun に戻る
+
+		idleTimer_ += 1.0f / 30.0f;
+
+		if (!loopFadePlaying_ && idleTimer_ > loopWaitSec_) {
+			// まず暗転(or白転)開始して“リセットの瞬間”を隠す
+			loopFadePlaying_ = true;
+			loopDoReset_ = true;
+			fadeManager_.StartFadeOut(0.5f);
 		}
+
+		// フェードアウトが終わった瞬間にリセットを実行
+		if (loopFadePlaying_ && loopDoReset_ && fadeManager_.IsFadeOutFinished()) {
+			ResetTitleAnimation();           // 瞬間移動しても見えない
+			fadeManager_.StartFadeIn();      // そのままフェードインで復帰
+		}
+	
 	} break;
 	}
 
-	// スペースキーでシーン遷移（フェード開始）
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+
+	if (!gateOutRequested_ &&
+		(!gate_ || !gate_->IsPlaying()) &&
+		Input::GetInstance()->TriggerKey(DIK_SPACE))
+	{
+		gateOutRequested_ = true;
+		if (gate_) gate_->StartOut(0.6f);
+	}
+
+	if (gateOutRequested_ && !fadeOutRequested_ && gate_ && gate_->IsFinished()) {
+		fadeOutRequested_ = true;
+
+		gate_->HoldClosed(true);
+
 		fadeManager_.StartFadeOut();
 	}
-	if (fadeManager_.IsFadeOutFinished()) {
+
+	if (fadeOutRequested_ && fadeManager_.IsFadeOutFinished()) {
+
 		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 
 	ImguiDraw();
+	PlayerParticle();
 }
 
-// 描画：3D -> 2D の順で描画
+// 描画
 void TitleScene::Draw() {
 	Object3DCommon::GetInstance()->CommonDraw();
 	if (titleObj_) titleObj_->Draw();
 	if (object3D_) object3D_->Draw();
 
+	ParticleManager::GetInstance()->Draw();
+
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (titleSprite_) titleSprite_->Draw();
+	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
+}
+
+void TitleScene::PlayerParticle()
+{
+
+
+	const float dt = 1.0f / 60.0f;
+
+
+	exhaustTimer_ += dt;
+
+	// 一定間隔ごとにだけ煙を出す
+	if (exhaustTimer_ >= kExhaustInterval) {
+		exhaustTimer_ = 0.0f;
+
+		EulerTransform smokeTransform{};
+		smokeTransform.translate = object3D_->GetTransform().translate;
+
+		// 進行方向のちょい後ろに出すと“排気”感が出る
+		if (lrDirection_ == LRDirecion::kright) {
+			smokeTransform.translate.x -= 0.15f;
+		}
+		else {
+			smokeTransform.translate.x += 0.15f;
+		}
+		
+		// 1回に2粒くらい
+		ParticleManager::GetInstance()->Emit("dash_smoke", smokeTransform);
+	}
+
 }
 
 // アンカー／初期化を揃える（1周分リセット）
 void TitleScene::ResetTitleAnimation()
 {
+
+	// フェード用フラグも戻す
+	loopFadePlaying_ = false;
+	loopDoReset_ = false;
+
 	// 状態とパラメータを初期化して再スタートできる状態へ戻す
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;

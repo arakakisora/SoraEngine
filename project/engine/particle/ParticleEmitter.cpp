@@ -20,7 +20,7 @@ void ParticleEmitter::Update()
 
 	// 寿命（frequency）を超えたら発生
 	if (frequencyTime >= frequency) {
-		ParticleMnager::GetInstance()->Emit(name_, transform_, count, frequency);
+		ParticleManager::GetInstance()->Emit(name_, transform_);
 		frequencyTime = 0.0f;
 	}
 }
@@ -29,6 +29,6 @@ void ParticleEmitter::Emit()
 {
 
 	//パーティクルを発生
-	ParticleMnager::GetInstance()->Emit(name_, transform_, count, frequency);
+	ParticleManager::GetInstance()->Emit(name_, transform_);
 
 }

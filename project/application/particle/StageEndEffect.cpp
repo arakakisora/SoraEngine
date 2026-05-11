@@ -11,8 +11,8 @@ void StageEndEffect::Initialize(Object3D* player, const Vector3& gatePos) {
 
 	gateL_->Initialize(Object3DCommon::GetInstance());
 	gateR_->Initialize(Object3DCommon::GetInstance());
-	gateL_->SetModel("gate.obj");
-	gateR_->SetModel("gate.obj");
+	gateL_->SetModel("gate");
+	gateR_->SetModel("gate");
 	gateL_->SetLighting(false);
 	gateR_->SetLighting(false);
 
@@ -47,6 +47,7 @@ void StageEndEffect::Update(float dt) {
 		tr.translate.x = basePos_.x;
 		tr.translate.y = basePos_.y;
 		tr.translate.z = basePos_.z + (playerEndPos_.z - basePos_.z) * u;
+		tr.rotate = { 0.0f, 3.0f, 0.0f };
 		player_->SetTransform(tr);
 
 		if (t >= 1.0f) {

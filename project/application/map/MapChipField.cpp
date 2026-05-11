@@ -200,6 +200,7 @@ void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int da
 		// 壊れた -> 空にする
 		mapChipData_.data[yIndex][xIndex] = MapChipType::Empty;
 		hp = 0;
+
 	}
 }
 
