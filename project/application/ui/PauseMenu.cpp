@@ -26,15 +26,15 @@ void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 	pauseType_ = type;
 
 	// ベースオブジェクト準備
-	ModelManager::GetInstance()->LoadModel("PauseMenu/Pause.obj");
-	ModelManager::GetInstance()->LoadModel("PauseMenu/return.obj");
-	ModelManager::GetInstance()->LoadModel("PauseMenu/StageSelect.obj");
-	ModelManager::GetInstance()->LoadModel("PauseMenu/title.obj");
+	ModelManager::GetInstance()->LoadModel("Pause");
+	ModelManager::GetInstance()->LoadModel("return");
+	ModelManager::GetInstance()->LoadModel("StageSelect");
+	ModelManager::GetInstance()->LoadModel("titlemenu");
 
 	transform.translate = { -2.6f,1.5f,0.0f };
 	object = std::make_unique<Object3D>();
 	object->Initialize(object3dcommon_);
-	object->SetModel("PauseMenu/Pause.obj");
+	object->SetModel("Pause");
 	object->SetScale({ 1.0f,1.0f,1.0f });
 	input = Input::GetInstance();
 
@@ -42,7 +42,7 @@ void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 	menuItems_.clear();
 	if (pauseType_ == PauseType::GamePlayScene) {
 		menuItems_.push_back({
-			"PauseMenu/return.obj",
+			"return",
 			// 戻るアクション
 			[this]() { isPaused_ = false; },
 			1.0f,   // maxScale
@@ -50,7 +50,7 @@ void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 			1.8f    // offsetY
 		});
 		menuItems_.push_back({
-			"PauseMenu/StageSelect.obj",
+			"StageSelect",
 			// ステージセレクトへ遷移
 			[this]() { SceneManager::GetInstance()->ChangeScene("STAGESELECT"); },
 			0.6f,   // maxScale (非選択での上限)
@@ -60,14 +60,14 @@ void PauseMenu::Initialize(Object3DCommon* object3dcommon, PauseType type) {
 	}
 	else { // StageSelectScene
 		menuItems_.push_back({
-			"PauseMenu/return.obj",
+			"return",
 			[this]() { isPaused_ = false; },
 			1.0f,
 			0.9f,
 			1.3f
 		});
 		menuItems_.push_back({
-			"PauseMenu/title.obj",
+			"titlemenu",
 			[this]() { SceneManager::GetInstance()->ChangeScene("TITELE"); },
 			0.6f,
 			0.9f,

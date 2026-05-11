@@ -16,8 +16,8 @@ void StageStartEffect::Initialize(Object3D* player, const Vector3& basePos) {
     gateLeft_->Initialize(Object3DCommon::GetInstance());
     gateRight_->Initialize(Object3DCommon::GetInstance());
 
-    gateLeft_->SetModel("gate.obj");
-    gateRight_->SetModel("gate.obj");
+    gateLeft_->SetModel("gate");
+    gateRight_->SetModel("gate");
     gateLeft_->SetLighting(false);
     gateRight_->SetLighting(false);
 

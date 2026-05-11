@@ -23,7 +23,7 @@ void Player::Initialize(const Vector3& position) {
 	playerPosition_ = position;
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("player.obj");
+	object3D_->SetModel("player");
 	object3D_->SetScale(Vector3{ 0.5f,0.5f,0.5f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);

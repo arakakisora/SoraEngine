@@ -11,8 +11,8 @@ void StageEndEffect::Initialize(Object3D* player, const Vector3& gatePos) {
 
 	gateL_->Initialize(Object3DCommon::GetInstance());
 	gateR_->Initialize(Object3DCommon::GetInstance());
-	gateL_->SetModel("gate.obj");
-	gateR_->SetModel("gate.obj");
+	gateL_->SetModel("gate");
+	gateR_->SetModel("gate");
 	gateL_->SetLighting(false);
 	gateR_->SetLighting(false);
 

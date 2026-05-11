@@ -21,7 +21,7 @@ void Enemy2::Initialize() {
 			// Object3Dの生成と初期化
 	object3D_ = std::make_unique<Object3D>();;
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("enemy.obj");
+	object3D_->SetModel("enemy");
 
 	//エネミーの初期位置
 	object3D_->SetTranslate(position_);

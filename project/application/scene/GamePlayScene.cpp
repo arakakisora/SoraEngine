@@ -94,7 +94,7 @@ void GamePlayScene::Initialize()
 	//3Dオブジェクトの初期化
 	object3D2nd = std::make_unique<Object3D>();
 	object3D2nd->Initialize(Object3DCommon::GetInstance());
-	object3D2nd->SetModel("plane.obj");
+	object3D2nd->SetModel("plane");
 
 	
 
@@ -102,8 +102,8 @@ void GamePlayScene::Initialize()
 	goal = std::make_unique<Goal>();
 	goal->Initialize(mapChipField_.get(), player.get());
 
-	//// ControlGuide の初期化
-	//ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
+	// ControlGuide の初期化
+	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
 
 	//ポーズメニュー
 	pauseMenu = std::make_unique<PauseMenu>();
@@ -318,8 +318,8 @@ void GamePlayScene::Draw()
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (!pauseMenu->IsPaused()) {
-		//// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
-		//ControlGuide::GetInstance()->Render();
+		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+		ControlGuide::GetInstance()->Render();
 	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
@@ -371,7 +371,7 @@ void GamePlayScene::Imguidebug()
 	}
 
 #ifdef USE_IMGUI
-	//ControlGuide::GetInstance()->DebugImGui();
+	ControlGuide::GetInstance()->DebugImGui();
 
 	ImGui::Begin("Camera Menu");
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -399,20 +399,19 @@ void GamePlayScene::Imguidebug()
 void GamePlayScene::Road()
 {
 	//3Dオブジェクト読み込み
-	ModelManager::GetInstance()->LoadModel("plane.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
-	ModelManager::GetInstance()->LoadModel("cube.obj");
-	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("plane");
+	ModelManager::GetInstance()->LoadModel("axis");
+	ModelManager::GetInstance()->LoadModel("cube");
 
-	ModelManager::GetInstance()->LoadModel("blokc.obj");
-	ModelManager::GetInstance()->LoadModel("skyplane.obj");
-	ModelManager::GetInstance()->LoadModel("enemy.obj");
-	ModelManager::GetInstance()->LoadModel("goal.obj");
-	ModelManager::GetInstance()->LoadModel("bullet.obj");
-	ModelManager::GetInstance()->LoadModel("sphere.obj");
-	ModelManager::GetInstance()->LoadModel("gate.obj");
-	ModelManager::GetInstance()->LoadModel("unbreakableBlokc.obj");
-	ModelManager::GetInstance()->LoadModel("damageblock.obj");
+	ModelManager::GetInstance()->LoadModel("player");
+	ModelManager::GetInstance()->LoadModel("block");
+	ModelManager::GetInstance()->LoadModel("skyplane");
+	ModelManager::GetInstance()->LoadModel("enemy");
+	ModelManager::GetInstance()->LoadModel("goal");
+	ModelManager::GetInstance()->LoadModel("sphere");
+	ModelManager::GetInstance()->LoadModel("gate");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlokc");
+	ModelManager::GetInstance()->LoadModel("damageblock");
 }
 
 void GamePlayScene::ResetStage()

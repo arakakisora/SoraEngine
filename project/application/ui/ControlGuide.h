@@ -43,6 +43,10 @@ public:
     void SetMargins(float marginX, float marginY) { marginX_ = marginX; marginY_ = marginY; }
 
 private:
+    enum class StackDirection {
+        Vertical,
+        Horizontal
+    };
  
     struct Entry {
         std::unique_ptr<Sprite> icon;
@@ -61,11 +65,16 @@ private:
 
     void UpdateLayout(); // レイアウト計算
 
+private:
+   
+    StackDirection leftStackDirection_ = StackDirection::Vertical;
+    StackDirection rightStackDirection_ = StackDirection::Vertical;
+
     std::vector<Entry> entries_;
     bool visible_ = true;
     SpriteCommon* spriteCommon_ = nullptr;
 
-    static std::unique_ptr<ControlGuide> instance_; // 所有権を unique_ptr に
+    static std::unique_ptr<ControlGuide> instance_; 
 
     // レイアウト設定
     Anchor anchor_ = Anchor::TopLeft;

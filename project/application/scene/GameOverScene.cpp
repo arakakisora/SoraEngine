@@ -25,10 +25,10 @@ void GameOverScene::Initialize()
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 
-	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("player");
 	playerObj = std::make_unique<Object3D>();
 	playerObj->Initialize(Object3DCommon::GetInstance());
-	playerObj->SetModel("player.obj");
+	playerObj->SetModel("player");
 	playerObj->SetLighting(true);
 	playerObj->SetEnableLighting(true);
 	playerObj->SetDirectionalLightEnable(true);

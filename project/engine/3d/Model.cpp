@@ -9,7 +9,7 @@
 
 void Model::Initialize(ModelCommon* modeleCommon, const std::string& directorypath, const std::string& filename)
 {
-	
+
 
 	modelCommon_ = modeleCommon;
 
@@ -144,7 +144,7 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, c
 
 	MaterialData provisionalmaterialData;//構築するMaterialData
 	std::string line;//ファイルから読んだ1行を格納するもの
-	std::ifstream file(directorypath + "/" + filename);//ファイルを開く
+	std::ifstream file(directorypath + filename);//ファイルを開く
 	assert(file.is_open());//とりあえず開けなっかたら止める
 	while (std::getline(file, line)) {
 		std::string identifile;
@@ -157,7 +157,7 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directorypath, c
 			std::string textureFilename;
 			s >> textureFilename;
 			//連結してファイルパスにする
-			provisionalmaterialData.textureFilePath = directorypath + "/" + textureFilename;
+			provisionalmaterialData.textureFilePath = directorypath + textureFilename;
 
 		}
 
@@ -172,7 +172,7 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 {
 	ModelData provisionalmodelData;//構築するModekData
 	Assimp::Importer importer;
-	std::string path = ditrectoryPath + "/" + "models" + "/" + filename;
+	std::string path = ditrectoryPath + filename;
 	const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
 	assert(scene->HasMeshes());//メッシュが何の歯対応しない
 
@@ -232,12 +232,16 @@ ModelData Model::LoadModelFile(const std::string& ditrectoryPath, const std::str
 	//マテリアルの解析
 	for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
 		aiMaterial* material = scene->mMaterials[materialIndex];
+
 		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
 			aiString texturePath;
 			material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath);
-			provisionalmodelData.material.textureFilePath = ditrectoryPath + "/" + texturePath.C_Str();
+
+			provisionalmodelData.material.textureFilePath =
+				ditrectoryPath + texturePath.C_Str();
 		}
 	}
+
 
 	provisionalmodelData.rootNode = ReadNode(scene->mRootNode);
 
@@ -248,7 +252,7 @@ Animation Model::LoadAnimationFile(const std::string& directoryPath, const std::
 {
 	Animation provisionalanimation;
 	Assimp::Importer importer;
-	std::string filepath = directoryPath + "/" + "models" + "/" + filename;
+	std::string filepath = directoryPath + filename;
 	const aiScene* scene = importer.ReadFile(filepath.c_str(), 0);
 	// アニメーションがない場合、空のAnimationを返す
 	if (scene->mNumAnimations == 0) {

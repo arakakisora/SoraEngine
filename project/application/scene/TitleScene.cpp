@@ -15,8 +15,8 @@
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
 	// モデル読み込み（ModelManager は単一インスタンス）
-	ModelManager::GetInstance()->LoadModel("player.obj");
-	ModelManager::GetInstance()->LoadModel("title.obj"); // タイトルモデル
+	ModelManager::GetInstance()->LoadModel("player");
+	ModelManager::GetInstance()->LoadModel("title"); // タイトルモデル
 
 	// フェードの初期化（白）
 	fadeManager_.Initialize("Resources/white.png");
@@ -39,7 +39,7 @@ void TitleScene::Initialize() {
 	// プレイヤー Object3D を生成してセットアップ
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("player.obj");
+	object3D_->SetModel("player");
 	object3D_->SetScale(Vector3{ 1.0f, 1.0f, 1.0f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
@@ -49,7 +49,7 @@ void TitleScene::Initialize() {
 	// タイトルモデル生成・配置
 	titleObj_ = std::make_unique<Object3D>();
 	titleObj_->Initialize(Object3DCommon::GetInstance());
-	titleObj_->SetModel("title.obj");
+	titleObj_->SetModel("title");
 	titleObj_->SetLighting(false);
 	titleObj_->SetRotate({ 0, kYawFront, 0 });
 
