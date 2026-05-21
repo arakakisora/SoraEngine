@@ -12,7 +12,7 @@
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
 #include "LineCommon.h"
-#include "ControlGuide.h"
+#include "UIeditor.h"
 
 #include "Easing.h"
 #include <algorithm>
@@ -103,7 +103,7 @@ void GamePlayScene::Initialize()
 	goal->Initialize(mapChipField_.get(), player.get());
 
 	// ControlGuide の初期化
-	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
+	UIeditor::GetInstance()->Initialize(SpriteCommon::GetInstance());
 
 	//ポーズメニュー
 	pauseMenu = std::make_unique<PauseMenu>();
@@ -117,8 +117,8 @@ void GamePlayScene::Finalize()
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("debugcam");
 	// ControlGuide の破棄
-	ControlGuide::GetInstance()->Finalize();
-	ControlGuide::DestroyInstance();
+	UIeditor::GetInstance()->Finalize();
+	UIeditor::DestroyInstance();
 }
 
 void GamePlayScene::UpdateGameLogic(float dt)
@@ -319,7 +319,7 @@ void GamePlayScene::Draw()
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (!pauseMenu->IsPaused()) {
 		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
-		ControlGuide::GetInstance()->Render();
+		UIeditor::GetInstance()->Render();
 	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
@@ -371,7 +371,7 @@ void GamePlayScene::Imguidebug()
 	}
 
 #ifdef USE_IMGUI
-	ControlGuide::GetInstance()->DebugImGui();
+	UIeditor::GetInstance()->DebugImGui();
 
 	ImGui::Begin("Camera Menu");
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {

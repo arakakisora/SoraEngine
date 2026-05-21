@@ -41,7 +41,6 @@
     <ClCompile Include="application\enemy\Enemy2.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
-    <ClCompile Include="application\ui\ControlGuide.cpp" />
     <ClCompile Include="application\ui\PauseMenu.cpp" />
     <ClCompile Include="engine\math\Easing.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
@@ -102,6 +101,7 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="UI.cpp" />
+    <ClCompile Include="application\ui\UIeditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\enemy\Enemy.h" />
@@ -116,7 +116,6 @@
     <ClInclude Include="application\enemy\Enemy2.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
-    <ClInclude Include="application\ui\ControlGuide.h" />
     <ClInclude Include="application\ui\PauseMenu.h" />
     <ClInclude Include="engine\math\Easing.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -183,6 +182,7 @@
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
     <ClInclude Include="UI.h" />
+    <ClInclude Include="application\ui\UIeditor.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />

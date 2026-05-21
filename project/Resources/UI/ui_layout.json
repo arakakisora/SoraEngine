@@ -1,0 +1,91 @@
+{
+    "scenes": [
+        {
+            "elements": [],
+            "id": "Title"
+        },
+        {
+            "elements": [
+                {
+                    "name": "down",
+                    "position": [
+                        948.0,
+                        643.0
+                    ],
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/down.png",
+                    "visible": true
+                },
+                {
+                    "name": "UP",
+                    "position": [
+                        1011.0,
+                        643.0
+                    ],
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/up.png",
+                    "visible": true
+                },
+                {
+                    "name": "mausu",
+                    "position": [
+                        1111.0,
+                        643.0
+                    ],
+                    "size": [
+                        74.0,
+                        74.0
+                    ],
+                    "texture": "Resources/UI/mouse.png",
+                    "visible": true
+                },
+                {
+                    "name": "SPACE",
+                    "position": [
+                        15.0,
+                        612.0
+                    ],
+                    "size": [
+                        140.0,
+                        130.0
+                    ],
+                    "texture": "Resources/UI/space.png",
+                    "visible": true
+                },
+                {
+                    "name": "R",
+                    "position": [
+                        184.0,
+                        646.0
+                    ],
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/r.png",
+                    "visible": true
+                },
+                {
+                    "name": "back",
+                    "position": [
+                        11.0,
+                        10.0
+                    ],
+                    "size": [
+                        42.0,
+                        42.0
+                    ],
+                    "texture": "Resources/UI/esc.png",
+                    "visible": true
+                }
+            ],
+            "id": "GamePlay"
+        }
+    ]
+}
