@@ -1,6 +1,7 @@
 #include "Framework.h"
 #include <CameraManager.h>
 #include "ParticleMnager.h"
+#include "UIeditor.h"
 
 void Framework::Initialize()
 {
@@ -48,6 +49,8 @@ void Framework::Initialize()
 	
 	SkyBoxCommon::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 
+	UIeditor::GetInstance()->Initialize(SpriteCommon::GetInstance());
+
 #ifdef _DEBUG
 	//imguiMnagerの初期化
 	imGuiMnager = std::make_unique<ImGuiManager>();
@@ -77,7 +80,9 @@ void Framework::Finalize()
 	ParticleManager::GetInstance()->Finalize();
 
 	SkyBoxCommon::GetInstance()->Finalize();
-
+	// ControlGuide の破棄
+	UIeditor::GetInstance()->Finalize();
+	UIeditor::DestroyInstance();
 	
 #ifdef _DEBUG
 	imGuiMnager.reset();
@@ -104,6 +109,11 @@ void Framework::Update()
 	ParticleManager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 	LineCommon::GetInstance()->Update();
+
+#ifdef _DEBUG
+	UIeditor::GetInstance()->DebugImGui();
+#endif // _DEBUG
+
 	
 }
 

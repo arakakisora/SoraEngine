@@ -16,369 +16,475 @@ using json = nlohmann::json;
 std::unique_ptr<UIeditor> UIeditor::instance_ = nullptr;
 
 UIeditor* UIeditor::GetInstance() {
-    if (!instance_) {
-        instance_ = std::make_unique<UIeditor>();
-    }
+	if (!instance_) {
+		instance_ = std::make_unique<UIeditor>();
+	}
 
-    return instance_.get();
+	return instance_.get();
 }
 
 void UIeditor::DestroyInstance() {
-    instance_.reset();
+	instance_.reset();
 }
 
 void UIeditor::Initialize(SpriteCommon* spriteCommon) {
-    spriteCommon_ = spriteCommon;
-    assert(spriteCommon_);
+	spriteCommon_ = spriteCommon;
+	assert(spriteCommon_);
 
-    ScanUIFolder();
+	ScanUIFolder();
 
-    scenes_.clear();
+	scenes_.clear();
 
-    {
-        UIScene scene;
-        scene.id = "Title";
-        scenes_[scene.id] = std::move(scene);
-    }
+	currentSceneId_ = "GamePlay";
 
-    {
-        UIScene scene;
-        scene.id = "GamePlay";
-        scenes_[scene.id] = std::move(scene);
-    }
+	// デフォルトのシーンとUIエレメントを作成
+	Load("Resources/UI/ui_layout.json");
 
-    currentSceneId_ = "GamePlay";
-
-    Load("Resources/UI/ui_layout.json");
+	AddSceneIfMissing("Title");
+	AddSceneIfMissing("StageSelect");
+	AddSceneIfMissing("GamePlay");
+	AddSceneIfMissing("GameOver");
+	AddSceneIfMissing("GameClear");
 }
 
 void UIeditor::Finalize() {
-    scenes_.clear();
-    uiTextureFiles_.clear();
-    spriteCommon_ = nullptr;
+	scenes_.clear();
+	uiTextureFiles_.clear();
+	spriteCommon_ = nullptr;
 }
 
 void UIeditor::SetScene(const std::string& sceneId) {
-    currentSceneId_ = sceneId;
+	currentSceneId_ = sceneId;
 
-    if (!scenes_.contains(sceneId)) {
-        UIScene scene;
-        scene.id = sceneId;
-        scenes_[sceneId] = std::move(scene);
-    }
+	if (!scenes_.contains(sceneId)) {
+		UIScene scene;
+		scene.id = sceneId;
+		scenes_[sceneId] = std::move(scene);
+	}
 
-    selectedElementIndex_ = -1;
+	selectedElementIndex_ = -1;
 }
 
 
 void UIeditor::Render() {
-    if (!visible_) {
-        return;
-    }
+	if (!visible_) {
+		return;
+	}
 
-    if (!spriteCommon_) {
-        return;
-    }
+	if (!spriteCommon_) {
+		return;
+	}
 
-    auto it = scenes_.find(currentSceneId_);
+	auto it = scenes_.find(currentSceneId_);
 
-    if (it == scenes_.end()) {
-        return;
-    }
+	if (it == scenes_.end()) {
+		return;
+	}
 
-    UIScene& scene = it->second;
+	UIScene& scene = it->second;
 
-    for (auto& element : scene.elements) {
-        if (!element.visible) {
-            continue;
-        }
+	for (auto& element : scene.elements) {
+		if (!element.visible) {
+			continue;
+		}
 
-        if (!element.sprite) {
-            continue;
-        }
+		if (!element.sprite) {
+			continue;
+		}
 
-        element.sprite->SetPosition(element.position);
-        element.sprite->SetSize(element.size);
-        element.sprite->Update();
-        element.sprite->Draw();
-    }
+		DrawUI(element);
+	}
+}
+
+
+void UIeditor::SetPressed(const std::string& sceneId, const std::string& elementName, bool isPressed)
+{
+	auto it = scenes_.find(sceneId);
+	if (it == scenes_.end()) {
+		return;
+	}
+
+	for (auto& element : it->second.elements) {
+		if (element.name == elementName) {
+			if (!element.pressAnimEnabled) {
+				return;
+			}
+
+			element.isPressed = isPressed;
+			element.targetScale = isPressed ? element.pressScale : 1.0f;
+			return;
+		}
+	}
 }
 #ifdef _DEBUG
 void UIeditor::DebugImGui() {
 
-    if (!debugOpen_) {
-        return;
-    }
+	if (!debugOpen_) {
+		return;
+	}
 
-    if (ImGui::Begin("UI Manager", &debugOpen_)) {
-        ImGui::Checkbox("Visible", &visible_);
+	if (ImGui::Begin("UI Manager", &debugOpen_)) {
+		ImGui::Checkbox("Visible", &visible_);
 
-        ImGui::Separator();
+		ImGui::Separator();
 
-        char sceneBuf[128];
-        strcpy_s(sceneBuf, currentSceneId_.c_str());
+		char sceneBuf[128];
+		strcpy_s(sceneBuf, currentSceneId_.c_str());
 
-        if (ImGui::InputText("Scene ID", sceneBuf, sizeof(sceneBuf))) {
-            SetScene(sceneBuf);
-        }
+		if (ImGui::InputText("Scene ID", sceneBuf, sizeof(sceneBuf))) {
+			SetScene(sceneBuf);
+		}
 
 
 
-        if (ImGui::BeginCombo("Scene Select", currentSceneId_.c_str())) {
-            for (auto& [id, scene] : scenes_) {
-                bool selected = currentSceneId_ == id;
+		if (ImGui::BeginCombo("Scene Select", currentSceneId_.c_str())) {
+			for (auto& [id, scene] : scenes_) {
+				bool selected = currentSceneId_ == id;
 
-                if (ImGui::Selectable(id.c_str(), selected)) {
-                    SetScene(id);
-                }
-            }
+				if (ImGui::Selectable(id.c_str(), selected)) {
+					SetScene(id);
+				}
+			}
 
-            ImGui::EndCombo();
-        }
+			ImGui::EndCombo();
+		}
 
-        ImGui::Separator();
+		ImGui::Separator();
 
-        if (ImGui::Button("Add UI")) {
-            AddElement();
-        }
+		if (ImGui::Button("Add UI")) {
+			AddElement();
+		}
 
-        ImGui::SameLine();
+		ImGui::SameLine();
 
-        if (ImGui::Button("Scan Resources/UI")) {
-            ScanUIFolder();
-        }
+		if (ImGui::Button("Scan Resources/UI")) {
+			ScanUIFolder();
+		}
 
-        ImGui::Separator();
+		ImGui::Separator();
 
-        UIScene& scene = scenes_[currentSceneId_];
+		UIScene& scene = scenes_[currentSceneId_];
 
-        ImGui::Text("Elements");
+		ImGui::Text("Elements");
 
-        for (int i = 0; i < static_cast<int>(scene.elements.size()); i++) {
-            bool selected = selectedElementIndex_ == i;
+		for (int i = 0; i < static_cast<int>(scene.elements.size()); i++) {
+			bool selected = selectedElementIndex_ == i;
 
-            std::string label = scene.elements[i].name;
+			std::string label = scene.elements[i].name;
 
-            if (label.empty()) {
-                label = "NoName";
-            }
+			if (label.empty()) {
+				label = "NoName";
+			}
 
-            label += "##Element" + std::to_string(i);
+			label += "##Element" + std::to_string(i);
 
-            if (ImGui::Selectable(label.c_str(), selected)) {
-                selectedElementIndex_ = i;
-            }
-        }
+			if (ImGui::Selectable(label.c_str(), selected)) {
+				selectedElementIndex_ = i;
+			}
+		}
 
-        ImGui::Separator();
+		ImGui::Separator();
 
-        if (selectedElementIndex_ >= 0 &&
-            selectedElementIndex_ < static_cast<int>(scene.elements.size())) {
+		if (selectedElementIndex_ >= 0 &&
+			selectedElementIndex_ < static_cast<int>(scene.elements.size())) {
 
-            UIElement& element = scene.elements[selectedElementIndex_];
+			UIElement& element = scene.elements[selectedElementIndex_];
 
-            char nameBuf[128];
-            strcpy_s(nameBuf, element.name.c_str());
+			char nameBuf[128];
+			strcpy_s(nameBuf, element.name.c_str());
 
-            if (ImGui::InputText("Name", nameBuf, sizeof(nameBuf))) {
-                element.name = nameBuf;
+			if (ImGui::InputText("Name", nameBuf, sizeof(nameBuf))) {
+				element.name = nameBuf;
 
-                if (element.name.empty()) {
-                    element.name = "NewUI";
-                }
-            }
+				if (element.name.empty()) {
+					element.name = "NewUI";
+				}
+			}
 
-            ImGui::Checkbox("Element Visible", &element.visible);
+			ImGui::Checkbox("Element Visible", &element.visible);
 
-            ImGui::DragFloat2("Position", &element.position.x, 1.0f);
-            ImGui::DragFloat2("Size", &element.size.x, 1.0f, 1.0f, 4096.0f);
+			ImGui::DragFloat2("Position", &element.position.x, 1.0f);
+			ImGui::DragFloat2("Size", &element.size.x, 1.0f, 1.0f, 4096.0f);
 
-            if (ImGui::BeginCombo("Texture", element.texturePath.c_str())) {
-                for (const auto& texture : uiTextureFiles_) {
-                    bool selected = element.texturePath == texture;
+			ImGui::Checkbox("Press Animation", &element.pressAnimEnabled);
+			ImGui::DragFloat("Press Duration", &element.pressAnimDuration, 0.01f, 0.01f, 1.0f);
+			ImGui::DragFloat("Press Scale", &element.pressScale, 0.01f, 0.5f, 1.0f);
 
-                    if (ImGui::Selectable(texture.c_str(), selected)) {
-                        element.texturePath = texture;
+			if (ImGui::BeginCombo("Texture", element.texturePath.c_str())) {
+				for (const auto& texture : uiTextureFiles_) {
+					bool selected = element.texturePath == texture;
 
-                        element.sprite = std::make_unique<Sprite>();
-                        element.sprite->Initialize(spriteCommon_, element.texturePath);
-                    }
-                }
+					if (ImGui::Selectable(texture.c_str(), selected)) {
+						element.texturePath = texture;
 
-                ImGui::EndCombo();
-            }
+						element.sprite = std::make_unique<Sprite>();
+						element.sprite->Initialize(spriteCommon_, element.texturePath);
+					}
+				}
 
-            if (ImGui::Button("Delete Selected UI")) {
-                DeleteSelectedElement();
-            }
-        }
+				ImGui::EndCombo();
+			}
 
-        ImGui::Separator();
+			if (ImGui::Button("Delete Selected UI")) {
+				DeleteSelectedElement();
+			}
+		}
 
-        if (ImGui::Button("Save")) {
-            Save("Resources/UI/ui_layout.json");
-        }
+		ImGui::Separator();
 
-        ImGui::SameLine();
+		if (ImGui::Button("Save")) {
+			Save("Resources/UI/ui_layout.json");
+		}
 
-        if (ImGui::Button("Load")) {
-            Load("Resources/UI/ui_layout.json");
-        }
-    }
+		ImGui::SameLine();
 
-    ImGui::End();
+		if (ImGui::Button("Load")) {
+			Load("Resources/UI/ui_layout.json");
+		}
+	}
+
+	ImGui::End();
 }
 #endif
 
 void UIeditor::ScanUIFolder() {
-    uiTextureFiles_.clear();
+	uiTextureFiles_.clear();
 
-    const std::string folder = "Resources/UI/";
+	const std::string folder = "Resources/UI/";
 
-    if (!std::filesystem::exists(folder)) {
-        return;
-    }
+	if (!std::filesystem::exists(folder)) {
+		return;
+	}
 
-    for (const auto& entry : std::filesystem::directory_iterator(folder)) {
-        if (!entry.is_regular_file()) {
-            continue;
-        }
+	for (const auto& entry : std::filesystem::directory_iterator(folder)) {
+		if (!entry.is_regular_file()) {
+			continue;
+		}
 
-        std::string ext = entry.path().extension().string();
+		std::string ext = entry.path().extension().string();
 
-        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
-            uiTextureFiles_.push_back(entry.path().string());
-        }
-    }
+		if (ext == ".png" || ext == ".jpg" || ext == ".jpeg") {
+			uiTextureFiles_.push_back(entry.path().string());
+		}
+	}
 }
 
 void UIeditor::AddElement() {
-    if (!scenes_.contains(currentSceneId_)) {
-        UIScene scene;
-        scene.id = currentSceneId_;
-        scenes_[currentSceneId_] = std::move(scene);
-    }
+	if (!scenes_.contains(currentSceneId_)) {
+		UIScene scene;
+		scene.id = currentSceneId_;
+		scenes_[currentSceneId_] = std::move(scene);
+	}
 
-    UIElement element;
+	UIElement element;
 
-    element.name = "NewUI";
-    element.position = { 640.0f, 360.0f };
-    element.size = { 128.0f, 128.0f };
-    element.visible = true;
+	element.name = "NewUI";
+	element.position = { 640.0f, 360.0f };
+	element.size = { 128.0f, 128.0f };
+	element.visible = true;
 
-    if (!uiTextureFiles_.empty()) {
-        element.texturePath = uiTextureFiles_[0];
+	if (!uiTextureFiles_.empty()) {
+		element.texturePath = uiTextureFiles_[0];
 
-        element.sprite = std::make_unique<Sprite>();
-        element.sprite->Initialize(spriteCommon_, element.texturePath);
-    }
+		element.sprite = std::make_unique<Sprite>();
+		element.sprite->Initialize(spriteCommon_, element.texturePath);
+	}
 
-    UIScene& scene = scenes_[currentSceneId_];
-    scene.elements.push_back(std::move(element));
+	UIScene& scene = scenes_[currentSceneId_];
+	scene.elements.push_back(std::move(element));
 
-    selectedElementIndex_ = static_cast<int>(scene.elements.size()) - 1;
+	selectedElementIndex_ = static_cast<int>(scene.elements.size()) - 1;
 }
 
 void UIeditor::DeleteSelectedElement() {
-    auto it = scenes_.find(currentSceneId_);
+	auto it = scenes_.find(currentSceneId_);
 
-    if (it == scenes_.end()) {
-        return;
-    }
+	if (it == scenes_.end()) {
+		return;
+	}
 
-    auto& elements = it->second.elements;
+	auto& elements = it->second.elements;
 
-    if (selectedElementIndex_ < 0 ||
-        selectedElementIndex_ >= static_cast<int>(elements.size())) {
-        return;
-    }
+	if (selectedElementIndex_ < 0 ||
+		selectedElementIndex_ >= static_cast<int>(elements.size())) {
+		return;
+	}
 
-    elements.erase(elements.begin() + selectedElementIndex_);
+	elements.erase(elements.begin() + selectedElementIndex_);
 
-    selectedElementIndex_ = -1;
+	selectedElementIndex_ = -1;
 }
 
 void UIeditor::Save(const std::string& filePath) {
-    json root;
-    root["scenes"] = json::array();
+	json root;
+	root["scenes"] = json::array();
 
-    for (auto& [id, scene] : scenes_) {
-        json sceneJson;
-        sceneJson["id"] = id;
-        sceneJson["elements"] = json::array();
+	for (auto& [id, scene] : scenes_) {
+		json sceneJson;
+		sceneJson["id"] = id;
+		sceneJson["elements"] = json::array();
 
-        for (auto& element : scene.elements) {
-            json elementJson;
+		for (auto& element : scene.elements) {
+			json elementJson;
 
-            elementJson["name"] = element.name;
-            elementJson["texture"] = element.texturePath;
-            elementJson["position"] = {
-                element.position.x,
-                element.position.y
-            };
-            elementJson["size"] = {
-                element.size.x,
-                element.size.y
-            };
-            elementJson["visible"] = element.visible;
+			elementJson["name"] = element.name;
+			elementJson["texture"] = element.texturePath;
+			elementJson["position"] = {
+				element.position.x,
+				element.position.y
+			};
+			elementJson["size"] = {
+				element.size.x,
+				element.size.y
+			};
+			// アニメーション設定も保存
+			elementJson["pressAnimEnabled"] = element.pressAnimEnabled;
+			elementJson["pressAnimDuration"] = element.pressAnimDuration;
+			elementJson["pressScale"] = element.pressScale;
+			elementJson["visible"] = element.visible;
 
-            sceneJson["elements"].push_back(elementJson);
-        }
+			sceneJson["elements"].push_back(elementJson);
+		}
 
-        root["scenes"].push_back(sceneJson);
-    }
+		root["scenes"].push_back(sceneJson);
+	}
 
-    std::ofstream ofs(filePath);
+	std::ofstream ofs(filePath);
 
-    if (!ofs.is_open()) {
-        return;
-    }
+	if (!ofs.is_open()) {
+		return;
+	}
 
-    ofs << root.dump(4);
+	ofs << root.dump(4);
 }
 
 void UIeditor::Load(const std::string& filePath) {
-    std::ifstream ifs(filePath);
+	std::ifstream ifs(filePath);
 
-    if (!ifs.is_open()) {
-        return;
-    }
+	if (!ifs.is_open()) {
+		return;
+	}
 
-    json root;
-    ifs >> root;
+	json root;
+	ifs >> root;
 
-    scenes_.clear();
+	scenes_.clear();
 
-    for (auto& sceneJson : root["scenes"]) {
-        UIScene scene;
-        scene.id = sceneJson["id"].get<std::string>();
+	for (auto& sceneJson : root["scenes"]) {
+		UIScene scene;
+		scene.id = sceneJson["id"].get<std::string>();
 
-        for (auto& elementJson : sceneJson["elements"]) {
-            UIElement element;
+		for (auto& elementJson : sceneJson["elements"]) {
+			UIElement element;
 
-            element.name = elementJson["name"].get<std::string>();
-            element.texturePath = elementJson["texture"].get<std::string>();
+			element.name = elementJson["name"].get<std::string>();
+			element.texturePath = elementJson["texture"].get<std::string>();
 
-            element.position.x = elementJson["position"][0].get<float>();
-            element.position.y = elementJson["position"][1].get<float>();
+			element.position.x = elementJson["position"][0].get<float>();
+			element.position.y = elementJson["position"][1].get<float>();
 
-            element.size.x = elementJson["size"][0].get<float>();
-            element.size.y = elementJson["size"][1].get<float>();
+			element.size.x = elementJson["size"][0].get<float>();
+			element.size.y = elementJson["size"][1].get<float>();
 
-            element.visible = elementJson["visible"].get<bool>();
+			element.visible = elementJson["visible"].get<bool>();
 
-            if (!element.texturePath.empty()) {
-                element.sprite = std::make_unique<Sprite>();
-                element.sprite->Initialize(spriteCommon_, element.texturePath);
-            }
+			if (!element.texturePath.empty()) {
+				element.sprite = std::make_unique<Sprite>();
+				element.sprite->Initialize(spriteCommon_, element.texturePath);
+			}
 
-            scene.elements.push_back(std::move(element));
-        }
+			if (elementJson.contains("pressAnimEnabled")) {
+				element.pressAnimEnabled = elementJson["pressAnimEnabled"].get<bool>();
+			}
 
-        scenes_[scene.id] = std::move(scene);
-    }
+			if (elementJson.contains("pressAnimDuration")) {
+				element.pressAnimDuration = elementJson["pressAnimDuration"].get<float>();
+			}
 
-    if (!scenes_.contains(currentSceneId_)) {
-        SetScene("GamePlay");
-    }
+			if (elementJson.contains("pressScale")) {
+				element.pressScale = elementJson["pressScale"].get<float>();
+			}
+
+			scene.elements.push_back(std::move(element));
+		}
+
+		scenes_[scene.id] = std::move(scene);
+	}
+
+	if (!scenes_.contains(currentSceneId_)) {
+		currentSceneId_ = "GamePlay";
+	}
+
+	if (!scenes_.contains(currentSceneId_)) {
+		AddSceneIfMissing(currentSceneId_);
+	}
+}
+
+void UIeditor::AddSceneIfMissing(const std::string& sceneId)
+{
+	if (scenes_.contains(sceneId)) {
+		return;
+	}
+
+	// シーンが存在しない場合は新規作成
+	UIScene scene;
+	scene.id = sceneId;
+	scenes_[scene.id] = std::move(scene);
+}
+
+void UIeditor::PlayPressAnimation(const std::string& sceneId, const std::string& elementName)
+{
+	auto it = scenes_.find(sceneId);
+	if (it == scenes_.end()) {
+		return;
+	}
+
+	for (auto& element : it->second.elements) {
+		if (element.name == elementName) {
+			if (!element.pressAnimEnabled) {
+				return;
+			}
+
+			// 押されたら必ずアニメ開始
+			element.pressAnimTime = element.pressAnimDuration;
+			return;
+		}
+	}
+
+}
+
+void UIeditor::DrawUI(UIElement& element)
+{
+
+	float scale = 1.0f;
+
+	if (element.pressAnimTime > 0.0f) {
+		element.pressAnimTime -= 1.0f / 60.0f;
+
+		if (element.pressAnimTime < 0.0f) {
+			element.pressAnimTime = 0.0f;
+		}
+
+		float t = element.pressAnimTime / element.pressAnimDuration;
+
+		// 押した瞬間小さく、時間で元に戻る
+		scale = 1.0f - (1.0f - element.pressScale) * t;
+	}
+
+	Vector2 drawSize = {
+		element.size.x * scale,
+		element.size.y * scale
+	};
+
+	// 中心基準で縮むように位置補正
+	Vector2 drawPos = {
+		element.position.x + (element.size.x - drawSize.x) * 0.5f,
+		element.position.y + (element.size.y - drawSize.y) * 0.5f
+	};
+
+	element.sprite->SetPosition(drawPos);
+	element.sprite->SetSize(drawSize);
+	element.sprite->Update();
+	element.sprite->Draw();
+
 }

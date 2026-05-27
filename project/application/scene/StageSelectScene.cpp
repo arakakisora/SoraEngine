@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <CameraManager.h>
 #include <ModelManager.h>
+#include <UIeditor.h>
 
 
 
@@ -208,6 +209,10 @@ void StageSelectScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
+
 	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
 }

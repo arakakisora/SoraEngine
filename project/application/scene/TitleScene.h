@@ -62,7 +62,7 @@ private:
 	};
 
 	
-	std::unique_ptr<Sprite> titleSprite_;
+	//std::unique_ptr<Sprite> titleSprite_;
 	float exhaustTimer_ = 0.0f;
 	FadeManager fadeManager_;
 

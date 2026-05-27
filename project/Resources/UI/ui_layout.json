@@ -1,8 +1,44 @@
 {
     "scenes": [
         {
-            "elements": [],
+            "elements": [
+                {
+                    "name": "space",
+                    "position": [
+                        528.0,
+                        604.0
+                    ],
+                    "size": [
+                        211.0,
+                        132.0
+                    ],
+                    "texture": "Resources/UI/space.png",
+                    "visible": true
+                }
+            ],
             "id": "Title"
+        },
+        {
+            "elements": [],
+            "id": "GameOver"
+        },
+        {
+            "elements": [
+                {
+                    "name": "space",
+                    "position": [
+                        574.0,
+                        591.0
+                    ],
+                    "size": [
+                        128.0,
+                        128.0
+                    ],
+                    "texture": "Resources/UI/space.png",
+                    "visible": true
+                }
+            ],
+            "id": "StageSelect"
         },
         {
             "elements": [
@@ -86,6 +122,10 @@
                 }
             ],
             "id": "GamePlay"
+        },
+        {
+            "elements": [],
+            "id": "GameClear"
         }
     ]
 }

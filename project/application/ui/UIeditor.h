@@ -13,12 +13,39 @@ class UIeditor {
 public:
     static UIeditor* GetInstance();
     static void DestroyInstance();
-
+    /// <summary>
+	/// 初期化
+    /// </summary>
+    /// <param name="spriteCommon"></param>
     void Initialize(SpriteCommon* spriteCommon);
+    /// <summary>
+	/// 終了
+    /// </summary>
     void Finalize();
 
+    /// <summary>
+	/// シーンの切り替え
+    /// </summary>
+    /// <param name="sceneId"></param>
     void SetScene(const std::string& sceneId);
+    /// <summary>
+	/// 現在のシーンの描画
+    /// </summary>
     void Render();
+
+    /// <summary>
+    /// 指定されたシーンIDと要素名に対して、押下（プレス）アニメーションを再生します。
+    /// </summary>
+    /// <param name="sceneId">アニメーションを再生するシーンの識別子。</param>
+    /// <param name="elementName">アニメーションを再生する要素の名前。</param>
+    void PlayPressAnimation(const std::string& sceneId, const std::string& elementName);
+    /// <summary>
+	/// 指定されたシーンIDと要素名に対して、押下状態を設定します。
+    /// </summary>
+    /// <param name="sceneId"></param>
+    /// <param name="elementName"></param>
+    /// <param name="isPressed"></param>
+    void SetPressed(const std::string& sceneId, const std::string& elementName, bool isPressed);
 
 #ifdef _DEBUG
     void DebugImGui();
@@ -28,17 +55,30 @@ private:
     struct UIElement {
         std::string name = "NewUI";
         std::string texturePath;
-
+		// 位置とサイズの初期値は画面中央と128x128
         Vector2 position{ 640.0f, 360.0f };
         Vector2 size{ 128.0f, 128.0f };
-
+		// 表示フラグ
         bool visible = true;
-
+		// SpriteはUIエレメントの描画に使用
         std::unique_ptr<Sprite> sprite;
+
+        bool pressAnimEnabled = true;
+        // 押した時アニメ
+        float pressAnimTime = 0.0f;
+        float pressAnimDuration = 0.12f;
+        float pressScale = 0.85f;
+        // 長押しアニメ
+        bool isPressed = false;
+        float currentScale = 1.0f;
+        float targetScale = 1.0f;
+        float animSpeed = 0.25f;
     };
 
     struct UIScene {
+		// シーンID
         std::string id;
+		// UIエレメントのリスト
         std::vector<UIElement> elements;
     };
 
@@ -66,8 +106,16 @@ private:
     /// </summary>
     /// <param name="filePath"></param>
     void Load(const std::string& filePath);
+    /// <summary>
+	/// シーンが存在しない場合に空のシーンを追加する
+    /// </summary>
+    /// <param name="sceneId"></param>
+    void AddSceneIfMissing(const std::string& sceneId);
 
-    
+   
+
+    void DrawUI(UIElement& element);
+  
 
 private:
     static std::unique_ptr<UIeditor> instance_;
