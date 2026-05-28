@@ -8,6 +8,9 @@
                         528.0,
                         604.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         211.0,
                         132.0
@@ -19,28 +22,6 @@
             "id": "Title"
         },
         {
-            "elements": [],
-            "id": "GameOver"
-        },
-        {
-            "elements": [
-                {
-                    "name": "space",
-                    "position": [
-                        574.0,
-                        591.0
-                    ],
-                    "size": [
-                        128.0,
-                        128.0
-                    ],
-                    "texture": "Resources/UI/space.png",
-                    "visible": true
-                }
-            ],
-            "id": "StageSelect"
-        },
-        {
             "elements": [
                 {
                     "name": "down",
@@ -48,6 +29,9 @@
                         948.0,
                         643.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         64.0,
                         64.0
@@ -61,6 +45,9 @@
                         1011.0,
                         643.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         64.0,
                         64.0
@@ -74,6 +61,9 @@
                         1111.0,
                         643.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         74.0,
                         74.0
@@ -87,6 +77,9 @@
                         15.0,
                         612.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         140.0,
                         130.0
@@ -100,6 +93,9 @@
                         184.0,
                         646.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         64.0,
                         64.0
@@ -113,6 +109,9 @@
                         11.0,
                         10.0
                     ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
                     "size": [
                         42.0,
                         42.0
@@ -122,6 +121,47 @@
                 }
             ],
             "id": "GamePlay"
+        },
+        {
+            "elements": [
+                {
+                    "name": "space",
+                    "position": [
+                        558.0,
+                        591.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        164.0,
+                        128.0
+                    ],
+                    "texture": "Resources/UI/space.png",
+                    "visible": true
+                },
+                {
+                    "name": "esc",
+                    "position": [
+                        15.0,
+                        19.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/esc.png",
+                    "visible": true
+                }
+            ],
+            "id": "StageSelect"
+        },
+        {
+            "elements": [],
+            "id": "GameOver"
         },
         {
             "elements": [],
