@@ -46,6 +46,8 @@ void GameOverScene::Initialize()
 		VerticesType::Quad,
 		std::make_unique<ExplosionBehavior>()
 	);*/
+
+	UIeditor::GetInstance()->SetScene("GameClear");
 }
 
 void GameOverScene::Finalize()

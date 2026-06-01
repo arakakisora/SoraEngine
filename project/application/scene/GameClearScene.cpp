@@ -43,6 +43,7 @@ void GameClearScene::Initialize()
 
 	clearAnimTimer_ = 0.0f;
 	isLanding_ = false;
+	UIeditor::GetInstance()->SetScene("GameClear");
 }
 
 void GameClearScene::Finalize()
