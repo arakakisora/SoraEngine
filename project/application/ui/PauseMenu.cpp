@@ -6,6 +6,7 @@
 #include <ModelManager.h>
 #include <CameraManager.h>
 #include <algorithm>
+#include <UIeditor.h>
 
 double easeInOutCirc(double x) {
 	return (x < 0.5)
@@ -193,6 +194,8 @@ void PauseMenu::ControllerUpdate() {
 	// =========================
 	if ((canInput || easeTimer_ <= 0.0f) && Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_START) || Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 		isPaused_ = !isPaused_;
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "back");
+		UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "esc");
 	}
 
 	// =========================

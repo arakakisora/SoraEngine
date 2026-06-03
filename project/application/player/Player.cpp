@@ -16,6 +16,8 @@
 #include <memory>      
 #include "Easing.h"
 #include <array> 
+#include "CameraManager.h"
+#include <UIeditor.h>
 
 void Player::Initialize(const Vector3& position) {
 
@@ -28,10 +30,18 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
-
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
+
+	// ゴーストの作成
+	ghostObject_ = std::make_unique<Object3D>();
+	ghostObject_->Initialize(Object3DCommon::GetInstance());
+	ghostObject_->SetModel("player");
+	ghostObject_->SetScale(Vector3{ 0.5f, 0.5f, 0.5f });
+	ghostObject_->SetColor({ 0.2f, 0.8f, 1.0f, 0.35f });
+	// ゴーストは少し暗くしたいのでライトOFF
+	ghostObject_->SetLighting(false);
 
 	//ParticleManager::GetInstance()->CreateParticleGroup(
 	//	"dash_smoke",
@@ -159,6 +169,10 @@ void Player::Update() {
 
 				deatheEffect->SetPosition(breakPos);
 				deatheEffect->Emit();
+				//カメラシェイク
+				StartCameraShake(0.08f, 0.15f);
+
+
 			}
 		}
 	}
@@ -178,10 +192,17 @@ void Player::Update() {
 	// 死亡条件の判定
 	PlayerDeathTerms();
 
+	UpdateCameraShake();
+
 }
 
 void Player::Draw() {
+
+	DrawGhost();
+
 	if (object3D_) object3D_->Draw();
+
+
 }
 
 void Player::PlayerMove() {
@@ -189,22 +210,26 @@ void Player::PlayerMove() {
 
 	// 上キーで仰角を増やし、下キーで仰角を減らす。連続入力に対応。
 	if (Input::GetInstance()->PushKey(DIK_UP)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "UP");
 		cannonAngleDeg_ += kCannonAngleStepDeg;
 	}
 	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "down");
 		cannonAngleDeg_ -= kCannonAngleStepDeg;
 	}
 
 	// マウスのホイール差分を取得して角度に反映
-	{
-		auto mouseMove = Input::GetInstance()->GetMouseMove();
-		if (mouseMove.lZ != 0) {
-			// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
-			const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
-			// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
-			cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
-		}
+
+	
+	auto mouseMove = Input::GetInstance()->GetMouseMove();
+	if (mouseMove.lZ != 0) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "mausu");
+		// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
+		const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
+		// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
+		cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
 	}
+
 
 
 	// 角度更新はそのまま（UP/DOWN + ホイール）
@@ -228,7 +253,9 @@ void Player::PlayerMove() {
 
 	//スペースで発射
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-	
+
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "SPACE");
+
 		const bool canShoot =
 			(playerState_ == PlayerState::sticky) || isStopped_;
 
@@ -280,7 +307,7 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 		}
 
 		if (hitCount >= 2) {
-			
+
 
 			playerState_ = PlayerState::sticky;
 			velocity_ = { 0,0,0 };
@@ -320,11 +347,13 @@ void Player::Reflect(const CollisionMapInfo& info)
 		if (info.penX >= info.penY) {
 			// 壁で反射
 			n = { (velocity_.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-		} else {
+		}
+		else {
 			// 天井/床で反射
 			n = { 0.0f, (velocity_.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 		}
-	} else {
+	}
+	else {
 		// 合成法線
 		n = MyMath::Normalize(info.normal);
 	}
@@ -385,6 +414,9 @@ void Player::DrawPredictLine()
 	if (!line_) return;
 	if (!mapChipField_) return;
 
+	// ゴーストは予測線と同時に表示する
+	isGhostVisible_ = false;
+
 	// 速度0のとき（発射前）だけ予測線を見せたいならこれ
 	if (!(velocity_.x == 0.0f && velocity_.y == 0.0f)) return;
 
@@ -431,7 +463,10 @@ void Player::DrawPredictLine()
 
 		if (hitCountSim >= 2) {
 			Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
-			DrawGhostAimPreview(simPos, nextFacingDir);
+
+			SetGhostPreview(simPos, nextFacingDir);// ゴーストの位置と向きをセットして表示
+			DrawGhostAimPreview(simPos, nextFacingDir);// ゴーストの射出可能方向を表示	
+
 			break;
 		}
 
@@ -444,10 +479,12 @@ void Player::DrawPredictLine()
 			if (hitX && hitY) {
 				if (info.penX >= info.penY) {
 					n = { (simVel.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-				} else {
+				}
+				else {
 					n = { 0.0f, (simVel.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 				}
-			} else {
+			}
+			else {
 				n = MyMath::Normalize(info.normal);
 			}
 
@@ -546,7 +583,8 @@ Vector3 Player::GetFacingDirFromCollisionInfo(const CollisionMapInfo& info)
 			if (info.normal.x < 0.0f) {
 				return { -1.0f, 0.0f, 0.0f };
 			}
-		} else {
+		}
+		else {
 			if (info.normal.y > 0.0f) {
 				return { 0.0f, 1.0f, 0.0f };
 			}
@@ -610,6 +648,72 @@ Vector3 Player::MakeShotVelocity()
 	return worldDir.Normalize() * spd;
 }
 
+void Player::DrawGhost()
+{
+
+	if (!isGhostVisible_) return;
+	if (!ghostObject_) return;
+
+	ghostObject_->SetTransform(ghostTransform_);
+	ghostObject_->Update();
+	ghostObject_->Draw();
+
+}
+
+void Player::SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir)
+{
+	if (!ghostObject_) return;
+
+	isGhostVisible_ = true;
+
+	ghostTransform_ = object3D_->GetTransform();
+
+	// 着地点に置く
+	ghostTransform_.translate = landingPos;
+
+	// 本体と完全に重なるとチラつく場合があるので少し手前/奥にずらす
+	ghostTransform_.translate.z -= 0.08f;
+
+	// 向き設定
+	ghostTransform_.rotate = GetGhostRotateFromFacingDir(nextFacingDir);
+
+	// サイズは本体と同じ
+	ghostTransform_.scale = { 0.5f, 0.5f, 0.5f };
+
+}
+
+Vector3 Player::GetGhostRotateFromFacingDir(const Vector3& facingDir)
+{
+	Vector3 rotate{ 0.0f, 0.0f, 0.0f };
+
+	// 右向き
+	if (std::abs(facingDir.x) > std::abs(facingDir.y)) {
+		if (facingDir.x >= 0.0f) {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = 0.0f;
+		}
+		// 左向き
+		else {
+			rotate.y = std::numbers::pi_v<float> *3.0f / 2.0f;
+			rotate.z = 0.0f;
+		}
+	}
+	else {
+		// 上向き
+		if (facingDir.y >= 0.0f) {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = std::numbers::pi_v<float> / 2.0f;
+		}
+		// 下向き
+		else {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = -std::numbers::pi_v<float> / 2.0f;
+		}
+	}
+
+	return rotate;
+}
+
 void Player::Playerdirection(const CollisionMapInfo& info) {
 	LRTBDirecion targetDir = direction_;
 
@@ -617,13 +721,15 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 
 		if (info.normal.x < 0.0f) {
 			targetDir = LRTBDirecion::kLeft;
-		} else if (info.normal.x > 0.0f) {
+		}
+		else if (info.normal.x > 0.0f) {
 			targetDir = LRTBDirecion::kRight;
 		}
 
 		if (info.normal.y > 0.0f) {
 			targetDir = LRTBDirecion::kTop;
-		} else if (info.normal.y < 0.0f) {
+		}
+		else if (info.normal.y < 0.0f) {
 			targetDir = LRTBDirecion::kBottom;
 		}
 	}
@@ -858,7 +964,8 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -876,7 +983,8 @@ void Player::LandingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -895,7 +1003,8 @@ void Player::HitWallCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -934,9 +1043,55 @@ void Player::PlayerShotAnimation()
 
 	// スピン
 	shotAnimationRotate_.x = std::numbers::pi_v<float> *2.0f * t;
-	
 
 
+
+}
+
+void Player::StartCameraShake(float power, float duration)
+{
+	cameraShakePower_ = power;
+	cameraShakeDuration_ = duration;
+	cameraShakeTimer_ = duration;
+}
+
+void Player::UpdateCameraShake()
+{
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+	if (!camera) return;
+
+	const float dt = 1.0f / 60.0f;
+
+	// 前フレームで足したシェイク分を一回戻す
+	Vector3 cameraPos = camera->GetTransform().translate;
+	cameraPos = cameraPos - cameraShakePrevOffset_;
+	cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+
+	if (cameraShakeTimer_ <= 0.0f || cameraShakeDuration_ <= 0.0f) {
+		camera->SetTranslate(cameraPos);
+		return;
+	}
+
+	cameraShakeTimer_ -= dt;
+
+	float t = cameraShakeTimer_ / cameraShakeDuration_;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	const float power = cameraShakePower_ * t;
+
+	Vector3 offset{};
+	offset.x = std::sinf(cameraShakeTimer_ * 90.0f) * power;
+	offset.y = std::cosf(cameraShakeTimer_ * 110.0f) * power;
+	offset.z = 0.0f;
+
+	cameraShakePrevOffset_ = offset;
+	camera->SetTranslate(cameraPos + offset);
+
+	if (cameraShakeTimer_ <= 0.0f) {
+		cameraShakeTimer_ = 0.0f;
+		cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+		camera->SetTranslate(cameraPos);
+	}
 }
 
 void Player::PlayerParticle()
@@ -948,7 +1103,8 @@ void Player::PlayerParticle()
 
 	if (playerState_ == PlayerState::hard && isBarrierActive_) {
 		ParticleManager::GetInstance()->EmitFollowOne("barriering", object3D_->GetTransform());
-	} else {
+	}
+	else {
 		ParticleManager::GetInstance()->StopFollow("barriering");
 	}
 
@@ -965,7 +1121,8 @@ void Player::PlayerParticle()
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (direction_ == LRTBDirecion::kRight) {
 				smokeTransform.translate.x -= 0.15f;
-			} else {
+			}
+			else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
@@ -976,7 +1133,8 @@ void Player::PlayerParticle()
 
 		}
 
-	} else {
+	}
+	else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
@@ -1063,7 +1221,8 @@ bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vecto
 		if (pen > 0.0f) {
 			if (type == CollisionType::Right || type == CollisionType::Left) {
 				info.penX = std::max(info.penX, pen);
-			} else {
+			}
+			else {
 				info.penY = std::max(info.penY, pen);
 			}
 

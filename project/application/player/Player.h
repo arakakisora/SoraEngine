@@ -175,6 +175,13 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	Vector3 MakeShotVelocity();
+
+	//=====================ゴースト関連========================//
+	void DrawGhost();
+	void SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
+	Vector3 GetGhostRotateFromFacingDir(const Vector3& facingDir);
+	//=====================ゴースト関連========================//
+	
 	//====================ライン描画========================//
 
 	/////////////======プレイヤーの動き======///////////////
@@ -330,6 +337,7 @@ public:
 	/// </summary>
 	void PlayerShotAnimation();
 
+	
 
 	///////////////======setter======///////////////
 	/// <summary>
@@ -356,6 +364,7 @@ public:
 private:
 
 	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
+	
 	PlayerState playerState_ = PlayerState::hard;//プレイヤーステート
 	Vector3 playerPosition_ = {};// プレイヤーの位置
 	Vector3 velocity_ = {};// 速度
@@ -405,4 +414,18 @@ private:
 	bool hasShotVel_ = false;
 	bool isStopped_ = false;
 	bool isBarrierActive_ = false;
+
+	//==================== 予測ゴースト ====================//
+	std::unique_ptr<Object3D> ghostObject_;
+
+	bool isGhostVisible_ = false;
+	EulerTransform ghostTransform_{};
+
+	// カメラシェイク
+	float cameraShakeTimer_ = 0.0f;
+	float cameraShakeDuration_ = 0.0f;
+	float cameraShakePower_ = 0.0f;
+	Vector3 cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+	void StartCameraShake(float power, float duration);
+	void UpdateCameraShake();
 };

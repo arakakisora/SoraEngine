@@ -19,8 +19,6 @@
 #include "EnemyManager.h"	
 #include <memory>
 #include "CollisionManager.h"
-
-
 #include "Goal.h"
 #include "SkyBox.h"
 

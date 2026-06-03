@@ -86,6 +86,8 @@ void StageSelectScene::Initialize()
 	gate_->StartIn(0.6f);
 	gateOutRequested_ = false;
 
+	UIeditor::GetInstance()->SetScene("StageSelect");
+
 }
 
 void StageSelectScene::Finalize()
@@ -116,8 +118,8 @@ void StageSelectScene::Update()
 		
 		if (!gateOutRequested_ &&
 			(!gate_ || !gate_->IsPlaying()) &&
-			Input::GetInstance()->TriggerKey(DIK_SPACE))
-		{
+			Input::GetInstance()->TriggerKey(DIK_SPACE)){
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "space");
 			gateOutRequested_ = true;
 			if (gate_) gate_->StartOut(0.6f);
 		}
@@ -228,10 +230,28 @@ void StageSelectScene::SelectMove()
 	const float stickThreshold = 0.5f;
 
 	if (Input::GetInstance()->PushKey(DIK_D)) {
+		UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "d");
 		rightStickX = 1.0f;
 	} else if (Input::GetInstance()->PushKey(DIK_A)) {
+		UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "a");
 		rightStickX = -1.0f;
 	}
+
+	auto mouseMove = Input::GetInstance()->GetMouseMove();
+	if (mouseMove.lZ != 0) {
+		
+		// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
+		const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
+		// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
+		rightStickX += wheelNotches ;
+		if (wheelNotches < 0) { 
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "mouse2"); 
+		}
+		else if (wheelNotches > 0) {
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "mouse");
+		}
+	}
+
 #ifdef _DEBUG
 
 

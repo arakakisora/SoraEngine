@@ -255,9 +255,8 @@ void GamePlayScene::Update()
 	// 固定 dt
 	const float dt = 1.0f / 60.0f;
 
-	if (!isPaused &&
-		Input::GetInstance()->TriggerKey(DIK_R)) {
-
+	if (!isPaused &&Input::GetInstance()->TriggerKey(DIK_R)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "R");
 		ResetStage();
 	
 	}
