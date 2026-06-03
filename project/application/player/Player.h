@@ -10,12 +10,13 @@
 #include "RenderingData.h"
 
 #include "Object3D.h"
-#include <PlayerBullet.h>
+
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
 #include "Collider.h"
 #include "Line.h"       
 #include <memory>       
+#include "MapChipField.h"
 
 enum class LRTBDirecion {
 	kRight,
@@ -83,8 +84,8 @@ struct PlayerParameter {
 	float kTimeTurn = 0.5; // 角度補間タイム
 
 	struct DeathHeight {
-		float min=0.0f; // 落下死の高さ
-		float max=20.0f; // 落下死の有効/無効
+		float min = 0.0f; // 落下死の高さ
+		float max = 20.0f; // 落下死の有効/無効
 	};
 	struct Deathwidth {
 		float min = -3.0f; // 落下死の高さ
@@ -142,7 +143,7 @@ public:
 	/// <param name="info"></param>
 	void Reflect(const CollisionMapInfo& info);
 
-	////////////======ライン描画======///////////////
+	//====================ライン描画=======================//
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
@@ -151,6 +152,18 @@ public:
 	/// プレイヤーの移動予測ライン描画
 	/// </summary>
 	void DrawPredictLine();
+	/// <summary>
+	/// ゴースト位置に次ターンの射出可能方向を表示
+	/// </summary>
+	void DrawGhostAimPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
+	/// <summary>
+	/// Z軸回転でベクトルを回す
+	/// </summary>
+	Vector3 RotateVectorZ(const Vector3& v, float rad);
+	/// <summary>
+	/// 衝突情報から、実際のプレイヤーと同じ次ターン向きを取得
+	/// </summary>
+	Vector3 GetFacingDirFromCollisionInfo(const CollisionMapInfo& info);
 	/// <summary>
 	/// ベクトルを法線で反射させる
 	/// </summary>
@@ -162,7 +175,7 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	Vector3 MakeShotVelocity();
-	/////////////======ライン描画======///////////////
+	//====================ライン描画========================//
 
 	/////////////======プレイヤーの動き======///////////////
 	/// <summary>
@@ -173,13 +186,13 @@ public:
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void Playerdirection(const CollisionMapInfo& info); 
+	void Playerdirection(const CollisionMapInfo& info);
 	/// <summary>
 	// 死亡条件しているかどうか
 	/// </summary>
 	void PlayerDeathTerms();
 
-	
+
 
 	/////////////======プレイヤーの動き======///////////////
 
@@ -317,7 +330,7 @@ public:
 	/// </summary>
 	void PlayerShotAnimation();
 
-	
+
 	///////////////======setter======///////////////
 	/// <summary>
 	/// 死亡しているかどうかを設定
@@ -334,7 +347,7 @@ public:
 	/// </summary>
 	/// <param name="left"></param>
 	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
-	
+
 	/// <summary>
 	// 速度設定
 	/// </summary>
@@ -349,7 +362,7 @@ private:
 	PlayerParameter parameter_;// プレイヤーパラメータ
 	AABB aabb_;// 当たり判定用AABB
 	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
-	
+
 	//Animation
 	Vector3 shotAnimationRotate_ = {};//発射アニメーションの回転
 	float shotAnimationTimer_ = 0.0f; //発射アニメーションのタイマー

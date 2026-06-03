@@ -176,7 +176,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
-    <ClCompile Include="application\player\PlayerBullet.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
@@ -367,7 +366,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\fade\FadeManager.h" />
     <ClInclude Include="application\goal\Goal.h" />
     <ClInclude Include="application\player\Player.h" />
-    <ClInclude Include="application\player\PlayerBullet.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
     <ClInclude Include="engine\particle\ParticleMnager.h" />

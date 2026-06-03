@@ -407,31 +407,33 @@ void Player::DrawPredictLine()
 
 	for (int step = 0; step < kMaxSteps; ++step) {
 
+		Vector3 moveDirBeforeHit = simVel.Normalize();
+
 		CollisionMapInfo info{};
 		info.move = simVel;
 		info.normal = { 0,0,0 };
 		info.hasNormal = false;
 
-		// マップ判定（既存を流用！）
 		MapCollisionAt(simPos, info, false);
 
 		const bool touchingNow = info.ceiling || info.landing || info.hitWall;
 
-		// 接触カウント
 		if (touchingNow && !wasTouchingSim) {
 			hitCountSim++;
 		}
+
 		wasTouchingSim = touchingNow;
 
-		// 移動（押し戻し込み）
 		simPos = simPos + info.move;
 
-		// 線分描画
 		line_->Draw(prev, simPos, color);
 		prev = simPos;
 
-		// 2回触れたら終了（sticky地点まで描く）
-		if (hitCountSim >= 2) break;
+		if (hitCountSim >= 2) {
+			Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
+			DrawGhostAimPreview(simPos, nextFacingDir);
+			break;
+		}
 
 		// 反射
 		if (info.hasNormal) {
@@ -458,6 +460,124 @@ void Player::DrawPredictLine()
 		}
 	}
 
+}
+
+void Player::DrawGhostAimPreview(const Vector3& landingPos, const Vector3& nextFacingDir)
+{
+	if (!line_) return;
+
+	Vector3 baseDir = nextFacingDir.Normalize();
+	if (std::abs(baseDir.x) < 1e-6f && std::abs(baseDir.y) < 1e-6f) {
+		return;
+	}
+
+	// -45〜+45度
+	const float maxAngleRad = 45.0f * (std::numbers::pi_v<float> / 180.0f);
+
+	// 時間で矢印を往復させる
+	// sinなので端で少しゆっくりになって見た目が自然
+	static float previewTimer = 0.0f;
+	previewTimer += 1.0f / 60.0f;
+
+	const float swing = std::sinf(previewTimer * 2.0f);
+	const float previewRad = swing * maxAngleRad;
+
+	Vector3 previewDir = RotateVectorZ(baseDir, previewRad).Normalize();
+
+	// 表示位置を少し手前に浮かせる
+	Vector3 start = landingPos;
+	start.z -= 0.05f;
+
+	const float arrowLength = 1.0f;
+	Vector3 end = start + previewDir * arrowLength;
+
+	// ゴーストのスイング矢印色
+	Vector4 arrowColor = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+	line_->Draw(start, end, arrowColor);
+
+	// 矢印の頭
+	Vector3 zAxis = { 0.0f, 0.0f, 1.0f };
+	Vector3 right = previewDir.Cross(zAxis).Normalize();
+
+	const float headLength = 0.2f;
+	const float headWidth = 0.12f;
+
+	Vector3 arrowBase = end - previewDir * headLength;
+	Vector3 arrow1 = arrowBase + right * headWidth;
+	Vector3 arrow2 = arrowBase - right * headWidth;
+
+	line_->Draw(end, arrow1, arrowColor);
+	line_->Draw(end, arrow2, arrowColor);
+
+	// 範囲の端も薄く表示する
+	Vector3 minDir = RotateVectorZ(baseDir, -maxAngleRad).Normalize();
+	Vector3 maxDir = RotateVectorZ(baseDir, maxAngleRad).Normalize();
+
+	Vector4 rangeColor = { 0.0f, 1.0f, 1.0f, 0.4f };
+
+	line_->Draw(start, start + minDir * 0.8f, rangeColor);
+	line_->Draw(start, start + maxDir * 0.8f, rangeColor);
+
+}
+
+Vector3 Player::RotateVectorZ(const Vector3& v, float rad)
+{
+	const float c = std::cosf(rad);
+	const float s = std::sinf(rad);
+
+	Vector3 result{};
+	result.x = v.x * c - v.y * s;
+	result.y = v.x * s + v.y * c;
+	result.z = v.z;
+
+	return result;
+}
+
+Vector3 Player::GetFacingDirFromCollisionInfo(const CollisionMapInfo& info)
+{
+	// 壁と床/天井に同時ヒットした場合は、めり込み量が大きい方を優先
+	if (info.hitWall && (info.ceiling || info.landing)) {
+
+		if (info.penX >= info.penY) {
+			if (info.normal.x > 0.0f) {
+				return { 1.0f, 0.0f, 0.0f };
+			}
+			if (info.normal.x < 0.0f) {
+				return { -1.0f, 0.0f, 0.0f };
+			}
+		} else {
+			if (info.normal.y > 0.0f) {
+				return { 0.0f, 1.0f, 0.0f };
+			}
+			if (info.normal.y < 0.0f) {
+				return { 0.0f, -1.0f, 0.0f };
+			}
+		}
+	}
+
+	// 壁
+	if (info.hitWall) {
+		if (info.normal.x > 0.0f) {
+			return { 1.0f, 0.0f, 0.0f };
+		}
+		if (info.normal.x < 0.0f) {
+			return { -1.0f, 0.0f, 0.0f };
+		}
+	}
+
+	// 床 or 天井
+	if (info.ceiling || info.landing) {
+		if (info.normal.y > 0.0f) {
+			return { 0.0f, 1.0f, 0.0f };
+		}
+		if (info.normal.y < 0.0f) {
+			return { 0.0f, -1.0f, 0.0f };
+		}
+	}
+
+	// 保険
+	return { 1.0f, 0.0f, 0.0f };
 }
 
 void Player::ReflectVelocity(Vector3& v, const Vector3& normal)
