@@ -184,7 +184,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
-    <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -381,7 +380,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
-    <ClInclude Include="UI.h" />
     <ClInclude Include="application\particle\GateInOut.h" />
   </ItemGroup>
   <ItemGroup>
