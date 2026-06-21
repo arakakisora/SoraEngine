@@ -54,14 +54,14 @@ void GamePlayScene::Initialize()
 		stagePath = "Resources/Mapdata/Map1.csv";
 	}
 	mapChipField_ = std::make_unique<MapChipField>();
-	mapChipField_->LoadMapChipCsv(stagePath);//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv(stagePath);
 	// ブロック生成
 	generateBlock_.Initialize(mapChipField_.get());
 	generateBlock_.GenerateObject3D();
 
 	// --- プレイヤースポーン位置をマップから取得する ---
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
@@ -87,9 +87,9 @@ void GamePlayScene::Initialize()
 	gameOverEffect_->Initialize(player->GetObject3D());
 
 
-	//エネミー
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Initialize(mapChipField_.get());
+	////エネミー
+	//enemyManager_ = std::make_unique<EnemyManager>();
+	//enemyManager_->Initialize(mapChipField_.get());
 
 	//3Dオブジェクトの初期化
 	object3D2nd = std::make_unique<Object3D>();
@@ -146,7 +146,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 			
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
-		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
 	}
 	else {
 
@@ -162,11 +161,11 @@ void GamePlayScene::UpdateGameLogic(float dt)
 			player->Update();
 			// プレイヤーの弾などは player 内で管理される
 		}
-		enemyManager_->Update();
+		//enemyManager_->Update();
 
 		// 衝突周りはゲームロジック
 		CollisionManager::GetInstance()->Clear();
-		enemyManager_->RegisterColliders();
+		//enemyManager_->RegisterColliders();
 		CollisionManager::GetInstance()->Update();
 
 		generateBlock_.SyncBlockObjectsWithMap();
@@ -188,12 +187,12 @@ void GamePlayScene::UpdateObjects(float dt)
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
 		player->GetObject3D()->Update();
-		enemyManager_->EnemyObjectUpdate();
+		//enemyManager_->EnemyObjectUpdate();
 	}
 	else {
 		// 普通時も見た目の更新は行う（物理・ロジックは UpdateGameLogic 側）
 		player->GetObject3D()->Update();
-		enemyManager_->EnemyObjectUpdate();
+		//enemyManager_->EnemyObjectUpdate();
 	}
 
 	// ブロックやパーティクルなどは常に更新
@@ -217,19 +216,19 @@ void GamePlayScene::UpdateCameraBlend(float dt)
 	if (!isCameraBlending_) {
 		return;
 	}
-
+	//カメラブレンドの更新
 	cameraBlendTimer_ += dt;
 
 	float t = cameraBlendTimer_ / cameraBlendDuration_;
 	t = std::clamp(t, 0.0f, 1.0f);
-
+	// イージング関数を使ってカメラ位置を補間
 	Vector3 pos = Easing::EaseLerp(
 		cameraBlendStartPos_,
 		cameraBlendEndPos_,
 		t,
 		Easing::EaseOutSine
 	);
-
+	// カメラ位置を更新
 	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(pos);
 
 	if (t >= 1.0f) {
@@ -299,9 +298,7 @@ void GamePlayScene::Draw()
 		player->Draw();
 
 	}
-	//エネミーの描画o 
-	enemyManager_->Draw();
-
+	//ブロックを描画
 	generateBlock_.Draw();
 
 	pauseMenu->Draw();
@@ -348,12 +345,8 @@ void GamePlayScene::Imguidebug()
 		generateBlock_.GenerateObject3D();
 
 
-		enemyManager_.reset();
-		enemyManager_ = std::make_unique<EnemyManager>();
-		enemyManager_->Initialize(mapChipField_.get());
-
-
-		// --- プレイヤースポーン位置をマップから取得する ---
+		
+		//プレイヤースポーン位置をマップから取得する
 		Vector3 playerPostion = {};
 		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
 		if (!spawnPositions.empty()) {
@@ -442,9 +435,6 @@ void GamePlayScene::ResetStage()
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPosition);
-
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Initialize(mapChipField_.get());
 
 	goal = std::make_unique<Goal>();
 	goal->Initialize(mapChipField_.get(), player.get());
