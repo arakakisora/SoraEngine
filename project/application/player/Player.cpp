@@ -187,7 +187,7 @@ void Player::Update() {
 	{
 		Vector3 pos = object3D_->GetTransform().translate;
 
-		if (TryPortalWarp(pos, velocity_)) {
+		if (TryPortalWarp(pos, velocity_,true)) {
 			object3D_->SetTranslate(pos);
 
 			shotVel_ = velocity_;
@@ -478,6 +478,20 @@ void Player::DrawPredictLine()
 
 		line_->Draw(prev, simPos, color);
 		prev = simPos;
+
+		Vector3 beforePortalPos = simPos;
+
+		if (TryPortalWarp(simPos, simVel, false)) {
+			Vector4 portalColor = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+			// 入口から出口へつながる線
+			line_->Draw(beforePortalPos, simPos, portalColor);
+
+			prev = simPos;
+
+			// ポータルは壁接触扱いにしない
+			wasTouchingSim = false;
+		}
 
 		if (hitCountSim >= 2) {
 			Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
@@ -1066,38 +1080,30 @@ void Player::PlayerShotAnimation()
 
 }
 
-bool Player::TryPortalWarp(Vector3& position, Vector3& velocity)
+bool Player::TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown)
 {
 	if (!mapChipField_) return false;
 
-	if (portalCooldown_ > 0) {
+	if (useCooldown && portalCooldown_ > 0) {
 		return false;
 	}
 
 	IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
 	MapChipType type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
 
-	Logger::Log("Portal Check\n");
-
 	if (type != MapChipType::Portal) {
 		return false;
 	}
 
-	Logger::Log("Touch Portal Tile\n");
-
 	PortalInfo inPortal;
 	if (!mapChipField_->TryGetPortal(index.xIndex, index.yIndex, inPortal)) {
-		Logger::Log("PortalInfo not found\n");
 		return false;
 	}
 
 	PortalInfo outPortal;
 	if (!mapChipField_->TryGetPairPortal(inPortal, outPortal)) {
-		Logger::Log("Pair Portal not found\n");
 		return false;
 	}
-
-	Logger::Log("Portal Pair Found\n");
 
 	velocity = RotateVelocityByPortal(
 		velocity,
@@ -1107,11 +1113,13 @@ bool Player::TryPortalWarp(Vector3& position, Vector3& velocity)
 
 	Vector3 exitPos = mapChipField_->GetMapChipPostionByIndex(outPortal.x, outPortal.y);
 
-	const float pushOut = 0.6f;
+	const float pushOut = 0.8f;
 	Vector3 outDir = outPortal.dir.Normalize();
 	position = exitPos + outDir * pushOut;
-	portalCooldown_ = 10;
-	Logger::Log("Portal Warp Success\n");
+
+	if (useCooldown) {
+		portalCooldown_ = 10;
+	}
 
 	return true;
 }

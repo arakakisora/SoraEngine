@@ -338,7 +338,7 @@ public:
 	void PlayerShotAnimation();
 
 	//portal用
-	bool TryPortalWarp(Vector3& position, Vector3& velocity);
+	bool TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown);
 	Vector3 RotateVelocityByPortal(
 		const Vector3& velocity,
 		const Vector3& inDir,
