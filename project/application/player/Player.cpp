@@ -180,6 +180,22 @@ void Player::Update() {
 	PlayerShotAnimation();
 
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
+
+	// ポータル通過
+	{
+		Vector3 pos = object3D_->GetTransform().translate;
+
+		if (TryPortalWarp(pos, velocity_)) {
+			object3D_->SetTranslate(pos);
+
+			shotVel_ = velocity_;
+			hasShotVel_ = true;
+
+			// ポータルは壁接触扱いにしない
+			wasTouching_ = false;
+		}
+	}
+
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
@@ -1046,6 +1062,70 @@ void Player::PlayerShotAnimation()
 
 
 
+}
+
+bool Player::TryPortalWarp(Vector3& position, Vector3& velocity)
+{
+	if (!mapChipField_) return false;
+
+	IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
+	MapChipType type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+
+	Logger::Log("Portal Check\n");
+
+	if (type != MapChipType::Portal) {
+		return false;
+	}
+
+	Logger::Log("Touch Portal Tile\n");
+
+	PortalInfo inPortal;
+	if (!mapChipField_->TryGetPortal(index.xIndex, index.yIndex, inPortal)) {
+		Logger::Log("PortalInfo not found\n");
+		return false;
+	}
+
+	PortalInfo outPortal;
+	if (!mapChipField_->TryGetPairPortal(inPortal, outPortal)) {
+		Logger::Log("Pair Portal not found\n");
+		return false;
+	}
+
+	Logger::Log("Portal Pair Found\n");
+
+	velocity = RotateVelocityByPortal(
+		velocity,
+		inPortal.dir,
+		outPortal.dir
+	);
+
+	Vector3 exitPos = mapChipField_->GetMapChipPostionByIndex(outPortal.x, outPortal.y);
+
+	const float pushOut = 0.6f;
+	Vector3 outDir = outPortal.dir.Normalize();
+	position = exitPos + outDir * pushOut;
+
+	Logger::Log("Portal Warp Success\n");
+
+	return true;
+}
+
+Vector3 Player::RotateVelocityByPortal(const Vector3& velocity, const Vector3& inDir, const Vector3& outDir)
+{
+	float inAngle = std::atan2(inDir.y, inDir.x);
+	float outAngle = std::atan2(outDir.y, outDir.x);
+
+	float delta = outAngle - inAngle;
+
+	float c = std::cos(delta);
+	float s = std::sin(delta);
+
+	Vector3 result{};
+	result.x = velocity.x * c - velocity.y * s;
+	result.y = velocity.x * s + velocity.y * c;
+	result.z = velocity.z;
+
+	return result;
 }
 
 void Player::StartCameraShake(float power, float duration)

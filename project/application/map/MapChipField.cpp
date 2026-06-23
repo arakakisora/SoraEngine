@@ -27,6 +27,7 @@ void MapChipField::ResetMapChipData() {
 void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	// マップチップデータをリセット
 	ResetMapChipData();
+	portals_.clear();
 
 	// ファイルを開く
 	std::ifstream file;
@@ -50,10 +51,34 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 
 		while (std::getline(lineStream, cell, ',')) {
 			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
+
+				std::string cellText = cell;
+
+				// 例: "3:0:right"
+				std::stringstream cellParser(cellText);
+				std::string typeText;
+				std::getline(cellParser, typeText, ':');
+
 				// CSV の文字列をそのまま int に変換して保存
-				MapChipType id = static_cast<MapChipType>(std::stoi(cell));
+				MapChipType id = static_cast<MapChipType>(std::stoi(typeText));
 				mapChipData_.data[y][x] = id;
 
+				if (id == MapChipType::Portal) {
+					std::string pairText;
+					std::string dirText;
+
+					if (std::getline(cellParser, pairText, ':') &&
+						std::getline(cellParser, dirText, ':')) {
+
+						PortalInfo portal;
+						portal.pairId = std::stoi(pairText);
+						portal.x = x;
+						portal.y = y;
+						portal.dir = DirFromString(dirText);
+
+						portals_.push_back(portal);
+					}
+				}
 				
 				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
 				if (info) {
@@ -173,7 +198,9 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 
 			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-
+			if (!info) {
+				continue;
+			}
 			if (info->spawn == spawnTag) {
 				result.push_back(GetMapChipPostionByIndex(x, y));
 			}
@@ -208,4 +235,39 @@ void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int da
 void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
 	IndexSet idx = GetMapChipIndexSetByPosition(position);
 	DamageMapChipByIndex(idx.xIndex, idx.yIndex, damage);
+}
+
+bool MapChipField::TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const
+{
+	for (const PortalInfo& portal : portals_) {
+		if (portal.x == x && portal.y == y) {
+			out = portal;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool MapChipField::TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const
+{
+	for (const PortalInfo& portal : portals_) {
+		if (portal.pairId == in.pairId &&
+			!(portal.x == in.x && portal.y == in.y)) {
+			out = portal;
+			return true;
+		}
+	}
+	return false;
+}
+
+Vector3 MapChipField::DirFromString(const std::string& dir)
+{
+	{
+		if (dir == "right") return { 1.0f, 0.0f, 0.0f };
+		if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
+		if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
+		if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+
+		return { 1.0f, 0.0f, 0.0f };
+	}
 }

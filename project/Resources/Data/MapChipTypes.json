@@ -42,7 +42,7 @@
     },
     {
       "id": 3,
-      "label": "Enemy2",
+      "label": "portal",
       "color": [
         0.95,
         0.85,
@@ -50,8 +50,7 @@
         1.0
       ],
       "collision": "none",
-      "spawn": "enemy",
-      "enemyNumber": 2,
+      "spawn": "portal",
       "hitPoints": 0
     },
     {

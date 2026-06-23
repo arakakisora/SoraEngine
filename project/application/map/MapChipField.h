@@ -30,6 +30,14 @@ struct Rect {
 	float bottom;
 	float top;
 };
+
+struct PortalInfo {
+	int pairId = -1;
+	uint32_t x = 0;
+	uint32_t y = 0;
+	Vector3 dir = { 1.0f, 0.0f, 0.0f };
+};
+
 /// <summary>
 /// マップチップフィールドクラス
 /// </summary>
@@ -98,6 +106,12 @@ public:
 	// 1ブロックの高さを取得
 	float GetBlockHeight() const { return kBlockHeight; }
 
+	const std::vector<PortalInfo>& GetPortals() const { return portals_; }
+	bool TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const;
+	bool TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const;
+	Vector3 DirFromString(const std::string& dir);
+	
+
 private:
 	// 1ブロックのサイズ
 	static inline const float kBlockWidth = 1.0f;
@@ -108,7 +122,8 @@ private:
 	MapChipData mapChipData_;
 
 	std::vector<int> Enemynumber;
-
+	// ポータルのペアIDと位置、向きを管理する構造体のリスト
+	std::vector<PortalInfo> portals_;
 
 	std::vector<std::vector<int>> hpData_;
 

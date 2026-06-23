@@ -45,6 +45,17 @@ void GenerateBlock::Update()
 			obj->Update();
 		}
 	}
+	// portalブロックの更新
+	for (auto& objext3dLine : portalBlockobject3D)
+	{
+		for (auto& obj : objext3dLine)
+		{
+			if (!obj) {
+				continue;
+			}
+			obj->Update();
+		}
+	}
 }
 
 void GenerateBlock::Draw()
@@ -85,6 +96,17 @@ void GenerateBlock::Draw()
 		}
 	}
 
+	for (auto& objext3dLine : portalBlockobject3D)
+	{
+		for (auto& obj : objext3dLine)
+		{
+			if (!obj) {
+				continue;
+			}
+			obj->Draw();
+		}
+	}
+
 }
 
 void GenerateBlock::GenerateObject3D()
@@ -99,15 +121,18 @@ void GenerateBlock::GenerateObject3D()
 	blockobject3D.clear();
 	unbreakableject3D.clear();
 	damageBlockobject3D.clear();
+	portalBlockobject3D.clear();
 
 	blockobject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
 	unbreakableject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
 	damageBlockobject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
+	portalBlockobject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
 
 	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
 		blockobject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
 		unbreakableject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
 		damageBlockobject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
+		portalBlockobject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
 	}
 
 	// 実際の作成は Sync に任せる（初回はここで生成される）
@@ -129,6 +154,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 			Object3D* obj = nullptr;
 			Object3D* unbreakableObj = nullptr;
 			Object3D* damageBlockObj = nullptr;
+			Object3D* portalObj = nullptr;
 
 			if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
 				obj = blockobject3D[y][x].get();
@@ -139,8 +165,12 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 			if (y < damageBlockobject3D.size() && x < damageBlockobject3D[y].size()) {
 				damageBlockObj = damageBlockobject3D[y][x].get();
 			}
+			if (y < portalBlockobject3D.size() && x < portalBlockobject3D[y].size()) {
+				portalObj = portalBlockobject3D[y][x].get();
+			}
 
 			if (type == MapChipType::Block) {
+
 				if (!obj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
@@ -153,14 +183,18 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 					blockobject3D[y][x] = std::move(newObj);
 				}
 
-				// 他タイプが残っていたら消す
 				if (unbreakableObj) {
 					unbreakableject3D[y][x].reset();
 				}
 				if (damageBlockObj) {
 					damageBlockobject3D[y][x].reset();
 				}
-			} else if (type == MapChipType::UnbreakableBlock) {
+				if (portalObj) {
+					portalBlockobject3D[y][x].reset();
+				}
+			}
+			else if (type == MapChipType::UnbreakableBlock) {
+
 				if (!unbreakableObj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
@@ -179,7 +213,12 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				if (damageBlockObj) {
 					damageBlockobject3D[y][x].reset();
 				}
-			} else if (type == MapChipType::damageBlock) {
+				if (portalObj) {
+					portalBlockobject3D[y][x].reset();
+				}
+			}
+			else if (type == MapChipType::damageBlock) {
+
 				if (!damageBlockObj) {
 					auto newObj = std::make_unique<Object3D>();
 					newObj->Initialize(Object3DCommon::GetInstance());
@@ -198,7 +237,25 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				if (unbreakableObj) {
 					unbreakableject3D[y][x].reset();
 				}
-			} else {
+				if (portalObj) {
+					portalBlockobject3D[y][x].reset();
+				}
+			}
+			else if (type == MapChipType::Portal) {
+
+				if (!portalObj) {
+					auto newObj = std::make_unique<Object3D>();
+					newObj->Initialize(Object3DCommon::GetInstance());
+
+					// portalモデルがまだ無いなら一旦 "block" でもOK
+					newObj->SetModel("damageblock");
+
+					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
+					newObj->SetLighting(false);
+
+					portalBlockobject3D[y][x] = std::move(newObj);
+				}
+
 				if (obj) {
 					blockobject3D[y][x].reset();
 				}
@@ -207,6 +264,21 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 				}
 				if (damageBlockObj) {
 					damageBlockobject3D[y][x].reset();
+				}
+			}
+			else {
+
+				if (obj) {
+					blockobject3D[y][x].reset();
+				}
+				if (unbreakableObj) {
+					unbreakableject3D[y][x].reset();
+				}
+				if (damageBlockObj) {
+					damageBlockobject3D[y][x].reset();
+				}
+				if (portalObj) {
+					portalBlockobject3D[y][x].reset();
 				}
 			}
 		}

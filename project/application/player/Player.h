@@ -337,7 +337,13 @@ public:
 	/// </summary>
 	void PlayerShotAnimation();
 
-	
+	//portal用
+	bool TryPortalWarp(Vector3& position, Vector3& velocity);
+	Vector3 RotateVelocityByPortal(
+		const Vector3& velocity,
+		const Vector3& inDir,
+		const Vector3& outDir
+	);
 
 	///////////////======setter======///////////////
 	/// <summary>

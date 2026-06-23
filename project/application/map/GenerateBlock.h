@@ -37,6 +37,7 @@ public:
 	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetBlockObject3D() { return blockobject3D; }
 	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetUnbreakableObject3D() { return unbreakableject3D; }
 	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetDamageBlockObject3D() { return damageBlockobject3D; }
+	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetPortalBlockObject3D() { return portalBlockobject3D; }
 
 
 private:
@@ -44,6 +45,7 @@ private:
 	std::vector<std::vector<std::unique_ptr<Object3D>>> blockobject3D;
 	std::vector<std::vector<std::unique_ptr<Object3D>>> unbreakableject3D;
 	std::vector<std::vector<std::unique_ptr<Object3D>>> damageBlockobject3D;
+	std::vector<std::vector<std::unique_ptr<Object3D>>> portalBlockobject3D;
 	MapChipField* mapChipField_ = nullptr;
 
 
