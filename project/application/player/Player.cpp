@@ -127,7 +127,9 @@ void Player::Update() {
 	ImGui::End();
 #endif // DEBUG_
 
-
+	if (portalCooldown_ > 0) {
+		portalCooldown_--;
+	}
 
 	PlayerMove();// 自機の動き
 	aabb_ = GetPlayerAABB();// AABB 更新
@@ -1068,6 +1070,10 @@ bool Player::TryPortalWarp(Vector3& position, Vector3& velocity)
 {
 	if (!mapChipField_) return false;
 
+	if (portalCooldown_ > 0) {
+		return false;
+	}
+
 	IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
 	MapChipType type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
 
@@ -1104,7 +1110,7 @@ bool Player::TryPortalWarp(Vector3& position, Vector3& velocity)
 	const float pushOut = 0.6f;
 	Vector3 outDir = outPortal.dir.Normalize();
 	position = exitPos + outDir * pushOut;
-
+	portalCooldown_ = 10;
 	Logger::Log("Portal Warp Success\n");
 
 	return true;

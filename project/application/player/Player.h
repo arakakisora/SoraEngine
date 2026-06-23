@@ -407,6 +407,7 @@ private:
 	int hitCount = 0; // 衝突した数
 	bool wasTouching_ = false;
 	bool hitDamageBlock = false;
+	int portalCooldown_ = 0;
 
 	//定数
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
