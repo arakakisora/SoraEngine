@@ -178,6 +178,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
+    <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -369,6 +370,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
     <ClInclude Include="application\particle\GateInOut.h" />
+    <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
