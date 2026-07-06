@@ -29,16 +29,10 @@
     <FxCompile Include="Resources\Shaders\Vignette.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application\enemy\Enemy.cpp" />
-    <ClCompile Include="application\enemy\EnemyBase.cpp" />
-    <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
-    <ClCompile Include="application\enemy\EnemyManager.cpp" />
-    <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
     <ClCompile Include="application\collision\CollisionManager.cpp" />
-    <ClCompile Include="application\enemy\Enemy2.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
     <ClCompile Include="application\ui\PauseMenu.cpp" />
@@ -100,18 +94,13 @@
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="application\ui\UIeditor.cpp" />
+    <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\enemy\Enemy.h" />
-    <ClInclude Include="application\enemy\EnemyBase.h" />
-    <ClInclude Include="application\enemy\EnemyDeathStage.h" />
-    <ClInclude Include="application\enemy\EnemyManager.h" />
-    <ClInclude Include="application\enemy\HitDeathComponent.h" />
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
     <ClInclude Include="application\particle\ChargeBehabiaor.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
-    <ClInclude Include="application\enemy\Enemy2.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
     <ClInclude Include="application\ui\PauseMenu.h" />
@@ -179,6 +168,7 @@
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
     <ClInclude Include="application\ui\UIeditor.h" />
+    <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />

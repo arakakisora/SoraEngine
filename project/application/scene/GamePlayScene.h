@@ -13,10 +13,9 @@
 
 #include <vector>
 #include <Player.h>
-#include <Enemy.h>
+
 #include <ParticleEmitter.h>
 
-#include "EnemyManager.h"	
 #include <memory>
 #include "CollisionManager.h"
 #include "Goal.h"
@@ -97,7 +96,7 @@ public:
 	std::unique_ptr <MapChipField> mapChipField_;
 	
 	//エネミー
-	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
+	//std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
 
 	//ブロック生成
 	GenerateBlock generateBlock_;

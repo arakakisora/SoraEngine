@@ -337,7 +337,13 @@ public:
 	/// </summary>
 	void PlayerShotAnimation();
 
-	
+	//portal用
+	bool TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown);
+	Vector3 RotateVelocityByPortal(
+		const Vector3& velocity,
+		const Vector3& inDir,
+		const Vector3& outDir
+	);
 
 	///////////////======setter======///////////////
 	/// <summary>
@@ -401,6 +407,7 @@ private:
 	int hitCount = 0; // 衝突した数
 	bool wasTouching_ = false;
 	bool hitDamageBlock = false;
+	int portalCooldown_ = 0;
 
 	//定数
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
