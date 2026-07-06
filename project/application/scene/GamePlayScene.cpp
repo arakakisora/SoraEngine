@@ -331,36 +331,15 @@ void GamePlayScene::Imguidebug()
 	//マップ作製エディタ
 	editor.Run();
 
-	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
-	if (editor.GetReloadRequested() == true) {
-		editor.SetReloadRequested(false);
+	if (editor.GetReloadRequested()) {
+		mapChipField_->ApplyStageData(editor.GetStageData());
 
-		std::string filePath = "Resources/Mapdata/";
-		filePath += editor.GetFileName();
-		mapChipField_->LoadMapChipCsv(filePath);
-
-		mapChipField_->LoadMapChipCsv(filePath);
-
-		// 再生成
 		generateBlock_.GenerateObject3D();
-
-
 		
-		//プレイヤースポーン位置をマップから取得する
-		Vector3 playerPostion = {};
-		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
-		if (!spawnPositions.empty()) {
-			// マップに player スポーンが複数ある場合は最初のものを使用
-			playerPostion = spawnPositions.front();
-		}
-		else {
-			// フォールバック: 既存の手打ち位置
-			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
-		}
-		player->GetObject3D()->SetTranslate(playerPostion);
-
+		editor.SetReloadRequested(false);
 	}
 
+	
 #ifdef USE_IMGUI
 	
 

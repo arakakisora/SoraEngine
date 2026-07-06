@@ -38,8 +38,6 @@ public:
 	StageCell& At(uint32_t x, uint32_t y);
 	const StageCell& At(uint32_t x, uint32_t y) const;
 
-
-
 	/// <summary>
 	/// 指定した座標のマップチップタイプを取得
 	/// </summary>
@@ -83,7 +81,9 @@ public:
 	void Clear();
 
 private:
-
+	uint32_t width_ = 0;
+	uint32_t height_ = 0;
+	std::vector<std::vector<StageCell>> cells_;
 
 };
 

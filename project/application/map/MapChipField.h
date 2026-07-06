@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "MapChipDatabase.h"
+#include <StageData.h>
 
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
@@ -112,6 +113,9 @@ public:
 	Vector3 DirFromString(const std::string& dir);
 	
 
+	StageData& GetStageData() { return stageData_; }
+	const StageData& GetStageData() const { return stageData_; }
+	void ApplyStageData(const StageData& stageData);
 private:
 	// 1ブロックのサイズ
 	static inline const float kBlockWidth = 1.0f;
@@ -126,5 +130,8 @@ private:
 	std::vector<PortalInfo> portals_;
 
 	std::vector<std::vector<int>> hpData_;
+
+	// ステージデータ
+	StageData stageData_;
 
 };

@@ -11,18 +11,22 @@ namespace fs = std::filesystem;
 
 void StageEditor::Run() {
 	// 初期化
-	if (grid_.empty()) {
+	if (stageData_.GetWidth() == 0 || stageData_.GetHeight() == 0) {
 		// グリッドの初期化
 		constexpr int kGridWidth = 50;
 		constexpr int kGridHeight = 25;
-		// 2Dグリッドを指定サイズで初期化
-		grid_.resize(kGridHeight, std::vector<GridCell>(kGridWidth));
+		//指定サイズで初期化
+		stageData_.Resize(kGridWidth, kGridHeight);
+		stageData_.Clear();
 	}
 	// ストローク訪問管理の初期化
 	if (strokeVisited_.empty()) {
-		// グリッドと同じサイズで初期化
-		strokeVisited_.resize(grid_.size(), std::vector<bool>(grid_[0].size(), false));
+		strokeVisited_.resize(
+			stageData_.GetHeight(),
+			std::vector<bool>(stageData_.GetWidth(), false)
+		);
 	}
+
 	RenderUI();
 }
 
@@ -61,11 +65,9 @@ void StageEditor::RenderUI() {
 
 	ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
 	if (ImGui::Button("New")) {
-		for (auto& row : grid_) {
-			for (auto& cell : row) {
-				cell.type = 0; // 空白に初期化
-			}
-		}
+		stageData_.Clear();// 新規作成
+		undoStack_.clear();// Undo/Redo履歴をクリア
+		redoStack_.clear();// Undo/Redo履歴をクリア
 	}
 
 	// セーブ
@@ -113,13 +115,23 @@ void StageEditor::RenderUI() {
 		ImGui::RadioButton(info.label.c_str(), &selectedType_, static_cast<int>(info.id));
 	}
 
+	if (static_cast<MapChipType>(selectedType_) == MapChipType::Portal) {
+		ImGui::Separator();
+		ImGui::Text("Portal Settings");
+
+		ImGui::InputInt("Portal Link ID", &selectedPortalLinkId_);
+
+		const char* dirItems[] = { "right", "left", "up", "down" };
+		ImGui::Combo("Portal Direction", &selectedPortalDir_, dirItems, IM_ARRAYSIZE(dirItems));
+	}
+
 	ImGui::End();
 
 	ImGui::Begin("Stage");
 
 	const float kCellSize = 15.0f;
-	const int rows = static_cast<int>(grid_.size());
-	const int cols = rows > 0 ? static_cast<int>(grid_[0].size()) : 0;
+	const int rows = static_cast<int>(stageData_.GetHeight());
+	const int cols = static_cast<int>(stageData_.GetWidth());
 
 	ImGui::BeginChild("StageCanvasChild", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -180,7 +192,7 @@ void StageEditor::RenderUI() {
 		}
 
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle) && hoverX >= 0 && hoverY >= 0) {
-			selectedType_ = grid_[hoverY][hoverX].type;
+			stageData_.GetType(hoverX, hoverY);
 		}
 	}
 
@@ -208,10 +220,9 @@ void StageEditor::RenderUI() {
 	// セル描画
 	for (int y = startY; y < endY; ++y) {
 		for (int x = startX; x < endX; ++x) {
-			const GridCell& cell = grid_[y][x];
-			MapChipType typeId = static_cast<MapChipType>(cell.type);
+			MapChipType typeId = stageData_.GetType(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-
+			
 			ImVec4 colorV = ImVec4(1, 1, 1, 1);
 			if (info) {
 				colorV = ImVec4(info->color.x, info->color.y, info->color.z, info->color.w);
@@ -247,7 +258,7 @@ void StageEditor::RenderUI() {
 		dl->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
 
 		const MapChipInfo* hoverInfo =
-			MapChipDatabase::GetInstance()->GetById(static_cast<MapChipType>(grid_[hoverY][hoverX].type));
+			MapChipDatabase::GetInstance()->GetById(stageData_.GetType(hoverX, hoverY));
 
 		if (hoverInfo) {
 			ImGui::BeginTooltip();
@@ -266,39 +277,80 @@ void StageEditor::RenderUI() {
 }
 
 void StageEditor::SaveCSV(const std::string& filename) {
-	fs::create_directories("Resources/Mapdata"); // フォルダがなければ作成
+	fs::create_directories("Resources/Mapdata");
+
 	std::ofstream file(filename);
-	for (const auto& row : grid_) {
-		for (size_t x = 0; x < row.size(); ++x) {
-			file << row[x].type;
-			if (x + 1 < row.size()) file << ",";
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+			const StageCell& cell = stageData_.At(x, y);
+
+			file << static_cast<int>(cell.type);
+
+			// ポータルなら 3:0:right みたいに保存したい場合
+			if (cell.type == MapChipType::Portal) {
+				file << ":" << cell.linkId << ":" << DirectionToString(cell.direction);
+			}
+
+			if (x + 1 < stageData_.GetWidth()) {
+				file << ",";
+			}
 		}
 		file << "\n";
 	}
 }
 
 void StageEditor::LoadCSV(const std::string& filename) {
-	// ファイルを開く
 	std::ifstream file(filename);
+	if (!file.is_open()) {
+		return;
+	}
+
+	stageData_.Clear();
+
 	std::string line;
-	int y = 0;
-	// 1行ずつ読み込み
-	//ホットリロード
+	uint32_t y = 0;
+
 	while (std::getline(file, line)) {
-		int x = 0;
-		size_t start = 0;
-		while (start < line.size()) {
-			size_t end = line.find(',', start);
-			if (end == std::string::npos) end = line.size();
-			int val = std::stoi(line.substr(start, end - start));
-			if (y < grid_.size() && x < grid_[y].size()) {
-				grid_[y][x].type = val;
+		std::stringstream lineStream(line);
+		std::string cellText;
+		uint32_t x = 0;
+
+		while (std::getline(lineStream, cellText, ',')) {
+			if (x >= stageData_.GetWidth() || y >= stageData_.GetHeight()) {
+				++x;
+				continue;
 			}
-			start = end + 1;
+
+			std::stringstream cellParser(cellText);
+
+			std::string typeText;
+			std::getline(cellParser, typeText, ':');
+
+			MapChipType type = static_cast<MapChipType>(std::stoi(typeText));
+			stageData_.SetType(x, y, type);
+
+			if (type == MapChipType::Portal) {
+				std::string linkText;
+				std::string dirText;
+
+				if (std::getline(cellParser, linkText, ':') &&
+					std::getline(cellParser, dirText, ':')) {
+
+					StageCell& cell = stageData_.At(x, y);
+					cell.linkId = std::stoi(linkText);
+					cell.direction = DirFromString(dirText);
+				}
+			}
+
 			++x;
 		}
+
 		++y;
 	}
+
+	undoStack_.clear();
+	redoStack_.clear();
 }
 
 void StageEditor::BeginStroke()
@@ -329,27 +381,44 @@ void StageEditor::EndStroke()
 
 void StageEditor::ApplyCellWithUndo(int x, int y, int newType)
 {
-	int& cell = grid_[y][x].type;
-	if (cell == newType) return;
+	if (x < 0 || y < 0) return;
+	if (x >= static_cast<int>(stageData_.GetWidth())) return;
+	if (y >= static_cast<int>(stageData_.GetHeight())) return;
 
-	// ストローク中、同じセルを二重記録しない
+	int before = static_cast<int>(stageData_.GetType(x, y));
+	if (before == newType) return;
+
 	if (isStrokeActive_ && !strokeVisited_[y][x]) {
 		strokeVisited_[y][x] = true;
-		currentStroke_.push_back(CellEdit{ x, y, cell, newType });
+		currentStroke_.push_back(CellEdit{ x, y, before, newType });
 	}
-	cell = newType;
+
+	stageData_.SetType(x, y, static_cast<MapChipType>(newType));
+
+	if (static_cast<MapChipType>(newType) == MapChipType::Portal) {
+		StageCell& cell = stageData_.At(x, y);
+		cell.linkId = selectedPortalLinkId_;
+		cell.direction = GetSelectedPortalDirection();
+	}
 }
 
 void StageEditor::Undo()
 {
 	if (undoStack_.empty()) { return; }
+
 	Stroke s = undoStack_.back();
 	undoStack_.pop_back();
 
+
 	// 逆順で戻す
 	for (auto it = s.rbegin(); it != s.rend(); ++it) {
-		grid_[it->y][it->x].type = it->before;
+		stageData_.SetType(
+			static_cast<uint32_t>(it->x),
+			static_cast<uint32_t>(it->y), 
+			static_cast<MapChipType>(it->before)
+		);
 	}
+
 	redoStack_.push_back(std::move(s));
 }
 
@@ -361,7 +430,48 @@ void StageEditor::Redo()
 	redoStack_.pop_back();
 	// 順番に適用する
 	for (auto& e : s) {
-		grid_[e.y][e.x].type = e.after;
+		stageData_.SetType(
+			static_cast<uint32_t>(e.x),
+			static_cast<uint32_t>(e.y),
+			static_cast<MapChipType>(e.after)
+		);
 	}
+
 	undoStack_.push_back(std::move(s));
+}
+
+std::string StageEditor::DirectionToString(const Vector3& dir) const
+{
+	if (dir.x > 0.5f) return "right";
+	if (dir.x < -0.5f) return "left";
+	if (dir.y > 0.5f) return "up";
+	if (dir.y < -0.5f) return "down";
+
+	return "right";
+}
+
+Vector3 StageEditor::DirFromString(const std::string& dir) const
+{
+	if (dir == "right") return { 1.0f, 0.0f, 0.0f };
+	if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
+	if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
+	if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+
+	return { 1.0f, 0.0f, 0.0f };
+}
+
+Vector3 StageEditor::GetSelectedPortalDirection() const
+{
+	switch (selectedPortalDir_) {
+	case 0:
+		return { 1.0f, 0.0f, 0.0f };   // right
+	case 1:
+		return { -1.0f, 0.0f, 0.0f };  // left
+	case 2:
+		return { 0.0f, 1.0f, 0.0f };   // up
+	case 3:
+		return { 0.0f, -1.0f, 0.0f };  // down
+	default:
+		return { 1.0f, 0.0f, 0.0f };
+	}
 }
