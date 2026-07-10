@@ -8,6 +8,7 @@
 #include <ModelManager.h>
 #include <cmath>
 #include <imgui.h>
+#include <UIeditor.h>
 
 void GameClearScene::Initialize()
 {
@@ -42,6 +43,7 @@ void GameClearScene::Initialize()
 
 	clearAnimTimer_ = 0.0f;
 	isLanding_ = false;
+	UIeditor::GetInstance()->SetScene("GameClear");
 }
 
 void GameClearScene::Finalize()
@@ -214,6 +216,10 @@ void GameClearScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
+
 	//Spriteの描画
 	sprite->Draw();
 	fadeManager_.Draw();

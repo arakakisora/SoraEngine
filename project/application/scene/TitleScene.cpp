@@ -11,12 +11,13 @@
 #include <memory>
 #include <ParticleMnager.h>
 #include <ChargeBehabiaor.h>
+#include <UIeditor.h>
 
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
 	// モデル読み込み（ModelManager は単一インスタンス）
 	ModelManager::GetInstance()->LoadModel("player");
-	ModelManager::GetInstance()->LoadModel("title"); // タイトルモデル
+	ModelManager::GetInstance()->LoadModel("title1"); // タイトルモデル
 
 	// フェードの初期化（白）
 	fadeManager_.Initialize("Resources/white.png");
@@ -30,17 +31,13 @@ void TitleScene::Initialize() {
 	gateOutRequested_ = false;
 	fadeOutRequested_ = false;
 
-	// タイトルスプライトを作成して初期パラメータ設定
-	titleSprite_ = std::make_unique<Sprite>();
-	titleSprite_->Initialize(SpriteCommon::GetInstance(), "Resources/space.png");
-	titleSprite_->SetPosition({ kTitleSpritePosX, kTitleSpritePosY });
-	titleSprite_->SetSize({ kTitleSpriteW, kTitleSpriteH });
+	UIeditor::GetInstance()->SetScene("Title");
 
 	// プレイヤー Object3D を生成してセットアップ
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player");
-	object3D_->SetScale(Vector3{ 1.0f, 1.0f, 1.0f });
+	object3D_->SetScale(Vector3{ 0.75f, 0.75f, 0.75f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f, -1.82f, -4.77f });
@@ -49,7 +46,7 @@ void TitleScene::Initialize() {
 	// タイトルモデル生成・配置
 	titleObj_ = std::make_unique<Object3D>();
 	titleObj_->Initialize(Object3DCommon::GetInstance());
-	titleObj_->SetModel("title");
+	titleObj_->SetModel("title1");
 	titleObj_->SetLighting(false);
 	titleObj_->SetRotate({ 0, kYawFront, 0 });
 
@@ -57,7 +54,7 @@ void TitleScene::Initialize() {
 		// モデルのトランスフォーム初期化
 		EulerTransform t = titleObj_->GetTransform();
 		t.translate = titlePos3_;
-		t.scale = { titleModelScale_, titleModelScale_, titleModelScale_ };
+		t.scale = { titleModelScaleW_, titleModelScaleH_, 1.0f };
 		titleObj_->SetTransform(t);
 	}
 
@@ -85,7 +82,7 @@ void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 
 	// unique_ptr の破棄に任せる（明示的な delete は不要）
-	titleSprite_.reset();
+	//titleSprite_.reset();
 	titleObj_.reset();
 	object3D_.reset();
 	camera.reset();
@@ -103,7 +100,7 @@ void TitleScene::Update() {
 	// オブジェクト更新（存在チェック）
 	if (object3D_) object3D_->Update();
 	if (titleObj_) titleObj_->Update();
-	if (titleSprite_) titleSprite_->Update();
+	//if (titleSprite_) titleSprite_->Update();
 
 	// プレイヤー走行アニメーション（Intro / Drag / Settle 時）
 	if (state_ == TitleAnimState::IntroRun ||
@@ -244,6 +241,7 @@ void TitleScene::Update() {
 		(!gate_ || !gate_->IsPlaying()) &&
 		Input::GetInstance()->TriggerKey(DIK_SPACE))
 	{
+		UIeditor::GetInstance()->PlayPressAnimation("Title", "space");
 		gateOutRequested_ = true;
 		if (gate_) gate_->StartOut(0.6f);
 	}
@@ -268,13 +266,17 @@ void TitleScene::Update() {
 // 描画
 void TitleScene::Draw() {
 	Object3DCommon::GetInstance()->CommonDraw();
+
 	if (titleObj_) titleObj_->Draw();
 	if (object3D_) object3D_->Draw();
 
 	ParticleManager::GetInstance()->Draw();
 
 	SpriteCommon::GetInstance()->CommonDraw();
-	if (titleSprite_) titleSprite_->Draw();
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
+
+	//if (titleSprite_) titleSprite_->Draw();
 	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
 }
@@ -352,14 +354,16 @@ void TitleScene::ImguiDraw()
 
 	ImGui::Begin("TitleScene Debug");
 
-	// タイトルスプライト位置/サイズ編集
-	if (titleSprite_) {
-		Vector2 titlePos2_ = titleSprite_->GetPosition();
-		ImGui::DragFloat2("titlePos2_", &titlePos2_.x, 0.1f);
-		titleSprite_->SetPosition(titlePos2_);
-		Vector2 titleScale2_ = titleSprite_->GetSize();
-		ImGui::DragFloat2("titleScale2_", &titleScale2_.x, 0.1f);
-		titleSprite_->SetSize(titleScale2_);
+	if (titleObj_) {
+		ImGui::SeparatorText("Title Object");
+
+		Vector2 titleScale={ titleModelScaleW_, titleModelScaleH_ };
+		ImGui::DragFloat("Title ScaleW",&titleModelScaleW_, 0.01f, 0.01f, 20.0f);
+		ImGui::DragFloat("Title ScaleH", &titleModelScaleH_, 0.01f, 0.01f, 20.0f);
+
+		EulerTransform t = titleObj_->GetTransform();
+		t.scale = { titleModelScaleW_, titleModelScaleH_,1.0};
+		titleObj_->SetTransform(t);
 	}
 
 	ImGui::End();

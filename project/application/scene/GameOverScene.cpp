@@ -8,6 +8,7 @@
 #include "ModelManager.h"
 #include <imgui.h>
 #include <ChargeBehabiaor.h>
+#include <UIeditor.h>
 
 void GameOverScene::Initialize()
 {
@@ -45,6 +46,8 @@ void GameOverScene::Initialize()
 		VerticesType::Quad,
 		std::make_unique<ExplosionBehavior>()
 	);*/
+
+	UIeditor::GetInstance()->SetScene("GameClear");
 }
 
 void GameOverScene::Finalize()
@@ -155,6 +158,8 @@ void GameOverScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
 	//Spriteの描画
 	sprite->Draw();
 	fadeManager_.Draw();

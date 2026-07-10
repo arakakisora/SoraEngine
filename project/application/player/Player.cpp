@@ -16,6 +16,8 @@
 #include <memory>      
 #include "Easing.h"
 #include <array> 
+#include "CameraManager.h"
+#include <UIeditor.h>
 
 void Player::Initialize(const Vector3& position) {
 
@@ -28,10 +30,18 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
-
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
+
+	// ゴーストの作成
+	ghostObject_ = std::make_unique<Object3D>();
+	ghostObject_->Initialize(Object3DCommon::GetInstance());
+	ghostObject_->SetModel("player");
+	ghostObject_->SetScale(Vector3{ 0.5f, 0.5f, 0.5f });
+	ghostObject_->SetColor({ 0.2f, 0.8f, 1.0f, 0.35f });
+	// ゴーストは少し暗くしたいのでライトOFF
+	ghostObject_->SetLighting(false);
 
 	//ParticleManager::GetInstance()->CreateParticleGroup(
 	//	"dash_smoke",
@@ -117,7 +127,9 @@ void Player::Update() {
 	ImGui::End();
 #endif // DEBUG_
 
-
+	if (portalCooldown_ > 0) {
+		portalCooldown_--;
+	}
 
 	PlayerMove();// 自機の動き
 	aabb_ = GetPlayerAABB();// AABB 更新
@@ -159,6 +171,10 @@ void Player::Update() {
 
 				deatheEffect->SetPosition(breakPos);
 				deatheEffect->Emit();
+				//カメラシェイク
+				StartCameraShake(0.08f, 0.15f);
+
+
 			}
 		}
 	}
@@ -166,6 +182,22 @@ void Player::Update() {
 	PlayerShotAnimation();
 
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
+
+	// ポータル通過
+	{
+		Vector3 pos = object3D_->GetTransform().translate;
+
+		if (TryPortalWarp(pos, velocity_,true)) {
+			object3D_->SetTranslate(pos);
+
+			shotVel_ = velocity_;
+			hasShotVel_ = true;
+
+			// ポータルは壁接触扱いにしない
+			wasTouching_ = false;
+		}
+	}
+
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
@@ -178,10 +210,17 @@ void Player::Update() {
 	// 死亡条件の判定
 	PlayerDeathTerms();
 
+	UpdateCameraShake();
+
 }
 
 void Player::Draw() {
+
+	DrawGhost();
+
 	if (object3D_) object3D_->Draw();
+
+
 }
 
 void Player::PlayerMove() {
@@ -189,22 +228,26 @@ void Player::PlayerMove() {
 
 	// 上キーで仰角を増やし、下キーで仰角を減らす。連続入力に対応。
 	if (Input::GetInstance()->PushKey(DIK_UP)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "UP");
 		cannonAngleDeg_ += kCannonAngleStepDeg;
 	}
 	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "down");
 		cannonAngleDeg_ -= kCannonAngleStepDeg;
 	}
 
 	// マウスのホイール差分を取得して角度に反映
-	{
-		auto mouseMove = Input::GetInstance()->GetMouseMove();
-		if (mouseMove.lZ != 0) {
-			// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
-			const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
-			// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
-			cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
-		}
+
+	
+	auto mouseMove = Input::GetInstance()->GetMouseMove();
+	if (mouseMove.lZ != 0) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "mausu");
+		// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
+		const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
+		// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
+		cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
 	}
+
 
 
 	// 角度更新はそのまま（UP/DOWN + ホイール）
@@ -228,7 +271,9 @@ void Player::PlayerMove() {
 
 	//スペースで発射
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-	
+
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "SPACE");
+
 		const bool canShoot =
 			(playerState_ == PlayerState::sticky) || isStopped_;
 
@@ -280,7 +325,7 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 		}
 
 		if (hitCount >= 2) {
-			
+
 
 			playerState_ = PlayerState::sticky;
 			velocity_ = { 0,0,0 };
@@ -320,11 +365,13 @@ void Player::Reflect(const CollisionMapInfo& info)
 		if (info.penX >= info.penY) {
 			// 壁で反射
 			n = { (velocity_.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-		} else {
+		}
+		else {
 			// 天井/床で反射
 			n = { 0.0f, (velocity_.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 		}
-	} else {
+	}
+	else {
 		// 合成法線
 		n = MyMath::Normalize(info.normal);
 	}
@@ -385,6 +432,9 @@ void Player::DrawPredictLine()
 	if (!line_) return;
 	if (!mapChipField_) return;
 
+	// ゴーストは予測線と同時に表示する
+	isGhostVisible_ = false;
+
 	// 速度0のとき（発射前）だけ予測線を見せたいならこれ
 	if (!(velocity_.x == 0.0f && velocity_.y == 0.0f)) return;
 
@@ -407,31 +457,50 @@ void Player::DrawPredictLine()
 
 	for (int step = 0; step < kMaxSteps; ++step) {
 
+		Vector3 moveDirBeforeHit = simVel.Normalize();
+
 		CollisionMapInfo info{};
 		info.move = simVel;
 		info.normal = { 0,0,0 };
 		info.hasNormal = false;
 
-		// マップ判定（既存を流用！）
 		MapCollisionAt(simPos, info, false);
 
 		const bool touchingNow = info.ceiling || info.landing || info.hitWall;
 
-		// 接触カウント
 		if (touchingNow && !wasTouchingSim) {
 			hitCountSim++;
 		}
+
 		wasTouchingSim = touchingNow;
 
-		// 移動（押し戻し込み）
 		simPos = simPos + info.move;
 
-		// 線分描画
 		line_->Draw(prev, simPos, color);
 		prev = simPos;
 
-		// 2回触れたら終了（sticky地点まで描く）
-		if (hitCountSim >= 2) break;
+		Vector3 beforePortalPos = simPos;
+
+		if (TryPortalWarp(simPos, simVel, false)) {
+			Vector4 portalColor = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+			// 入口から出口へつながる線
+			line_->Draw(beforePortalPos, simPos, portalColor);
+
+			prev = simPos;
+
+			// ポータルは壁接触扱いにしない
+			wasTouchingSim = false;
+		}
+
+		if (hitCountSim >= 2) {
+			Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
+
+			SetGhostPreview(simPos, nextFacingDir);// ゴーストの位置と向きをセットして表示
+			DrawGhostAimPreview(simPos, nextFacingDir);// ゴーストの射出可能方向を表示	
+
+			break;
+		}
 
 		// 反射
 		if (info.hasNormal) {
@@ -442,10 +511,12 @@ void Player::DrawPredictLine()
 			if (hitX && hitY) {
 				if (info.penX >= info.penY) {
 					n = { (simVel.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-				} else {
+				}
+				else {
 					n = { 0.0f, (simVel.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 				}
-			} else {
+			}
+			else {
 				n = MyMath::Normalize(info.normal);
 			}
 
@@ -458,6 +529,125 @@ void Player::DrawPredictLine()
 		}
 	}
 
+}
+
+void Player::DrawGhostAimPreview(const Vector3& landingPos, const Vector3& nextFacingDir)
+{
+	if (!line_) return;
+
+	Vector3 baseDir = nextFacingDir.Normalize();
+	if (std::abs(baseDir.x) < 1e-6f && std::abs(baseDir.y) < 1e-6f) {
+		return;
+	}
+
+	// -45〜+45度
+	const float maxAngleRad = 45.0f * (std::numbers::pi_v<float> / 180.0f);
+
+	// 時間で矢印を往復させる
+	// sinなので端で少しゆっくりになって見た目が自然
+	static float previewTimer = 0.0f;
+	previewTimer += 1.0f / 60.0f;
+
+	const float swing = std::sinf(previewTimer * 2.0f);
+	const float previewRad = swing * maxAngleRad;
+
+	Vector3 previewDir = RotateVectorZ(baseDir, previewRad).Normalize();
+
+	// 表示位置を少し手前に浮かせる
+	Vector3 start = landingPos;
+	start.z -= 0.05f;
+
+	const float arrowLength = 1.0f;
+	Vector3 end = start + previewDir * arrowLength;
+
+	// ゴーストのスイング矢印色
+	Vector4 arrowColor = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+	line_->Draw(start, end, arrowColor);
+
+	// 矢印の頭
+	Vector3 zAxis = { 0.0f, 0.0f, 1.0f };
+	Vector3 right = previewDir.Cross(zAxis).Normalize();
+
+	const float headLength = 0.2f;
+	const float headWidth = 0.12f;
+
+	Vector3 arrowBase = end - previewDir * headLength;
+	Vector3 arrow1 = arrowBase + right * headWidth;
+	Vector3 arrow2 = arrowBase - right * headWidth;
+
+	line_->Draw(end, arrow1, arrowColor);
+	line_->Draw(end, arrow2, arrowColor);
+
+	// 範囲の端も薄く表示する
+	Vector3 minDir = RotateVectorZ(baseDir, -maxAngleRad).Normalize();
+	Vector3 maxDir = RotateVectorZ(baseDir, maxAngleRad).Normalize();
+
+	Vector4 rangeColor = { 0.0f, 1.0f, 1.0f, 0.4f };
+
+	line_->Draw(start, start + minDir * 0.8f, rangeColor);
+	line_->Draw(start, start + maxDir * 0.8f, rangeColor);
+
+}
+
+Vector3 Player::RotateVectorZ(const Vector3& v, float rad)
+{
+	const float c = std::cosf(rad);
+	const float s = std::sinf(rad);
+
+	Vector3 result{};
+	result.x = v.x * c - v.y * s;
+	result.y = v.x * s + v.y * c;
+	result.z = v.z;
+
+	return result;
+}
+
+Vector3 Player::GetFacingDirFromCollisionInfo(const CollisionMapInfo& info)
+{
+	// 壁と床/天井に同時ヒットした場合は、めり込み量が大きい方を優先
+	if (info.hitWall && (info.ceiling || info.landing)) {
+
+		if (info.penX >= info.penY) {
+			if (info.normal.x > 0.0f) {
+				return { 1.0f, 0.0f, 0.0f };
+			}
+			if (info.normal.x < 0.0f) {
+				return { -1.0f, 0.0f, 0.0f };
+			}
+		}
+		else {
+			if (info.normal.y > 0.0f) {
+				return { 0.0f, 1.0f, 0.0f };
+			}
+			if (info.normal.y < 0.0f) {
+				return { 0.0f, -1.0f, 0.0f };
+			}
+		}
+	}
+
+	// 壁
+	if (info.hitWall) {
+		if (info.normal.x > 0.0f) {
+			return { 1.0f, 0.0f, 0.0f };
+		}
+		if (info.normal.x < 0.0f) {
+			return { -1.0f, 0.0f, 0.0f };
+		}
+	}
+
+	// 床 or 天井
+	if (info.ceiling || info.landing) {
+		if (info.normal.y > 0.0f) {
+			return { 0.0f, 1.0f, 0.0f };
+		}
+		if (info.normal.y < 0.0f) {
+			return { 0.0f, -1.0f, 0.0f };
+		}
+	}
+
+	// 保険
+	return { 1.0f, 0.0f, 0.0f };
 }
 
 void Player::ReflectVelocity(Vector3& v, const Vector3& normal)
@@ -490,6 +680,72 @@ Vector3 Player::MakeShotVelocity()
 	return worldDir.Normalize() * spd;
 }
 
+void Player::DrawGhost()
+{
+
+	if (!isGhostVisible_) return;
+	if (!ghostObject_) return;
+
+	ghostObject_->SetTransform(ghostTransform_);
+	ghostObject_->Update();
+	ghostObject_->Draw();
+
+}
+
+void Player::SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir)
+{
+	if (!ghostObject_) return;
+
+	isGhostVisible_ = true;
+
+	ghostTransform_ = object3D_->GetTransform();
+
+	// 着地点に置く
+	ghostTransform_.translate = landingPos;
+
+	// 本体と完全に重なるとチラつく場合があるので少し手前/奥にずらす
+	ghostTransform_.translate.z -= 0.08f;
+
+	// 向き設定
+	ghostTransform_.rotate = GetGhostRotateFromFacingDir(nextFacingDir);
+
+	// サイズは本体と同じ
+	ghostTransform_.scale = { 0.5f, 0.5f, 0.5f };
+
+}
+
+Vector3 Player::GetGhostRotateFromFacingDir(const Vector3& facingDir)
+{
+	Vector3 rotate{ 0.0f, 0.0f, 0.0f };
+
+	// 右向き
+	if (std::abs(facingDir.x) > std::abs(facingDir.y)) {
+		if (facingDir.x >= 0.0f) {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = 0.0f;
+		}
+		// 左向き
+		else {
+			rotate.y = std::numbers::pi_v<float> *3.0f / 2.0f;
+			rotate.z = 0.0f;
+		}
+	}
+	else {
+		// 上向き
+		if (facingDir.y >= 0.0f) {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = std::numbers::pi_v<float> / 2.0f;
+		}
+		// 下向き
+		else {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = -std::numbers::pi_v<float> / 2.0f;
+		}
+	}
+
+	return rotate;
+}
+
 void Player::Playerdirection(const CollisionMapInfo& info) {
 	LRTBDirecion targetDir = direction_;
 
@@ -497,13 +753,15 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 
 		if (info.normal.x < 0.0f) {
 			targetDir = LRTBDirecion::kLeft;
-		} else if (info.normal.x > 0.0f) {
+		}
+		else if (info.normal.x > 0.0f) {
 			targetDir = LRTBDirecion::kRight;
 		}
 
 		if (info.normal.y > 0.0f) {
 			targetDir = LRTBDirecion::kTop;
-		} else if (info.normal.y < 0.0f) {
+		}
+		else if (info.normal.y < 0.0f) {
 			targetDir = LRTBDirecion::kBottom;
 		}
 	}
@@ -738,7 +996,8 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -756,7 +1015,8 @@ void Player::LandingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -775,7 +1035,8 @@ void Player::HitWallCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -814,9 +1075,117 @@ void Player::PlayerShotAnimation()
 
 	// スピン
 	shotAnimationRotate_.x = std::numbers::pi_v<float> *2.0f * t;
-	
 
 
+
+}
+
+bool Player::TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown)
+{
+	if (!mapChipField_) return false;
+
+	if (useCooldown && portalCooldown_ > 0) {
+		return false;
+	}
+
+	IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
+	MapChipType type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+
+	if (type != MapChipType::Portal) {
+		return false;
+	}
+
+	PortalInfo inPortal;
+	if (!mapChipField_->TryGetPortal(index.xIndex, index.yIndex, inPortal)) {
+		return false;
+	}
+
+	PortalInfo outPortal;
+	if (!mapChipField_->TryGetPairPortal(inPortal, outPortal)) {
+		return false;
+	}
+
+	velocity = RotateVelocityByPortal(
+		velocity,
+		inPortal.dir,
+		outPortal.dir
+	);
+
+	Vector3 exitPos = mapChipField_->GetMapChipPostionByIndex(outPortal.x, outPortal.y);
+
+	const float pushOut = 0.8f;
+	Vector3 outDir = outPortal.dir.Normalize();
+	position = exitPos + outDir * pushOut;
+
+	if (useCooldown) {
+		portalCooldown_ = 10;
+	}
+
+	return true;
+}
+
+Vector3 Player::RotateVelocityByPortal(const Vector3& velocity, const Vector3& inDir, const Vector3& outDir)
+{
+	float inAngle = std::atan2(inDir.y, inDir.x);
+	float outAngle = std::atan2(outDir.y, outDir.x);
+
+	float delta = outAngle - inAngle;
+
+	float c = std::cos(delta);
+	float s = std::sin(delta);
+
+	Vector3 result{};
+	result.x = velocity.x * c - velocity.y * s;
+	result.y = velocity.x * s + velocity.y * c;
+	result.z = velocity.z;
+
+	return result;
+}
+
+void Player::StartCameraShake(float power, float duration)
+{
+	cameraShakePower_ = power;
+	cameraShakeDuration_ = duration;
+	cameraShakeTimer_ = duration;
+}
+
+void Player::UpdateCameraShake()
+{
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+	if (!camera) return;
+
+	const float dt = 1.0f / 60.0f;
+
+	// 前フレームで足したシェイク分を一回戻す
+	Vector3 cameraPos = camera->GetTransform().translate;
+	cameraPos = cameraPos - cameraShakePrevOffset_;
+	cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+
+	if (cameraShakeTimer_ <= 0.0f || cameraShakeDuration_ <= 0.0f) {
+		camera->SetTranslate(cameraPos);
+		return;
+	}
+
+	cameraShakeTimer_ -= dt;
+
+	float t = cameraShakeTimer_ / cameraShakeDuration_;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	const float power = cameraShakePower_ * t;
+
+	Vector3 offset{};
+	offset.x = std::sinf(cameraShakeTimer_ * 90.0f) * power;
+	offset.y = std::cosf(cameraShakeTimer_ * 110.0f) * power;
+	offset.z = 0.0f;
+
+	cameraShakePrevOffset_ = offset;
+	camera->SetTranslate(cameraPos + offset);
+
+	if (cameraShakeTimer_ <= 0.0f) {
+		cameraShakeTimer_ = 0.0f;
+		cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+		camera->SetTranslate(cameraPos);
+	}
 }
 
 void Player::PlayerParticle()
@@ -828,7 +1197,8 @@ void Player::PlayerParticle()
 
 	if (playerState_ == PlayerState::hard && isBarrierActive_) {
 		ParticleManager::GetInstance()->EmitFollowOne("barriering", object3D_->GetTransform());
-	} else {
+	}
+	else {
 		ParticleManager::GetInstance()->StopFollow("barriering");
 	}
 
@@ -845,7 +1215,8 @@ void Player::PlayerParticle()
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (direction_ == LRTBDirecion::kRight) {
 				smokeTransform.translate.x -= 0.15f;
-			} else {
+			}
+			else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
@@ -856,7 +1227,8 @@ void Player::PlayerParticle()
 
 		}
 
-	} else {
+	}
+	else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
@@ -943,7 +1315,8 @@ bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vecto
 		if (pen > 0.0f) {
 			if (type == CollisionType::Right || type == CollisionType::Left) {
 				info.penX = std::max(info.penX, pen);
-			} else {
+			}
+			else {
 				info.penY = std::max(info.penY, pen);
 			}
 

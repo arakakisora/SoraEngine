@@ -50,7 +50,6 @@ public:
 	// アクティブカメラの取得
 	/// </summary>
 	Camera* GetActiveCamera();
-
 	/// <summary>
 	// アクティブカメラの設定
 	/// </summary>

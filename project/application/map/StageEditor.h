@@ -3,13 +3,9 @@
 #include <vector>
 #include <string>
 #include "MapChipDatabase.h"
+#include "StageData.h"
 
-/// <summary>
-/// グリッドセル構造体
-/// </summary>
-struct GridCell {
-	int type = 0; // 0=empty, 1=block, 2=enemy, 3=player
-};
+
 /// <summary>
 /// セル編集履歴構造体
 /// </summary>
@@ -46,6 +42,9 @@ public:
 	/// ファイル名を取得します
 	/// </summary>
 	const char* GetFileName() const { return fileNameBuffer; }
+
+	StageData& GetStageData() { return stageData_; }
+	const StageData& GetStageData() const { return stageData_; }
 private:
 	/// <summary>
 	/// UIの描画
@@ -84,9 +83,14 @@ private:
 	/// Redo操作
 	/// </summary>
 	void Redo();
+
+	std::string DirectionToString(const Vector3& dir) const;
+	Vector3 DirFromString(const std::string& dir) const;
+	Vector3 GetSelectedPortalDirection() const;
+
 private:
 	
-	std::vector<std::vector<GridCell>> grid_;// グリッドデータ
+	StageData stageData_;
 	int selectedType_ = 1;// 選択中のマップチップタイプ
 	bool isReloadRequested_ = false;// リロード要求フラグ
 	bool isEditingDrag_ = false;
@@ -102,5 +106,9 @@ private:
 	// すでに記録したセルの重複防止
 	std::vector<std::vector<bool>> strokeVisited_;
 	bool showStagewindow_ = true;
+
+	int selectedPortalLinkId_ = 0;
+	int selectedPortalDir_ = 0;
+	// 0:right, 1:left, 2:up, 3:down
 
 };

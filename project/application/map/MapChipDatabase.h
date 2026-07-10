@@ -7,7 +7,7 @@ enum class MapChipType : int {
 	Empty = 0,
 	Block,
 	Enemy1,
-	Enemy2,
+	Portal,
 	Goal,
 	Player,
 	UnbreakableBlock,

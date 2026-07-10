@@ -22,11 +22,16 @@ void MapChipField::ResetMapChipData() {
 		line.clear();
 		line.resize(kNumBlockHorizontal, 0);
 	}
+
+	// 新しいStageDataも同じサイズで初期化
+	stageData_.Resize(kNumBlockHorizontal, kNumBlockVirtical);
+	stageData_.Clear();
 }
 
 void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	// マップチップデータをリセット
 	ResetMapChipData();
+	portals_.clear();
 
 	// ファイルを開く
 	std::ifstream file;
@@ -50,10 +55,42 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 
 		while (std::getline(lineStream, cell, ',')) {
 			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
+
+				std::string cellText = cell;
+
+				// 例: "3:0:right"
+				std::stringstream cellParser(cellText);
+				std::string typeText;
+				std::getline(cellParser, typeText, ':');
+
 				// CSV の文字列をそのまま int に変換して保存
-				MapChipType id = static_cast<MapChipType>(std::stoi(cell));
+				MapChipType id = static_cast<MapChipType>(std::stoi(typeText));
 				mapChipData_.data[y][x] = id;
 
+				
+				stageData_.SetType(x, y, id);
+
+				if (id == MapChipType::Portal) {
+					std::string pairText;
+					std::string dirText;
+
+					if (std::getline(cellParser, pairText, ':') &&
+						std::getline(cellParser, dirText, ':')) {
+
+						PortalInfo portal;
+						portal.pairId = std::stoi(pairText);
+						portal.x = x;
+						portal.y = y;
+						portal.dir = DirFromString(dirText);
+
+						portals_.push_back(portal);
+
+						// StageData側にもギミック情報として保存
+						StageCell& cellData = stageData_.At(x, y);
+						cellData.linkId = portal.pairId;
+						cellData.direction = portal.dir;
+					}
+				}
 				
 				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
 				if (info) {
@@ -72,10 +109,11 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
 
 	// 範囲チェック（unsigned なので 0 未満チェックは不要）
-	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) {
-		return MapChipType::Empty; // 範囲外は Empty 扱い（id 0 を想定）
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+		return MapChipType::Empty;
 	}
-	return mapChipData_.data[yIndex][xIndex];
+
+	return stageData_.GetType(xIndex, yIndex);
 }
 
 Vector3 MapChipField::GetMapChipPostionByIndex(uint32_t xIndex, uint32_t yIndex) {
@@ -155,12 +193,13 @@ Vector3 MapChipField::GetGoalPosition() {
 
 bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex) 
 {
-	MapChipType typeId = GetMapChipTypeByIndex(xIndex, yIndex);
-	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+	MapChipType type = GetMapChipTypeByIndex(xIndex, yIndex);
+
+	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(type);
 	if (!info) {
 		return false;
 	}
-	// JSON の collision == "solid" を「通れないブロック」として扱う
+	//collision == "solid" を「通れないブロック」として扱う
 	return info->collision == "solid";
 }
 
@@ -173,7 +212,9 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 
 			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-
+			if (!info) {
+				continue;
+			}
 			if (info->spawn == spawnTag) {
 				result.push_back(GetMapChipPostionByIndex(x, y));
 			}
@@ -185,27 +226,111 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 
 //  指定インデックスのHPを取得
 int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
-	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return 0;
-	return hpData_[yIndex][xIndex];
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+		return 0;
+	}
+
+	return stageData_.GetHP(xIndex, yIndex);
 }
 
 //  指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
 void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage) {
-	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return;
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+		return;
+	}
 
-	int& hp = hpData_[yIndex][xIndex];
-	if (hp <= 0) return; // 既に壊れない/空
-	hp -= damage;
-	if (hp <= 0) {
-		// 壊れた -> 空にする
-		mapChipData_.data[yIndex][xIndex] = MapChipType::Empty;
-		hp = 0;
+	stageData_.DamageHP(xIndex, yIndex, damage);
 
+	// 並走期間中だけ、旧データにも反映しておく
+	if (yIndex < mapChipData_.data.size() && xIndex < mapChipData_.data[yIndex].size()) {
+		mapChipData_.data[yIndex][xIndex] = stageData_.GetType(xIndex, yIndex);
+	}
+
+	if (yIndex < hpData_.size() && xIndex < hpData_[yIndex].size()) {
+		hpData_[yIndex][xIndex] = stageData_.GetHP(xIndex, yIndex);
 	}
 }
 
 //  ワールド座標からダメージを与えるユーティリティ
 void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
-	IndexSet idx = GetMapChipIndexSetByPosition(position);
-	DamageMapChipByIndex(idx.xIndex, idx.yIndex, damage);
+	IndexSet indexSet = GetMapChipIndexSetByPosition(position);
+	DamageMapChipByIndex(indexSet.xIndex, indexSet.yIndex, damage);
+}
+
+bool MapChipField::TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const
+{
+	for (const PortalInfo& portal : portals_) {
+		if (portal.x == x && portal.y == y) {
+			out = portal;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool MapChipField::TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const
+{
+	for (const PortalInfo& portal : portals_) {
+		if (portal.pairId == in.pairId &&
+			!(portal.x == in.x && portal.y == in.y)) {
+			out = portal;
+			return true;
+		}
+	}
+	return false;
+}
+
+Vector3 MapChipField::DirFromString(const std::string& dir)
+{
+	{
+		if (dir == "right") return { 1.0f, 0.0f, 0.0f };
+		if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
+		if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
+		if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+
+		return { 1.0f, 0.0f, 0.0f };
+	}
+}
+
+void MapChipField::ApplyStageData(const StageData& stageData)
+{
+	stageData_ = stageData;
+
+	// 旧データにも同期しておく
+	mapChipData_.data.clear();
+	mapChipData_.data.resize(stageData_.GetHeight());
+
+	hpData_.clear();
+	hpData_.resize(stageData_.GetHeight());
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+		mapChipData_.data[y].resize(stageData_.GetWidth(), MapChipType::Empty);
+		hpData_[y].resize(stageData_.GetWidth(), 0);
+
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+			mapChipData_.data[y][x] = stageData_.GetType(x, y);
+			hpData_[y][x] = stageData_.GetHP(x, y);
+		}
+	}
+
+	// ポータル情報も再構築
+	portals_.clear();
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+			const StageCell& cell = stageData_.At(x, y);
+
+			if (cell.type == MapChipType::Portal) {
+				PortalInfo portal;
+				portal.pairId = cell.linkId;
+				portal.x = x;
+				portal.y = y;
+				portal.dir = cell.direction;
+
+				portals_.push_back(portal);
+			}
+		}
+	}
+
+
 }

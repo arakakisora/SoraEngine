@@ -62,7 +62,7 @@ void WinApp::Initialize()
 	//ウィンドウ生成
 	 hwnd = CreateWindow(
 
-		wc.lpszClassName, L"スーパー車",
+		wc.lpszClassName, L"スーパー卵",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,

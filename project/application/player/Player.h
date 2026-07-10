@@ -10,12 +10,13 @@
 #include "RenderingData.h"
 
 #include "Object3D.h"
-#include <PlayerBullet.h>
+
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
 #include "Collider.h"
 #include "Line.h"       
 #include <memory>       
+#include "MapChipField.h"
 
 enum class LRTBDirecion {
 	kRight,
@@ -83,8 +84,8 @@ struct PlayerParameter {
 	float kTimeTurn = 0.5; // 角度補間タイム
 
 	struct DeathHeight {
-		float min=0.0f; // 落下死の高さ
-		float max=20.0f; // 落下死の有効/無効
+		float min = 0.0f; // 落下死の高さ
+		float max = 20.0f; // 落下死の有効/無効
 	};
 	struct Deathwidth {
 		float min = -3.0f; // 落下死の高さ
@@ -142,7 +143,7 @@ public:
 	/// <param name="info"></param>
 	void Reflect(const CollisionMapInfo& info);
 
-	////////////======ライン描画======///////////////
+	//====================ライン描画=======================//
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
@@ -151,6 +152,18 @@ public:
 	/// プレイヤーの移動予測ライン描画
 	/// </summary>
 	void DrawPredictLine();
+	/// <summary>
+	/// ゴースト位置に次ターンの射出可能方向を表示
+	/// </summary>
+	void DrawGhostAimPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
+	/// <summary>
+	/// Z軸回転でベクトルを回す
+	/// </summary>
+	Vector3 RotateVectorZ(const Vector3& v, float rad);
+	/// <summary>
+	/// 衝突情報から、実際のプレイヤーと同じ次ターン向きを取得
+	/// </summary>
+	Vector3 GetFacingDirFromCollisionInfo(const CollisionMapInfo& info);
 	/// <summary>
 	/// ベクトルを法線で反射させる
 	/// </summary>
@@ -162,7 +175,14 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	Vector3 MakeShotVelocity();
-	/////////////======ライン描画======///////////////
+
+	//=====================ゴースト関連========================//
+	void DrawGhost();
+	void SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
+	Vector3 GetGhostRotateFromFacingDir(const Vector3& facingDir);
+	//=====================ゴースト関連========================//
+	
+	//====================ライン描画========================//
 
 	/////////////======プレイヤーの動き======///////////////
 	/// <summary>
@@ -173,13 +193,13 @@ public:
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void Playerdirection(const CollisionMapInfo& info); 
+	void Playerdirection(const CollisionMapInfo& info);
 	/// <summary>
 	// 死亡条件しているかどうか
 	/// </summary>
 	void PlayerDeathTerms();
 
-	
+
 
 	/////////////======プレイヤーの動き======///////////////
 
@@ -317,7 +337,14 @@ public:
 	/// </summary>
 	void PlayerShotAnimation();
 
-	
+	//portal用
+	bool TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown);
+	Vector3 RotateVelocityByPortal(
+		const Vector3& velocity,
+		const Vector3& inDir,
+		const Vector3& outDir
+	);
+
 	///////////////======setter======///////////////
 	/// <summary>
 	/// 死亡しているかどうかを設定
@@ -334,7 +361,7 @@ public:
 	/// </summary>
 	/// <param name="left"></param>
 	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
-	
+
 	/// <summary>
 	// 速度設定
 	/// </summary>
@@ -343,13 +370,14 @@ public:
 private:
 
 	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
+	
 	PlayerState playerState_ = PlayerState::hard;//プレイヤーステート
 	Vector3 playerPosition_ = {};// プレイヤーの位置
 	Vector3 velocity_ = {};// 速度
 	PlayerParameter parameter_;// プレイヤーパラメータ
 	AABB aabb_;// 当たり判定用AABB
 	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
-	
+
 	//Animation
 	Vector3 shotAnimationRotate_ = {};//発射アニメーションの回転
 	float shotAnimationTimer_ = 0.0f; //発射アニメーションのタイマー
@@ -379,6 +407,7 @@ private:
 	int hitCount = 0; // 衝突した数
 	bool wasTouching_ = false;
 	bool hitDamageBlock = false;
+	int portalCooldown_ = 0;
 
 	//定数
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
@@ -392,4 +421,18 @@ private:
 	bool hasShotVel_ = false;
 	bool isStopped_ = false;
 	bool isBarrierActive_ = false;
+
+	//==================== 予測ゴースト ====================//
+	std::unique_ptr<Object3D> ghostObject_;
+
+	bool isGhostVisible_ = false;
+	EulerTransform ghostTransform_{};
+
+	// カメラシェイク
+	float cameraShakeTimer_ = 0.0f;
+	float cameraShakeDuration_ = 0.0f;
+	float cameraShakePower_ = 0.0f;
+	Vector3 cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+	void StartCameraShake(float power, float duration);
+	void UpdateCameraShake();
 };

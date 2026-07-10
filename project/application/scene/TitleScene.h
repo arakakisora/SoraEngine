@@ -62,7 +62,7 @@ private:
 	};
 
 	
-	std::unique_ptr<Sprite> titleSprite_;
+	//std::unique_ptr<Sprite> titleSprite_;
 	float exhaustTimer_ = 0.0f;
 	FadeManager fadeManager_;
 
@@ -90,11 +90,12 @@ private:
 	Vector3 titlePos3_{ -12.0f, 0.0f, 0.0f };   // 左外から開始（単位はワールド）
 	Vector3 titleTarget3_{ 0.0f, 0.0f, 0.0f };  // カメラ中心へ寄せる
 
-	float springX_ = -12.0f;   // ← 初期位置に合わせる
+	float springX_ = -12.0f;  
 	float springV_ = 0.0f;
 	float springK_ = 0.035f;
 	float springD_ = 0.78f;
-	float titleModelScale_ = 3.0f;
+	float titleModelScaleW_ = 1.5f;
+	float titleModelScaleH_ = 1.5f;
 	float titleYOffset_ = 1.0f;
 	// 補助
 	bool ropeAttached_ = false;
