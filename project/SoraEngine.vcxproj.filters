@@ -95,6 +95,8 @@
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="application\ui\UIeditor.cpp" />
     <ClCompile Include="StageData.cpp" />
+    <ClCompile Include="CollisionMapInfo.cpp" />
+    <ClCompile Include="MapCollisionSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\map\MapChipField.h" />
@@ -169,6 +171,8 @@
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
     <ClInclude Include="application\ui\UIeditor.h" />
     <ClInclude Include="StageData.h" />
+    <ClInclude Include="CollisionMapInfo.h" />
+    <ClInclude Include="MapCollisionSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />
