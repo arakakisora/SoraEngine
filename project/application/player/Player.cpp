@@ -19,6 +19,7 @@
 #include "CameraManager.h"
 #include <UIeditor.h>
 
+#include "MapCollisionSystem.h"
 void Player::Initialize(const Vector3& position) {
 
 	// 初期配置と Object3D の作成（unique_ptr 所有）
@@ -143,7 +144,7 @@ void Player::Update() {
 	collisionMapInfo.move = velocity_;
 
 	// マップ衝突チェック
-	MapCollision(collisionMapInfo);// マップとの衝突判定と情報の取得
+	MapCollisionSystem::CheckPlayerCollision(this, mapChipField_, collisionMapInfo);
 	Reflect(collisionMapInfo);// 反射処理
 	PlayerCondition(collisionMapInfo);// プレイヤーの状態更新	
 
@@ -967,18 +968,14 @@ void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, boo
 	}
 }
 
-Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
-
-	Vector3 offseetTable[kNumCorner] = {
-
-		{+parameter_.kWidth / 2.0f, -parameter_.kHeight / 2.0f, 0},
-		{-parameter_.kWidth / 2.0f, -parameter_.kHeight / 2.0f, 0},
-		{+parameter_.kWidth / 2.0f, +parameter_.kHeight / 2.0f, 0},
-		{-parameter_.kWidth / 2.0f, +parameter_.kHeight / 2.0f, 0}
-	};
-
-	return center + offseetTable[static_cast<uint32_t>(corner)];
-
+Vector3 Player::CornerPosition(const Vector3& center, Corner corner)
+{
+	return MapCollisionSystem::CornerPosition(
+		center,
+		parameter_.kWidth,
+		parameter_.kHeight,
+		corner
+	);
 }
 
 void Player::PlayerCollisionMove(const CollisionMapInfo& info) {
@@ -1242,14 +1239,7 @@ void Player::PlayerParticle()
 
 bool Player::IsHittableBlock(MapChipType type)
 {
-	switch (type) {
-	case MapChipType::Block:
-	case MapChipType::UnbreakableBlock:
-	case MapChipType::damageBlock:
-		return true;
-	default:
-		return false;
-	}
+	return MapCollisionSystem::IsHittableBlock(type);
 }
 
 bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info, bool enableGoal)
