@@ -27,7 +27,6 @@
     └── └── ├── stage2/
     └── └── ├── stage3/
     └── └── ├── stage4/
-    └── └── ├── title/
     └── └── ├── title1/
     └── └── ├── titlemenu/
     └── └── └── unbreakableBlokc/
@@ -35,27 +34,12 @@
     ├── SoraEngine.vcxproj.filters
     ├── StageData.cpp
     ├── StageData.h
-    ├── UI.cpp
-    ├── UI.h
     ├── application/
     └── ├── Collision/
     └── └── ├── Collider.cpp
     └── └── ├── Collider.h
     └── └── ├── CollisionManager.cpp
     └── └── └── CollisionManager.h
-    └── ├── enemy/
-    └── └── ├── Enemy.cpp
-    └── └── ├── Enemy.h
-    └── └── ├── Enemy2.cpp
-    └── └── ├── Enemy2.h
-    └── └── ├── EnemyBase.cpp
-    └── └── ├── EnemyBase.h
-    └── └── ├── EnemyDeathStage.cpp
-    └── └── ├── EnemyDeathStage.h
-    └── └── ├── EnemyManager.cpp
-    └── └── ├── EnemyManager.h
-    └── └── ├── HitDeathComponent.cpp
-    └── └── └── HitDeathComponent.h
     └── ├── goal/
     └── └── ├── Goal.cpp
     └── └── └── Goal.h
@@ -93,9 +77,7 @@
     └── └── └── StageStartEffect.h
     └── ├── player/
     └── └── ├── Player.cpp
-    └── └── ├── Player.h
-    └── └── ├── PlayerBullet.cpp
-    └── └── └── PlayerBullet.h
+    └── └── └── Player.h
     └── ├── scene/
     └── └── ├── DebugScene.cpp
     └── └── ├── DebugScene.h
@@ -110,8 +92,6 @@
     └── └── ├── TitleScene.cpp
     └── └── └── TitleScene.h
     └── └── ui/
-    └──     ├── ControlGuide.cpp
-    └──     ├── ControlGuide.h
     └──     ├── PauseMenu.cpp
     └──     ├── PauseMenu.h
     └──     ├── UIeditor.cpp
@@ -336,22 +316,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="application\enemy\Enemy.cpp" />
-    <ClCompile Include="application\enemy\EnemyBase.cpp" />
-    <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
-    <ClCompile Include="application\enemy\EnemyManager.cpp" />
-    <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
     <ClCompile Include="application\collision\CollisionManager.cpp" />
-    <ClCompile Include="application\enemy\Enemy2.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
-    <ClCompile Include="application\ui\ControlGuide.cpp" />
     <ClCompile Include="application\ui\PauseMenu.cpp" />
     <ClCompile Include="application\particle\BarrierBreakBehavior.cpp" />
     <ClCompile Include="application\particle\BarrierRingBehavior.cpp" />
+    <ClCompile Include="application\ui\UIeditor.cpp" />
     <ClCompile Include="engine\math\Easing.cpp" />
     <ClCompile Include="application\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
@@ -399,7 +373,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
-    <ClCompile Include="application\player\PlayerBullet.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
@@ -408,7 +381,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
-    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -529,22 +502,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\enemy\Enemy.h" />
-    <ClInclude Include="application\enemy\EnemyBase.h" />
-    <ClInclude Include="application\enemy\EnemyDeathStage.h" />
-    <ClInclude Include="application\enemy\EnemyManager.h" />
-    <ClInclude Include="application\enemy\HitDeathComponent.h" />
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
     <ClInclude Include="application\particle\ChargeBehabiaor.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
-    <ClInclude Include="application\enemy\Enemy2.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
-    <ClInclude Include="application\ui\ControlGuide.h" />
     <ClInclude Include="application\ui\PauseMenu.h" />
     <ClInclude Include="application\particle\BarrierBreakBehavior.h" />
     <ClInclude Include="application\particle\BarrierRingBehavior.h" />
+    <ClInclude Include="application\ui\UIeditor.h" />
     <ClInclude Include="engine\math\Easing.h" />
     <ClInclude Include="application\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -590,7 +557,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="engine\fade\FadeManager.h" />
     <ClInclude Include="application\goal\Goal.h" />
     <ClInclude Include="application\player\Player.h" />
-    <ClInclude Include="application\player\PlayerBullet.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
     <ClInclude Include="engine\particle\ParticleMnager.h" />
@@ -606,8 +572,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\StageEndEffect.h" />
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
-    <ClInclude Include="UI.h" />
     <ClInclude Include="application\particle\GateInOut.h" />
+    <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">
@@ -704,19 +670,12 @@ File Path: project/SoraEngine.vcxproj.filters
     <FxCompile Include="Resources\Shaders\Vignette.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="application\enemy\Enemy.cpp" />
-    <ClCompile Include="application\enemy\EnemyBase.cpp" />
-    <ClCompile Include="application\enemy\EnemyDeathStage.cpp" />
-    <ClCompile Include="application\enemy\EnemyManager.cpp" />
-    <ClCompile Include="application\enemy\HitDeathComponent.cpp" />
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
     <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
     <ClCompile Include="application\collision\CollisionManager.cpp" />
-    <ClCompile Include="application\enemy\Enemy2.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
-    <ClCompile Include="application\ui\ControlGuide.cpp" />
     <ClCompile Include="application\ui\PauseMenu.cpp" />
     <ClCompile Include="engine\math\Easing.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
@@ -759,7 +718,6 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
-    <ClCompile Include="application\player\PlayerBullet.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
     <ClCompile Include="engine\particle\ParticleMnager.cpp" />
     <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
@@ -776,22 +734,16 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClCompile Include="application\particle\PlayerpaticleBehavior.cpp" />
     <ClCompile Include="engine\particle\IParticleBehavior.cpp" />
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
-    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="application\ui\UIeditor.cpp" />
+    <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="application\enemy\Enemy.h" />
-    <ClInclude Include="application\enemy\EnemyBase.h" />
-    <ClInclude Include="application\enemy\EnemyDeathStage.h" />
-    <ClInclude Include="application\enemy\EnemyManager.h" />
-    <ClInclude Include="application\enemy\HitDeathComponent.h" />
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
     <ClInclude Include="application\particle\ChargeBehabiaor.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
-    <ClInclude Include="application\enemy\Enemy2.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
-    <ClInclude Include="application\ui\ControlGuide.h" />
     <ClInclude Include="application\ui\PauseMenu.h" />
     <ClInclude Include="engine\math\Easing.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -834,7 +786,6 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClInclude Include="engine\fade\FadeManager.h" />
     <ClInclude Include="application\goal\Goal.h" />
     <ClInclude Include="application\player\Player.h" />
-    <ClInclude Include="application\player\PlayerBullet.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
     <ClInclude Include="engine\particle\ParticleMnager.h" />
@@ -857,7 +808,8 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClInclude Include="application\particle\PlayerpaticleBehavior.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
-    <ClInclude Include="UI.h" />
+    <ClInclude Include="application\ui\UIeditor.h" />
+    <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />
@@ -1082,66 +1034,6 @@ private:
 
 
 ============================================================
-File Path: project/UI.cpp
-============================================================
-#include "UI.h"
-#include "SpriteCommon.h"
-
-void UI::Initialize()
-{
-	spaceSprite_.Initialize(SpriteCommon::GetInstance(), "Resources/space.png");
-	//spaceSprite_.SetSize({ 64,64 });
-	spaceSprite_.SetPosition({ 100,100 });
-	mouseSprite_.Initialize(SpriteCommon::GetInstance(), "Resources/mouse.png");
-	//mouseSprite_.SetSize({ 64,64 });
-	mouseSprite_.SetPosition({ 200,100 });
-}
-
-
-
-============================================================
-File Path: project/UI.h
-============================================================
-#pragma once
-
-#include "Sprite.h"
-#include "MyMath.h"
-//ゲームUI 
-class UI
-{
-public:
-	/// <summary>
-	/// UIの初期化
-	/// </summary>
-	void Initialize();
-	/// <summary>
-	/// UIの終了処理
-	/// </summary>
-	void Update();
-	/// <summary>
-	/// UIの更新
-	/// </summary>
-	void Draw();
-	/// <summary>
-	/// UIの描画
-	/// </summary>
-	void ImguiDebug();
-
-
-private:
-
-	Sprite spaceSprite_;
-	Sprite mouseSprite_;
-
-
-
-
-
-};
-
-
-
-============================================================
 File Path: project/application/Collision/Collider.cpp
 ============================================================
 #include "Collider.h"
@@ -1190,8 +1082,8 @@ File Path: project/application/Collision/CollisionManager.cpp
 ============================================================
 #include "CollisionManager.h"
 #include "Player.h"
-#include "EnemyManager.h"
-#include "PlayerBullet.h"
+
+
 #include "MyMath.h"
 #include <assert.h>
 #include <array>
@@ -1339,1255 +1231,6 @@ private:
 };
 
 
-
-============================================================
-File Path: project/application/enemy/Enemy.cpp
-============================================================
-#include "Enemy.h"
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif 
-#include "PlayerBullet.h"
-#include "ParticleMnager.h"
-#include "ChargeBehabiaor.h"
-#include "Object3DCommon.h"
-
-
-
-
-Enemy::~Enemy()
-{
-	
-}
-
-void Enemy::Initialize() {
-
-	//Enemy
-			// Object3Dの生成と初期化
-	object3D_ = std::make_unique<Object3D>();
-	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("enemy");
-	//エネミーの初期位置
-	object3D_->SetTranslate(position_);
-	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-	scale = 1.0f;
-	object3D_->SetScale({ scale,scale,scale });
-	object3D_->SetLighting(false);
-	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
-	walkTimer_ = 0.0f;
-	rotateY = std::numbers::pi_v<float> / 2.0f;
-	defaultColor_ = object3D_->GetColor(); // 初期色を保存
-
-
-	//deatheffect
-	//ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
-	lifeTime = 1.0f;//パーティクルの寿命
-	currentTime = 1.0f;//現在の時間
-	maxParticles = 100;//最大パーティクル数
-	deatheEffect =std::make_unique< ParticleEmitter>(effectPosition_, lifeTime, currentTime, maxParticles, "enemydeath");
-	// Hit/Death コンポーネント初期化（初期HP = 3）
-	int HP = 3;
-	hitDeath_.Initialize(object3D_.get(), HP, deatheEffect.get());
-
-	aabb_ = GetEnemyAABB();
-	
-}	
-
-void Enemy::Update() {
-	 aabb_ = GetEnemyAABB();
-
-	// 固定フレームとして dt を使う（現状のフレーム依存コードに合わせる）
-	const float dt = 1.0f / 60.0f;
-
-	// HitDeathComponent の更新を先に行う
-	hitDeath_.Update(object3D_.get(), dt);
-
-	// 死亡状態なら通常の動作はスキップして演出のみ表示する
-	if (hitDeath_.IsDead()) {
-		// 当たり判定を無効化してプレイヤーへの衝突を防ぐ
-		SetCollisionEnabled(false);
-
-		isDead_ = true;
-		// 演出完了で回収フラグを立てる
-		if (hitDeath_.IsPendingRemove()) {
-			pendingRemove_ = true;
-		}
-		// object3D の GPU 更新（演出で位置・色を変更しているので反映は必要）
-		object3D_->Update();
-		// 死亡中はそれ以上の更新を行わない
-		return;
-	}
-
-	// 通常の挙動（死亡していなければ実行）
-	// 歩行タイマーの更新
-	walkTimer_ += dt;
-	// 歩行モーションの計算
-	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
-	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
-	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	// 位置の更新（現在位置 + 速度を計算）
-	Vector3 position = object3D_->GetTransform().translate;
-	position += velocity_;
-
-	// 移動を適用する前に「目の前のタイル」をチェックする（1 タイル先を既定）
-	if (IsTileAheadSolid(mapChipField_, 0)) {
-		// 壁がある → 進行方向を反転（移動は適用しない）
-		velocity_.x *= -1.0f;
-
-		// 回転方向も反転
-		if (velocity_.x > 0) {
-			rotateY = std::numbers::pi_v<float> / 2.0f;
-		} else {
-			rotateY = -std::numbers::pi_v<float> / 2.0f;
-		}
-	} else {
-		// 通路なら位置を確定
-		object3D_->SetTranslate(position);
-	}
-
-	// ダメージ表示タイマーの更新 （旧ロジックを残す：色戻し）
-	if (damageTimer_ > 0.0f) {
-		damageTimer_ -= dt;
-		if (damageTimer_ <= 0.0f) {
-			object3D_->SetColor(defaultColor_); // 元の色に戻す
-		}
-	}
-
-	object3D_->Update();
-	effectPosition_.translate = object3D_->GetTransform().translate;
-	deatheEffect->SetPosition(effectPosition_.translate);
-	
-
-#ifdef _DEBUG
-	
-#endif // _DEBUG
-
-}
-
-void Enemy::Draw() {
-	object3D_->Draw();
-
-
-}
-
-void Enemy::ReceiveDamage(int damage)
-{
-
-
-
-}
-
-
-
-
-
-
-
-
-============================================================
-File Path: project/application/enemy/Enemy.h
-============================================================
-#pragma once
-
-#include "assert.h"
-#include <algorithm>
-#include <numbers>
-#include "MyMath.h"
-#include"Object3D.h"
-#include <MapChipField.h>
-#include "ParticleEmitter.h"
-
-#include <stdlib.h>
-#include "EnemyBase.h"
-#include "MyMath.h"
-#include <cstdint>
-
-class Player;
-class PlayerBullet;
-
-/// <summary>
-/// Enemyクラス
-/// 敵の挙動を管理するクラス
-/// </summary>
-
-class Enemy : public EnemyBase {
-public:
-
-	~Enemy();
-	/// <summary>
-	/// 初期化
-	/// </summary>
-	void  Initialize()override;
-
-	/// <summary>
-	/// 毎フレーム処理
-	/// </summary>
-	void Update()override;
-
-	/// <summary>
-	/// 描画
-	/// </summary>
-	void Draw()override;
-
-	/// <summary>
-	// 当たったときコールバック
-	/// </summary>
-	void ReceiveDamage(int damage);
-
-private:
-
-
-	static inline const float kWalkSpeed = 0.01f; // 歩行の速さ
-
-	//敵のアニメーション
-	static inline const float kWalkMotionAngleStart = 0.1f;//最初の角度
-	static inline const float kWalkMotionAngleEnd = 0.5f;//最後の角度
-	static inline const float kWalkMotionTime = 0.1f;//アニメーションの時間
-
-	float walkTimer_ = 0.0f;//歩行時間
-
-	float rotateY = 0.0f;//回転角度
-	float scale = 0.0f;//スケール
-
-	//パアーティクルパラメータ
-	float lifeTime = 1.0f;
-	float currentTime = 1.0f;
-	uint32_t maxParticles = 100;
-};
-
-
-============================================================
-File Path: project/application/enemy/Enemy2.cpp
-============================================================
-#include "Enemy2.h"
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif 
-#include "PlayerBullet.h"
-#include "ParticleMnager.h"
-#include "ChargeBehabiaor.h"
-#include "Object3DCommon.h"
-
-
-
-Enemy2::~Enemy2()
-{
-
-}
-
-void Enemy2::Initialize() {
-
-
-	//Enemy
-			// Object3Dの生成と初期化
-	object3D_ = std::make_unique<Object3D>();;
-	object3D_->Initialize(Object3DCommon::GetInstance());
-	object3D_->SetModel("enemy");
-
-	//エネミーの初期位置
-	object3D_->SetTranslate(position_);
-	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
-	scale = 1.0f;
-	object3D_->SetScale({ scale,scale,scale });
-	object3D_->SetLighting(false);
-	velocity_ = { -kWalkSpeed, 0, 0 }; // 速度
-	walkTimer_ = 0.0f;
-	rotateY = std::numbers::pi_v<float> / 2.0f;
-	defaultColor_ = object3D_->GetColor(); // 初期色を保存
-
-	//deatheffect
-	//ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
-	//lifeTime = 1.0f;//パーティクルの寿命
-	//currentTime = 1.0f;//現在の時間
-	//maxParticles = 100;//最大パーティクル数
-	deatheEffect= std::make_unique< ParticleEmitter>(effectPosition_, lifeTime, currentTime, maxParticles, "enemydeath");
-
-	// Hit/Death コンポーネント初期化（初期HP = 3）
-	int HP = 10;
-	hitDeath_.Initialize(object3D_.get(), HP, deatheEffect.get());
-
-	aabb_ = GetEnemyAABB();
-	
-}
-
-void Enemy2::Update() {
-	aabb_ = GetEnemyAABB();
-
-	// 固定フレームとして dt を使う（現状のフレーム依存コードに合わせる）
-	const float dt = 1.0f / 60.0f;
-
-	// HitDeathComponent の更新を先に行う
-	hitDeath_.Update(object3D_.get(), dt);
-
-	// 死亡状態なら通常の動作はスキップして演出のみ表示する
-	if (hitDeath_.IsDead()) {
-		// 当たり判定を無効化してプレイヤーへの衝突を防ぐ
-		SetCollisionEnabled(false);
-
-		isDead_ = true;
-		// 演出完了で回収フラグを立てる
-		if (hitDeath_.IsPendingRemove()) {
-			pendingRemove_ = true;
-		}
-		// object3D の GPU 更新（演出で位置・色を変更しているので反映は必要）
-		object3D_->Update();
-		// 死亡中はそれ以上の更新を行わない
-		return;
-	}
-
-	// 通常の挙動（死亡していなければ実行）
-	// 歩行タイマーの更新
-	walkTimer_ += dt;
-	// 歩行モーションの計算
-	float param = std::sinf(std::numbers::pi_v<float> *2.0f * walkTimer_ / kWalkMotionTime);
-	float radian = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.0f) / 2.0f;
-	object3D_->SetRotate({ MyMath::fLerp(kWalkMotionAngleStart, kWalkMotionAngleEnd, radian) ,rotateY ,0 });
-	// 位置の更新（現在位置 + 速度を計算）
-	Vector3 position = object3D_->GetTransform().translate;
-	position += velocity_;
-
-
-	// 移動を適用する前に「目の前のタイル」をチェックする（1 タイル先を既定）
-	if (IsTileAheadSolid(mapChipField_, 1)) {
-
-		// 壁がある → 進行方向を反転（移動は適用しない）
-		velocity_.x *= -1.0f;
-
-		// 回転方向も反転
-		if (velocity_.x > 0) {
-			rotateY = std::numbers::pi_v<float> / 2.0f;
-
-		} else {
-
-			rotateY = -std::numbers::pi_v<float> / 2.0f;
-		}
-	} else {
-		// 通路なら位置を確定
-		object3D_->SetTranslate(position);
-	}
-
-	if (damageTimer_ > 0.0f) {
-		damageTimer_ -= dt;
-		if (damageTimer_ <= 0.0f) {
-			object3D_->SetColor(defaultColor_); // 元の色に戻す
-		}
-	}
-
-	object3D_->Update();
-	effectPosition_.translate = object3D_->GetTransform().translate;
-	deatheEffect->SetPosition(effectPosition_.translate);
-	//deatheEffect->Update();
-
-#ifdef _DEBUG
-	//ImGui::Text("HP: %d", HP);
-#endif // _DEBUG
-
-}
-
-void Enemy2::Draw() {
-	object3D_->Draw();
-
-
-}
-
-
-
-
-
-============================================================
-File Path: project/application/enemy/Enemy2.h
-============================================================
-#pragma once
-
-#include "assert.h"
-#include <algorithm>
-#include <numbers>
-#include "MyMath.h"
-#include "Object3D.h"
-#include <MapChipField.h>
-#include "ParticleEmitter.h"
-#include "Collider.h"
-#include "HitDeathComponent.h"
-
-#include "EnemyBase.h"
-
-
-
-class Player;
-class PlayerBullet;
-/// <summary>
-/// Enemyクラス
-/// 敵の細かい部分を管理するクラス
-/// </summary>
-class Enemy2 : public EnemyBase {
-public:
-
-	~Enemy2();
-	/// <summary>
-	/// 初期化
-	/// </summary>
-	void  Initialize()override;
-
-	/// <summary>
-	/// 毎フレーム処理
-	/// </summary>
-	void Update()override;
-
-	/// <summary>
-	/// 描画
-	/// </summary>
-	void Draw()override;
-
-
-private:
-
-	static inline const float kWalkSpeed = 0.01f; // 歩行の速さ
-
-	//敵のアニメーション
-	static inline const float kWalkMotionAngleStart = 0.1f;//最初の角度
-	static inline const float kWalkMotionAngleEnd = 0.5f;//最後の角度
-	static inline const float kWalkMotionTime = 0.1f;//アニメーションの時間
-
-	float walkTimer_ = 0.0f;//歩行時間
-
-	float rotateY = 0.0f;//回転角度
-	float scale = 0.0f;//スケール
-
-	//パアーティクルパラメータ
-	float lifeTime = 1.0f;
-	float currentTime = 1.0f;
-	uint32_t maxParticles = 100;
-
-};
-
-
-============================================================
-File Path: project/application/enemy/EnemyBase.cpp
-============================================================
-#include "EnemyBase.h"
-#include "Player.h"
-
-void EnemyBase::OnCollision(Collider* other)
-{
-	// 死亡中は当たり判定無視
-	if (hitDeath_.IsDead()) return;
-
-	// --------------------------------
-	// Player が当たったとき
-	// --------------------------------
-	if (other->GetLayer() == Layer::Player) {
-		Player* player = dynamic_cast<Player*>(other);
-		if (!player) {
-			return;
-		}
-
-		// hard のときだけ敵にダメージ
-		if (player->GetPlayerState() == PlayerState::hard) {
-			object3D_->SetColor(kDamageColor);
-			damageTimer_ = kDamageDisplayTime;
-
-			const float horizontalKnock = kHorizontalKnock;
-			const float verticalKnock = kVerticalKnock;
-			float dir = (velocity_.x > 0.0f) ? -1.0f : 1.0f;
-			Vector3 knock = { dir * horizontalKnock, verticalKnock, 0.0f };
-
-			hitDeath_.SetUseExternalDeathMotion(false);
-			int hitPower = kDefaultHitPower;
-			hitDeath_.OnHit(hitPower, knock);
-			return;
-		}
-	}
-
-}
-
-Vector3 EnemyBase::GetWorldPosition() {
-
-	Vector3 worldPos;
-	/// ワールド座標を取得
-	worldPos.x = object3D_->GetWorldMatrix().m[3][0];
-	worldPos.y = object3D_->GetWorldMatrix().m[3][1];
-	worldPos.z = object3D_->GetWorldMatrix().m[3][2];
-	return worldPos;
-}
-
-
-AABB EnemyBase::GetEnemyAABB()
-{
-	// エネミーのワールド座標を取得
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	// AABBの最小点と最大点を計算
-	aabb.min = { worldPos.x - kEnemyWidth / 2.0f, worldPos.y - kEnemyHeight / 2.0f, worldPos.z - kEnemyWidth / 2.0f };
-	aabb.max = { worldPos.x + kEnemyWidth / 2.0f, worldPos.y + kEnemyHeight / 2.0f, worldPos.z + kEnemyWidth / 2.0f };
-
-	return aabb;
-}
-
-Vector3 EnemyBase::GetRayEndPosition()
-{
-	// エネミーの現在位置
-	Vector3 currentPosition = GetWorldPosition();
-
-	// レイの長さ
-	const float rayLength = kRayLength;
-
-	// 移動方向を正規化してレイの終点を計算
-	Vector3 normalizedVelocity = velocity_;
-	if (normalizedVelocity.Length() > 0.0f) {
-		normalizedVelocity.Normalize();  // 速度を正規化
-	}
-
-	// 向きに応じたレイの終点座標を計算
-	Vector3 rayEnd;
-	rayEnd.x = currentPosition.x + rayLength * normalizedVelocity.x;
-	rayEnd.y = currentPosition.y;
-	rayEnd.z = currentPosition.z + rayLength * normalizedVelocity.z;
-
-	return rayEnd;
-}
-
-int EnemyBase::GetRayMapChipNumber(MapChipField* mapChipField)
-{
-	// レイの終点座標を取得
-	Vector3 rayEndPosition = GetRayEndPosition();
-
-	// レイの終点があるマップチップのインデックスを取得
-	IndexSet index = mapChipField->GetMapChipIndexSetByPosition(rayEndPosition);
-
-	// マップチップの種類を取得
-	MapChipType chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
-
-	// マップチップ番号を返す
-	return static_cast<int>(chipType);
-}
-
-// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
-MapChipType EnemyBase::GetTileAheadType(MapChipField* map, int lookAheadTiles /*= 1*/)
-{
-	// 現在位置（SetTranslate直後でも反映されるTransform位置を使用）
-	Vector3 pos = object3D_->GetTransform().translate;
-
-	// 進行方向（X軸左右移動前提）。速度優先、無ければ rotateY で決定
-	int dir = 0;
-	if (velocity_.x > kVelocityEpsilon) dir = 1;
-	else if (velocity_.x < -kVelocityEpsilon) dir = -1;
-	else dir = (rotateY >= 0.0f) ? 1 : -1;
-
-	// チェックするワールド座標（エネミー前端＋タイル数分）
-	float offset = (kEnemyWidth * 0.5f) + (lookAheadTiles * map->GetBlockWidth());
-	Vector3 checkPos = pos;
-	checkPos.x += dir * offset;
-
-	// マップのインデックスを取得して範囲内にクランプ
-	IndexSet idx = map->GetMapChipIndexSetByPosition(checkPos);
-	int x = static_cast<int>(idx.xIndex);
-	int y = static_cast<int>(idx.yIndex);
-	if (x < 0) x = 0;
-	if (y < 0) y = 0;
-	if (x >= static_cast<int>(map->GetNumBlockHorizontal())) x = static_cast<int>(map->GetNumBlockHorizontal()) - 1;
-	if (y >= static_cast<int>(map->GetNumBlockVirtical())) y = static_cast<int>(map->GetNumBlockVirtical()) - 1;
-
-	return map->GetMapChipTypeByIndex(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
-}
-
-// 指定タイル先が固い（壁）かどうかを返すヘルパ
-bool EnemyBase::IsTileAheadSolid(MapChipField* map, int lookAheadTiles /*= 1*/)
-{
-	MapChipType type = GetTileAheadType(map, lookAheadTiles);
-	// Map の仕様により「1 がブロック」な既存コードに合わせる（必要なら修正）
-	IndexSet aheadIndex = map->GetMapChipIndexSetByPosition(
-		Vector3{ object3D_->GetTransform().translate.x + ((velocity_.x > 0) ? 1.0f : -1.0f) * ((kEnemyWidth * 0.5f) + lookAheadTiles * map->GetBlockWidth()),
-				 object3D_->GetTransform().translate.y,
-				 object3D_->GetTransform().translate.z });
-	return map->IsSolid(aheadIndex.xIndex, aheadIndex.yIndex);
-}
-
-============================================================
-File Path: project/application/enemy/EnemyBase.h
-============================================================
-// EnemyBase.h
-#pragma once
-#include "Object3D.h"
-#include "MapChipField.h"
-#include <ParticleEmitter.h>
-#include "HitDeathComponent.h"
-#include "Collider.h"
-
-
-/// <summary>
-/// EnemyBaseクラス
-/// 敵の基底クラス
-/// </summary>
-class EnemyBase : public Collider {
-public:
-	EnemyBase() : Collider(Layer::Enemy) {}
-
-	virtual ~EnemyBase() = default;
-	/// <summary>
-	//初期化
-	//</summary>
-	virtual void Initialize() = 0;
-
-	/// <summary>
-	/// 毎フレーム処理
-	/// </summary>
-	virtual void Update() = 0;
-
-	/// <summary>
-	/// 描画
-	/// </summary>
-	virtual void Draw() = 0;
-
-	AABB GetAABB() const override { return aabb_; }
-
-	void OnCollision(Collider* other) override;
-	
-	AABB GetEnemyAABB();
-
-	void SetPosition(const Vector3& pos) {
-		position_ = pos;
-	}
-
-
-	/// <summary>
-	/// ワールド座標を取得します
-	/// </summary>
-	/// <returns>vector3、ワールドポジションを返す</returns>
-	Vector3 GetWorldPosition();
-
-
-	/// <summary>
-	/// 目の前にブロックがあるかどうか
-	/// </summary>
-	/// <returns>エネミー目の前にレイを出す向きに応じて代わる</returns>
-	Vector3 GetRayEndPosition();
-
-	/// <summary>
-	/// レイの先のマップチップ番号を取得
-	/// </summary>
-	/// <returns>レイに当たってるマップチップ番号</returns>
-	int GetRayMapChipNumber(MapChipField* mapChipField);
-
-	/// <summary>
-	/// 指定タイル先（デフォルト1タイル）にあるチップの種類を返す
-	/// </summary>
-	MapChipType GetTileAheadType(MapChipField* map, int lookAheadTiles = 1);
-
-	/// <summary>
-	/// 指定タイル先が固い（壁）かどうかを返すヘルパ
-	/// </summary>
-	bool IsTileAheadSolid(MapChipField* map, int lookAheadTiles = 1);
-
-	/// <summary>
-	// Object3D解放用のメソッド
-	/// </summary>
-	void ReleaseObject3D() {
-		object3D_.reset();
-	}
-
-	/// <summary>
-	/// 死亡しているかどうか
-	/// </summary>
-	/// <returns></returns>
-	bool IsDead() const { return isDead_; }
-
-	/// <summary>
-	/// マネージャが削除判定に使う（死亡演出完了フラグ）
-	/// </summary>
-	bool IsPendingRemove() const { return pendingRemove_; }
-	/// <summary>
-	/// マップチップフィールドセット
-	/// </summary>
-	/// <param name="mapChipField"></param>
-	void SetMapChipField(MapChipField* mapChipField) {
-		mapChipField_ = mapChipField;
-	}
-
-	Object3D* GetObject3D() { return object3D_.get(); }
-	
-
-protected:
-	std::unique_ptr<Object3D> object3D_ = nullptr;
-	Vector3 position_;
-	Vector3 velocity_;
-	bool isDead_ = false;
-	float ground = 0.0f;
-	float kEnemyWidth = 0.8f;
-	float kEnemyHeight = 0.8f;
-	int HP_ = 3;
-	Vector4 defaultColor_ = { 1, 1, 1, 1 }; // 通常時の色
-	float damageTimer_ = 0.0f;
-	static inline const float kDamageDisplayTime = 0.2f; // 赤くなる時間（秒）
-	//撃破effect
-	std::unique_ptr< ParticleEmitter> deatheEffect = nullptr; // パーティクルエミッター
-	EulerTransform effectPosition_ = { {0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f } };
-	HitDeathComponent hitDeath_;
-	bool pendingRemove_ = false; // マネージャ用
-	AABB aabb_;
-	MapChipField* mapChipField_ = nullptr;
-	//death
-	float rotateY = 0.0f;
-
-	static inline constexpr float kHorizontalKnock = 1.0f;   // 被弾時の水平方向ノックバック速度 (units/sec)
-	static inline constexpr float kVerticalKnock = 3.0f;     // 被弾時の上方向初速度 (units/sec)
-	static inline constexpr int   kDefaultHitPower = 1;      // 被弾時のダメージ量（暫定）
-	static inline constexpr float kRayLength = 3.0f;         // 前方レイの長さ
-	static inline constexpr float kVelocityEpsilon = 1e-6f;  // 速度比較の閾値
-	static inline const    Vector4  kDamageColor = {1.0f, 0.0f, 0.0f, 1.0f}; // 被弾表示色
-};
-
-============================================================
-File Path: project/application/enemy/EnemyDeathStage.cpp
-============================================================
-#define NOMINMAX 
-#include "EnemyDeathStage.h"
-#include "Object3D.h"
-#include "MyMath.h"
-#include <array>
-#include <functional>
-
-void EnemyDeathStage::Initialize(Object3D* obj, const Vector3& target, float riseDur, float pullDur, float collapseDur)
-{
-	object_ = obj;
-	targetPos_ = target;
-	riseDuration_ = riseDur;
-	pullDuration_ = pullDur;
-	collapseDuration_ = collapseDur;
-	phase_ = EnemyDeathPhase::Rise;
-	timer_ = 0.0f;
-	if (object_) {
-		startPos_ = object_->GetTransform().translate;
-		startScale_ = object_->GetTransform().scale;
-	}
-}
-
-void EnemyDeathStage::Begin()
-{
-	timer_ = 0.0f;
-	phase_ = EnemyDeathPhase::Rise;
-}
-
-void EnemyDeathStage::Update(float dt)
-{
-	if (!object_) return;
-
-
-	// フェーズ処理はテーブル駆動で記述
-	timer_ += dt;
-
-	using Handler = std::function<void(float)>;
-
-	// フェーズ数 (Rise, PullIn, Collapse, Finished)
-	constexpr size_t PHASE_COUNT = 4;
-
-	// 各フェーズの処理をラムダで定義（this をキャプチャ）
-	std::array<Handler, PHASE_COUNT> handlers{
-		/* Rise */
-		[this](float /*dt*/) {
-			float t = std::clamp(timer_ / riseDuration_, 0.0f, 1.0f);
-			float ease = MyMath::SmoothStep(EnemyDeathStage::kFadeEpsilon, EnemyDeathStage::kFadeFull, t);
-			Vector3 p = startPos_;
-			p.y += EnemyDeathStage::kRiseHeight * ease;
-			object_->SetTranslate(p);
-			Vector3 s = MyMath::Lerp(startScale_, startScale_ * EnemyDeathStage::kRiseScaleFactor, ease);
-			object_->SetScale(s);
-
-			if (t >= 1.0f) {
-				phase_ = EnemyDeathPhase::PullIn;
-				timer_ = 0.0f;
-			}
-		},
-		/* PullIn */
-		[this, dt](float /*unused*/) {
-			float t = std::clamp(timer_ / pullDuration_, 0.0f, 1.0f);
-			float ease = MyMath::SmoothStep(EnemyDeathStage::kFadeEpsilon, EnemyDeathStage::kFadeFull, t);
-			Vector3 p = MyMath::Lerp(startPos_, targetPos_, ease);
-			object_->SetTranslate(p);
-			auto rot = object_->GetTransform().rotate;
-			rot.y += EnemyDeathStage::kPullRotateSpeed * dt;
-			object_->SetRotate(rot);
-			Vector3 s = MyMath::Lerp(startScale_ * EnemyDeathStage::kPullScaleStartFactor, startScale_ * EnemyDeathStage::kPullScaleEndFactor, ease);
-			object_->SetScale(s);
-
-			if (t >= 1.0f) {
-				phase_ = EnemyDeathPhase::Collapse;
-				timer_ = 0.0f;
-			}
-		},
-		/* Collapse */
-		[this](float /*dt*/) {
-			float t = std::clamp(timer_ / collapseDuration_, 0.0f, 1.0f);
-			float ease = MyMath::SmoothStep(EnemyDeathStage::kFadeEpsilon, EnemyDeathStage::kFadeFull, t);
-			Vector3 s = MyMath::Lerp(startScale_ * EnemyDeathStage::kPullScaleEndFactor, Vector3{EnemyDeathStage::kCollapseMinScale, EnemyDeathStage::kCollapseMinScale, EnemyDeathStage::kCollapseMinScale}, ease);
-			object_->SetScale(s);
-			auto col = object_->GetColor();
-			col.w = std::max(0.0f, EnemyDeathStage::kFadeFull - ease);
-			object_->SetColor(col);
-			object_->SetTranslate(targetPos_);
-
-			if (t >= 1.0f) {
-				phase_ = EnemyDeathPhase::Finished;
-			}
-		},
-		/* Finished */
-		[this](float /*dt*/) {
-			
-		}
-	};
-
-	// 安全にインデックスして実行
-	const size_t idx = static_cast<size_t>(phase_);
-	if (idx < handlers.size()) {
-		handlers[idx](dt);
-	}
-}
-
-============================================================
-File Path: project/application/enemy/EnemyDeathStage.h
-============================================================
-#pragma once
-#include "Vector3.h"
-#include <memory>
-
-class Object3D;
-
-enum class EnemyDeathPhase {
-	Rise,    // 少し浮き上がる
-	PullIn,  // 目的地へ吸い込まれる
-	Collapse,// 収束してフェード
-	Finished
-};
-
-class EnemyDeathStage {
-public:
-	// デフォルトと調整用定数（公開して外部で使えるように）
-	static inline constexpr float kDefaultRiseDuration     = 0.25f;
-	static inline constexpr float kDefaultPullDuration     = 0.8f;
-	static inline constexpr float kDefaultCollapseDuration = 0.5f;
-
-	// 初期化。target は吸い込む先。duration は各フェーズの長さ（秒）
-	void Initialize(Object3D* obj, const Vector3& target, float riseDur = kDefaultRiseDuration, float pullDur = kDefaultPullDuration, float collapseDur = kDefaultCollapseDuration);
-
-	// 開始（初期値セット）
-	void Begin();
-
-	// 更新（呼び出し側は dt を渡す）
-	void Update(float dt);
-	// 終了判定
-	bool IsFinished() const { return phase_ == EnemyDeathPhase::Finished; }
-
-private:
-	Object3D* object_ = nullptr;
-	Vector3 startPos_;// 開始時の位置
-	Vector3 targetPos_;// 吸い込む先の位置
-	Vector3 startScale_;// 開始時のスケール
-	float timer_ = 0.0f;// フェーズ内タイマー
-	EnemyDeathPhase phase_ = EnemyDeathPhase::Rise;
-
-	// durations
-	float riseDuration_ = kDefaultRiseDuration;// 少し浮き上がる時間
-	float pullDuration_ = kDefaultPullDuration;// 吸い込まれる時間
-	float collapseDuration_ = kDefaultCollapseDuration;// 収束してフェードする時間
-
-	// フェーズ挙動の調整定数（意味のある名前に
-	static inline constexpr float kRiseHeight               = 0.5f;   // 上昇量（ユニット）
-	static inline constexpr float kRiseScaleFactor         = 1.1f;   // 浮き上がり時のスケール倍率
-	static inline constexpr float kPullRotateSpeed         = 0.4f;   // 吸い込まれる際の回転速度（rad/sec）
-	static inline constexpr float kPullScaleStartFactor    = 1.1f;   // 吸い込み開始時のスケール倍率
-	static inline constexpr float kPullScaleEndFactor      = 1.4f;   // 吸い込み終了時のスケール倍率
-	static inline constexpr float kCollapseMinScale        = 0.01f;  // 収束時の最小スケール
-	static inline constexpr float kFadeEpsilon            = 0.0f;   // フェード用開始値（明示）
-	static inline constexpr float kFadeFull               = 1.0f;   // フェード用終了値（明示）
-};
-
-============================================================
-File Path: project/application/enemy/EnemyManager.cpp
-============================================================
-#include "EnemyManager.h"
-#include "MapChipField.h"
-#include "Object3DCommon.h"
-#include "CollisionManager.h"
-#include "Enemy.h"
-#include "Enemy2.h"
-#include <algorithm>
-#include <cassert>
-#include <memory>
-
-#ifdef USE_IMGUI
-#include "imgui.h"
-#endif // USE_IMGUI
-
-// コンストラクタ: デフォルトの敵ファクトリを登録
-EnemyManager::EnemyManager()
-{
-	// Factory: 通常の Enemy（ID 1）
-	RegisterFactory(kFactoryIdDefaultEnemy, [](const Vector3& pos, MapChipField* map) -> std::unique_ptr<EnemyBase> {
-		// unique_ptr を用いて所有権を明確にする
-		auto e = std::make_unique<Enemy>();
-		e->SetMapChipField(map); // Initialize が map を参照する可能性があるため先にセット
-		e->SetPosition(pos);
-		e->Initialize();
-		return e;
-	});
-
-	// Factory: Enemy2（ID 2）
-	RegisterFactory(kFactoryIdEnemy2, [](const Vector3& pos, MapChipField* map) -> std::unique_ptr<EnemyBase> {
-		auto e = std::make_unique<Enemy2>();
-		e->SetMapChipField(map);
-		e->SetPosition(pos);
-		e->Initialize();
-		return e;
-	});
-}
-
-// RegisterFactory: ファクトリを登録（ID -> factory）
-void EnemyManager::RegisterFactory(int id, Factory factory)
-{
-	factories_[id] = std::move(factory);
-}
-
-// Initialize: マップから敵情報を読み取り、factory で生成して所有リストに追加
-void EnemyManager::Initialize(MapChipField* map) {
-	map_ = map;
-	// マップから敵の位置リストとタイプリストを取得
-	std::vector<Vector3> enemyPositions = map_->GetEnemyPositions();
-	Enemynumber = map_->GetEnemyNumbers();
-
-	// 配列長の不整合に備えて最小長でループ
-	size_t count = std::min(enemyPositions.size(), Enemynumber.size());
-	for (size_t i = 0; i < count; ++i) {
-		const Vector3& enemyPos = enemyPositions[i];
-		int id = Enemynumber[i];
-		// ファクトリから敵を生成（存在しないIDならアサート）
-		auto it = factories_.find(id);
-		if (it != factories_.end()) {
-			std::unique_ptr<EnemyBase> newEnemy = it->second(enemyPos, map_);
-			if (newEnemy) enemies_.push_back(std::move(newEnemy));
-		}
-		else {
-			assert(false && "未登録の敵IDです");
-		}
-	}
-}
-
-// Update: 全敵を更新し、演出完了で消す
-void EnemyManager::Update() {
-
-	// 敵の Update 呼び出し
-	for (auto& enemy : enemies_) {
-		if (enemy) {
-			enemy->Update();
-		}
-	}
-
-	// 死亡して演出完了フラグが立っている敵をリストから削除（unique_ptr のデストラクタで解放される）
-	enemies_.remove_if([](const std::unique_ptr<EnemyBase>& enemy) {
-		return enemy && enemy->IsPendingRemove();
-	});
-}
-
-// Draw: 全敵の描画を呼ぶ
-void EnemyManager::Draw() {
-	for (const auto& enemy : enemies_) {
-		if (enemy) {
-			enemy->Draw();
-		}
-	}
-}
-
-// EnemyObjectUpdate: 内部の Object3D の更新を行う（描画用の GPU 更新など）
-void EnemyManager::EnemyObjectUpdate()
-{
-	for (const auto& enemy : enemies_) {
-		if (enemy) {
-			if (auto* obj = enemy->GetObject3D()) {
-				obj->Update();
-			}
-		}
-	}
-}
-
-// RegisterColliders: CollisionManager に自分の敵をコライダー登録する
-void EnemyManager::RegisterColliders()
-{
-	auto* cm = CollisionManager::GetInstance();
-	for (const auto& e : enemies_) {
-		if (e) cm->AddCollider(e.get()); // Collider* を渡す（unique_ptr の所有はここに残る）
-	}
-}
-
-
-
-============================================================
-File Path: project/application/enemy/EnemyManager.h
-============================================================
-#pragma once
-#include "Enemy2.h"
-#include "EnemyBase.h"
-#include <functional>
-#include <unordered_map>
-#include <memory>
-#include <list>
-#include <vector>
-
-struct Vector3;
-class MapChipField;
-/// <summary>
-/// EnemyManagerクラス
-/// </summary>
-class EnemyManager
-{
-public:
-	EnemyManager();
-	~EnemyManager() = default; 
-
-	/// <summary>
-	// 初期化（マップ参照を保持し、CSV から敵を生成）
-	/// </summary>
-	void Initialize(MapChipField* map);
-	/// <summary>
-	// 更新（敵の Update と生存チェック）
-	/// </summary>
-	void Update();
-	/// <summary>
-	// 描画
-	/// </summary>
-	void Draw();
-
-	// コライダを CollisionManager に登録する
-	void RegisterColliders();
-
-	// Getter: 敵一覧（所有権はこのクラスが持つ）
-	inline const std::list<std::unique_ptr<EnemyBase>>& GetEnemies() const { return enemies_; }
-
-	void EnemyObjectUpdate();
-
-	// 敵ファクトリ登録（id -> factory）
-	// Factory は生成済みの std::unique_ptr を返す
-	using Factory = std::function<std::unique_ptr<EnemyBase>(const Vector3& pos, MapChipField* map)>;
-	// 登録関数
-	void RegisterFactory(int id, Factory factory);
-
-private:
-	
-	static inline constexpr int kFactoryIdDefaultEnemy = 1;
-	static inline constexpr int kFactoryIdEnemy2 = 2;
-
-	// マップから読み取った敵タイプ列（CSV由来）
-	std::vector<int> Enemynumber;
-
-	// 敵の所有コンテナ（unique_ptr で所有）
-	std::list<std::unique_ptr<EnemyBase>> enemies_;
-	MapChipField* map_ = nullptr;
-
-	// id -> factory マップ
-	std::unordered_map<int, Factory> factories_;
-};
-
-
-
-============================================================
-File Path: project/application/enemy/HitDeathComponent.cpp
-============================================================
-#define NOMINMAX 
-#include "HitDeathComponent.h"
-#include "Object3D.h"
-#include "ParticleEmitter.h"
-#include <algorithm>
-
-// 初期化：HP と（オプションの）エミッタを受け取る。
-// emitter は所有権を受け取る（nullptr 可）
-void HitDeathComponent::Initialize(Object3D* obj, int initialHP, ParticleEmitter* emitter)
-{
-	hp_ = initialHP;
-	// 所有権を受け取る（nullptr の場合はエフェクトなし）
-	emitter_ = emitter;
-
-	// オブジェクトの初期色を保存
-	if (obj) {
-		defaultColor_ = obj->GetColor();
-	}
-	// フラグ初期化
-	isDead_ = false;
-	pendingRemove_ = false;
-	damageTimer_ = 0.0f;
-	deathTimer_ = 0.0f;
-	emitted_ = false;
-	useExternalDeathMotion_ = false;
-	deathAngularVelocity_ = 0.0f;
-	// deathVelocity_ は既にデフォルト初期化されている
-}
-
-// 被弾処理：HP を減らし、ダメージ表示・ノックバック・角速度を設定する
-void HitDeathComponent::OnHit(int damage, const Vector3& knockback)
-{
-	// 既に死亡済みなら無視
-	if (isDead_) return;
-
-	// HP 減少とダメージ表示タイマーセット
-	hp_ -= damage;
-	damageTimer_ = kDamageDisplayTime;
-
-	// ノックバックを速度として受け取る（units/sec）
-	deathVelocity_.x = knockback.x;
-	deathVelocity_.y = knockback.y;
-	deathVelocity_.z = knockback.z;
-
-	// 横ノックバックの方向に応じて「後ろにひっくり返る」角速度を与える
-	if (knockback.x > 0.0f) {
-		// 右にノックバックなら背面方向に回転（符号はモデルに合わせて調整）
-		deathAngularVelocity_ = -kDefaultDeathAngularVelocity;
-	}
-	else if (knockback.x < 0.0f) {
-		deathAngularVelocity_ = kDefaultDeathAngularVelocity;
-	}
-	else {
-		// 横成分が無ければフォールバックで少し回す
-		deathAngularVelocity_ = kDefaultDeathAngularVelocity;
-	}
-
-	// HP が尽きたら死亡フラグを立てる（Update で演出開始）
-	if (hp_ <= 0 && !isDead_) {
-		isDead_ = true;
-	}
-}
-
-// 死亡開始時の一度だけ処理（エフェクト発射等）
-void HitDeathComponent::StartDeath(Object3D* obj)
-{
-	if (emitter_ && !emitted_) {
-		emitter_->Emit();
-		emitted_ = true;
-	}
-	// 内部モーションの場合、ここで追加初期化（必要なら実装）
-}
-
-// 毎フレーム処理：色戻し、内部死亡モーション（非外部モード）を行う
-void HitDeathComponent::Update(Object3D* obj, float dt)
-{
-	if (!obj) return;
-
-	// ダメージ表示タイマー（色を元に戻す）
-	if (damageTimer_ > 0.0f) {
-		damageTimer_ -= dt;
-		if (damageTimer_ <= 0.0f) {
-			obj->SetColor(defaultColor_);
-		}
-	}
-
-	// 死亡前はここまで
-	if (!isDead_) {
-		return;
-	}
-
-	// 死亡開始処理（初回のみ）
-	if (!emitted_) {
-		StartDeath(obj);
-	}
-
-	// 外部モーションが有効な場合は内部で移動/フェードは行わない（エフェクト位置だけ更新）
-	if (useExternalDeathMotion_) {
-		if (emitter_) {
-			emitter_->SetPosition(obj->GetTransform().translate);
-		}
-		// pendingRemove_ は外部が管理するためここでは設定しない
-		return;
-	}
-
-	// --- 以下、内部死亡モーション ---
-	deathTimer_ += dt;
-
-	// 重力を適用（速度の y 成分に減衰）
-	deathVelocity_.y -= kDeathGravity * dt;
-
-	// 速度を積分して位置を更新（pos += v * dt）
-	auto pos = obj->GetTransform().translate;
-	pos += deathVelocity_ * dt;
-	obj->SetTranslate(pos);
-
-	// 回転（倒れる）：角速度を加算
-	auto rot = obj->GetTransform().rotate;
-	rot.x += deathAngularVelocity_ * dt;
-	obj->SetRotate(rot);
-
-	// フェードアウト：経過比 t を計算してアルファを下げる
-	float t = std::clamp(deathTimer_ / kDeathDuration, 0.0f, 1.0f);
-	auto col = defaultColor_;
-	col.w = std::max(0.0f, 1.0f - t);
-	obj->SetColor(col);
-
-	// エフェクト位置をオブジェクトに追従させる
-	if (emitter_) {
-		emitter_->SetPosition(obj->GetTransform().translate);
-	}
-
-	// 演出終了で削除予定フラグを立てる
-	if (deathTimer_ >= kDeathDuration) {
-		pendingRemove_ = true;
-	}
-}
-
-============================================================
-File Path: project/application/enemy/HitDeathComponent.h
-============================================================
-#pragma once
-#include "Vector3.h"
-#include "Vector4.h"
-#include <memory>
-
-class Object3D;
-class ParticleEmitter;
-
-class HitDeathComponent {
-public:
-	
-	void Initialize(Object3D* obj, int initialHP, ParticleEmitter* emitter);
-
-	// 被弾処理（弾の攻撃力、ノックバックを与える方向）
-	void OnHit(int damage, const Vector3& knockback = { 0.0f, 0.0f, 0.0f });
-
-	// 毎フレーム更新（Object3D に対する見た目変更等を行う）
-	void Update(Object3D* obj, float dt);
-
-	bool IsDead() const { return isDead_; }
-	bool IsPendingRemove() const { return pendingRemove_; }
-
-	// 外部で死亡モーションを担当する場合は true にする（内部での移動/回転/フェードは行わない）
-	void SetUseExternalDeathMotion(bool v) { useExternalDeathMotion_ = v; }
-
-private:
-	// 内部ヘルパー（死亡開始時の一度だけ処理）
-	void StartDeath(Object3D* obj);
-
-	int hp_ = 0;
-	bool isDead_ = false;
-	bool pendingRemove_ = false;
-
-	// ダメージ表示
-	float damageTimer_ = 0.0f;
-	static inline const float kDamageDisplayTime = 0.2f;
-
-	// 死亡演出（内部モード用）
-	float deathTimer_ = 0.0f;
-	static inline const float kDeathDuration = 1.0f;
-	// deathVelocity_ は速度 (units/sec) として扱う (Update 内で dt を掛けて積分する)
-	Vector3 deathVelocity_ = { 0.0f, 0.0f, 0.0f };
-	// 重力 (units/sec^2)
-	static inline constexpr float kDeathGravity = 9.8f;
-
-	// 回転（角速度：ラジアン/秒程度の想定）
-	float deathAngularVelocity_ = 0.0f;
-	static inline const float kDefaultDeathAngularVelocity = 6.0f; // 見た目調整用
-
-	// 色保持
-	Vector4 defaultColor_ = { 1.0f,1.0f,1.0f,1.0f };
-
-	ParticleEmitter * emitter_ = nullptr;
-	bool emitted_ = false;
-			
-	// 外部モーションを使うか（外部が移動/回転/フェードを担当する）
-	bool useExternalDeathMotion_ = false;
-};
 
 ============================================================
 File Path: project/application/goal/Goal.cpp
@@ -2767,219 +1410,165 @@ void GenerateBlock::Initialize(MapChipField* map)
 
 void GenerateBlock::Update()
 {
-
-	//3Dオブジェクトの更新
-	for (auto& objext3dLine : blockobject3D)
-	{
-		for (auto& obj : objext3dLine)
-		{
-			if (!obj) {
+	for (auto& line : tileObjects_) {
+		for (auto& tile : line) {
+			if (!tile.object) {
 				continue;
 			}
-			obj->Update();
-		}
-	}
 
-	//壊れないブロックの更新
-	for (auto& objext3dLine : unbreakableject3D)
-	{
-		for (auto& obj : objext3dLine)
-		{
-			if (!obj) {
-				continue;
-			}
-			obj->Update();
-		}
-	}
-
-	//damageブロックの更新
-	for (auto& objext3dLine : damageBlockobject3D)
-	{
-		for (auto& obj : objext3dLine)
-		{
-			if (!obj) {
-				continue;
-			}
-			obj->Update();
+			tile.object->Update();
 		}
 	}
 }
 
 void GenerateBlock::Draw()
 {
-
-	for (auto& objext3dLine : blockobject3D)
-	{
-
-		for (auto& obj : objext3dLine)
-		{
-			if (!obj) {
+	for (auto& line : tileObjects_) {
+		for (auto& tile : line) {
+			if (!tile.object) {
 				continue;
 			}
-			obj->Draw();
-		}
 
-	}
-
-	for (auto& objext3dLine : unbreakableject3D)
-	{
-		for (auto& obj : objext3dLine)
-		{
-			if (!obj) {
-				continue;
-			}
-			obj->Draw();
+			tile.object->Draw();
 		}
 	}
-
-	for (auto& objext3dLine : damageBlockobject3D)
-	{
-		for (auto& obj : objext3dLine)
-		{
-			if (!obj) {
-				continue;
-			}
-			obj->Draw();
-		}
-	}
-
 }
-
 void GenerateBlock::GenerateObject3D()
 {
-	if (!mapChipField_) return;
-
-	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();
-	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal();
-
-
-	// 既存のオブジェクトを全部削除して配列を初期化（unique_ptr が自動で破棄）
-	blockobject3D.clear();
-	unbreakableject3D.clear();
-	damageBlockobject3D.clear();
-
-	blockobject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
-	unbreakableject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
-	damageBlockobject3D.resize(numBlokVirtical);// 配列の縦サイズを確保
-
-	for (uint32_t i = 0; i < numBlokVirtical; ++i) {
-		blockobject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
-		unbreakableject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
-		damageBlockobject3D[i].resize(numBlokHorizontal); // デフォルトは空の unique_ptr
+	if (!mapChipField_) {
+		return;
 	}
 
-	// 実際の作成は Sync に任せる（初回はここで生成される）
+	const uint32_t height = mapChipField_->GetNumBlockVirtical();
+	const uint32_t width = mapChipField_->GetNumBlockHorizontal();
+
+	tileObjects_.clear();
+	tileObjects_.resize(height);
+
+	for (uint32_t y = 0; y < height; ++y) {
+		tileObjects_[y].resize(width);
+	}
+
 	SyncBlockObjectsWithMap();
 }
 
 void GenerateBlock::SyncBlockObjectsWithMap()
 {
-	if (!mapChipField_) return;
+	if (!mapChipField_) {
+		return;
+	}
 
-	uint32_t numBlokVirtical = mapChipField_->GetNumBlockVirtical();
-	uint32_t numBlokHorizontal = mapChipField_->GetNumBlockHorizontal();
+	const uint32_t height = mapChipField_->GetNumBlockVirtical();
+	const uint32_t width = mapChipField_->GetNumBlockHorizontal();
 
-	for (uint32_t y = 0; y < numBlokVirtical; ++y) {
-		for (uint32_t x = 0; x < numBlokHorizontal; ++x) {
+	// サイズが合ってなければ作り直す
+	if (tileObjects_.size() != height) {
+		GenerateObject3D();
+		return;
+	}
 
-			MapChipType type = mapChipField_->GetMapChipTypeByIndex(x, y);
+	for (uint32_t y = 0; y < height; ++y) {
+		if (tileObjects_[y].size() != width) {
+			GenerateObject3D();
+			return;
+		}
 
-			Object3D* obj = nullptr;
-			Object3D* unbreakableObj = nullptr;
-			Object3D* damageBlockObj = nullptr;
+		for (uint32_t x = 0; x < width; ++x) {
+			MapChipType currentType = mapChipField_->GetMapChipTypeByIndex(x, y);
+			TileObject& tile = tileObjects_[y][x];
 
-			if (y < blockobject3D.size() && x < blockobject3D[y].size()) {
-				obj = blockobject3D[y][x].get();
+			// 表示しないチップなら消す
+			if (!IsDrawableTile(currentType)) {
+				tile.object.reset();
+				tile.type = MapChipType::Empty;
+				continue;
 			}
-			if (y < unbreakableject3D.size() && x < unbreakableject3D[y].size()) {
-				unbreakableObj = unbreakableject3D[y][x].get();
+
+			// タイプが変わっていないならそのまま
+			if (tile.object && tile.type == currentType) {
+				continue;
 			}
-			if (y < damageBlockobject3D.size() && x < damageBlockobject3D[y].size()) {
-				damageBlockObj = damageBlockobject3D[y][x].get();
-			}
 
-			if (type == MapChipType::Block) {
-				if (!obj) {
-					auto newObj = std::make_unique<Object3D>();
-					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("block");
-					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
-					newObj->SetLighting(true);
-					newObj->SetDirectionalLightEnable(true);
-					newObj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-
-					blockobject3D[y][x] = std::move(newObj);
-				}
-
-				// 他タイプが残っていたら消す
-				if (unbreakableObj) {
-					unbreakableject3D[y][x].reset();
-				}
-				if (damageBlockObj) {
-					damageBlockobject3D[y][x].reset();
-				}
-			} else if (type == MapChipType::UnbreakableBlock) {
-				if (!unbreakableObj) {
-					auto newObj = std::make_unique<Object3D>();
-					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("unbreakableBlokc");
-					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
-					newObj->SetLighting(true);
-					newObj->SetDirectionalLightEnable(true);
-					newObj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-
-					unbreakableject3D[y][x] = std::move(newObj);
-				}
-
-				if (obj) {
-					blockobject3D[y][x].reset();
-				}
-				if (damageBlockObj) {
-					damageBlockobject3D[y][x].reset();
-				}
-			} else if (type == MapChipType::damageBlock) {
-				if (!damageBlockObj) {
-					auto newObj = std::make_unique<Object3D>();
-					newObj->Initialize(Object3DCommon::GetInstance());
-					newObj->SetModel("damageblock");
-					newObj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
-					newObj->SetLighting(true);
-					newObj->SetDirectionalLightEnable(true);
-					newObj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
-
-					damageBlockobject3D[y][x] = std::move(newObj);
-				}
-
-				if (obj) {
-					blockobject3D[y][x].reset();
-				}
-				if (unbreakableObj) {
-					unbreakableject3D[y][x].reset();
-				}
-			} else {
-				if (obj) {
-					blockobject3D[y][x].reset();
-				}
-				if (unbreakableObj) {
-					unbreakableject3D[y][x].reset();
-				}
-				if (damageBlockObj) {
-					damageBlockobject3D[y][x].reset();
-				}
-			}
+			// タイプが変わった、または未生成なら作り直す
+			tile.object = CreateTileObject(currentType, x, y);
+			tile.type = currentType;
 		}
 	}
 }
+
+std::unique_ptr<Object3D> GenerateBlock::CreateTileObject(MapChipType type, uint32_t x, uint32_t y)
+{
+	if (!IsDrawableTile(type)) {
+		return nullptr;
+	}
+
+	const char* modelName = GetModelName(type);
+	if (modelName[0] == '\0') {
+		return nullptr;
+	}
+
+	auto obj = std::make_unique<Object3D>();
+	obj->Initialize(Object3DCommon::GetInstance());
+	obj->SetModel(modelName);
+	obj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
+
+	obj->SetLighting(true);
+	obj->SetDirectionalLightEnable(true);
+	obj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
+
+	return obj;
+}
+
+const char* GenerateBlock::GetModelName(MapChipType type) const
+{
+	switch (type) {
+	case MapChipType::Block:
+		return "block";
+
+	case MapChipType::UnbreakableBlock:
+		return "unbreakableBlokc";
+
+	case MapChipType::damageBlock:
+		return "damageblock";
+
+	case MapChipType::Portal:
+		return "damageblock";
+
+	default:
+		return "";
+	}
+}
+
+bool GenerateBlock::IsDrawableTile(MapChipType type) const
+{
+	switch (type) {
+	case MapChipType::Block:
+	case MapChipType::UnbreakableBlock:
+	case MapChipType::damageBlock:
+	case MapChipType::Portal:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 
 ============================================================
 File Path: project/application/map/GenerateBlock.h
 ============================================================
 #pragma once
 #include <vector>
+#include <memory>
+
 #include "MyMath.h"
 #include "Object3D.h"
 #include "MapChipField.h"
-#include <memory>
+
+struct TileObject {
+	MapChipType type = MapChipType::Empty;
+	std::unique_ptr<Object3D> object = nullptr;
+};
 
 class GenerateBlock
 {
@@ -2987,44 +1576,22 @@ public:
 	GenerateBlock() = default;
 	~GenerateBlock() = default;
 
-	/// <summary>
-	/// 初期化
-	/// </summary>
-	/// <param name="map"></param>
-	void Initialize(MapChipField*map);
-	/// <summary>
-	/// 更新
-	/// </summary>
+	void Initialize(MapChipField* map);
 	void Update();
-	/// <summary>
-	/// 描画
-	/// </summary>
 	void Draw();
-	/// <summary>
-	/// ブロックの生成
-	/// </summary>
+
 	void GenerateObject3D();
-	/// <summary>
-	/// マップとブロックオブジェクトを同期させる
-	/// </summary>
 	void SyncBlockObjectsWithMap();
 
-	// アクセッサ
-	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetBlockObject3D() { return blockobject3D; }
-	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetUnbreakableObject3D() { return unbreakableject3D; }
-	std::vector<std::vector<std::unique_ptr<Object3D>>>& GetDamageBlockObject3D() { return damageBlockobject3D; }
-
+private:
+	std::unique_ptr<Object3D> CreateTileObject(MapChipType type, uint32_t x, uint32_t y);
+	const char* GetModelName(MapChipType type) const;
+	bool IsDrawableTile(MapChipType type) const;
 
 private:
-	//ブロック
-	std::vector<std::vector<std::unique_ptr<Object3D>>> blockobject3D;
-	std::vector<std::vector<std::unique_ptr<Object3D>>> unbreakableject3D;
-	std::vector<std::vector<std::unique_ptr<Object3D>>> damageBlockobject3D;
+	std::vector<std::vector<TileObject>> tileObjects_;
 	MapChipField* mapChipField_ = nullptr;
-
-
 };
-
 
 
 ============================================================
@@ -3109,7 +1676,7 @@ enum class MapChipType : int {
 	Empty = 0,
 	Block,
 	Enemy1,
-	Enemy2,
+	Portal,
 	Goal,
 	Player,
 	UnbreakableBlock,
@@ -3183,11 +1750,16 @@ void MapChipField::ResetMapChipData() {
 		line.clear();
 		line.resize(kNumBlockHorizontal, 0);
 	}
+
+	// 新しいStageDataも同じサイズで初期化
+	stageData_.Resize(kNumBlockHorizontal, kNumBlockVirtical);
+	stageData_.Clear();
 }
 
 void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	// マップチップデータをリセット
 	ResetMapChipData();
+	portals_.clear();
 
 	// ファイルを開く
 	std::ifstream file;
@@ -3211,10 +1783,42 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 
 		while (std::getline(lineStream, cell, ',')) {
 			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
+
+				std::string cellText = cell;
+
+				// 例: "3:0:right"
+				std::stringstream cellParser(cellText);
+				std::string typeText;
+				std::getline(cellParser, typeText, ':');
+
 				// CSV の文字列をそのまま int に変換して保存
-				MapChipType id = static_cast<MapChipType>(std::stoi(cell));
+				MapChipType id = static_cast<MapChipType>(std::stoi(typeText));
 				mapChipData_.data[y][x] = id;
 
+				
+				stageData_.SetType(x, y, id);
+
+				if (id == MapChipType::Portal) {
+					std::string pairText;
+					std::string dirText;
+
+					if (std::getline(cellParser, pairText, ':') &&
+						std::getline(cellParser, dirText, ':')) {
+
+						PortalInfo portal;
+						portal.pairId = std::stoi(pairText);
+						portal.x = x;
+						portal.y = y;
+						portal.dir = DirFromString(dirText);
+
+						portals_.push_back(portal);
+
+						// StageData側にもギミック情報として保存
+						StageCell& cellData = stageData_.At(x, y);
+						cellData.linkId = portal.pairId;
+						cellData.direction = portal.dir;
+					}
+				}
 				
 				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
 				if (info) {
@@ -3233,10 +1837,11 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
 
 	// 範囲チェック（unsigned なので 0 未満チェックは不要）
-	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) {
-		return MapChipType::Empty; // 範囲外は Empty 扱い（id 0 を想定）
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+		return MapChipType::Empty;
 	}
-	return mapChipData_.data[yIndex][xIndex];
+
+	return stageData_.GetType(xIndex, yIndex);
 }
 
 Vector3 MapChipField::GetMapChipPostionByIndex(uint32_t xIndex, uint32_t yIndex) {
@@ -3316,12 +1921,13 @@ Vector3 MapChipField::GetGoalPosition() {
 
 bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex) 
 {
-	MapChipType typeId = GetMapChipTypeByIndex(xIndex, yIndex);
-	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
+	MapChipType type = GetMapChipTypeByIndex(xIndex, yIndex);
+
+	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(type);
 	if (!info) {
 		return false;
 	}
-	// JSON の collision == "solid" を「通れないブロック」として扱う
+	//collision == "solid" を「通れないブロック」として扱う
 	return info->collision == "solid";
 }
 
@@ -3334,7 +1940,9 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 
 			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-
+			if (!info) {
+				continue;
+			}
 			if (info->spawn == spawnTag) {
 				result.push_back(GetMapChipPostionByIndex(x, y));
 			}
@@ -3346,29 +1954,113 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 
 //  指定インデックスのHPを取得
 int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
-	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return 0;
-	return hpData_[yIndex][xIndex];
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+		return 0;
+	}
+
+	return stageData_.GetHP(xIndex, yIndex);
 }
 
 //  指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
 void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage) {
-	if (xIndex >= kNumBlockHorizontal || yIndex >= kNumBlockVirtical) return;
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+		return;
+	}
 
-	int& hp = hpData_[yIndex][xIndex];
-	if (hp <= 0) return; // 既に壊れない/空
-	hp -= damage;
-	if (hp <= 0) {
-		// 壊れた -> 空にする
-		mapChipData_.data[yIndex][xIndex] = MapChipType::Empty;
-		hp = 0;
+	stageData_.DamageHP(xIndex, yIndex, damage);
 
+	// 並走期間中だけ、旧データにも反映しておく
+	if (yIndex < mapChipData_.data.size() && xIndex < mapChipData_.data[yIndex].size()) {
+		mapChipData_.data[yIndex][xIndex] = stageData_.GetType(xIndex, yIndex);
+	}
+
+	if (yIndex < hpData_.size() && xIndex < hpData_[yIndex].size()) {
+		hpData_[yIndex][xIndex] = stageData_.GetHP(xIndex, yIndex);
 	}
 }
 
 //  ワールド座標からダメージを与えるユーティリティ
 void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
-	IndexSet idx = GetMapChipIndexSetByPosition(position);
-	DamageMapChipByIndex(idx.xIndex, idx.yIndex, damage);
+	IndexSet indexSet = GetMapChipIndexSetByPosition(position);
+	DamageMapChipByIndex(indexSet.xIndex, indexSet.yIndex, damage);
+}
+
+bool MapChipField::TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const
+{
+	for (const PortalInfo& portal : portals_) {
+		if (portal.x == x && portal.y == y) {
+			out = portal;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool MapChipField::TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const
+{
+	for (const PortalInfo& portal : portals_) {
+		if (portal.pairId == in.pairId &&
+			!(portal.x == in.x && portal.y == in.y)) {
+			out = portal;
+			return true;
+		}
+	}
+	return false;
+}
+
+Vector3 MapChipField::DirFromString(const std::string& dir)
+{
+	{
+		if (dir == "right") return { 1.0f, 0.0f, 0.0f };
+		if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
+		if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
+		if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+
+		return { 1.0f, 0.0f, 0.0f };
+	}
+}
+
+void MapChipField::ApplyStageData(const StageData& stageData)
+{
+	stageData_ = stageData;
+
+	// 旧データにも同期しておく
+	mapChipData_.data.clear();
+	mapChipData_.data.resize(stageData_.GetHeight());
+
+	hpData_.clear();
+	hpData_.resize(stageData_.GetHeight());
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+		mapChipData_.data[y].resize(stageData_.GetWidth(), MapChipType::Empty);
+		hpData_[y].resize(stageData_.GetWidth(), 0);
+
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+			mapChipData_.data[y][x] = stageData_.GetType(x, y);
+			hpData_[y][x] = stageData_.GetHP(x, y);
+		}
+	}
+
+	// ポータル情報も再構築
+	portals_.clear();
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+			const StageCell& cell = stageData_.At(x, y);
+
+			if (cell.type == MapChipType::Portal) {
+				PortalInfo portal;
+				portal.pairId = cell.linkId;
+				portal.x = x;
+				portal.y = y;
+				portal.dir = cell.direction;
+
+				portals_.push_back(portal);
+			}
+		}
+	}
+
+
 }
 
 
@@ -3382,6 +2074,7 @@ File Path: project/application/map/MapChipField.h
 #include <string>
 #include <vector>
 #include "MapChipDatabase.h"
+#include <StageData.h>
 
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
@@ -3407,6 +2100,14 @@ struct Rect {
 	float bottom;
 	float top;
 };
+
+struct PortalInfo {
+	int pairId = -1;
+	uint32_t x = 0;
+	uint32_t y = 0;
+	Vector3 dir = { 1.0f, 0.0f, 0.0f };
+};
+
 /// <summary>
 /// マップチップフィールドクラス
 /// </summary>
@@ -3475,6 +2176,15 @@ public:
 	// 1ブロックの高さを取得
 	float GetBlockHeight() const { return kBlockHeight; }
 
+	const std::vector<PortalInfo>& GetPortals() const { return portals_; }
+	bool TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const;
+	bool TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const;
+	Vector3 DirFromString(const std::string& dir);
+	
+
+	StageData& GetStageData() { return stageData_; }
+	const StageData& GetStageData() const { return stageData_; }
+	void ApplyStageData(const StageData& stageData);
 private:
 	// 1ブロックのサイズ
 	static inline const float kBlockWidth = 1.0f;
@@ -3485,9 +2195,13 @@ private:
 	MapChipData mapChipData_;
 
 	std::vector<int> Enemynumber;
-
+	// ポータルのペアIDと位置、向きを管理する構造体のリスト
+	std::vector<PortalInfo> portals_;
 
 	std::vector<std::vector<int>> hpData_;
+
+	// ステージデータ
+	StageData stageData_;
 
 };
 
@@ -3508,18 +2222,22 @@ namespace fs = std::filesystem;
 
 void StageEditor::Run() {
 	// 初期化
-	if (grid_.empty()) {
+	if (stageData_.GetWidth() == 0 || stageData_.GetHeight() == 0) {
 		// グリッドの初期化
 		constexpr int kGridWidth = 50;
 		constexpr int kGridHeight = 25;
-		// 2Dグリッドを指定サイズで初期化
-		grid_.resize(kGridHeight, std::vector<GridCell>(kGridWidth));
+		//指定サイズで初期化
+		stageData_.Resize(kGridWidth, kGridHeight);
+		stageData_.Clear();
 	}
 	// ストローク訪問管理の初期化
 	if (strokeVisited_.empty()) {
-		// グリッドと同じサイズで初期化
-		strokeVisited_.resize(grid_.size(), std::vector<bool>(grid_[0].size(), false));
+		strokeVisited_.resize(
+			stageData_.GetHeight(),
+			std::vector<bool>(stageData_.GetWidth(), false)
+		);
 	}
+
 	RenderUI();
 }
 
@@ -3558,11 +2276,9 @@ void StageEditor::RenderUI() {
 
 	ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
 	if (ImGui::Button("New")) {
-		for (auto& row : grid_) {
-			for (auto& cell : row) {
-				cell.type = 0; // 空白に初期化
-			}
-		}
+		stageData_.Clear();// 新規作成
+		undoStack_.clear();// Undo/Redo履歴をクリア
+		redoStack_.clear();// Undo/Redo履歴をクリア
 	}
 
 	// セーブ
@@ -3610,13 +2326,23 @@ void StageEditor::RenderUI() {
 		ImGui::RadioButton(info.label.c_str(), &selectedType_, static_cast<int>(info.id));
 	}
 
+	if (static_cast<MapChipType>(selectedType_) == MapChipType::Portal) {
+		ImGui::Separator();
+		ImGui::Text("Portal Settings");
+
+		ImGui::InputInt("Portal Link ID", &selectedPortalLinkId_);
+
+		const char* dirItems[] = { "right", "left", "up", "down" };
+		ImGui::Combo("Portal Direction", &selectedPortalDir_, dirItems, IM_ARRAYSIZE(dirItems));
+	}
+
 	ImGui::End();
 
 	ImGui::Begin("Stage");
 
 	const float kCellSize = 15.0f;
-	const int rows = static_cast<int>(grid_.size());
-	const int cols = rows > 0 ? static_cast<int>(grid_[0].size()) : 0;
+	const int rows = static_cast<int>(stageData_.GetHeight());
+	const int cols = static_cast<int>(stageData_.GetWidth());
 
 	ImGui::BeginChild("StageCanvasChild", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -3677,7 +2403,7 @@ void StageEditor::RenderUI() {
 		}
 
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle) && hoverX >= 0 && hoverY >= 0) {
-			selectedType_ = grid_[hoverY][hoverX].type;
+			stageData_.GetType(hoverX, hoverY);
 		}
 	}
 
@@ -3705,10 +2431,9 @@ void StageEditor::RenderUI() {
 	// セル描画
 	for (int y = startY; y < endY; ++y) {
 		for (int x = startX; x < endX; ++x) {
-			const GridCell& cell = grid_[y][x];
-			MapChipType typeId = static_cast<MapChipType>(cell.type);
+			MapChipType typeId = stageData_.GetType(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-
+			
 			ImVec4 colorV = ImVec4(1, 1, 1, 1);
 			if (info) {
 				colorV = ImVec4(info->color.x, info->color.y, info->color.z, info->color.w);
@@ -3744,7 +2469,7 @@ void StageEditor::RenderUI() {
 		dl->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
 
 		const MapChipInfo* hoverInfo =
-			MapChipDatabase::GetInstance()->GetById(static_cast<MapChipType>(grid_[hoverY][hoverX].type));
+			MapChipDatabase::GetInstance()->GetById(stageData_.GetType(hoverX, hoverY));
 
 		if (hoverInfo) {
 			ImGui::BeginTooltip();
@@ -3763,39 +2488,80 @@ void StageEditor::RenderUI() {
 }
 
 void StageEditor::SaveCSV(const std::string& filename) {
-	fs::create_directories("Resources/Mapdata"); // フォルダがなければ作成
+	fs::create_directories("Resources/Mapdata");
+
 	std::ofstream file(filename);
-	for (const auto& row : grid_) {
-		for (size_t x = 0; x < row.size(); ++x) {
-			file << row[x].type;
-			if (x + 1 < row.size()) file << ",";
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+			const StageCell& cell = stageData_.At(x, y);
+
+			file << static_cast<int>(cell.type);
+
+			// ポータルなら 3:0:right みたいに保存したい場合
+			if (cell.type == MapChipType::Portal) {
+				file << ":" << cell.linkId << ":" << DirectionToString(cell.direction);
+			}
+
+			if (x + 1 < stageData_.GetWidth()) {
+				file << ",";
+			}
 		}
 		file << "\n";
 	}
 }
 
 void StageEditor::LoadCSV(const std::string& filename) {
-	// ファイルを開く
 	std::ifstream file(filename);
+	if (!file.is_open()) {
+		return;
+	}
+
+	stageData_.Clear();
+
 	std::string line;
-	int y = 0;
-	// 1行ずつ読み込み
-	//ホットリロード
+	uint32_t y = 0;
+
 	while (std::getline(file, line)) {
-		int x = 0;
-		size_t start = 0;
-		while (start < line.size()) {
-			size_t end = line.find(',', start);
-			if (end == std::string::npos) end = line.size();
-			int val = std::stoi(line.substr(start, end - start));
-			if (y < grid_.size() && x < grid_[y].size()) {
-				grid_[y][x].type = val;
+		std::stringstream lineStream(line);
+		std::string cellText;
+		uint32_t x = 0;
+
+		while (std::getline(lineStream, cellText, ',')) {
+			if (x >= stageData_.GetWidth() || y >= stageData_.GetHeight()) {
+				++x;
+				continue;
 			}
-			start = end + 1;
+
+			std::stringstream cellParser(cellText);
+
+			std::string typeText;
+			std::getline(cellParser, typeText, ':');
+
+			MapChipType type = static_cast<MapChipType>(std::stoi(typeText));
+			stageData_.SetType(x, y, type);
+
+			if (type == MapChipType::Portal) {
+				std::string linkText;
+				std::string dirText;
+
+				if (std::getline(cellParser, linkText, ':') &&
+					std::getline(cellParser, dirText, ':')) {
+
+					StageCell& cell = stageData_.At(x, y);
+					cell.linkId = std::stoi(linkText);
+					cell.direction = DirFromString(dirText);
+				}
+			}
+
 			++x;
 		}
+
 		++y;
 	}
+
+	undoStack_.clear();
+	redoStack_.clear();
 }
 
 void StageEditor::BeginStroke()
@@ -3826,27 +2592,44 @@ void StageEditor::EndStroke()
 
 void StageEditor::ApplyCellWithUndo(int x, int y, int newType)
 {
-	int& cell = grid_[y][x].type;
-	if (cell == newType) return;
+	if (x < 0 || y < 0) return;
+	if (x >= static_cast<int>(stageData_.GetWidth())) return;
+	if (y >= static_cast<int>(stageData_.GetHeight())) return;
 
-	// ストローク中、同じセルを二重記録しない
+	int before = static_cast<int>(stageData_.GetType(x, y));
+	if (before == newType) return;
+
 	if (isStrokeActive_ && !strokeVisited_[y][x]) {
 		strokeVisited_[y][x] = true;
-		currentStroke_.push_back(CellEdit{ x, y, cell, newType });
+		currentStroke_.push_back(CellEdit{ x, y, before, newType });
 	}
-	cell = newType;
+
+	stageData_.SetType(x, y, static_cast<MapChipType>(newType));
+
+	if (static_cast<MapChipType>(newType) == MapChipType::Portal) {
+		StageCell& cell = stageData_.At(x, y);
+		cell.linkId = selectedPortalLinkId_;
+		cell.direction = GetSelectedPortalDirection();
+	}
 }
 
 void StageEditor::Undo()
 {
 	if (undoStack_.empty()) { return; }
+
 	Stroke s = undoStack_.back();
 	undoStack_.pop_back();
 
+
 	// 逆順で戻す
 	for (auto it = s.rbegin(); it != s.rend(); ++it) {
-		grid_[it->y][it->x].type = it->before;
+		stageData_.SetType(
+			static_cast<uint32_t>(it->x),
+			static_cast<uint32_t>(it->y), 
+			static_cast<MapChipType>(it->before)
+		);
 	}
+
 	redoStack_.push_back(std::move(s));
 }
 
@@ -3858,9 +2641,50 @@ void StageEditor::Redo()
 	redoStack_.pop_back();
 	// 順番に適用する
 	for (auto& e : s) {
-		grid_[e.y][e.x].type = e.after;
+		stageData_.SetType(
+			static_cast<uint32_t>(e.x),
+			static_cast<uint32_t>(e.y),
+			static_cast<MapChipType>(e.after)
+		);
 	}
+
 	undoStack_.push_back(std::move(s));
+}
+
+std::string StageEditor::DirectionToString(const Vector3& dir) const
+{
+	if (dir.x > 0.5f) return "right";
+	if (dir.x < -0.5f) return "left";
+	if (dir.y > 0.5f) return "up";
+	if (dir.y < -0.5f) return "down";
+
+	return "right";
+}
+
+Vector3 StageEditor::DirFromString(const std::string& dir) const
+{
+	if (dir == "right") return { 1.0f, 0.0f, 0.0f };
+	if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
+	if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
+	if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+
+	return { 1.0f, 0.0f, 0.0f };
+}
+
+Vector3 StageEditor::GetSelectedPortalDirection() const
+{
+	switch (selectedPortalDir_) {
+	case 0:
+		return { 1.0f, 0.0f, 0.0f };   // right
+	case 1:
+		return { -1.0f, 0.0f, 0.0f };  // left
+	case 2:
+		return { 0.0f, 1.0f, 0.0f };   // up
+	case 3:
+		return { 0.0f, -1.0f, 0.0f };  // down
+	default:
+		return { 1.0f, 0.0f, 0.0f };
+	}
 }
 
 
@@ -3872,13 +2696,9 @@ File Path: project/application/map/StageEditor.h
 #include <vector>
 #include <string>
 #include "MapChipDatabase.h"
+#include "StageData.h"
 
-/// <summary>
-/// グリッドセル構造体
-/// </summary>
-struct GridCell {
-	int type = 0; // 0=empty, 1=block, 2=enemy, 3=player
-};
+
 /// <summary>
 /// セル編集履歴構造体
 /// </summary>
@@ -3915,6 +2735,9 @@ public:
 	/// ファイル名を取得します
 	/// </summary>
 	const char* GetFileName() const { return fileNameBuffer; }
+
+	StageData& GetStageData() { return stageData_; }
+	const StageData& GetStageData() const { return stageData_; }
 private:
 	/// <summary>
 	/// UIの描画
@@ -3953,9 +2776,14 @@ private:
 	/// Redo操作
 	/// </summary>
 	void Redo();
+
+	std::string DirectionToString(const Vector3& dir) const;
+	Vector3 DirFromString(const std::string& dir) const;
+	Vector3 GetSelectedPortalDirection() const;
+
 private:
 	
-	std::vector<std::vector<GridCell>> grid_;// グリッドデータ
+	StageData stageData_;
 	int selectedType_ = 1;// 選択中のマップチップタイプ
 	bool isReloadRequested_ = false;// リロード要求フラグ
 	bool isEditingDrag_ = false;
@@ -3971,6 +2799,10 @@ private:
 	// すでに記録したセルの重複防止
 	std::vector<std::vector<bool>> strokeVisited_;
 	bool showStagewindow_ = true;
+
+	int selectedPortalLinkId_ = 0;
+	int selectedPortalDir_ = 0;
+	// 0:right, 1:left, 2:up, 3:down
 
 };
 
@@ -5579,6 +4411,8 @@ File Path: project/application/player/Player.cpp
 #include <memory>      
 #include "Easing.h"
 #include <array> 
+#include "CameraManager.h"
+#include <UIeditor.h>
 
 void Player::Initialize(const Vector3& position) {
 
@@ -5591,10 +4425,18 @@ void Player::Initialize(const Vector3& position) {
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f,-1.82f,-4.77f });
-
 	// プレイヤーの初期位置
 	object3D_->SetTranslate(position);
 	object3D_->SetRotate({ 0, std::numbers::pi_v<float> / 2.0f , 0 });
+
+	// ゴーストの作成
+	ghostObject_ = std::make_unique<Object3D>();
+	ghostObject_->Initialize(Object3DCommon::GetInstance());
+	ghostObject_->SetModel("player");
+	ghostObject_->SetScale(Vector3{ 0.5f, 0.5f, 0.5f });
+	ghostObject_->SetColor({ 0.2f, 0.8f, 1.0f, 0.35f });
+	// ゴーストは少し暗くしたいのでライトOFF
+	ghostObject_->SetLighting(false);
 
 	//ParticleManager::GetInstance()->CreateParticleGroup(
 	//	"dash_smoke",
@@ -5680,7 +4522,9 @@ void Player::Update() {
 	ImGui::End();
 #endif // DEBUG_
 
-
+	if (portalCooldown_ > 0) {
+		portalCooldown_--;
+	}
 
 	PlayerMove();// 自機の動き
 	aabb_ = GetPlayerAABB();// AABB 更新
@@ -5722,6 +4566,10 @@ void Player::Update() {
 
 				deatheEffect->SetPosition(breakPos);
 				deatheEffect->Emit();
+				//カメラシェイク
+				StartCameraShake(0.08f, 0.15f);
+
+
 			}
 		}
 	}
@@ -5729,6 +4577,22 @@ void Player::Update() {
 	PlayerShotAnimation();
 
 	PlayerCollisionMove(collisionMapInfo);// プレイヤーの移動処理
+
+	// ポータル通過
+	{
+		Vector3 pos = object3D_->GetTransform().translate;
+
+		if (TryPortalWarp(pos, velocity_,true)) {
+			object3D_->SetTranslate(pos);
+
+			shotVel_ = velocity_;
+			hasShotVel_ = true;
+
+			// ポータルは壁接触扱いにしない
+			wasTouching_ = false;
+		}
+	}
+
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
@@ -5741,10 +4605,17 @@ void Player::Update() {
 	// 死亡条件の判定
 	PlayerDeathTerms();
 
+	UpdateCameraShake();
+
 }
 
 void Player::Draw() {
+
+	DrawGhost();
+
 	if (object3D_) object3D_->Draw();
+
+
 }
 
 void Player::PlayerMove() {
@@ -5752,22 +4623,26 @@ void Player::PlayerMove() {
 
 	// 上キーで仰角を増やし、下キーで仰角を減らす。連続入力に対応。
 	if (Input::GetInstance()->PushKey(DIK_UP)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "UP");
 		cannonAngleDeg_ += kCannonAngleStepDeg;
 	}
 	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "down");
 		cannonAngleDeg_ -= kCannonAngleStepDeg;
 	}
 
 	// マウスのホイール差分を取得して角度に反映
-	{
-		auto mouseMove = Input::GetInstance()->GetMouseMove();
-		if (mouseMove.lZ != 0) {
-			// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
-			const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
-			// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
-			cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
-		}
+
+	
+	auto mouseMove = Input::GetInstance()->GetMouseMove();
+	if (mouseMove.lZ != 0) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "mausu");
+		// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
+		const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
+		// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
+		cannonAngleDeg_ += wheelNotches * kCannonAngleStepDeg;
 	}
+
 
 
 	// 角度更新はそのまま（UP/DOWN + ホイール）
@@ -5791,7 +4666,9 @@ void Player::PlayerMove() {
 
 	//スペースで発射
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-	
+
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "SPACE");
+
 		const bool canShoot =
 			(playerState_ == PlayerState::sticky) || isStopped_;
 
@@ -5843,7 +4720,7 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 		}
 
 		if (hitCount >= 2) {
-			
+
 
 			playerState_ = PlayerState::sticky;
 			velocity_ = { 0,0,0 };
@@ -5883,11 +4760,13 @@ void Player::Reflect(const CollisionMapInfo& info)
 		if (info.penX >= info.penY) {
 			// 壁で反射
 			n = { (velocity_.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-		} else {
+		}
+		else {
 			// 天井/床で反射
 			n = { 0.0f, (velocity_.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 		}
-	} else {
+	}
+	else {
 		// 合成法線
 		n = MyMath::Normalize(info.normal);
 	}
@@ -5948,6 +4827,9 @@ void Player::DrawPredictLine()
 	if (!line_) return;
 	if (!mapChipField_) return;
 
+	// ゴーストは予測線と同時に表示する
+	isGhostVisible_ = false;
+
 	// 速度0のとき（発射前）だけ予測線を見せたいならこれ
 	if (!(velocity_.x == 0.0f && velocity_.y == 0.0f)) return;
 
@@ -5970,31 +4852,50 @@ void Player::DrawPredictLine()
 
 	for (int step = 0; step < kMaxSteps; ++step) {
 
+		Vector3 moveDirBeforeHit = simVel.Normalize();
+
 		CollisionMapInfo info{};
 		info.move = simVel;
 		info.normal = { 0,0,0 };
 		info.hasNormal = false;
 
-		// マップ判定（既存を流用！）
 		MapCollisionAt(simPos, info, false);
 
 		const bool touchingNow = info.ceiling || info.landing || info.hitWall;
 
-		// 接触カウント
 		if (touchingNow && !wasTouchingSim) {
 			hitCountSim++;
 		}
+
 		wasTouchingSim = touchingNow;
 
-		// 移動（押し戻し込み）
 		simPos = simPos + info.move;
 
-		// 線分描画
 		line_->Draw(prev, simPos, color);
 		prev = simPos;
 
-		// 2回触れたら終了（sticky地点まで描く）
-		if (hitCountSim >= 2) break;
+		Vector3 beforePortalPos = simPos;
+
+		if (TryPortalWarp(simPos, simVel, false)) {
+			Vector4 portalColor = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+			// 入口から出口へつながる線
+			line_->Draw(beforePortalPos, simPos, portalColor);
+
+			prev = simPos;
+
+			// ポータルは壁接触扱いにしない
+			wasTouchingSim = false;
+		}
+
+		if (hitCountSim >= 2) {
+			Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
+
+			SetGhostPreview(simPos, nextFacingDir);// ゴーストの位置と向きをセットして表示
+			DrawGhostAimPreview(simPos, nextFacingDir);// ゴーストの射出可能方向を表示	
+
+			break;
+		}
 
 		// 反射
 		if (info.hasNormal) {
@@ -6005,10 +4906,12 @@ void Player::DrawPredictLine()
 			if (hitX && hitY) {
 				if (info.penX >= info.penY) {
 					n = { (simVel.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-				} else {
+				}
+				else {
 					n = { 0.0f, (simVel.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
 				}
-			} else {
+			}
+			else {
 				n = MyMath::Normalize(info.normal);
 			}
 
@@ -6021,6 +4924,125 @@ void Player::DrawPredictLine()
 		}
 	}
 
+}
+
+void Player::DrawGhostAimPreview(const Vector3& landingPos, const Vector3& nextFacingDir)
+{
+	if (!line_) return;
+
+	Vector3 baseDir = nextFacingDir.Normalize();
+	if (std::abs(baseDir.x) < 1e-6f && std::abs(baseDir.y) < 1e-6f) {
+		return;
+	}
+
+	// -45〜+45度
+	const float maxAngleRad = 45.0f * (std::numbers::pi_v<float> / 180.0f);
+
+	// 時間で矢印を往復させる
+	// sinなので端で少しゆっくりになって見た目が自然
+	static float previewTimer = 0.0f;
+	previewTimer += 1.0f / 60.0f;
+
+	const float swing = std::sinf(previewTimer * 2.0f);
+	const float previewRad = swing * maxAngleRad;
+
+	Vector3 previewDir = RotateVectorZ(baseDir, previewRad).Normalize();
+
+	// 表示位置を少し手前に浮かせる
+	Vector3 start = landingPos;
+	start.z -= 0.05f;
+
+	const float arrowLength = 1.0f;
+	Vector3 end = start + previewDir * arrowLength;
+
+	// ゴーストのスイング矢印色
+	Vector4 arrowColor = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+	line_->Draw(start, end, arrowColor);
+
+	// 矢印の頭
+	Vector3 zAxis = { 0.0f, 0.0f, 1.0f };
+	Vector3 right = previewDir.Cross(zAxis).Normalize();
+
+	const float headLength = 0.2f;
+	const float headWidth = 0.12f;
+
+	Vector3 arrowBase = end - previewDir * headLength;
+	Vector3 arrow1 = arrowBase + right * headWidth;
+	Vector3 arrow2 = arrowBase - right * headWidth;
+
+	line_->Draw(end, arrow1, arrowColor);
+	line_->Draw(end, arrow2, arrowColor);
+
+	// 範囲の端も薄く表示する
+	Vector3 minDir = RotateVectorZ(baseDir, -maxAngleRad).Normalize();
+	Vector3 maxDir = RotateVectorZ(baseDir, maxAngleRad).Normalize();
+
+	Vector4 rangeColor = { 0.0f, 1.0f, 1.0f, 0.4f };
+
+	line_->Draw(start, start + minDir * 0.8f, rangeColor);
+	line_->Draw(start, start + maxDir * 0.8f, rangeColor);
+
+}
+
+Vector3 Player::RotateVectorZ(const Vector3& v, float rad)
+{
+	const float c = std::cosf(rad);
+	const float s = std::sinf(rad);
+
+	Vector3 result{};
+	result.x = v.x * c - v.y * s;
+	result.y = v.x * s + v.y * c;
+	result.z = v.z;
+
+	return result;
+}
+
+Vector3 Player::GetFacingDirFromCollisionInfo(const CollisionMapInfo& info)
+{
+	// 壁と床/天井に同時ヒットした場合は、めり込み量が大きい方を優先
+	if (info.hitWall && (info.ceiling || info.landing)) {
+
+		if (info.penX >= info.penY) {
+			if (info.normal.x > 0.0f) {
+				return { 1.0f, 0.0f, 0.0f };
+			}
+			if (info.normal.x < 0.0f) {
+				return { -1.0f, 0.0f, 0.0f };
+			}
+		}
+		else {
+			if (info.normal.y > 0.0f) {
+				return { 0.0f, 1.0f, 0.0f };
+			}
+			if (info.normal.y < 0.0f) {
+				return { 0.0f, -1.0f, 0.0f };
+			}
+		}
+	}
+
+	// 壁
+	if (info.hitWall) {
+		if (info.normal.x > 0.0f) {
+			return { 1.0f, 0.0f, 0.0f };
+		}
+		if (info.normal.x < 0.0f) {
+			return { -1.0f, 0.0f, 0.0f };
+		}
+	}
+
+	// 床 or 天井
+	if (info.ceiling || info.landing) {
+		if (info.normal.y > 0.0f) {
+			return { 0.0f, 1.0f, 0.0f };
+		}
+		if (info.normal.y < 0.0f) {
+			return { 0.0f, -1.0f, 0.0f };
+		}
+	}
+
+	// 保険
+	return { 1.0f, 0.0f, 0.0f };
 }
 
 void Player::ReflectVelocity(Vector3& v, const Vector3& normal)
@@ -6053,6 +5075,72 @@ Vector3 Player::MakeShotVelocity()
 	return worldDir.Normalize() * spd;
 }
 
+void Player::DrawGhost()
+{
+
+	if (!isGhostVisible_) return;
+	if (!ghostObject_) return;
+
+	ghostObject_->SetTransform(ghostTransform_);
+	ghostObject_->Update();
+	ghostObject_->Draw();
+
+}
+
+void Player::SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir)
+{
+	if (!ghostObject_) return;
+
+	isGhostVisible_ = true;
+
+	ghostTransform_ = object3D_->GetTransform();
+
+	// 着地点に置く
+	ghostTransform_.translate = landingPos;
+
+	// 本体と完全に重なるとチラつく場合があるので少し手前/奥にずらす
+	ghostTransform_.translate.z -= 0.08f;
+
+	// 向き設定
+	ghostTransform_.rotate = GetGhostRotateFromFacingDir(nextFacingDir);
+
+	// サイズは本体と同じ
+	ghostTransform_.scale = { 0.5f, 0.5f, 0.5f };
+
+}
+
+Vector3 Player::GetGhostRotateFromFacingDir(const Vector3& facingDir)
+{
+	Vector3 rotate{ 0.0f, 0.0f, 0.0f };
+
+	// 右向き
+	if (std::abs(facingDir.x) > std::abs(facingDir.y)) {
+		if (facingDir.x >= 0.0f) {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = 0.0f;
+		}
+		// 左向き
+		else {
+			rotate.y = std::numbers::pi_v<float> *3.0f / 2.0f;
+			rotate.z = 0.0f;
+		}
+	}
+	else {
+		// 上向き
+		if (facingDir.y >= 0.0f) {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = std::numbers::pi_v<float> / 2.0f;
+		}
+		// 下向き
+		else {
+			rotate.y = std::numbers::pi_v<float> / 2.0f;
+			rotate.z = -std::numbers::pi_v<float> / 2.0f;
+		}
+	}
+
+	return rotate;
+}
+
 void Player::Playerdirection(const CollisionMapInfo& info) {
 	LRTBDirecion targetDir = direction_;
 
@@ -6060,13 +5148,15 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 
 		if (info.normal.x < 0.0f) {
 			targetDir = LRTBDirecion::kLeft;
-		} else if (info.normal.x > 0.0f) {
+		}
+		else if (info.normal.x > 0.0f) {
 			targetDir = LRTBDirecion::kRight;
 		}
 
 		if (info.normal.y > 0.0f) {
 			targetDir = LRTBDirecion::kTop;
-		} else if (info.normal.y < 0.0f) {
+		}
+		else if (info.normal.y < 0.0f) {
 			targetDir = LRTBDirecion::kBottom;
 		}
 	}
@@ -6301,7 +5391,8 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -6319,7 +5410,8 @@ void Player::LandingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -6338,7 +5430,8 @@ void Player::HitWallCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		} else {
+		}
+		else {
 
 			Logger::Log("hard\n");
 
@@ -6377,9 +5470,117 @@ void Player::PlayerShotAnimation()
 
 	// スピン
 	shotAnimationRotate_.x = std::numbers::pi_v<float> *2.0f * t;
-	
 
 
+
+}
+
+bool Player::TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown)
+{
+	if (!mapChipField_) return false;
+
+	if (useCooldown && portalCooldown_ > 0) {
+		return false;
+	}
+
+	IndexSet index = mapChipField_->GetMapChipIndexSetByPosition(position);
+	MapChipType type = mapChipField_->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
+
+	if (type != MapChipType::Portal) {
+		return false;
+	}
+
+	PortalInfo inPortal;
+	if (!mapChipField_->TryGetPortal(index.xIndex, index.yIndex, inPortal)) {
+		return false;
+	}
+
+	PortalInfo outPortal;
+	if (!mapChipField_->TryGetPairPortal(inPortal, outPortal)) {
+		return false;
+	}
+
+	velocity = RotateVelocityByPortal(
+		velocity,
+		inPortal.dir,
+		outPortal.dir
+	);
+
+	Vector3 exitPos = mapChipField_->GetMapChipPostionByIndex(outPortal.x, outPortal.y);
+
+	const float pushOut = 0.8f;
+	Vector3 outDir = outPortal.dir.Normalize();
+	position = exitPos + outDir * pushOut;
+
+	if (useCooldown) {
+		portalCooldown_ = 10;
+	}
+
+	return true;
+}
+
+Vector3 Player::RotateVelocityByPortal(const Vector3& velocity, const Vector3& inDir, const Vector3& outDir)
+{
+	float inAngle = std::atan2(inDir.y, inDir.x);
+	float outAngle = std::atan2(outDir.y, outDir.x);
+
+	float delta = outAngle - inAngle;
+
+	float c = std::cos(delta);
+	float s = std::sin(delta);
+
+	Vector3 result{};
+	result.x = velocity.x * c - velocity.y * s;
+	result.y = velocity.x * s + velocity.y * c;
+	result.z = velocity.z;
+
+	return result;
+}
+
+void Player::StartCameraShake(float power, float duration)
+{
+	cameraShakePower_ = power;
+	cameraShakeDuration_ = duration;
+	cameraShakeTimer_ = duration;
+}
+
+void Player::UpdateCameraShake()
+{
+	Camera* camera = CameraManager::GetInstance()->GetActiveCamera();
+	if (!camera) return;
+
+	const float dt = 1.0f / 60.0f;
+
+	// 前フレームで足したシェイク分を一回戻す
+	Vector3 cameraPos = camera->GetTransform().translate;
+	cameraPos = cameraPos - cameraShakePrevOffset_;
+	cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+
+	if (cameraShakeTimer_ <= 0.0f || cameraShakeDuration_ <= 0.0f) {
+		camera->SetTranslate(cameraPos);
+		return;
+	}
+
+	cameraShakeTimer_ -= dt;
+
+	float t = cameraShakeTimer_ / cameraShakeDuration_;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	const float power = cameraShakePower_ * t;
+
+	Vector3 offset{};
+	offset.x = std::sinf(cameraShakeTimer_ * 90.0f) * power;
+	offset.y = std::cosf(cameraShakeTimer_ * 110.0f) * power;
+	offset.z = 0.0f;
+
+	cameraShakePrevOffset_ = offset;
+	camera->SetTranslate(cameraPos + offset);
+
+	if (cameraShakeTimer_ <= 0.0f) {
+		cameraShakeTimer_ = 0.0f;
+		cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+		camera->SetTranslate(cameraPos);
+	}
 }
 
 void Player::PlayerParticle()
@@ -6391,7 +5592,8 @@ void Player::PlayerParticle()
 
 	if (playerState_ == PlayerState::hard && isBarrierActive_) {
 		ParticleManager::GetInstance()->EmitFollowOne("barriering", object3D_->GetTransform());
-	} else {
+	}
+	else {
 		ParticleManager::GetInstance()->StopFollow("barriering");
 	}
 
@@ -6408,7 +5610,8 @@ void Player::PlayerParticle()
 			// 進行方向のちょい後ろに出すと“排気”感が出る
 			if (direction_ == LRTBDirecion::kRight) {
 				smokeTransform.translate.x -= 0.15f;
-			} else {
+			}
+			else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
@@ -6419,7 +5622,8 @@ void Player::PlayerParticle()
 
 		}
 
-	} else {
+	}
+	else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
@@ -6506,7 +5710,8 @@ bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vecto
 		if (pen > 0.0f) {
 			if (type == CollisionType::Right || type == CollisionType::Left) {
 				info.penX = std::max(info.penX, pen);
-			} else {
+			}
+			else {
 				info.penY = std::max(info.penY, pen);
 			}
 
@@ -6594,12 +5799,13 @@ File Path: project/application/player/Player.h
 #include "RenderingData.h"
 
 #include "Object3D.h"
-#include <PlayerBullet.h>
+
 #include <ParticleEmitter.h>
 #include "StageStartEffect.h"
 #include "Collider.h"
 #include "Line.h"       
 #include <memory>       
+#include "MapChipField.h"
 
 enum class LRTBDirecion {
 	kRight,
@@ -6667,8 +5873,8 @@ struct PlayerParameter {
 	float kTimeTurn = 0.5; // 角度補間タイム
 
 	struct DeathHeight {
-		float min=0.0f; // 落下死の高さ
-		float max=20.0f; // 落下死の有効/無効
+		float min = 0.0f; // 落下死の高さ
+		float max = 20.0f; // 落下死の有効/無効
 	};
 	struct Deathwidth {
 		float min = -3.0f; // 落下死の高さ
@@ -6726,7 +5932,7 @@ public:
 	/// <param name="info"></param>
 	void Reflect(const CollisionMapInfo& info);
 
-	////////////======ライン描画======///////////////
+	//====================ライン描画=======================//
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
@@ -6735,6 +5941,18 @@ public:
 	/// プレイヤーの移動予測ライン描画
 	/// </summary>
 	void DrawPredictLine();
+	/// <summary>
+	/// ゴースト位置に次ターンの射出可能方向を表示
+	/// </summary>
+	void DrawGhostAimPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
+	/// <summary>
+	/// Z軸回転でベクトルを回す
+	/// </summary>
+	Vector3 RotateVectorZ(const Vector3& v, float rad);
+	/// <summary>
+	/// 衝突情報から、実際のプレイヤーと同じ次ターン向きを取得
+	/// </summary>
+	Vector3 GetFacingDirFromCollisionInfo(const CollisionMapInfo& info);
 	/// <summary>
 	/// ベクトルを法線で反射させる
 	/// </summary>
@@ -6746,7 +5964,14 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	Vector3 MakeShotVelocity();
-	/////////////======ライン描画======///////////////
+
+	//=====================ゴースト関連========================//
+	void DrawGhost();
+	void SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
+	Vector3 GetGhostRotateFromFacingDir(const Vector3& facingDir);
+	//=====================ゴースト関連========================//
+	
+	//====================ライン描画========================//
 
 	/////////////======プレイヤーの動き======///////////////
 	/// <summary>
@@ -6757,13 +5982,13 @@ public:
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void Playerdirection(const CollisionMapInfo& info); 
+	void Playerdirection(const CollisionMapInfo& info);
 	/// <summary>
 	// 死亡条件しているかどうか
 	/// </summary>
 	void PlayerDeathTerms();
 
-	
+
 
 	/////////////======プレイヤーの動き======///////////////
 
@@ -6901,7 +6126,14 @@ public:
 	/// </summary>
 	void PlayerShotAnimation();
 
-	
+	//portal用
+	bool TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown);
+	Vector3 RotateVelocityByPortal(
+		const Vector3& velocity,
+		const Vector3& inDir,
+		const Vector3& outDir
+	);
+
 	///////////////======setter======///////////////
 	/// <summary>
 	/// 死亡しているかどうかを設定
@@ -6918,7 +6150,7 @@ public:
 	/// </summary>
 	/// <param name="left"></param>
 	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
-	
+
 	/// <summary>
 	// 速度設定
 	/// </summary>
@@ -6927,13 +6159,14 @@ public:
 private:
 
 	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
+	
 	PlayerState playerState_ = PlayerState::hard;//プレイヤーステート
 	Vector3 playerPosition_ = {};// プレイヤーの位置
 	Vector3 velocity_ = {};// 速度
 	PlayerParameter parameter_;// プレイヤーパラメータ
 	AABB aabb_;// 当たり判定用AABB
 	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
-	
+
 	//Animation
 	Vector3 shotAnimationRotate_ = {};//発射アニメーションの回転
 	float shotAnimationTimer_ = 0.0f; //発射アニメーションのタイマー
@@ -6963,6 +6196,7 @@ private:
 	int hitCount = 0; // 衝突した数
 	bool wasTouching_ = false;
 	bool hitDamageBlock = false;
+	int portalCooldown_ = 0;
 
 	//定数
 	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
@@ -6976,311 +6210,20 @@ private:
 	bool hasShotVel_ = false;
 	bool isStopped_ = false;
 	bool isBarrierActive_ = false;
-};
 
-
-============================================================
-File Path: project/application/player/PlayerBullet.cpp
-============================================================
-#define NOMINMAX 
-
-#include "PlayerBullet.h"
-#include "TextureManager.h"
-#include "MapChipField.h" // 追加
-#include <unordered_set>
-
-
-AABB PlayerBullet::GetBulletAABB()
-{
-	Vector3 worldPos = GetWorldPosition();
-	AABB aabb;
-	aabb.min = { worldPos.x - object3D_->GetTransform().scale.x/2.0f, worldPos.y - object3D_->GetTransform().scale.y/2.0f, worldPos.z - object3D_->GetTransform().scale.z/2.0f};
-	aabb.max = { worldPos.x + object3D_->GetTransform().scale.x/2.0f, worldPos.y + object3D_->GetTransform().scale.y/2.0f, worldPos.z + object3D_->GetTransform().scale.z/2.0f};
-	return aabb;
-}
-
-void PlayerBullet::Initialize(std::unique_ptr<Object3D> obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField) {
-
-	// 所有権を受け取る
-	object3D_ = std::move(obj);
-
-	Vector3 pos = potition;
-	pos.y += 0.5f;
-
-	// プレイヤーの初期位置
-	object3D_->SetTranslate(pos);
-
-	// 速度
-	velocity_ = velocity;
-
-	mapChipField_ = mapChipField;
-
-	prevPos_ = object3D_->GetTransform().translate;
-}
-
-void PlayerBullet::Update() {
-
-	prevPos_ = object3D_->GetTransform().translate;
-
-	Vector3 position = prevPos_;
-	position += velocity_;
-	object3D_->SetTranslate(position);
-
-	if (HitBlockSwept(prevPos_, position)) {
-		isDead_ = true;
-	}
-
-	if (--deathTimer_ <= 0) {
-		isDead_ = true;
-	}
-
-	object3D_->Update();
-	aabb_ = GetBulletAABB();
-}
-
-void PlayerBullet::Draw() { object3D_->Draw(); }
-
-void PlayerBullet::OnCollision(Collider* other)
-{
-	if (other->GetLayer() == Layer::Enemy ||
-		other->GetLayer() == Layer::Enemy2 ||
-		other->GetLayer() == Layer::EnemyBullet) {
-		isDead_ = true;   // 消えるフラグ
-	}
-
-}
-
-Vector3 PlayerBullet::GetWorldPosition() {
-	Vector3 worldPos;
-
-	worldPos.x = object3D_->GetWorldMatrix().m[3][0];;
-	worldPos.y = object3D_->GetWorldMatrix().m[3][1];;
-	worldPos.z = object3D_->GetWorldMatrix().m[3][2];;
-	return worldPos;
-}
-
-Vector3 PlayerBullet::GetRayEndPosition() {
-
-	// 弾の現在位置
-	Vector3 currentPosition = GetWorldPosition();
-
-	// 移動方向を正規化
-	Vector3 normalizedVelocity = velocity_;
-	if (normalizedVelocity.Length() > 0) {
-		normalizedVelocity = normalizedVelocity.Normalize();
-	}
-
-	// レイの終点を計算
-	Vector3 rayEnd = currentPosition + normalizedVelocity * kRayLength;
-	return rayEnd;
-}
-
-int PlayerBullet::GetRayMapChipNumber(MapChipField* mapChipField) {
-	// レイの終点座標を取得
-	Vector3 rayEndPosition = GetRayEndPosition();
-
-	// マップチップのインデックスを取得
-	IndexSet index = mapChipField->GetMapChipIndexSetByPosition(rayEndPosition);
-
-	// マップチップの種類を取得
-	MapChipType chipType = mapChipField->GetMapChipTypeByIndex(index.xIndex, index.yIndex);
-
-	// マップチップ番号を返す
-	return static_cast<int>(chipType);
-}
-
-bool PlayerBullet::HitBlockSwept(const Vector3& from, const Vector3& to)
-{
-	if (!mapChipField_) return false;
-
-	constexpr float kRadiusPerScale = 0.25f; // 調整（0.2〜0.4）
-	const float r = object3D_->GetTransform().scale.x * kRadiusPerScale;
-
-	Vector3 d = to - from;
-	float dist = d.Length();
-	int steps = std::max(1, (int)std::ceil(dist / (r * 0.5f)));
-	Vector3 step = d * (1.0f / float(steps));
-
-	auto pack = [](int x, int y) -> uint64_t {
-		return (uint64_t(uint32_t(x)) << 32) | uint32_t(y);
-		};
-
-	std::unordered_set<uint64_t> touched;
-
-	// まず “触れたタイル” を全部集める（ここでは Damage しない）
-	for (int i = 0; i <= steps; ++i) {
-		Vector3 center = from + step * float(i);
-
-		IndexSet minIdx = mapChipField_->GetMapChipIndexSetByPosition(center + Vector3{ -r, -r, 0 });
-		IndexSet maxIdx = mapChipField_->GetMapChipIndexSetByPosition(center + Vector3{ +r, +r, 0 });
-
-		int x0 = std::min(minIdx.xIndex, maxIdx.xIndex);
-		int x1 = std::max(minIdx.xIndex, maxIdx.xIndex);
-		int y0 = std::min(minIdx.yIndex, maxIdx.yIndex);
-		int y1 = std::max(minIdx.yIndex, maxIdx.yIndex);
-
-		for (int y = y0; y <= y1; ++y) {
-			for (int x = x0; x <= x1; ++x) {
-
-				MapChipType chip = mapChipField_->GetMapChipTypeByIndex(x, y);
-				if (chip != MapChipType::Block && chip != MapChipType::UnbreakableBlock) continue;
-
-				Rect rect = mapChipField_->GetRectByIndex(x, y);
-
-				float cx = std::clamp(center.x, rect.left, rect.right);
-				float cy = std::clamp(center.y, rect.bottom, rect.top);
-
-				float dx = center.x - cx;
-				float dy = center.y - cy;
-
-				if (dx * dx + dy * dy <= r * r) {
-					touched.insert(pack(x, y));
-				}
-			}
-		}
-	}
-
-	bool hitAny = false;
-
-	// 最後に “各タイル1回だけ” Damage
-	for (uint64_t key : touched) {
-		int x = int(key >> 32);
-		int y = int(uint32_t(key));
-
-		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(x, y);
-		if (chip == MapChipType::Block || chip == MapChipType::UnbreakableBlock) {
-			int hp = mapChipField_->GetMapChipHPByIndex(x, y);
-			if (hp > 0) {
-				mapChipField_->DamageMapChipByIndex(x, y, power_);
-			}
-			hitAny = true;
-		}
-	}
-
-	return hitAny;
-}
-
-
-
-
-============================================================
-File Path: project/application/player/PlayerBullet.h
-============================================================
-#pragma once
-#include "Model.h"
-#include "Object3D.h"
-#include <MapChipField.h>
-#include "Collider.h"
-#include <memory>
-
-enum class WeaponType {
-	Gatling,
-	Cannon,
-};
-
-/// <summary>
-/// プレイヤーの弾クラス
-/// </summary>
-class PlayerBullet : public Collider {
-
-public:
-	PlayerBullet() : Collider(Layer::PlayerBullet) {}
-	~PlayerBullet() = default;  // unique_ptr により自動解放
-
-	AABB GetAABB() const override { return aabb_; }
-	AABB GetBulletAABB();
-
-	/// <summary>
-	/// 初期化（Object3D の所有権を受け取る）
-	/// </summary>
-	void Initialize(std::unique_ptr<Object3D> obj, const Vector3& potition, const Vector3& velocity, MapChipField* mapChipField);
-
-	/// <summary>
-	/// 更新
-	/// </summary>
-	void Update();
-
-	/// <summary>
-	/// 描画
-	/// </summary>
-	void Draw();
-
-	/// <summary>
-	// 当たったときコールバック
-	void OnCollision(Collider* other) override;
-	/// </summary>
-
-	//Getter
-	/// <summary>
-	/// 死亡しているかどうかを取得
-	/// </summary>
-	bool GetIsDead() const { return isDead_; }
-
-	/// <summary>
-	/// warld座標を取得します
-	/// </summary>
-	/// <returns></returns>
-	Vector3 GetWorldPosition();
-
-	/// <summary>
-	/// AABBを取得します
-	/// </summary>
-	
-	/// <summary>
-	// レイを出してマップチップ番号を取得
-	/// </summary>
-	Vector3 GetRayEndPosition();
-	/// <summary>
-	// レイの先のマップチップ番号を取得
-	/// </summary>
-	int GetRayMapChipNumber(MapChipField* mapChipField);
-	/// <summary>
-	/// 弾の威力を取得します
-	/// </summary>
-	/// <returns></returns>
-	int GetPower() const { return power_; }
-	/// <summary>
-	/// 弾の威力を設定します	
-	/// </summary>
-	void SetPower(int p) { power_ = p; }
-
-	/// <summary>
-	//プレイヤーの状態を取得
-	/// </summary>
-	WeaponType GetWeaponType() const { return weaponType_; }
-
-
-	// Object3D の生ポインタ参照を返す（所有は PlayerBullet）
-	Object3D* Getobject3DBullet_() { return object3D_.get(); }
-
-	void SetWeaponType(WeaponType type) { weaponType_ = type; }
-
-private:
-    /// <summary>
-	// ブロックに当たったかどうかをレイで判定
-    /// </summary>
-    /// <returns></returns>
-	bool HitBlockSwept(const Vector3& from, const Vector3& to);
-
-private:
-	WeaponType weaponType_;
-	AABB aabb_;
-	std::unique_ptr<Object3D> object3D_; // 所有（unique_ptr）
-	Vector3 prevPos_{};
-	//textureHandle
-	//uint32_t textureHandle_ = 0u;
-	//速度
-	Vector3 velocity_;
-	//寿命
-	static const int32_t kLifeTime = 60 * 5;
-	int32_t deathTimer_ = kLifeTime;//デスタイマー
-	bool isDead_ = false;			//デスフラグ
-	MapChipField* mapChipField_ = nullptr;
-	int power_ = 1; // 弾の威力
-
-	// 定数化（マジックナンバー削減）
-	//static inline constexpr float kAABBHalf = 0.1f; // AABB の半幅
-	static inline constexpr float kRayLength = 0.5f; // レイ長さ
+	//==================== 予測ゴースト ====================//
+	std::unique_ptr<Object3D> ghostObject_;
+
+	bool isGhostVisible_ = false;
+	EulerTransform ghostTransform_{};
+
+	// カメラシェイク
+	float cameraShakeTimer_ = 0.0f;
+	float cameraShakeDuration_ = 0.0f;
+	float cameraShakePower_ = 0.0f;
+	Vector3 cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+	void StartCameraShake(float power, float duration);
+	void UpdateCameraShake();
 };
 
 
@@ -7394,6 +6337,7 @@ File Path: project/application/scene/GameClearScene.cpp
 #include <ModelManager.h>
 #include <cmath>
 #include <imgui.h>
+#include <UIeditor.h>
 
 void GameClearScene::Initialize()
 {
@@ -7428,6 +6372,7 @@ void GameClearScene::Initialize()
 
 	clearAnimTimer_ = 0.0f;
 	isLanding_ = false;
+	UIeditor::GetInstance()->SetScene("GameClear");
 }
 
 void GameClearScene::Finalize()
@@ -7600,6 +6545,10 @@ void GameClearScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
+
 	//Spriteの描画
 	sprite->Draw();
 	fadeManager_.Draw();
@@ -7673,6 +6622,7 @@ File Path: project/application/scene/GameOverScene.cpp
 #include "ModelManager.h"
 #include <imgui.h>
 #include <ChargeBehabiaor.h>
+#include <UIeditor.h>
 
 void GameOverScene::Initialize()
 {
@@ -7710,6 +6660,8 @@ void GameOverScene::Initialize()
 		VerticesType::Quad,
 		std::make_unique<ExplosionBehavior>()
 	);*/
+
+	UIeditor::GetInstance()->SetScene("GameClear");
 }
 
 void GameOverScene::Finalize()
@@ -7820,6 +6772,8 @@ void GameOverScene::Draw()
 #pragma region スプライト描画
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
 	//Spriteの描画
 	sprite->Draw();
 	fadeManager_.Draw();
@@ -7913,11 +6867,11 @@ File Path: project/application/scene/GamePlayScene.cpp
 #include <ParticleMnager.h>
 #include "ChargeBehabiaor.h"
 #include "LineCommon.h"
-#include "ControlGuide.h"
 
 #include "Easing.h"
 #include <algorithm>
 
+#include "UIeditor.h"
 
 void GamePlayScene::Initialize()
 {
@@ -7955,14 +6909,14 @@ void GamePlayScene::Initialize()
 		stagePath = "Resources/Mapdata/Map1.csv";
 	}
 	mapChipField_ = std::make_unique<MapChipField>();
-	mapChipField_->LoadMapChipCsv(stagePath);//testmap blocks.csv
+	mapChipField_->LoadMapChipCsv(stagePath);
 	// ブロック生成
 	generateBlock_.Initialize(mapChipField_.get());
 	generateBlock_.GenerateObject3D();
 
 	// --- プレイヤースポーン位置をマップから取得する ---
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); // 注意: 関数名はプロジェクトに合わせて 'GetPositionBySpwan'
+	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
@@ -7988,9 +6942,9 @@ void GamePlayScene::Initialize()
 	gameOverEffect_->Initialize(player->GetObject3D());
 
 
-	//エネミー
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Initialize(mapChipField_.get());
+	////エネミー
+	//enemyManager_ = std::make_unique<EnemyManager>();
+	//enemyManager_->Initialize(mapChipField_.get());
 
 	//3Dオブジェクトの初期化
 	object3D2nd = std::make_unique<Object3D>();
@@ -8003,13 +6957,14 @@ void GamePlayScene::Initialize()
 	goal = std::make_unique<Goal>();
 	goal->Initialize(mapChipField_.get(), player.get());
 
-	// ControlGuide の初期化
-	ControlGuide::GetInstance()->Initialize(SpriteCommon::GetInstance());
+	
 
 	//ポーズメニュー
 	pauseMenu = std::make_unique<PauseMenu>();
 	pauseMenu->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
 	pauseMenu->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
+
+	UIeditor::GetInstance()->SetScene("GamePlay");
 }
 
 void GamePlayScene::Finalize()
@@ -8017,9 +6972,7 @@ void GamePlayScene::Finalize()
 
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 	CameraManager::GetInstance()->RemoveCamera("debugcam");
-	// ControlGuide の破棄
-	ControlGuide::GetInstance()->Finalize();
-	ControlGuide::DestroyInstance();
+	
 }
 
 void GamePlayScene::UpdateGameLogic(float dt)
@@ -8048,7 +7001,6 @@ void GamePlayScene::UpdateGameLogic(float dt)
 			
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
-		enemyManager_->EnemyObjectUpdate(); // 敵オブジェクト transform を更新（見た目）
 	}
 	else {
 
@@ -8064,11 +7016,11 @@ void GamePlayScene::UpdateGameLogic(float dt)
 			player->Update();
 			// プレイヤーの弾などは player 内で管理される
 		}
-		enemyManager_->Update();
+		//enemyManager_->Update();
 
 		// 衝突周りはゲームロジック
 		CollisionManager::GetInstance()->Clear();
-		enemyManager_->RegisterColliders();
+		//enemyManager_->RegisterColliders();
 		CollisionManager::GetInstance()->Update();
 
 		generateBlock_.SyncBlockObjectsWithMap();
@@ -8090,12 +7042,12 @@ void GamePlayScene::UpdateObjects(float dt)
 	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
 		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
 		player->GetObject3D()->Update();
-		enemyManager_->EnemyObjectUpdate();
+		//enemyManager_->EnemyObjectUpdate();
 	}
 	else {
 		// 普通時も見た目の更新は行う（物理・ロジックは UpdateGameLogic 側）
 		player->GetObject3D()->Update();
-		enemyManager_->EnemyObjectUpdate();
+		//enemyManager_->EnemyObjectUpdate();
 	}
 
 	// ブロックやパーティクルなどは常に更新
@@ -8119,19 +7071,19 @@ void GamePlayScene::UpdateCameraBlend(float dt)
 	if (!isCameraBlending_) {
 		return;
 	}
-
+	//カメラブレンドの更新
 	cameraBlendTimer_ += dt;
 
 	float t = cameraBlendTimer_ / cameraBlendDuration_;
 	t = std::clamp(t, 0.0f, 1.0f);
-
+	// イージング関数を使ってカメラ位置を補間
 	Vector3 pos = Easing::EaseLerp(
 		cameraBlendStartPos_,
 		cameraBlendEndPos_,
 		t,
 		Easing::EaseOutSine
 	);
-
+	// カメラ位置を更新
 	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(pos);
 
 	if (t >= 1.0f) {
@@ -8157,9 +7109,8 @@ void GamePlayScene::Update()
 	// 固定 dt
 	const float dt = 1.0f / 60.0f;
 
-	if (!isPaused &&
-		Input::GetInstance()->TriggerKey(DIK_R)) {
-
+	if (!isPaused &&Input::GetInstance()->TriggerKey(DIK_R)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "R");
 		ResetStage();
 	
 	}
@@ -8202,9 +7153,7 @@ void GamePlayScene::Draw()
 		player->Draw();
 
 	}
-	//エネミーの描画o 
-	enemyManager_->Draw();
-
+	//ブロックを描画
 	generateBlock_.Draw();
 
 	pauseMenu->Draw();
@@ -8220,7 +7169,7 @@ void GamePlayScene::Draw()
 	SpriteCommon::GetInstance()->CommonDraw();
 	if (!pauseMenu->IsPaused()) {
 		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
-		ControlGuide::GetInstance()->Render();
+		UIeditor::GetInstance()->Render();
 	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
@@ -8237,42 +7186,17 @@ void GamePlayScene::Imguidebug()
 	//マップ作製エディタ
 	editor.Run();
 
-	//マップチップエディターでリロードが押されたらマップチップを再読み込みして3Dオブジェクトを再生成する
-	if (editor.GetReloadRequested() == true) {
-		editor.SetReloadRequested(false);
+	if (editor.GetReloadRequested()) {
+		mapChipField_->ApplyStageData(editor.GetStageData());
 
-		std::string filePath = "Resources/Mapdata/";
-		filePath += editor.GetFileName();
-		mapChipField_->LoadMapChipCsv(filePath);
-
-		mapChipField_->LoadMapChipCsv(filePath);
-
-		// 再生成
 		generateBlock_.GenerateObject3D();
-
-
-		enemyManager_.reset();
-		enemyManager_ = std::make_unique<EnemyManager>();
-		enemyManager_->Initialize(mapChipField_.get());
-
-
-		// --- プレイヤースポーン位置をマップから取得する ---
-		Vector3 playerPostion = {};
-		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
-		if (!spawnPositions.empty()) {
-			// マップに player スポーンが複数ある場合は最初のものを使用
-			playerPostion = spawnPositions.front();
-		}
-		else {
-			// フォールバック: 既存の手打ち位置
-			playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
-		}
-		player->GetObject3D()->SetTranslate(playerPostion);
-
+		
+		editor.SetReloadRequested(false);
 	}
 
+	
 #ifdef USE_IMGUI
-	ControlGuide::GetInstance()->DebugImGui();
+	
 
 	ImGui::Begin("Camera Menu");
 	if (ImGui::CollapsingHeader("Camera Control", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -8346,9 +7270,6 @@ void GamePlayScene::ResetStage()
 	player->SetMapChipField(mapChipField_.get());
 	player->Initialize(playerPosition);
 
-	enemyManager_ = std::make_unique<EnemyManager>();
-	enemyManager_->Initialize(mapChipField_.get());
-
 	goal = std::make_unique<Goal>();
 	goal->Initialize(mapChipField_.get(), player.get());
 
@@ -8382,14 +7303,11 @@ File Path: project/application/scene/GamePlayScene.h
 
 #include <vector>
 #include <Player.h>
-#include <Enemy.h>
+
 #include <ParticleEmitter.h>
 
-#include "EnemyManager.h"	
 #include <memory>
 #include "CollisionManager.h"
-
-
 #include "Goal.h"
 #include "SkyBox.h"
 
@@ -8468,7 +7386,7 @@ public:
 	std::unique_ptr <MapChipField> mapChipField_;
 	
 	//エネミー
-	std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
+	//std::unique_ptr<EnemyManager> enemyManager_ = nullptr;
 
 	//ブロック生成
 	GenerateBlock generateBlock_;
@@ -8514,6 +7432,7 @@ File Path: project/application/scene/StageSelectScene.cpp
 #include <imgui.h>
 #include <CameraManager.h>
 #include <ModelManager.h>
+#include <UIeditor.h>
 
 
 
@@ -8592,6 +7511,8 @@ void StageSelectScene::Initialize()
 	gate_->StartIn(0.6f);
 	gateOutRequested_ = false;
 
+	UIeditor::GetInstance()->SetScene("StageSelect");
+
 }
 
 void StageSelectScene::Finalize()
@@ -8622,8 +7543,8 @@ void StageSelectScene::Update()
 		
 		if (!gateOutRequested_ &&
 			(!gate_ || !gate_->IsPlaying()) &&
-			Input::GetInstance()->TriggerKey(DIK_SPACE))
-		{
+			Input::GetInstance()->TriggerKey(DIK_SPACE)){
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "space");
 			gateOutRequested_ = true;
 			if (gate_) gate_->StartOut(0.6f);
 		}
@@ -8715,6 +7636,10 @@ void StageSelectScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
+
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
+
 	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
 }
@@ -8730,10 +7655,28 @@ void StageSelectScene::SelectMove()
 	const float stickThreshold = 0.5f;
 
 	if (Input::GetInstance()->PushKey(DIK_D)) {
+		UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "d");
 		rightStickX = 1.0f;
 	} else if (Input::GetInstance()->PushKey(DIK_A)) {
+		UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "a");
 		rightStickX = -1.0f;
 	}
+
+	auto mouseMove = Input::GetInstance()->GetMouseMove();
+	if (mouseMove.lZ != 0) {
+		
+		// WHEEL_DELTA(=120) ごとに1ノッチ。floatで扱うことで細かい差分にも対応。
+		const float wheelNotches = static_cast<float>(mouseMove.lZ) / static_cast<float>(WHEEL_DELTA);
+		// 1ノッチを kCannonAngleStepDeg として適用。感度を変えたい場合は係数を掛ける。
+		rightStickX += wheelNotches ;
+		if (wheelNotches < 0) { 
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "mouse2"); 
+		}
+		else if (wheelNotches > 0) {
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "mouse");
+		}
+	}
+
 #ifdef _DEBUG
 
 
@@ -8858,12 +7801,13 @@ File Path: project/application/scene/TitleScene.cpp
 #include <memory>
 #include <ParticleMnager.h>
 #include <ChargeBehabiaor.h>
+#include <UIeditor.h>
 
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
 void TitleScene::Initialize() {
 	// モデル読み込み（ModelManager は単一インスタンス）
 	ModelManager::GetInstance()->LoadModel("player");
-	ModelManager::GetInstance()->LoadModel("title"); // タイトルモデル
+	ModelManager::GetInstance()->LoadModel("title1"); // タイトルモデル
 
 	// フェードの初期化（白）
 	fadeManager_.Initialize("Resources/white.png");
@@ -8877,17 +7821,13 @@ void TitleScene::Initialize() {
 	gateOutRequested_ = false;
 	fadeOutRequested_ = false;
 
-	// タイトルスプライトを作成して初期パラメータ設定
-	titleSprite_ = std::make_unique<Sprite>();
-	titleSprite_->Initialize(SpriteCommon::GetInstance(), "Resources/space.png");
-	titleSprite_->SetPosition({ kTitleSpritePosX, kTitleSpritePosY });
-	titleSprite_->SetSize({ kTitleSpriteW, kTitleSpriteH });
+	UIeditor::GetInstance()->SetScene("Title");
 
 	// プレイヤー Object3D を生成してセットアップ
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
 	object3D_->SetModel("player");
-	object3D_->SetScale(Vector3{ 1.0f, 1.0f, 1.0f });
+	object3D_->SetScale(Vector3{ 0.75f, 0.75f, 0.75f });
 	object3D_->SetLighting(true);
 	object3D_->SetDirectionalLightEnable(true);
 	object3D_->SetDirectionalLightDirection({ -1.3f, -1.82f, -4.77f });
@@ -8896,7 +7836,7 @@ void TitleScene::Initialize() {
 	// タイトルモデル生成・配置
 	titleObj_ = std::make_unique<Object3D>();
 	titleObj_->Initialize(Object3DCommon::GetInstance());
-	titleObj_->SetModel("title");
+	titleObj_->SetModel("title1");
 	titleObj_->SetLighting(false);
 	titleObj_->SetRotate({ 0, kYawFront, 0 });
 
@@ -8904,7 +7844,7 @@ void TitleScene::Initialize() {
 		// モデルのトランスフォーム初期化
 		EulerTransform t = titleObj_->GetTransform();
 		t.translate = titlePos3_;
-		t.scale = { titleModelScale_, titleModelScale_, titleModelScale_ };
+		t.scale = { titleModelScaleW_, titleModelScaleH_, 1.0f };
 		titleObj_->SetTransform(t);
 	}
 
@@ -8932,7 +7872,7 @@ void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 
 	// unique_ptr の破棄に任せる（明示的な delete は不要）
-	titleSprite_.reset();
+	//titleSprite_.reset();
 	titleObj_.reset();
 	object3D_.reset();
 	camera.reset();
@@ -8950,7 +7890,7 @@ void TitleScene::Update() {
 	// オブジェクト更新（存在チェック）
 	if (object3D_) object3D_->Update();
 	if (titleObj_) titleObj_->Update();
-	if (titleSprite_) titleSprite_->Update();
+	//if (titleSprite_) titleSprite_->Update();
 
 	// プレイヤー走行アニメーション（Intro / Drag / Settle 時）
 	if (state_ == TitleAnimState::IntroRun ||
@@ -9091,6 +8031,7 @@ void TitleScene::Update() {
 		(!gate_ || !gate_->IsPlaying()) &&
 		Input::GetInstance()->TriggerKey(DIK_SPACE))
 	{
+		UIeditor::GetInstance()->PlayPressAnimation("Title", "space");
 		gateOutRequested_ = true;
 		if (gate_) gate_->StartOut(0.6f);
 	}
@@ -9115,13 +8056,17 @@ void TitleScene::Update() {
 // 描画
 void TitleScene::Draw() {
 	Object3DCommon::GetInstance()->CommonDraw();
+
 	if (titleObj_) titleObj_->Draw();
 	if (object3D_) object3D_->Draw();
 
 	ParticleManager::GetInstance()->Draw();
 
 	SpriteCommon::GetInstance()->CommonDraw();
-	if (titleSprite_) titleSprite_->Draw();
+	// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
+	UIeditor::GetInstance()->Render();
+
+	//if (titleSprite_) titleSprite_->Draw();
 	if (gate_) gate_->Draw2D();
 	fadeManager_.Draw();
 }
@@ -9199,14 +8144,16 @@ void TitleScene::ImguiDraw()
 
 	ImGui::Begin("TitleScene Debug");
 
-	// タイトルスプライト位置/サイズ編集
-	if (titleSprite_) {
-		Vector2 titlePos2_ = titleSprite_->GetPosition();
-		ImGui::DragFloat2("titlePos2_", &titlePos2_.x, 0.1f);
-		titleSprite_->SetPosition(titlePos2_);
-		Vector2 titleScale2_ = titleSprite_->GetSize();
-		ImGui::DragFloat2("titleScale2_", &titleScale2_.x, 0.1f);
-		titleSprite_->SetSize(titleScale2_);
+	if (titleObj_) {
+		ImGui::SeparatorText("Title Object");
+
+		Vector2 titleScale={ titleModelScaleW_, titleModelScaleH_ };
+		ImGui::DragFloat("Title ScaleW",&titleModelScaleW_, 0.01f, 0.01f, 20.0f);
+		ImGui::DragFloat("Title ScaleH", &titleModelScaleH_, 0.01f, 0.01f, 20.0f);
+
+		EulerTransform t = titleObj_->GetTransform();
+		t.scale = { titleModelScaleW_, titleModelScaleH_,1.0};
+		titleObj_->SetTransform(t);
 	}
 
 	ImGui::End();
@@ -9282,7 +8229,7 @@ private:
 	};
 
 	
-	std::unique_ptr<Sprite> titleSprite_;
+	//std::unique_ptr<Sprite> titleSprite_;
 	float exhaustTimer_ = 0.0f;
 	FadeManager fadeManager_;
 
@@ -9310,11 +8257,12 @@ private:
 	Vector3 titlePos3_{ -12.0f, 0.0f, 0.0f };   // 左外から開始（単位はワールド）
 	Vector3 titleTarget3_{ 0.0f, 0.0f, 0.0f };  // カメラ中心へ寄せる
 
-	float springX_ = -12.0f;   // ← 初期位置に合わせる
+	float springX_ = -12.0f;  
 	float springV_ = 0.0f;
 	float springK_ = 0.035f;
 	float springD_ = 0.78f;
-	float titleModelScale_ = 3.0f;
+	float titleModelScaleW_ = 1.5f;
+	float titleModelScaleH_ = 1.5f;
 	float titleYOffset_ = 1.0f;
 	// 補助
 	bool ropeAttached_ = false;
@@ -9363,375 +8311,6 @@ private:
 
 
 ============================================================
-File Path: project/application/ui/ControlGuide.cpp
-============================================================
-#define NOMINMAX 
-
-#include "ControlGuide.h"
-#include <cassert>
-#include <algorithm>
-#include <memory> // std::unique_ptr, std::make_unique
-#ifdef _DEBUG
-#include <imgui.h>
-#endif // _DEBUG
-
-
-
-std::unique_ptr<ControlGuide> ControlGuide::instance_ = nullptr;
-
-ControlGuide* ControlGuide::GetInstance() {
-    if (!instance_) {
-        
-        instance_ = std::make_unique<ControlGuide>();
-    }
-    return instance_.get();
-}
-void ControlGuide::DestroyInstance() {
-    instance_.reset();
-}
-
-// デバッグUI（ImGui）表示
-void ControlGuide::DebugImGui() {
-#ifdef _DEBUG
-
-    if (!debugOpen_) return;
-
-    if (ImGui::Begin("ControlGuide", &debugOpen_)) {
-        ImGui::Checkbox("Visible", &visible_);
-        ImGui::Checkbox("Clamp To Screen", &clampToScreen_);
-        ImGui::Checkbox("Sprite Pivot Is Center", &spritePivotIsCenter_);
-
-        ImGui::Separator();
-
-        ImGui::DragFloat("Scale", &scale_, 0.01f, 0.30f, 2.00f);
-        ImGui::DragFloat("Row Spacing", &rowSpacing_, 0.5f, 0.0f, 80.0f);
-        ImGui::DragFloat("Margin X", &marginX_, 0.5f, 0.0f, 300.0f);
-        ImGui::DragFloat("Margin Y", &marginY_, 0.5f, 0.0f, 300.0f);
-
-        const char* items[] = { "Vertical", "Horizontal" };
-
-        int leftDir = static_cast<int>(leftStackDirection_);
-        if (ImGui::Combo("Left Stack", &leftDir, items, 2)) {
-            leftStackDirection_ = static_cast<StackDirection>(leftDir);
-        }
-
-        int rightDir = static_cast<int>(rightStackDirection_);
-        if (ImGui::Combo("Right Stack", &rightDir, items, 2)) {
-            rightStackDirection_ = static_cast<StackDirection>(rightDir);
-        }
-
-        ImGui::Separator();
-
-        ImGui::DragFloat2("Global Offset", &offset_.x, 0.5f);
-        ImGui::DragFloat2("Left Offset", &leftOffset_.x, 0.5f);
-        ImGui::DragFloat2("Right Offset", &rightOffset_.x, 0.5f);
-
-        ImGui::Separator();
-
-        // プリセットボタン（簡易レイアウト調整）
-        if (ImGui::Button("Preset: Small & Safe")) {
-            scale_ = 0.78f;
-            rowSpacing_ = 10.0f;
-            marginX_ = 24.0f;
-            marginY_ = 24.0f;
-            offset_ = { 0.0f, 0.0f };
-            leftOffset_ = { 0.0f, 0.0f };
-            rightOffset_ = { 0.0f, 0.0f };
-            clampToScreen_ = true;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Open/Close Debug")) {
-            debugOpen_ = !debugOpen_;
-        }
-
-        ImGui::Text("Entries: %d", (int)entries_.size());
-        ImGui::Text("Tips: If left side is clipped, enable PivotIsCenter and/or increase MarginX.");
-    }
-    ImGui::End(); 
-#endif // _DEBUG
-
-}
-
-// 初期化：SpriteCommon を使ってアイコンスプライトを作成する
-void ControlGuide::Initialize(SpriteCommon* spriteCommon) {
-    spriteCommon_ = spriteCommon;
-    assert(spriteCommon_ && "SpriteCommon must be initialized before ControlGuide");
-
-    // 表示するアイコン（ラベルは不要なので読み込まない）
-    struct Setup { const char* icon; Vector2 iconSize; Entry::Side side; float localScale; };
-    // 左下グループ： W/A/D/Space、右下グループ：マウスホイール/上下キー
-    const Setup setups[] = {
-        { "Resources/UI/space.png",    {128,128}, Entry::Side::Left },
-
-        { "Resources/UI/mouse.png", {128,128}, Entry::Side::Right },
-        { "Resources/UI/up.png",    {128,128}, Entry::Side::Right },
-        { "Resources/UI/down.png",  {128,128}, Entry::Side::Right },
-    };
-
-    // 既存エントリをクリアして再構築
-    entries_.clear();
-
-    for (auto& s : setups) {
-        Entry e;
-        e.iconFile  = s.icon;
-        e.labelFile = ""; // ラベル不要
-        e.size = s.iconSize;
-        e.labelSize = {0,0};
-        e.side = s.side;
-        // 仮位置（UpdateLayout で上書き）
-        e.position = { marginX_, marginY_ };
-
-        // Sprite を unique_ptr で所有（自動破棄される）
-        e.icon = std::make_unique<Sprite>();
-        e.icon->Initialize(spriteCommon_, e.iconFile);
-        // e.icon->SetSize(e.size); // 必要ならサイズを設定
-
-        entries_.push_back(std::move(e));
-    }
-
-    visible_ = true; // デフォルト表示
-}
-
-// 終了処理：エントリをクリアしてリソース解放（unique_ptr により自動で解放される）
-void ControlGuide::Finalize() {
-    entries_.clear();
-    spriteCommon_ = nullptr;
-}
-
-// 表示トグル
-void ControlGuide::Toggle() {
-    visible_ = !visible_;
-}
-void ControlGuide::SetVisible(bool v) { visible_ = v; }
-bool ControlGuide::IsVisible() const { return visible_; }
-
-// レイアウト計算：画面サイズと設定に基づき各エントリの位置を決定する
-void ControlGuide::UpdateLayout() {
-    if (entries_.empty()) return;
-
-    const float screenW = static_cast<float>(WinApp::kClientWidth);
-    const float screenH = static_cast<float>(WinApp::kClientHeight);
-
-    // 左右グループに分割
-    std::vector<Entry*> lefts;
-    std::vector<Entry*> rights;
-    for (auto& e : entries_) {
-        (e.side == Entry::Side::Left ? lefts : rights).push_back(&e);
-    }
-
-    // グループの合計高さと最大幅を計算するラムダ
-    auto computeGroupMetrics = [&](const std::vector<Entry*>& group) {
-        float totalH = 0.0f;
-        float maxW = 0.0f;
-        for (size_t i = 0; i < group.size(); ++i) {
-            const Entry* p = group[i];
-            float h = p->size.y * scale_;
-            totalH += h;
-            if (i + 1 < group.size()) totalH += rowSpacing_;
-            float labelW = p->label ? (p->labelSize.x * scale_) : 0.0f;
-            float rowW = p->size.x * scale_ + (p->label ? (12.0f * scale_ + labelW) : 0.0f);
-            maxW = std::max(maxW, rowW);
-        }
-        return std::pair<float, float>(totalH, maxW);
-    };
-
-    auto [leftH, leftW] = computeGroupMetrics(lefts);
-    auto [rightH, rightW] = computeGroupMetrics(rights);
-
-    // ---- 左下グループ配置
-    float leftStartX = marginX_ + offset_.x + leftOffset_.x;
-    float leftStartY = screenH - marginY_ - leftH + offset_.y + leftOffset_.y;
-
-    float x = leftStartX; 
-    float y = leftStartY;
-    for (auto p : lefts) {
-        Vector2 scaledSize = { p->size.x * scale_, p->size.y * scale_ };
-
-        if (spritePivotIsCenter_) {
-            p->position.x = x + scaledSize.x * 0.5f;
-            p->position.y = y + scaledSize.y * 0.5f;
-        } else {
-            p->position.x = x;
-            p->position.y = y;
-        }
-
-        // 画面外に出ないようにクランプ
-        if (clampToScreen_) {
-            float halfW = spritePivotIsCenter_ ? (scaledSize.x * 0.5f) : 0.0f;
-            float halfH = spritePivotIsCenter_ ? (scaledSize.y * 0.5f) : 0.0f;
-            p->position.x = std::clamp(p->position.x, 0.0f + halfW, screenW - halfW);
-            p->position.y = std::clamp(p->position.y, 0.0f + halfH, screenH - halfH);
-        }
-
-        if (leftStackDirection_ == StackDirection::Vertical) {
-            y += scaledSize.y + rowSpacing_;
-        } else {
-            x += scaledSize.x + rowSpacing_;
-        }
-    }
-
-    // ---- 右下グループ配置
-    float rightStartX = screenW - marginX_ - rightW + offset_.x + rightOffset_.x;
-    float rightStartY = screenH - marginY_ - rightH + offset_.y + rightOffset_.y;
-
-    y = rightStartY;
-	x = rightStartX;
-    for (auto p : rights) {
-        Vector2 scaledSize = { p->size.x * scale_, p->size.y * scale_ };
-
-        if (spritePivotIsCenter_) {
-            p->position.x = x + scaledSize.x * 0.5f;
-            p->position.y = y + scaledSize.y * 0.5f;
-        } else {
-            p->position.x = x;
-            p->position.y = y;
-        }
-
-        if (clampToScreen_) {
-            float halfW = spritePivotIsCenter_ ? (scaledSize.x * 0.5f) : 0.0f;
-            float halfH = spritePivotIsCenter_ ? (scaledSize.y * 0.5f) : 0.0f;
-            p->position.x = std::clamp(p->position.x, 0.0f + halfW, screenW - halfW);
-            p->position.y = std::clamp(p->position.y, 0.0f + halfH, screenH - halfH);
-        }
-
-        if (rightStackDirection_ == StackDirection::Vertical) {
-            y += scaledSize.y + rowSpacing_;
-        } else {
-            x += scaledSize.x + rowSpacing_;
-        }
-    }
-}
-
-// 描画：各エントリのスプライトを適切な位置・サイズで描画する
-void ControlGuide::Render() {
-    if (!visible_) return;
-    if (!spriteCommon_) return;
-
-    // 解像度変更や設定変更に対応してレイアウトを更新
-    UpdateLayout();
-
-    // 各エントリを描画（ラベルは今は描画しない）
-    for (auto& e : entries_) {
-        Vector2 texSize = e.icon->GetTextureSize(); // 元テクスチャ解像度
-        float targetH = e.size.y * scale_;
-        float aspect = texSize.x / texSize.y;
-
-        Vector2 iconSizeScaled = {
-            targetH * aspect,
-            targetH
-        };
-
-        // スプライトに対する設定と描画
-        e.icon->SetPosition(e.position);
-        e.icon->SetSize(iconSizeScaled);
-        e.icon->Update();
-        e.icon->Draw();
-    }
-}
-
-============================================================
-File Path: project/application/ui/ControlGuide.h
-============================================================
-#pragma once
-
-#include <vector>
-#include <memory>
-#include <string>
-
-#include "Sprite.h"
-#include "SpriteCommon.h"
-#include "Vector2.h"
-#include "Input.h"
-#include "WinApp.h"
-
-class ControlGuide {
-public:
-    static ControlGuide* GetInstance();
-    static void DestroyInstance();
-
-    // SpriteCommon は既に初期化済みであること
-    void Initialize(SpriteCommon* spriteCommon);
-    void Finalize();
-
-    // 毎フレーム呼ぶ（レンダーパス内）
-    void Render();
-
-    void Toggle();
-    void SetVisible(bool v);
-    bool IsVisible() const;
-
-    // 配置関連 API
-    enum class Anchor {
-        TopLeft,
-        TopRight,
-        BottomLeft,
-        BottomRight,
-        Center
-    };
-
-    void DebugImGui();
-    void SetAnchor(Anchor a) { anchor_ = a; }
-    void SetOffset(const Vector2& ofs) { offset_ = ofs; }
-    void SetScale(float s) { scale_ = s > 0.0f ? s : 1.0f; }
-    void SetRowSpacing(float spacing) { rowSpacing_ = spacing; }
-    void SetMargins(float marginX, float marginY) { marginX_ = marginX; marginY_ = marginY; }
-
-private:
-    enum class StackDirection {
-        Vertical,
-        Horizontal
-    };
- 
-    struct Entry {
-        std::unique_ptr<Sprite> icon;
-        std::unique_ptr<Sprite> label; // ラベル画像（任意）
-        std::string iconFile;
-        std::string labelFile;
-        Vector2 size;      // アイコンサイズ（ピクセル）
-        Vector2 labelSize; // ラベル画像サイズ（ピクセル）
-        Vector2 position;  // 画面内の位置（ピクセル） - レイアウトで上書きされる
-
-        enum class Side {
-            Left,
-            Right
-        } side = Side::Left;
-    };
-
-    void UpdateLayout(); // レイアウト計算
-
-private:
-   
-    StackDirection leftStackDirection_ = StackDirection::Vertical;
-    StackDirection rightStackDirection_ = StackDirection::Vertical;
-
-    std::vector<Entry> entries_;
-    bool visible_ = true;
-    SpriteCommon* spriteCommon_ = nullptr;
-
-    static std::unique_ptr<ControlGuide> instance_; 
-
-    // レイアウト設定
-    Anchor anchor_ = Anchor::TopLeft;
-    float marginX_ = 87.0f;
-    float marginY_ = 8.0f;
-    float rowSpacing_ = 11.5f;
-    float scale_ = 0.66f;
-
-    Vector2 offset_{ -162.5f, -13.5f };
-    Vector2 leftOffset_{ -6.5f,  -7.0f };
-    Vector2 rightOffset_{ 0.0f, -10.5f };
-
-    // はみ出し防止
-    bool clampToScreen_ = true;
-
-    // デバッグUI表示トグル
-    bool debugOpen_ = true;
-
-    // Sprite座標基準（中心/左上）差分吸収
-    bool spritePivotIsCenter_ = true;
-};
-
-============================================================
 File Path: project/application/ui/PauseMenu.cpp
 ============================================================
 #include "PauseMenu.h"
@@ -9742,6 +8321,7 @@ File Path: project/application/ui/PauseMenu.cpp
 #include <ModelManager.h>
 #include <CameraManager.h>
 #include <algorithm>
+#include <UIeditor.h>
 
 double easeInOutCirc(double x) {
 	return (x < 0.5)
@@ -9929,6 +8509,8 @@ void PauseMenu::ControllerUpdate() {
 	// =========================
 	if ((canInput || easeTimer_ <= 0.0f) && Input::GetInstance()->TriggerGamePadButton(XINPUT_GAMEPAD_START) || Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 		isPaused_ = !isPaused_;
+		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "back");
+		UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "esc");
 	}
 
 	// =========================
@@ -14423,6 +13005,7 @@ File Path: project/engine/base/Framework.cpp
 #include "Framework.h"
 #include <CameraManager.h>
 #include "ParticleMnager.h"
+#include "UIeditor.h"
 
 void Framework::Initialize()
 {
@@ -14470,6 +13053,8 @@ void Framework::Initialize()
 	
 	SkyBoxCommon::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
 
+	UIeditor::GetInstance()->Initialize(SpriteCommon::GetInstance());
+
 #ifdef _DEBUG
 	//imguiMnagerの初期化
 	imGuiMnager = std::make_unique<ImGuiManager>();
@@ -14499,7 +13084,9 @@ void Framework::Finalize()
 	ParticleManager::GetInstance()->Finalize();
 
 	SkyBoxCommon::GetInstance()->Finalize();
-
+	// ControlGuide の破棄
+	UIeditor::GetInstance()->Finalize();
+	UIeditor::DestroyInstance();
 	
 #ifdef _DEBUG
 	imGuiMnager.reset();
@@ -14526,6 +13113,11 @@ void Framework::Update()
 	ParticleManager::GetInstance()->Update();
 	SceneManager::GetInstance()->Update();
 	LineCommon::GetInstance()->Update();
+
+#ifdef _DEBUG
+	UIeditor::GetInstance()->DebugImGui();
+#endif // _DEBUG
+
 	
 }
 
@@ -17035,7 +15627,7 @@ void WinApp::Initialize()
 	//ウィンドウ生成
 	 hwnd = CreateWindow(
 
-		wc.lpszClassName, L"スーパー車",
+		wc.lpszClassName, L"スーパー卵",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -17194,6 +15786,8 @@ void Camera::Update()
 
 
 }
+
+
 
 void Camera::SetFollowTarget(Object3D* obj, const Vector3& offset) {
 	followTarget = obj;
@@ -17476,7 +16070,6 @@ public:
 	// アクティブカメラの取得
 	/// </summary>
 	Camera* GetActiveCamera();
-
 	/// <summary>
 	// アクティブカメラの設定
 	/// </summary>
@@ -22217,15 +20810,6 @@ private:
 ============================================================
 File Path: project/main.cpp
 ============================================================
-
-
-
-
-
-
-
-
-
 #include "Game.h"
 #include "Framework.h"
 
