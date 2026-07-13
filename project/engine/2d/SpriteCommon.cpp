@@ -29,9 +29,7 @@ void SpriteCommon::Finalize()
 		graphicsPipeline_.reset();
 	}
 
-	// シングルトンを破棄する（unique_ptr をリセット）
-	// 注意: ここで instance_.reset() するとこのオブジェクト（this）は破棄されるため、
-	// reset() の後にメンバーにアクセスしてはならない（元の実装と同様の挙動）。
+	
 	instance_.reset();
 }
 
