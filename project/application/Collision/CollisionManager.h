@@ -1,14 +1,13 @@
 #pragma once
-#include "Collider.h"	
+#include "Collider.h"
 #include <vector>
-
 
 /// <summary>
 /// 当たり判定管理クラス（シングルトン）
 /// </summary>
 class CollisionManager
 {
-public:
+  public:
 	// シングルトン取得
 	static CollisionManager* GetInstance();
 	// コンストラクタは private（外部から new できない）
@@ -41,10 +40,7 @@ public:
 	/// </summary>
 	void Update();
 
-	
-
-private:
-	
+  private:
 	/// <summary>
 	/// 当たり判定を取るべきか
 	/// </summary>
@@ -57,4 +53,3 @@ private:
 	// シングルトン実体
 	static std::unique_ptr<CollisionManager> instance_;
 };
-

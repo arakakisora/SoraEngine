@@ -61,14 +61,14 @@ void GamePlayScene::Initialize()
 
 	// --- プレイヤースポーン位置をマップから取得する ---
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
 	}
 	else {
 		// フォールバック: 既存の手打ち位置
-		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		playerPostion = mapChipField_->GetMapChipPositionByIndex(6, 18);
 	}
 	//playerの生成
 	player = std::make_unique<Player>();
@@ -128,7 +128,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 	const float fixedDt = dt;
 	Vector3 offset = { 0, 0, -20 };
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
@@ -406,7 +406,7 @@ void GamePlayScene::ResetStage()
 
 	// プレイヤースポーン取得
 	Vector3 playerPosition{};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player");
 	if (!spawnPositions.empty()) {
 		playerPosition = spawnPositions.front();
 	}
