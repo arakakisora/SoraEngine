@@ -1,9 +1,9 @@
 #include "Goal.h"
-#include "Object3DCommon.h"
 #include "MapChipField.h"
+#include "Object3DCommon.h"
 #include "SceneManager.h"
-#include <memory>
 #include <CameraManager.h>
+#include <memory>
 
 void Goal::Initialize(MapChipField* map, Player* paleyr)
 {
@@ -22,40 +22,45 @@ void Goal::Initialize(MapChipField* map, Player* paleyr)
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 	isFadeOutStarted_ = false;
-	
 }
 
 void Goal::Update(bool isGoal, float deltaTime, Vector3 goalpos)
 {
 	fadeManager_.Update();
 	// オブジェクトの更新
-	if (object3D_) {
+	if (object3D_)
+	{
 		object3D_->Update();
 	}
 
 	// ゴールに到達したかどうかの更新
 
-	Vector3 offset = { 0, 0, -20 };
-	
+	Vector3 offset = {0, 0, -20};
+
 	isGoal_ = isGoal;
-	if (isGoal_ && !isEffectStarted_) {
+	if (isGoal_ && !isEffectStarted_)
+	{
 		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(goalpos + offset);
 		isEffectStarted_ = true;
-		if (stageClearEffect_) {
+		if (stageClearEffect_)
+		{
 			stageClearEffect_->Begin();
 		}
 	}
 
-	if (isEffectStarted_ && stageClearEffect_) {
+	if (isEffectStarted_ && stageClearEffect_)
+	{
 		stageClearEffect_->Update(deltaTime);
 
-		if (stageClearEffect_->IsFinished() && !isFadeOutStarted_) {
+		if (stageClearEffect_->IsFinished() && !isFadeOutStarted_)
+		{
 			isFadeOutStarted_ = true;
 			fadeManager_.StartFadeOut();
 		}
 	}
 
-	if (fadeManager_.IsFadeOutFinished()) {
+	if (fadeManager_.IsFadeOutFinished())
+	{
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 	}
 }
@@ -63,18 +68,18 @@ void Goal::Update(bool isGoal, float deltaTime, Vector3 goalpos)
 void Goal::Draw()
 {
 	// オブジェクトの描画
-	if (!isEffectStarted_) {
-		if (object3D_) {
+	if (!isEffectStarted_)
+	{
+		if (object3D_)
+		{
 			object3D_->Draw();
 		}
 	}
 
-	if (isEffectStarted_ && stageClearEffect_) {
+	if (isEffectStarted_ && stageClearEffect_)
+	{
 		stageClearEffect_->Draw();
 	}
 }
 
-void Goal::Draw2D()
-{
-	fadeManager_.Draw();
-}
+void Goal::Draw2D() { fadeManager_.Draw(); }

@@ -4,9 +4,9 @@
 /// <summary>
 /// チャージエフェクトのビヘイビアクラス
 /// </summary>
-class ChargeBehabiaor: public IParticleBehavior
+class ChargeBehabiaor : public IParticleBehavior
 {
-public:
+  public:
 	/// <summary>
 	/// パーティクルの生成
 	/// </summary>
@@ -24,23 +24,21 @@ public:
 	/// <param name="alpha"></param>
 	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
 
+  private:
+	Vector3 initScale_ = {0.0f, 0.0f, 0.0f};
+	Vector3 initRotate_ = {1.27f, 0.0f, 0.0f};
 
-private:
-	Vector3 initScale_ = { 0.0f, 0.0f, 0.0f };
-	Vector3 initRotate_ = { 1.27f, 0.0f, 0.0f };
-
-private:
+  private:
 	float scrollX_ = 0.0f;
-	float scrollSpeed_ = 0.2f; 
-
+	float scrollSpeed_ = 0.2f;
 };
- 
+
 /// <summary>
 /// 爆発エフェクトのビヘイビアクラス
 /// </summary>
 class ExplosionBehavior : public IParticleBehavior
 {
-public:
+  public:
 	/// <summary>
 	// パーティクルの生成
 	/// </summary>
@@ -58,21 +56,18 @@ public:
 	/// <param name="alpha"></param>
 	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
 
+  private:
+	Vector3 initScale_ = {0.0f, 0.0f, 0.0f};
+	Vector3 initRotate_ = {1.27f, 0.0f, 0.0f};
 
-private:
-	Vector3 initScale_ = { 0.0f, 0.0f, 0.0f };
-	Vector3 initRotate_ = { 1.27f, 0.0f, 0.0f };
-
-private:
+  private:
 	float scrollX_ = 0.0f;
 	float scrollSpeed_ = 0.2f;
-
-
-
 };
 
-class ExhaustGasBehavior : public IParticleBehavior {
-public:
+class ExhaustGasBehavior : public IParticleBehavior
+{
+  public:
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
 	void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
 };
