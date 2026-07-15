@@ -65,7 +65,7 @@ public:
 	/// <summary>
 	/// 縦のブロック数を取得
 	/// </summary>
-	uint32_t GetNumBlockVirtical() { return kNumBlockVirtical; }
+	uint32_t GetNumBlockVertical() { return kNumBlockVertical; }
 	/// <summary>
 	/// 横のブロック数を取得
 	/// </summary>
@@ -121,7 +121,7 @@ private:
 	static inline const float kBlockWidth = 1.0f;
 	static inline const float kBlockHeight = 1.0f;
 	// ブロック個数
-	static inline const uint32_t kNumBlockVirtical = 25;
+	static inline const uint32_t kNumBlockVertical = 25;
 	static inline const uint32_t kNumBlockHorizontal = 100;
 	MapChipData mapChipData_;
 
