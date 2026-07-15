@@ -31,7 +31,7 @@
   <ItemGroup>
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
-    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
+    <ClCompile Include="application\particle\ChargeBehavior.cpp" />
     <ClCompile Include="application\collision\CollisionManager.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
@@ -78,8 +78,8 @@
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
-    <ClCompile Include="engine\particle\ParticleMnager.cpp" />
-    <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
+    <ClCompile Include="engine\particle\ParticleManager.cpp" />
+    <ClCompile Include="engine\base\OffscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
@@ -99,7 +99,7 @@
   <ItemGroup>
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
-    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
+    <ClInclude Include="application\particle\ChargeBehavior.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
@@ -147,8 +147,8 @@
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
-    <ClInclude Include="engine\particle\ParticleMnager.h" />
-    <ClInclude Include="engine\base\OfscreenRenderManager.h" />
+    <ClInclude Include="engine\particle\ParticleManager.h" />
+    <ClInclude Include="engine\base\OffscreenRenderManager.h" />
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />

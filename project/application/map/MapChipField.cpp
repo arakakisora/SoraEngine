@@ -203,7 +203,7 @@ bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex)
 	return info->collision == "solid";
 }
 
-std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTag)
+std::vector<Vector3> MapChipField::GetPositionBySpawn(const std::string& spawnTag)
 {
 	std::vector<Vector3> result;
 

@@ -26,7 +26,7 @@
 #include "SrvManager.h"
 #include "SceneManager.h"
 #include <SceneFactory.h>
-#include "OfscreenRenderManager.h"
+#include "OffscreenRenderManager.h"
 
 #include "Linecommon.h"
 #include "Line.h"
@@ -82,10 +82,10 @@ public:
 	//SrvManagerのポインタ
 	std::unique_ptr<SrvManager> srvManager;
 	//ImGuiManagerのポインタ
-	std::unique_ptr<ImGuiManager> imGuiMnager;
+	std::unique_ptr<ImGuiManager> imGuiManager;
 	//SceneManagerのポインタ
 	std::unique_ptr<AbstractSceneFactory> sceneFactory;
-	std::unique_ptr<OfscreenRenderManager> ofscreenRenderManager;
+	std::unique_ptr<OffscreenRenderManager> offscreenRenderManager;
 
 
 };

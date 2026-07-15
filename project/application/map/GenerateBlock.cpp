@@ -125,7 +125,7 @@ const char* GenerateBlock::GetModelName(MapChipType type) const
 		return "block";
 
 	case MapChipType::UnbreakableBlock:
-		return "unbreakableBlokc";
+		return "unbreakableBlock";
 
 	case MapChipType::damageBlock:
 		return "damageblock";

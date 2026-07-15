@@ -8,9 +8,9 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 #include "Object3DCommon.h"
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "PlayerpaticleBehavior.h"
-#include "ChargeBehabiaor.h"
+#include "ChargeBehavior.h"
 #include "CollisionManager.h"
 #include "LineCommon.h" 
 #include <memory>      
@@ -848,8 +848,8 @@ void Player::PlayerDeathTerms()
 	// 落下による死亡判定
 	if (object3D_->GetTransform().translate.y < parameter_.deathHeight.min
 		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max
-		|| object3D_->GetTransform().translate.x < parameter_.deathwidth.min
-		|| object3D_->GetTransform().translate.x > parameter_.deathwidth.max)
+		|| object3D_->GetTransform().translate.x < parameter_.deathWidth.min
+		|| object3D_->GetTransform().translate.x > parameter_.deathWidth.max)
 	{
 		isDead_ = true;
 	}

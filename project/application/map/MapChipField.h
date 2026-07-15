@@ -95,7 +95,7 @@ public:
 
 	bool IsSolid(uint32_t xIndex, uint32_t yIndex);
 
-	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
+	std::vector<Vector3>GetPositionBySpawn(const std::string& spawnTag);
 
 
 	int GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const;

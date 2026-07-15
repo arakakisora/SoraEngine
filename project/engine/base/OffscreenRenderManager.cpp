@@ -1,8 +1,8 @@
-#include "OfscreenRenderManager.h"
+#include "OffscreenRenderManager.h"
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif // USE_IMGUI
-void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
+void OffscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
 {
 	dxCommon_ = dxcommon;
 	srvManager_ = srvmanager;
@@ -33,7 +33,7 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	graphicsPipeline_->CreateAllPostEffects(); 
 }
 
-void OfscreenRenderManager::Begin()
+void OffscreenRenderManager::Begin()
 {
 	if (currentState_ != D3D12_RESOURCE_STATE_RENDER_TARGET) {
 
@@ -70,7 +70,7 @@ void OfscreenRenderManager::Begin()
 
 }
 
-void OfscreenRenderManager::End()
+void OffscreenRenderManager::End()
 {
 	if (currentState_ != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) {
 		D3D12_RESOURCE_BARRIER barrier{};
@@ -87,7 +87,7 @@ void OfscreenRenderManager::End()
 
 }
 
-void OfscreenRenderManager::Draw()
+void OffscreenRenderManager::Draw()
 {
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateCopyImage(currentEffectType_));
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureCopyImage());
@@ -106,7 +106,7 @@ void OfscreenRenderManager::Draw()
 
 
 
-Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format)
+Microsoft::WRL::ComPtr<ID3D12Resource> OffscreenRenderManager::CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format)
 {
 	D3D12_RESOURCE_DESC resouceDesc{ };
 	resouceDesc.Width = width;//Textureの幅
@@ -146,11 +146,11 @@ Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTarget
 	return resource;
 }
 
-void OfscreenRenderManager::DrawImGui()
+void OffscreenRenderManager::DrawImGui()
 {
 #ifdef USE_IMGUI
 
-	ImGui::Begin("OfscreenRenderManager");
+	ImGui::Begin("OffscreenRenderManager");
 	const char* items[] = {
 	   "Fullscreen",
 	   "Grayscale",

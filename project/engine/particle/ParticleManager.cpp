@@ -1,4 +1,4 @@
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include <ModelManager.h>
 #include <TextureManager.h>
 #include "CameraManager.h"
@@ -11,7 +11,7 @@
 
 #include <json.hpp>
 #include <fstream>
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include "ParticleEditor.h"
 
 #include <filesystem>
@@ -40,7 +40,7 @@ namespace
 			return std::make_unique<ExplosionBehavior>();
 		}
 		if (name == "Charge") {
-			return std::make_unique<ChargeBehabiaor>();
+			return std::make_unique<ChargeBehavior>();
 		}
 		if (name == "ExhaustGas") {
 			return std::make_unique<ExhaustGasBehavior>();
@@ -98,7 +98,7 @@ void ParticleManager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	graphicsPipeline_->CreateParticle();
 
 
-	//カメラとモデルのTrandform変数
+	//カメラとモデルのTransform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 
@@ -195,7 +195,7 @@ void ParticleManager::SaveToJson(const std::string& filepath)
 		std::string behaviorTypeStr = "Unknown";
 		if (dynamic_cast<ExplosionBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "Explosion";
-		} else if (dynamic_cast<ChargeBehabiaor*>(group.behavior.get())) {
+		} else if (dynamic_cast<ChargeBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "Charge";
 		} else if (dynamic_cast<ExhaustGasBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "ExhaustGas";

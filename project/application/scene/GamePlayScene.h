@@ -63,7 +63,7 @@ public:
 	/// <summary>
 	/// モデルをロードする
 	/// </summary>
-	void Road();
+	void Load();
 
 	//ステージreset
 	void ResetStage();

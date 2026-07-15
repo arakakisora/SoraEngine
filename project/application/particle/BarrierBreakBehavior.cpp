@@ -1,5 +1,5 @@
 #include "BarrierBreakBehavior.h"
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include <random>
 #include <numbers>
 #include <algorithm>

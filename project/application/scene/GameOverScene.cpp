@@ -7,7 +7,7 @@
 #include "CameraManager.h"
 #include "ModelManager.h"
 #include <imgui.h>
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include <UIeditor.h>
 
 void GameOverScene::Initialize()

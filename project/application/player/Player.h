@@ -68,7 +68,7 @@ struct PlayerParameter {
 	float kAcceleration = 0.02f;  // 定数加速度
 	float kAttenuation = 0.9f;   // 速度減衰率
 	float kLimitRunSpeed = 0.15f; // 最大速度制限
-	//jannpパラメータ
+	//jumpパラメータ
 	float kGravityAcceleration = 0.02f; // 重力加速度
 	float kLimitFallSpeed = 1.0f;      // 最大落下速度
 	float kJumpAcceleration = 0.3f;    // ジャンプ初速
@@ -87,12 +87,12 @@ struct PlayerParameter {
 		float min = 0.0f; // 落下死の高さ
 		float max = 20.0f; // 落下死の有効/無効
 	};
-	struct Deathwidth {
+	struct DeathWidth {
 		float min = -3.0f; // 落下死の高さ
 		float max = 26.0f; // 落下死の有効/無効
 	};
 	DeathHeight deathHeight;
-	Deathwidth deathwidth;
+	DeathWidth deathWidth;
 };
 
 class Enemy;

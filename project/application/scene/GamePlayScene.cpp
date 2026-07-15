@@ -9,8 +9,8 @@
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
-#include <ParticleMnager.h>
-#include "ChargeBehabiaor.h"
+#include <ParticleManager.h>
+#include "ChargeBehavior.h"
 #include "LineCommon.h"
 
 #include "Easing.h"
@@ -38,7 +38,7 @@ void GamePlayScene::Initialize()
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 	//モデルの読み込み
-	Road();
+	Load();
 
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
@@ -60,25 +60,25 @@ void GamePlayScene::Initialize()
 	generateBlock_.GenerateObject3D();
 
 	// --- プレイヤースポーン位置をマップから取得する ---
-	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	Vector3 playerPosition = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
-		playerPostion = spawnPositions.front();
+		playerPosition = spawnPositions.front();
 	}
 	else {
 		// フォールバック: 既存の手打ち位置
-		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		playerPosition = mapChipField_->GetMapChipPostionByIndex(6, 18);
 	}
 	//playerの生成
 	player = std::make_unique<Player>();
 	player->SetMapChipField(mapChipField_.get());
-	player->Initialize(playerPostion);
+	player->Initialize(playerPosition);
 	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
-	stageStartEffect_->Initialize(player->GetObject3D(), playerPostion);
+	stageStartEffect_->Initialize(player->GetObject3D(), playerPosition);
 	stageStartEffect_->Begin();
 	isStageStartPlaying_ = true;
 
@@ -128,7 +128,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 	const float fixedDt = dt;
 	Vector3 offset = { 0, 0, -20 };
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
@@ -366,7 +366,7 @@ void GamePlayScene::Imguidebug()
 
 }
 
-void GamePlayScene::Road()
+void GamePlayScene::Load()
 {
 	//3Dオブジェクト読み込み
 	ModelManager::GetInstance()->LoadModel("plane");
@@ -380,7 +380,7 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("goal");
 	ModelManager::GetInstance()->LoadModel("sphere");
 	ModelManager::GetInstance()->LoadModel("gate");
-	ModelManager::GetInstance()->LoadModel("unbreakableBlokc");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlock");
 	ModelManager::GetInstance()->LoadModel("damageblock");
 }
 
@@ -406,7 +406,7 @@ void GamePlayScene::ResetStage()
 
 	// プレイヤースポーン取得
 	Vector3 playerPosition{};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player");
 	if (!spawnPositions.empty()) {
 		playerPosition = spawnPositions.front();
 	}

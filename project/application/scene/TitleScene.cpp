@@ -9,8 +9,8 @@
 #include "imgui.h"
 #endif // USE_IMGUI
 #include <memory>
-#include <ParticleMnager.h>
-#include <ChargeBehabiaor.h>
+#include <ParticleManager.h>
+#include <ChargeBehavior.h>
 #include <UIeditor.h>
 
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など

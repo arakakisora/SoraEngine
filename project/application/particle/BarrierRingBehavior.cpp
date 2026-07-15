@@ -1,5 +1,5 @@
 #include "BarrierRingBehavior.h"
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include <cmath>
 #include <algorithm>
 

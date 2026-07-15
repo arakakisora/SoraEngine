@@ -1,6 +1,5 @@
-#include "ChargeBehabiaor.h"
-#include "IParticleBehavior.h"
-#include "ParticleMnager.h"
+#include "ChargeBehavior.h"
+#include "ParticleManager.h"
 #include <Input.h>
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -8,7 +7,7 @@
 #include "MyMath.h"
 #include <numbers>
 
-Particle ChargeBehabiaor::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
+Particle ChargeBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
 {
 	rng = rng;
 	Particle particle;
@@ -28,7 +27,7 @@ Particle ChargeBehabiaor::Create(std::mt19937& rng, const EulerTransform transfo
 
 }
 
-void ChargeBehabiaor::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void ChargeBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
 {
 	matelialData = matelialData;
 	alpha = alpha;

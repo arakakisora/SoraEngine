@@ -4,7 +4,7 @@
 /// <summary>
 /// チャージエフェクトのビヘイビアクラス
 /// </summary>
-class ChargeBehabiaor: public IParticleBehavior
+class ChargeBehavior : public IParticleBehavior
 {
 public:
 	/// <summary>
