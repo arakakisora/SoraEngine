@@ -1,4 +1,4 @@
-#include "BarrierBreakBehavior.h"
+﻿#include "BarrierBreakBehavior.h"
 #include "ParticleManager.h"
 #include <random>
 #include <numbers>
@@ -54,24 +54,24 @@ Particle BarrierBreakBehavior::Create(std::mt19937& rng, const EulerTransform tr
 	return particle;
 }
 
-void BarrierBreakBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void BarrierBreakBehavior::Update(Particle& particle, Material* materialData, float alpha)
 {
-	materialData = materialData;
-	alpha = alpha;
+	materialData_ = materialData;
+	alpha_ = alpha;
 
 	// 重力
-	particle.Velocity.y -= gravity_ * dt;
+	particle.Velocity.y -= gravity_ * kdt;
 
 	// 移動
-	particle.transform.translate += particle.Velocity * dt;
+	particle.transform.translate += particle.Velocity * kdt;
 
 	// 回転
-	particle.transform.rotate.x += particle.Velocity.x * 0.2f * dt;
-	particle.transform.rotate.y += particle.Velocity.y * 0.1f * dt;
-	particle.transform.rotate.z += particle.Velocity.z * 0.2f * dt;
+	particle.transform.rotate.x += particle.Velocity.x * 0.2f * kdt;
+	particle.transform.rotate.y += particle.Velocity.y * 0.1f * kdt;
+	particle.transform.rotate.z += particle.Velocity.z * 0.2f * kdt;
 
 	// 時間
-	particle.currentTime += dt;
+	particle.currentTime += kdt;
 
 	// フェード
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);

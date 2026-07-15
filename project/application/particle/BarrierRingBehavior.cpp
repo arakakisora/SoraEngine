@@ -1,4 +1,4 @@
-#include "BarrierRingBehavior.h"
+﻿#include "BarrierRingBehavior.h"
 #include "ParticleManager.h"
 #include <cmath>
 #include <algorithm>
@@ -9,7 +9,7 @@
 
 Particle BarrierRingBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
-	rng = rng;
+	std::mt19937& rng_ = rng;
 
 	Particle particle{};
 	particle.center = transform.translate;
@@ -26,11 +26,11 @@ Particle BarrierRingBehavior::Create(std::mt19937& rng, const EulerTransform tra
 	return particle;
 }
 
-void BarrierRingBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void BarrierRingBehavior::Update(Particle& particle,Material* materialData, float alpha)
 {
-	alpha = alpha;
+	alpha_ = alpha;
 
-	particle.currentTime += dt;
+	particle.currentTime += kdt;
 
 	float t = particle.currentTime;
 
@@ -41,7 +41,7 @@ void BarrierRingBehavior::Update(Particle& particle, float dt, Material* materia
 	particle.transform.scale.z = baseScale_.z;
 
 	// ちょい回転
-	particle.transform.rotate.z += rotateSpeed_ * dt;
+	particle.transform.rotate.z += rotateSpeed_ * kdt;
 
 	// アルファを揺らす
 	float wave = (std::sin(t * pulseSpeed_) + 1.0f) * 0.5f;

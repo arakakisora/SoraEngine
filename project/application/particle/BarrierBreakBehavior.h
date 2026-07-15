@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 
 class BarrierBreakBehavior : public IParticleBehavior
 {
   public:
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
-	void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
+	void Update(Particle& particle,Material* materialData, float alpha) override;
 
 #ifdef USE_IMGUI
 	void DrawImgui(const char* effectName) override;

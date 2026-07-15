@@ -1,4 +1,4 @@
-#include "ChargeBehavior.h"
+﻿#include "ChargeBehavior.h"
 #include "ParticleManager.h"
 #include <Input.h>
 #ifdef USE_IMGUI
@@ -9,7 +9,7 @@
 
 Particle ChargeBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
 {
-	rng = rng;
+	std::mt19937& rng_ = rng;
 	Particle particle;
 
 	particle.transform.translate = transform.translate;
@@ -26,12 +26,12 @@ Particle ChargeBehavior::Create(std::mt19937& rng, const EulerTransform transfor
 	return particle;
 }
 
-void ChargeBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void ChargeBehavior::Update(Particle& particle, Material* matelialData, float alpha)
 {
-	matelialData = matelialData;
-	alpha = alpha;
+	materialData_ = matelialData;
+	alpha_ = alpha;
 
-	particle.currentTime += dt;
+	particle.currentTime += kdt;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
@@ -78,16 +78,16 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 	return particle;
 }
 
-void ExplosionBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void ExplosionBehavior::Update(Particle& particle, Material* matelialData, float alpha)
 {
-	alpha = alpha;
-	particle.currentTime += dt;
-	matelialData = matelialData;
+	alpha_ = alpha;
+	particle.currentTime += kdt;
+	materialData_ = matelialData;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
 	// 位置更新（速度ベクトルで拡がる）
-	particle.transform.translate += particle.Velocity * dt;
+	particle.transform.translate += particle.Velocity * kdt;
 
 	// スケールをわずかに拡大
 	float scale = std::lerp(0.3f, 0.6f, t);
@@ -132,21 +132,21 @@ Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform tran
 	return particle;
 }
 
-void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void ExhaustGasBehavior::Update(Particle& particle, Material* materialData, float alpha)
 {
 	(void)materialData;
 	(void)alpha;
 
-	particle.currentTime += dt;
+	particle.currentTime += kdt;
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
 	// 速度で移動（少しずつ上昇させる）
-	particle.transform.translate += particle.Velocity * dt;
+	particle.transform.translate += particle.Velocity * kdt;
 
 	// 上昇につれてわずかに減速＆上向きに寄せると「漂ってる感」が出る
 	particle.Velocity.x *= 0.98f;
 	particle.Velocity.z *= 0.98f;
-	particle.Velocity.y += 0.005f * dt; // ほんの少しだけ浮力
+	particle.Velocity.y += 0.005f * kdt; // ほんの少しだけ浮力
 
 	// スケール拡大（じんわり大きくなる）
 	float scale = std::lerp(0.12f, 0.35f, t);

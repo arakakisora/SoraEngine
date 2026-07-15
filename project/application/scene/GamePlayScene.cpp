@@ -24,15 +24,15 @@ void GamePlayScene::Initialize()
 	fadeManager_.StartFadeIn();
 
 	//カメラの生成
-	camera = std::make_unique<Camera>();
-	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 15,13,-60, });
-	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
+	camera_ = std::make_unique<Camera>();
+	camera_->SetRotate({ 0,0,0, });
+	camera_->SetTranslate(cameraPos_);
+	CameraManager::GetInstance()->AddCamera("maincam", camera_.get());
 
-	debugCamera = std::make_unique<Camera>();
-	debugCamera->SetRotate({ 0,0,0, });
-	debugCamera->SetTranslate({ 15,13,-60, });
-	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera.get());
+	debugCamera_ = std::make_unique<Camera>();
+	debugCamera_->SetRotate({ 0,0,0, });
+	debugCamera_->SetTranslate(cameraPos_);
+	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera_.get());
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
@@ -71,20 +71,20 @@ void GamePlayScene::Initialize()
 		playerPosition = mapChipField_->GetMapChipPositionByIndex(6, 18);
 	}
 	//playerの生成
-	player = std::make_unique<Player>();
-	player->SetMapChipField(mapChipField_.get());
-	player->Initialize(playerPosition);
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
+	player_ = std::make_unique<Player>();
+	player_->SetMapChipField(mapChipField_.get());
+	player_->Initialize(playerPosition);
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({cameraEndPos_});
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
-	stageStartEffect_->Initialize(player->GetObject3D(), playerPosition);
+	stageStartEffect_->Initialize(player_->GetObject3D(), playerPosition);
 	stageStartEffect_->Begin();
 	isStageStartPlaying_ = true;
 
 	//ゲームオーバー演出生成
 	gameOverEffect_ = std::make_unique<GameOverEffect>();
-	gameOverEffect_->Initialize(player->GetObject3D());
+	gameOverEffect_->Initialize(player_->GetObject3D());
 
 
 	////エネミー
@@ -92,22 +92,22 @@ void GamePlayScene::Initialize()
 	//enemyManager_->Initialize(mapChipField_.get());
 
 	//3Dオブジェクトの初期化
-	object3D2nd = std::make_unique<Object3D>();
-	object3D2nd->Initialize(Object3DCommon::GetInstance());
-	object3D2nd->SetModel("plane");
+	object3D2nd_ = std::make_unique<Object3D>();
+	object3D2nd_->Initialize(Object3DCommon::GetInstance());
+	object3D2nd_->SetModel("plane");
 
 	
 
 	//ゴールの初期化
-	goal = std::make_unique<Goal>();
-	goal->Initialize(mapChipField_.get(), player.get());
+	goal_ = std::make_unique<Goal>();
+	goal_->Initialize(mapChipField_.get(), player_.get());
 
 	
 
 	//ポーズメニュー
-	pauseMenu = std::make_unique<PauseMenu>();
-	pauseMenu->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
-	pauseMenu->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
+	pauseMenu_ = std::make_unique<PauseMenu>();
+	pauseMenu_->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
+	pauseMenu_->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
 
 	UIeditor::GetInstance()->SetScene("GamePlay");
 }
@@ -124,7 +124,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 {
 	
 
-	goal->Update(player->GetGoal(), dt,player->GetObject3D()->GetTransform().translate);
+	goal_->Update(player_->GetGoal(), dt,player_->GetObject3D()->GetTransform().translate);
 	const float fixedDt = dt;
 	Vector3 offset = { 0, 0, -20 };
 	Vector3 playerPostion = {};
@@ -133,16 +133,15 @@ void GamePlayScene::UpdateGameLogic(float dt)
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
 	}
-	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
-		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player->GetObject3D()->GetTransform().translate + offset);
+	if (isStageStartPlaying_ || goal_->GetIsEffectStarted()) {
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player_->GetObject3D()->GetTransform().translate + offset);
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
 			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 
 			Vector3 startPos = playerPostion + offset;
-			Vector3 endPos = { 13, 6.85f, -32.0f };
-			StartCameraBlend(startPos, endPos, 1.0f);
+			StartCameraBlend(startPos, cameraEndPos_, 1.0f);
 			
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
@@ -153,12 +152,12 @@ void GamePlayScene::UpdateGameLogic(float dt)
 			UpdateCameraBlend(dt);
 		}
 		else {
-			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
+			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({cameraEndPos_});
 		}
 
 		// ゲーム進行系（ポーズ中は実行しない）
-		if (!player->GetIsDead_()) {
-			player->Update();
+		if (!player_->GetIsDead_()) {
+			player_->Update();
 			// プレイヤーの弾などは player 内で管理される
 		}
 		//enemyManager_->Update();
@@ -172,7 +171,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 	}
 
 	// プレイヤーが死んだらゲームオーバー演出
-	if (player->GetIsDead_()) {
+	if (player_->GetIsDead_()) {
 		gameOverEffect_->Update(dt);
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 	}
@@ -184,14 +183,14 @@ void GamePlayScene::UpdateGameLogic(float dt)
 void GamePlayScene::UpdateObjects(float dt)
 {
 	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
-	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
+	if (isStageStartPlaying_ || goal_->GetIsEffectStarted()) {
 		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
-		player->GetObject3D()->Update();
+		player_->GetObject3D()->Update();
 		//enemyManager_->EnemyObjectUpdate();
 	}
 	else {
 		// 普通時も見た目の更新は行う（物理・ロジックは UpdateGameLogic 側）
-		player->GetObject3D()->Update();
+		player_->GetObject3D()->Update();
 		//enemyManager_->EnemyObjectUpdate();
 	}
 
@@ -243,13 +242,13 @@ void GamePlayScene::Update()
 	// Camera は常に現在の active camera を更新（ポーズ用カメラ切替後に反映されるよう、ここで行う）
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	// ポーズメニューの入力・イージングを先に処理（カメラ切替等を即時反映させるため）
-	pauseMenu->Update();
+	pauseMenu_->Update();
 
 	// フェードは常に更新
 	fadeManager_.Update();
 
 	// ポーズ中かどうかを判定
-	const bool isPaused = pauseMenu->IsPaused();
+	const bool isPaused = pauseMenu_->IsPaused();
 
 	// 固定 dt
 	const float dt = 1.0f / 60.0f;
@@ -284,24 +283,24 @@ void GamePlayScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 
 	//SkyDome
-	goal->Draw();
+	goal_->Draw();
 
 	if (isStageStartPlaying_) {
-		if (!pauseMenu->IsPaused())
+		if (!pauseMenu_->IsPaused())
 		{
 			stageStartEffect_->Draw();
-		} // ←ゲートのみ描画
-		player->Draw();            
+		} //ゲートのみ描画
+		player_->Draw();            
 	}
 	else {
 
-		player->Draw();
+		player_->Draw();
 
 	}
 	//ブロックを描画
 	generateBlock_.Draw();
 
-	pauseMenu->Draw();
+	pauseMenu_->Draw();
 
 	//object3D2nd->Draw();
 	ParticleManager::GetInstance()->Draw();
@@ -312,16 +311,16 @@ void GamePlayScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	if (!pauseMenu->IsPaused()) {
+	if (!pauseMenu_->IsPaused()) {
 		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
 		UIeditor::GetInstance()->Render();
 	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
-	goal->Draw2D();
+	goal_->Draw2D();
 
 	if (isStageStartPlaying_) {
-		if (!pauseMenu->IsPaused())
+		if (!pauseMenu_->IsPaused())
 			stageStartEffect_->Draw2D();
 	}
 }
@@ -329,14 +328,14 @@ void GamePlayScene::Draw()
 void GamePlayScene::Imguidebug()
 {
 	//マップ作製エディタ
-	editor.Run();
+	editor_.Run();
 
-	if (editor.GetReloadRequested()) {
-		mapChipField_->ApplyStageData(editor.GetStageData());
+	if (editor_.GetReloadRequested()) {
+		mapChipField_->ApplyStageData(editor_.GetStageData());
 
 		generateBlock_.GenerateObject3D();
 		
-		editor.SetReloadRequested(false);
+		editor_.SetReloadRequested(false);
 	}
 
 	
@@ -411,20 +410,20 @@ void GamePlayScene::ResetStage()
 		playerPosition = spawnPositions.front();
 	}
 
-	player = std::make_unique<Player>();
-	player->SetMapChipField(mapChipField_.get());
-	player->Initialize(playerPosition);
+	player_ = std::make_unique<Player>();
+	player_->SetMapChipField(mapChipField_.get());
+	player_->Initialize(playerPosition);
 
-	goal = std::make_unique<Goal>();
-	goal->Initialize(mapChipField_.get(), player.get());
+	goal_ = std::make_unique<Goal>();
+	goal_->Initialize(mapChipField_.get(), player_.get());
 
 	gameOverEffect_ = std::make_unique<GameOverEffect>();
-	gameOverEffect_->Initialize(player->GetObject3D());
+	gameOverEffect_->Initialize(player_->GetObject3D());
 
 	isStageStartPlaying_ = false;
 	isCameraBlending_ = false;
 
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13, 6.85f, -32.0f });
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({cameraEndPos_});
 
 }
 

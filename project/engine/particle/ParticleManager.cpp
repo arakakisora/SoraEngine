@@ -1,4 +1,4 @@
-#include "ParticleManager.h"
+﻿#include "ParticleManager.h"
 #include <ModelManager.h>
 #include <TextureManager.h>
 #include "CameraManager.h"
@@ -294,7 +294,7 @@ void ParticleManager::Update()
 			}
 			float alpha1 = 0.5;
 
-			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha1);
+			behavior->Update((*particleIterator), particleGroup.materialData, alpha1);
 
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);

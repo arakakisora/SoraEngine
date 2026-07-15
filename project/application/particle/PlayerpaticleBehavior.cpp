@@ -1,10 +1,10 @@
-#include "PlayerpaticleBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "PlayerpaticleBehavior.h"
+#include "ParticleManager.h"
 #include <numbers>
 
 Particle PlayerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
-	lifetime = lifetime;
+	lifetime_ = lifetime;
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
@@ -30,12 +30,11 @@ Particle PlayerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTr
 	return particle;
 }
 
-void PlayerpaticleBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void PlayerpaticleBehavior::Update(Particle& particle,Material* materialData, float alpha)
 {
 
-	materialData= materialData; // X方向スクロール
-	dt = dt;
-	alpha = alpha;
+	materialData_= materialData; // X方向スクロール
+	alpha_ = alpha;
 	//パーティクルの位置を更新
 	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
 	//パーティクルの寿命を減らす

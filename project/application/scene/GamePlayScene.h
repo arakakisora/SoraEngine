@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Camera.h"	
 #include "Model.h"
@@ -80,17 +80,19 @@ private:
 public:
 
 	//カメラのポインタ
-	std::unique_ptr<Camera> camera = nullptr;
-	std::unique_ptr<Camera> debugCamera = nullptr;
+	std::unique_ptr<Camera> camera_ = nullptr;
+	std::unique_ptr<Camera> debugCamera_ = nullptr;
+	Vector3 cameraPos_ = {15,13,-60,};
+	Vector3 cameraEndPos_ = {13, 6.85f, -32.0f};
 	//スプライトの初期化
-	std::unique_ptr<Object3D> object3D2nd = nullptr;
+	std::unique_ptr<Object3D> object3D2nd_ = nullptr;
 	//player
-	std::unique_ptr<Player> player = nullptr;
-	std::unique_ptr<Goal> goal = nullptr; // ゴールオブジェクト
+	std::unique_ptr<Player> player_ = nullptr;
+	std::unique_ptr<Goal> goal_ = nullptr; // ゴールオブジェクト
 
 	//wvpData用のTransform変数を作る
-	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transformModel_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//mapchip
 	
 	std::unique_ptr <MapChipField> mapChipField_;
@@ -100,7 +102,7 @@ public:
 
 	//ブロック生成
 	GenerateBlock generateBlock_;
-	StageEditor editor;
+	StageEditor editor_;
 
 	FadeManager fadeManager_;
 
@@ -117,7 +119,7 @@ public:
 	//ゲームオーバー演出
 	std::unique_ptr<GameOverEffect> gameOverEffect_;
 
-	std::unique_ptr<PauseMenu>pauseMenu;
+	std::unique_ptr<PauseMenu>pauseMenu_;
 
 	//debug用
 #ifdef _DEBUG
