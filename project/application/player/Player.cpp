@@ -58,7 +58,7 @@ void Player::Initialize(const Vector3& position) {
 	);
 
 	ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/ParticleTexture/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
-	deatheEffect = std::make_unique<ParticleEmitter>(
+	deathEffect_ = std::make_unique<ParticleEmitter>(
 		EulerTransform{ position, {0,0,0}, {1,1,1} },
 		1.0f, // lifetime
 		0.0f, // currentTime
@@ -134,7 +134,7 @@ void Player::Update() {
 	PlayerMove();// 自機の動き
 	aabb_ = GetPlayerAABB();// AABB 更新
 	//Attack();// 攻撃
-	Playerline();// プレイヤーの移動ライン描画
+	PlayerLine();// プレイヤーの移動ライン描画
 	DrawPredictLine();
 
 	// 衝突判定を初期化
@@ -161,7 +161,7 @@ void Player::Update() {
 			int afterHp = mapChipField_->GetMapChipHPByIndex(bx, by);
 
 			// 壊れた瞬間だけエフェクト
-			if (afterHp <= 0 && deatheEffect) {
+			if (afterHp <= 0 && deathEffect_) {
 				Rect r = mapChipField_->GetRectByIndex(bx, by);
 
 				Vector3 breakPos{};
@@ -169,8 +169,8 @@ void Player::Update() {
 				breakPos.y = (r.top + r.bottom) * 0.5f;
 				breakPos.z = object3D_->GetTransform().translate.z;
 
-				deatheEffect->SetPosition(breakPos);
-				deatheEffect->Emit();
+				deathEffect_->SetPosition(breakPos);
+				deathEffect_->Emit();
 				//カメラシェイク
 				StartCameraShake(0.08f, 0.15f);
 
@@ -201,7 +201,7 @@ void Player::Update() {
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
-	Playerdirection(collisionMapInfo);// プレイヤーの振り向き
+	PlayerDirection(collisionMapInfo);// プレイヤーの振り向き
 
 	// プレイヤーのワールド位置を更新
 	object3D_->Update();
@@ -389,7 +389,7 @@ void Player::Reflect(const CollisionMapInfo& info)
 
 }
 
-void Player::Playerline()
+void Player::PlayerLine()
 {
 
 	// 始点はプレイヤーのワールド位置（発射位置）
@@ -746,23 +746,23 @@ Vector3 Player::GetGhostRotateFromFacingDir(const Vector3& facingDir)
 	return rotate;
 }
 
-void Player::Playerdirection(const CollisionMapInfo& info) {
-	LRTBDirecion targetDir = direction_;
+void Player::PlayerDirection(const CollisionMapInfo& info) {
+	LRTBDirection targetDir = direction_;
 
 	if (info.hasNormal) {
 
 		if (info.normal.x < 0.0f) {
-			targetDir = LRTBDirecion::kLeft;
+			targetDir = LRTBDirection::kLeft;
 		}
 		else if (info.normal.x > 0.0f) {
-			targetDir = LRTBDirecion::kRight;
+			targetDir = LRTBDirection::kRight;
 		}
 
 		if (info.normal.y > 0.0f) {
-			targetDir = LRTBDirecion::kTop;
+			targetDir = LRTBDirection::kTop;
 		}
 		else if (info.normal.y < 0.0f) {
-			targetDir = LRTBDirecion::kBottom;
+			targetDir = LRTBDirection::kBottom;
 		}
 	}
 
@@ -780,22 +780,22 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 	// 方向ごとの目標角度
 	switch (direction_) {
 
-	case LRTBDirecion::kRight:
+	case LRTBDirection::kRight:
 		targetY = std::numbers::pi_v<float> / 2.0f;
 		targetZ = 0.0f;
 		break;
 
-	case LRTBDirecion::kLeft:
+	case LRTBDirection::kLeft:
 		targetY = std::numbers::pi_v<float> *3.0f / 2.0f;
 		targetZ = 0.0f;
 		break;
 
-	case LRTBDirecion::kTop:
+	case LRTBDirection::kTop:
 		targetY = std::numbers::pi_v<float> / 2.0f;
 		targetZ = std::numbers::pi_v<float> / 2.0f;
 		break;
 
-	case LRTBDirecion::kBottom:
+	case LRTBDirection::kBottom:
 		targetY = std::numbers::pi_v<float> / 2.0f;
 		targetZ = -std::numbers::pi_v<float> / 2.0f;
 		break;
@@ -1111,7 +1111,7 @@ bool Player::TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldow
 		outPortal.dir
 	);
 
-	Vector3 exitPos = mapChipField_->GetMapChipPostionByIndex(outPortal.x, outPortal.y);
+	Vector3 exitPos = mapChipField_->GetMapChipPositionByIndex(outPortal.x, outPortal.y);
 
 	const float pushOut = 0.8f;
 	Vector3 outDir = outPortal.dir.Normalize();
@@ -1213,7 +1213,7 @@ void Player::PlayerParticle()
 			smokeTransform.translate = object3D_->GetTransform().translate;
 
 			// 進行方向のちょい後ろに出すと“排気”感が出る
-			if (direction_ == LRTBDirecion::kRight) {
+			if (direction_ == LRTBDirection::kRight) {
 				smokeTransform.translate.x -= 0.15f;
 			}
 			else {
