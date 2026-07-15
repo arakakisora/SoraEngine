@@ -1,4 +1,4 @@
-#include "MapChipField.h"
+﻿#include "MapChipField.h"
 #include "MapChipDatabase.h"
 #include <fstream>
 #include <map>
@@ -8,7 +8,7 @@ void MapChipField::ResetMapChipData()
 {
 	// マップチップデータのリセット
 	mapChipData_.data.clear();
-	mapChipData_.data.resize(kNumBlockVirtical);
+	mapChipData_.data.resize(kNumBlockVertical);
 	for (auto& line : mapChipData_.data)
 	{
 		line.clear();
@@ -17,7 +17,7 @@ void MapChipField::ResetMapChipData()
 
 	// hpData_ のリセット
 	hpData_.clear();
-	hpData_.resize(kNumBlockVirtical);
+	hpData_.resize(kNumBlockVertical);
 	for (auto& line : hpData_)
 	{
 		line.clear();
@@ -25,7 +25,7 @@ void MapChipField::ResetMapChipData()
 	}
 
 	// 新しいStageDataも同じサイズで初期化
-	stageData_.Resize(kNumBlockHorizontal, kNumBlockVirtical);
+	stageData_.Resize(kNumBlockHorizontal, kNumBlockVertical);
 	stageData_.Clear();
 }
 
@@ -58,7 +58,7 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath)
 
 		while (std::getline(lineStream, cell, ','))
 		{
-			if (y < kNumBlockVirtical && x < kNumBlockHorizontal)
+			if (y < kNumBlockVertical && x < kNumBlockHorizontal)
 			{
 
 				std::string cellText = cell;
@@ -128,7 +128,7 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex)
 {
 	// 指定したインデックスのマップチップのワールド座標を返す
-	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0);
+	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVertical - 1 - yIndex), 0);
 }
 
 IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position)
@@ -137,7 +137,7 @@ IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position)
 	IndexSet indexSet = {};
 	// インデックスを計算
 	indexSet.xIndex = static_cast<uint32_t>((position.x + kBlockWidth / 2) / kBlockWidth);
-	indexSet.yIndex = kNumBlockVirtical - 1 - static_cast<uint32_t>((position.y + kBlockHeight / 2) / kBlockHeight);
+	indexSet.yIndex = kNumBlockVertical - 1 - static_cast<uint32_t>((position.y + kBlockHeight / 2) / kBlockHeight);
 	return indexSet;
 }
 
@@ -159,7 +159,7 @@ std::vector<Vector3> MapChipField::GetEnemyPositions()
 	std::vector<Vector3> enemyPositions;
 	enemyNumber_.clear();
 
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y)
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y)
 	{
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x)
 		{
@@ -186,7 +186,7 @@ Vector3 MapChipField::GetGoalPosition()
 {
 	Vector3 pos{0.0f, 0.0f, 0.0f};
 
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y)
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y)
 	{
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x)
 		{
@@ -226,7 +226,7 @@ std::vector<Vector3> MapChipField::GetPositionBySpawn(const std::string& spawnTa
 {
 	std::vector<Vector3> result;
 
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y)
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y)
 	{
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x)
 		{

@@ -1,4 +1,4 @@
-#include "GenerateBlock.h"
+﻿#include "GenerateBlock.h"
 #include "Object3DCommon.h"
 
 void GenerateBlock::Initialize(MapChipField* map) { mapChipField_ = map; }
@@ -45,7 +45,7 @@ void GenerateBlock::GenerateObject3D()
 		return;
 	}
 
-	const uint32_t kHeight = mapChipField_->GetNumBlockVirtical();	// 縦のブロック数を取得
+	const uint32_t kHeight = mapChipField_->GetNumBlockVertical();	// 縦のブロック数を取得
 	const uint32_t kWidth = mapChipField_->GetNumBlockHorizontal(); // 横のブロック数を取得
 
 	tileObjects_.clear();		  // 既存のタイルオブジェクトをクリア
@@ -67,7 +67,7 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 		return;
 	}
 
-	const uint32_t kHeight = mapChipField_->GetNumBlockVirtical();
+	const uint32_t kHeight = mapChipField_->GetNumBlockVertical();
 	const uint32_t kWidth = mapChipField_->GetNumBlockHorizontal();
 
 	// サイズが合ってなければ作り直す

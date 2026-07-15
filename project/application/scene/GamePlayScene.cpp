@@ -1,4 +1,4 @@
-#include "GamePlayScene.h"
+﻿#include "GamePlayScene.h"
 #include <ModelManager.h>
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
@@ -68,7 +68,7 @@ void GamePlayScene::Initialize()
 	}
 	else {
 		// フォールバック: 既存の手打ち位置
-		playerPosition = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		playerPosition = mapChipField_->GetMapChipPositionByIndex(6, 18);
 	}
 	//playerの生成
 	player = std::make_unique<Player>();
