@@ -41,7 +41,7 @@ private:
 
 	std::unique_ptr<Camera> camera1;
 
-	int MaxSelectIndex_ = 4;	// 最大ステージ数
+	int MaxSelectIndex_ = 5;	// 最大ステージ数
 	int currentIndex_ = 0;	// 現在のステージ
 	float deltaTime_ = 1.0f / 60.0f;	// デルタタイム
 
