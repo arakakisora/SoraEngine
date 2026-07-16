@@ -19,4 +19,5 @@ struct CollisionMapInfo {
 	uint32_t breakBlockY = 0;
 
 	bool hitDamageBlock = false;
+	bool hitGoal = false;
 };

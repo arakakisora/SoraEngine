@@ -1,24 +1,22 @@
 #pragma once
-#include "Input.h"
-#include "Model.h"
+
+#include <algorithm>
+#include <array>
+#include <memory>
+#include <numbers>
+#include <functional>
 
 #include "MyMath.h"
-#include "assert.h"
-#include <algorithm>
-#include <numbers>
-
-#include "RenderingData.h"
-
 #include "Object3D.h"
-
+#include "RenderingData.h"
 #include "Collider.h"
-#include "Line.h"
-#include "MapChipField.h"
-#include "StageStartEffect.h"
-#include <ParticleEmitter.h>
-#include <memory>
-
 #include "CollisionMapInfo.h"
+#include "MapCollisionTypes.h"
+#include "ParticleEmitter.h"
+
+
+class MapChipField;
+class Line;
 
 enum class LRTBDirecion {
 	kRight,
@@ -34,28 +32,9 @@ enum class PlayerState
 };
 
 
-
-enum Corner
-{
-	kRightBottom,
-	kLeftBottom,
-	kRightTop,
-	kLeftTop,
-	kNumCorner // 要素数
-};
-
-enum class CollisionType
-{
-	Top,
-	Bottom,
-	Left,
-	Right
-};
-
-struct PlayerParameter
-{
-	// プレイヤーパラメータ
-	// speedパラメータ
+struct PlayerParameter {
+	//プレイヤーパラメータ
+	//speedパラメータ
 	float kAcceleration = 0.02f;  // 定数加速度
 	float kAttenuation = 0.9f;	  // 速度減衰率
 	float kLimitRunSpeed = 0.15f; // 最大速度制限
@@ -85,9 +64,22 @@ struct PlayerParameter
 	};
 	DeathHeight deathHeight;
 	Deathwidth deathwidth;
+
+	// 予測線パラメータ
+	int predictMaxSteps = 1200;
+	float predictStopEpsilon = 1e-6f;
+
+	Vector4 predictLineColor = { 1.0f, 1.0f, 0.0f, 1.0f };
+	Vector4 predictPortalLineColor = { 0.0f, 1.0f, 1.0f, 1.0f };
 };
 
-class Enemy;
+struct PredictStepResult {
+	bool shouldEnd = false;			 // 予測線ループを終了するか
+	bool hitSecondSurface = false;	 // 2回目接触でゴースト表示したか
+	bool stopped = false;			 // 速度がほぼ0になったか
+};
+
+
 class MapChipField;
 /// <summary>
 /// Playerクラス
@@ -121,19 +113,29 @@ class Player : public Collider
 	/// </summary>
 	void Draw();
 
-	/// <summary>
-	/// 衝突の法線をタイプから取得
-	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
-	static Vector3 NormalFromType(CollisionType type);
+
 	/// <summary>
 	/// 衝突の法線をタイプから取得
 	/// </summary>
 	/// <param name="info"></param>
 	void Reflect(const CollisionMapInfo& info);
 
+	Vector3 GetReflectNormal(
+		const CollisionMapInfo& info,
+		const Vector3& velocity
+	) const;
+
 	//====================ライン描画=======================//
+
+	PredictStepResult SimulatePredictStep(
+		Vector3& simPos,
+		Vector3& simVel,
+		Vector3& prev,
+		int& hitCountSim,
+		bool& wasTouchingSim,
+		const Vector4& lineColor
+	);
+
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
@@ -170,6 +172,11 @@ class Player : public Collider
 	void DrawGhost();
 	void SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
 	Vector3 GetGhostRotateFromFacingDir(const Vector3& facingDir);
+
+	void ShowPredictionGhost(
+		const Vector3& position,
+		const CollisionMapInfo& info
+	);
 	//=====================ゴースト関連========================//
 
 	//====================ライン描画========================//
@@ -193,52 +200,16 @@ class Player : public Collider
 
 	void PlayerParticle();
 
-	/// <summary>
-	/// 当たるブロックかどうか
-	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
-	bool IsHittableBlock(MapChipType type);
-	/// <summary>
-	/// 衝突判定の共通処理
-	/// </summary>
-	/// <param name="posList"></param>
-	/// <param name="type"></param>
-	/// <param name="info"></param>
-	/// <returns></returns>
-	bool CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type,
-							  CollisionMapInfo& info, bool enableGoal);
-	/// <summary>
-	/// 衝突判定の共通処理
-	/// </summary>
-	/// <param name="info"></param>
-	/// <param name="dir"></param>
-	/// <param name="checkCorners"></param>
-	/// <param name="offset"></param>
-	/// <param name="moveCondition"></param>
-	void CollisionMapInfoDirection(const Vector3& basePos, CollisionMapInfo& info, CollisionType dir,
-								   const std::array<Corner, 2>& checkCorners, const Vector3& offset,
-								   std::function<bool(const CollisionMapInfo&)> moveCondition, bool enableGoal);
 
-	/// <summary>
-	// map衝突判定
-	/// </summary>
-	void MapCollision(CollisionMapInfo& info);
 	/// <summary>
 	/// map衝突判定（位置指定版）
 	/// </summary>
 	/// <param name="position"></param>
 	/// <param name="info"></param>
 	/// <param name="enableGoal"></param>
-	void MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal = true);
+	void CheckPredictCollision(const Vector3& position, CollisionMapInfo& info, bool enableGoal = false);
 
-	/// <summary>
-	/// コーナーのワールド座標を取得
-	/// </summary>
-	/// <param name="center"></param>
-	/// <param name="corner"></param>
-	/// <returns></returns>
-	Vector3 CornerPosition(const Vector3& centor, Corner corner);
+
 	/// <summary>
 	// プレイヤーの移動処理
 	/// </summary>
@@ -339,15 +310,16 @@ class Player : public Collider
 	/// </summary>
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
-  private:
-	std::unique_ptr<Object3D> object3D_; // Player3Dオブジェクト
+private:
 
-	PlayerState playerState_ = PlayerState::hard;	  // プレイヤーステート
-	Vector3 playerPosition_ = {};					  // プレイヤーの位置
-	Vector3 velocity_ = {};							  // 速度
-	PlayerParameter parameter_;						  // プレイヤーパラメータ
-	AABB aabb_;										  // 当たり判定用AABB
-	LRTBDirection direction_ = LRTBDirection::kRight; // 振り向き
+	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
+
+	PlayerState playerState_ = PlayerState::hard;//プレイヤーステート
+	Vector3 playerPosition_ = {};// プレイヤーの位置
+	Vector3 velocity_ = {};// 速度
+	PlayerParameter parameter_;// プレイヤーパラメータ
+	AABB aabb_;// 当たり判定用AABB
+	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
 
 	// Animation
 	Vector3 shotAnimationRotate_ = {}; // 発射アニメーションの回転
