@@ -125,7 +125,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\particle\BarrierBreakBehavior.cpp" />
     <ClCompile Include="application\particle\BarrierRingBehavior.cpp" />
     <ClCompile Include="application\ui\UIeditor.cpp" />
-    <ClCompile Include="CollisionMapInfo.cpp" />
     <ClCompile Include="engine\math\Easing.cpp" />
     <ClCompile Include="application\particle\AttackBehavior.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
@@ -182,6 +181,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
     <ClCompile Include="MapCollisionSystem.cpp" />
+    <ClCompile Include="MapCollisionTypes.cpp" />
     <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -376,6 +376,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\map\GenerateBlock.h" />
     <ClInclude Include="application\particle\GateInOut.h" />
     <ClInclude Include="MapCollisionSystem.h" />
+    <ClInclude Include="MapCollisionTypes.h" />
     <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
