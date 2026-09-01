@@ -80,6 +80,19 @@ void StageEditor::RenderUI()
 	ImGui::Checkbox("Show Stage Window", &showStageWindow_);
 
 	ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
+
+	
+	// 発射制限
+	int shotLimit = stageData_.GetShotLimit();
+
+	if (ImGui::InputInt("Shot Limit", &shotLimit)) {
+
+		if (shotLimit < 0) {
+			shotLimit = 0;
+		}
+
+		stageData_.SetShotLimit(shotLimit);
+	}
 	if (ImGui::Button("New"))
 	{
 		stageData_.Clear(); // 新規作成
@@ -328,6 +341,11 @@ void StageEditor::SaveCSV(const std::string& filename)
 	fs::create_directories("Resources/Mapdata");
 
 	std::ofstream file(filename);
+
+	// 発射制限を保存
+	file << "#shotLimit,"
+		<< stageData_.GetShotLimit()
+		<< "\n";
 
 	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y)
 	{

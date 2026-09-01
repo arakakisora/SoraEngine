@@ -78,12 +78,21 @@ public:
 	uint32_t GetWidth() const { return width_; }
 	uint32_t GetHeight() const { return height_; }
 
+	// 発射制限
+	int GetShotLimit() const { return shotLimit_; }
+
+	void SetShotLimit(int shotLimit) {
+		// 発射回数が負の値の場合は0にする
+		shotLimit_ = (shotLimit < 0) ? 0 : shotLimit;
+	}
+
 	void Clear();
 
 private:
 	uint32_t width_ = 0;
 	uint32_t height_ = 0;
 	std::vector<std::vector<StageCell>> cells_;
-
+	// ステージの最大発射回数
+	int shotLimit_ = 3;
 };
 

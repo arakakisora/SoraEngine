@@ -52,6 +52,21 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath)
 
 	while (std::getline(mapChipCsv, line))
 	{
+
+		
+			// 発射制限
+			if (line.rfind("#shotLimit,", 0) == 0)
+			{
+				std::string valueText =
+					line.substr(std::string("#shotLimit,").size());
+
+				stageData_.SetShotLimit(std::stoi(valueText));
+
+				// この行はマップデータではないのでyを増やさない
+				continue;
+			}
+
+
 		std::stringstream lineStream(line);
 		std::string cell;
 		uint32_t x = 0;
