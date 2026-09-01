@@ -26,7 +26,15 @@
 
 void Player::Initialize(const Vector3& position) {
 
-	// 初期配置と Object3D の作成（unique_ptr 所有）
+	if (mapChipField_) {
+
+		SetShotLimit(
+			mapChipField_
+			->GetStageData()
+			.GetShotLimit()
+		);
+	}
+
 	playerPosition_ = position;
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
@@ -270,14 +278,21 @@ void Player::PlayerMove() {
 	
 
 	//スペースで発射
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerMouse(0)) {
 
 		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "SPACE");
 
 		const bool canShoot =
-			(playerState_ == PlayerState::sticky) || isStopped_;
+			(
+				playerState_ == PlayerState::sticky ||
+				isStopped_
+				)
+			&& remainingShots_ > 0;
 
 		if (canShoot) {
+
+			// 発射したので1回減らす
+			remainingShots_--;
 
 			playerState_ = PlayerState::hard;
 			isBarrierActive_ = true;

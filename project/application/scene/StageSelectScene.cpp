@@ -120,8 +120,8 @@ void StageSelectScene::Update()
 		
 		if (!gateOutRequested_ &&
 			(!gate_ || !gate_->IsPlaying()) &&
-			Input::GetInstance()->TriggerKey(DIK_SPACE)){
-			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "space");
+			Input::GetInstance()->TriggerKey(DIK_SPACE)||Input::GetInstance()->TriggerMouse(0)){
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "click");
 			gateOutRequested_ = true;
 			if (gate_) gate_->StartOut(0.6f);
 		}
