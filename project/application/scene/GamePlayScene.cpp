@@ -156,9 +156,14 @@ void GamePlayScene::UpdateGameLogic(float dt)
 		}
 
 		// ゲーム進行系（ポーズ中は実行しない）
-		if (!player_->GetIsDead_()) {
-			player_->Update();
-			// プレイヤーの弾などは player 内で管理される
+		if (!player->GetIsDead_()) {
+			player->Update();
+			UIeditor::GetInstance()->SetCount(
+				"GamePlay",
+				"ShotCount",
+				player->GetRemainingShots()
+			);
+			
 		}
 		//enemyManager_->Update();
 

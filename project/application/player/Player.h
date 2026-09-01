@@ -310,6 +310,37 @@ class Player : public Collider
 	/// </summary>
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
+	/// <summary>
+	/// プレイヤーの発射アニメーションを設定
+	/// </summary>
+	/// <param name="limit"></param>
+	void SetShotLimit(int limit) {
+
+		shotLimit_ = limit;
+		remainingShots_ = limit;
+	}
+	/// <summary>
+	/// プレイヤーの発射制限を取得
+	/// </summary>
+	/// <returns></returns>
+	int GetShotLimit() const {
+		return shotLimit_;
+	}
+	/// <summary>
+	/// プレイヤーの残り発射回数を取得
+	/// </summary>
+	/// <returns></returns>
+	int GetRemainingShots() const {
+		return remainingShots_;
+	}
+	/// <summary>
+	/// プレイヤーが発射制限により発射可能かどうかを取得
+	/// </summary>
+	/// <returns></returns>
+	bool CanShootByLimit() const {
+		return remainingShots_ > 0;
+	}
+
 private:
 
 	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
@@ -339,8 +370,11 @@ private:
 
 	// 攻撃
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
-	std::unique_ptr<Line> line_;   // 角度表示用ライン
-	int32_t fireTimer_ = 0;
+	std::unique_ptr<Line> line_; // 角度表示用ライン
+	int32_t fireTimer = 0;
+	// 発射回数
+	int shotLimit_ = 3;
+	int remainingShots_ = 3;
 
 	// フラグ
 	bool goal_ = false; // ゴールに到達したかどうか
