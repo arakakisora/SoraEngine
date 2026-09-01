@@ -180,9 +180,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
-    <ClCompile Include="application\Collision\MapCollisionSystem.cpp" />
-    <ClCompile Include="application\Collision\MapCollisionTypes.cpp" />
-    <ClCompile Include="application\map\StageData.cpp" />
+    <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\Shaders\BoxFilter.PS.hlsl">
@@ -313,7 +311,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\BarrierBreakBehavior.h" />
     <ClInclude Include="application\particle\BarrierRingBehavior.h" />
     <ClInclude Include="application\ui\UIeditor.h" />
-    <ClInclude Include="application\Collision\CollisionMapInfo.h" />
     <ClInclude Include="engine\math\Easing.h" />
     <ClInclude Include="application\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -375,9 +372,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
     <ClInclude Include="application\particle\GateInOut.h" />
-    <ClInclude Include="application\Collision\MapCollisionSystem.h" />
-    <ClInclude Include="application\Collision\MapCollisionTypes.h" />
-    <ClInclude Include="application\map\StageData.h" />
+    <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="externals\DirectXTex\DirectXTex_Desktop_2022_Win10.vcxproj">

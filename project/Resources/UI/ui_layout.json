@@ -3,224 +3,47 @@
         {
             "elements": [
                 {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "click",
+                    "name": "space",
                     "position": [
-                        542.0,
-                        600.0
+                        528.0,
+                        604.0
                     ],
                     "pressAnimDuration": 0.11999999731779099,
                     "pressAnimEnabled": true,
                     "pressScale": 0.8500000238418579,
                     "size": [
-                        173.0,
-                        128.0
+                        211.0,
+                        132.0
                     ],
-                    "texture": "Resources/UI/click.png",
-                    "type": 0,
+                    "texture": "Resources/UI/space.png",
                     "visible": true
                 }
             ],
             "id": "Title"
         },
         {
-            "elements": [
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "down",
-                    "position": [
-                        948.0,
-                        643.0
-                    ],
-                    "pressAnimDuration": 0.11999999731779099,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        64.0,
-                        64.0
-                    ],
-                    "texture": "Resources/UI/down.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "UP",
-                    "position": [
-                        1011.0,
-                        643.0
-                    ],
-                    "pressAnimDuration": 0.11999999731779099,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        64.0,
-                        64.0
-                    ],
-                    "texture": "Resources/UI/up.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "mausu",
-                    "position": [
-                        1111.0,
-                        643.0
-                    ],
-                    "pressAnimDuration": 0.11999999731779099,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        74.0,
-                        74.0
-                    ],
-                    "texture": "Resources/UI/mouse.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "SPACE",
-                    "position": [
-                        15.0,
-                        612.0
-                    ],
-                    "pressAnimDuration": 0.11999999731779099,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        140.0,
-                        130.0
-                    ],
-                    "texture": "Resources/UI/click.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "R",
-                    "position": [
-                        184.0,
-                        646.0
-                    ],
-                    "pressAnimDuration": 0.11999999731779099,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        64.0,
-                        64.0
-                    ],
-                    "texture": "Resources/UI/r.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "back",
-                    "position": [
-                        11.0,
-                        10.0
-                    ],
-                    "pressAnimDuration": 0.11999999731779099,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        42.0,
-                        42.0
-                    ],
-                    "texture": "Resources/UI/esc.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        215.8000030517578,
-                        506.0
-                    ],
-                    "name": "ShotCount",
-                    "position": [
-                        1188.0,
-                        -30.0
-                    ],
-                    "pressAnimDuration": 0.3799999952316284,
-                    "pressAnimEnabled": false,
-                    "pressScale": 0.5,
-                    "size": [
-                        64.0,
-                        100.0
-                    ],
-                    "texture": "Resources/UI/count.png",
-                    "type": 1,
-                    "visible": true
-                }
-            ],
-            "id": "GamePlay"
+            "elements": [],
+            "id": "GameOver"
         },
         {
             "elements": [
                 {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
+                    "name": "space",
+                    "position": [
+                        558.0,
+                        591.0
                     ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        164.0,
+                        128.0
                     ],
+                    "texture": "Resources/UI/space.png",
+                    "visible": true
+                },
+                {
                     "name": "esc",
                     "position": [
                         15.0,
@@ -234,119 +57,178 @@
                         64.0
                     ],
                     "texture": "Resources/UI/esc.png",
-                    "type": 0,
                     "visible": true
                 },
                 {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
                     "name": "mouse",
                     "position": [
-                        740.0,
-                        617.0
-                    ],
-                    "pressAnimDuration": 0.14000000059604645,
-                    "pressAnimEnabled": true,
-                    "pressScale": 0.8500000238418579,
-                    "size": [
-                        80.0,
-                        80.0
-                    ],
-                    "texture": "Resources/UI/mouse.png",
-                    "type": 0,
-                    "visible": true
-                },
-                {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "mouse2",
-                    "position": [
-                        457.0,
-                        618.0
+                        832.0,
+                        624.0
                     ],
                     "pressAnimDuration": 0.11999999731779099,
                     "pressAnimEnabled": true,
                     "pressScale": 0.8500000238418579,
                     "size": [
-                        80.0,
-                        80.0
+                        64.0,
+                        64.0
                     ],
                     "texture": "Resources/UI/mouse.png",
-                    "type": 0,
                     "visible": true
                 },
                 {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "click",
+                    "name": "a",
                     "position": [
-                        551.0,
-                        590.0
+                        448.0,
+                        622.0
                     ],
-                    "pressAnimDuration": 0.009999999776482582,
+                    "pressAnimDuration": 0.11999999731779099,
                     "pressAnimEnabled": true,
                     "pressScale": 0.8500000238418579,
                     "size": [
-                        173.0,
-                        128.0
+                        64.0,
+                        64.0
                     ],
-                    "texture": "Resources/UI/click.png",
-                    "type": 0,
+                    "texture": "Resources/UI/a.png",
+                    "visible": true
+                },
+                {
+                    "name": "d",
+                    "position": [
+                        768.0,
+                        624.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/d.png",
+                    "visible": true
+                },
+                {
+                    "name": "mouse2",
+                    "position": [
+                        385.0,
+                        624.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/mouse.png",
                     "visible": true
                 }
             ],
             "id": "StageSelect"
         },
         {
-            "elements": [],
-            "id": "GameOver"
-        },
-        {
             "elements": [
                 {
-                    "digitTextureOrigin": [
-                        0.0,
-                        0.0
-                    ],
-                    "digitTextureSize": [
-                        32.0,
-                        48.0
-                    ],
-                    "name": "click",
+                    "name": "down",
                     "position": [
-                        563.0,
-                        598.0
+                        948.0,
+                        643.0
                     ],
                     "pressAnimDuration": 0.11999999731779099,
                     "pressAnimEnabled": true,
                     "pressScale": 0.8500000238418579,
                     "size": [
-                        173.0,
-                        128.0
+                        64.0,
+                        64.0
                     ],
-                    "texture": "Resources/UI/click.png",
-                    "type": 0,
+                    "texture": "Resources/UI/down.png",
+                    "visible": true
+                },
+                {
+                    "name": "UP",
+                    "position": [
+                        1011.0,
+                        643.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/up.png",
+                    "visible": true
+                },
+                {
+                    "name": "mausu",
+                    "position": [
+                        1111.0,
+                        643.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        74.0,
+                        74.0
+                    ],
+                    "texture": "Resources/UI/mouse.png",
+                    "visible": true
+                },
+                {
+                    "name": "SPACE",
+                    "position": [
+                        15.0,
+                        612.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        140.0,
+                        130.0
+                    ],
+                    "texture": "Resources/UI/space.png",
+                    "visible": true
+                },
+                {
+                    "name": "R",
+                    "position": [
+                        184.0,
+                        646.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        64.0,
+                        64.0
+                    ],
+                    "texture": "Resources/UI/r.png",
+                    "visible": true
+                },
+                {
+                    "name": "back",
+                    "position": [
+                        11.0,
+                        10.0
+                    ],
+                    "pressAnimDuration": 0.11999999731779099,
+                    "pressAnimEnabled": true,
+                    "pressScale": 0.8500000238418579,
+                    "size": [
+                        42.0,
+                        42.0
+                    ],
+                    "texture": "Resources/UI/esc.png",
                     "visible": true
                 }
             ],
+            "id": "GamePlay"
+        },
+        {
+            "elements": [],
             "id": "GameClear"
         }
     ]

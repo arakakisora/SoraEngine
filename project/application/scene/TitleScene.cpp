@@ -68,14 +68,21 @@ void TitleScene::Initialize() {
 	// 状態初期化
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;
-	
+	// プレイヤーパーティクル
+	//ParticleManager::GetInstance()->CreateParticleGroup(
+	//	"dash_smoke",
+	//	"Resources/ParticleTexture/smoke.png", // 使いたいテクスチャ
+	//	VerticesType::Quad,
+	//	std::make_unique<ExhaustGasBehavior>()
+	//);
 }
 
 // 終了処理：CameraManager から削除し、unique_ptr が破棄してメモリ解放
 void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 
-	
+	// unique_ptr の破棄に任せる（明示的な delete は不要）
+	//titleSprite_.reset();
 	titleObj_.reset();
 	object3D_.reset();
 	camera.reset();
@@ -83,7 +90,7 @@ void TitleScene::Finalize() {
 
 // 更新処理：カメラ更新、アニメ状態遷移、入力検出、フェード遷移
 void TitleScene::Update() {
-	// カメラ更新
+	// カメラ更新・フェード更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 	float dt = 1.0f / 60.0f;
@@ -232,9 +239,9 @@ void TitleScene::Update() {
 
 	if (!gateOutRequested_ &&
 		(!gate_ || !gate_->IsPlaying()) &&
-		Input::GetInstance()->TriggerMouse(0))
+		Input::GetInstance()->TriggerKey(DIK_SPACE))
 	{
-		UIeditor::GetInstance()->PlayPressAnimation("Title", "click");
+		UIeditor::GetInstance()->PlayPressAnimation("Title", "space");
 		gateOutRequested_ = true;
 		if (gate_) gate_->StartOut(0.6f);
 	}

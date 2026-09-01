@@ -5,7 +5,7 @@
 #include <cassert>
 #include <filesystem>
 #include <fstream>
-#include <algorithm>
+
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
@@ -116,24 +116,6 @@ void UIeditor::SetPressed(const std::string& sceneId, const std::string& element
 		}
 	}
 }
-void UIeditor::SetCount(const std::string& sceneId, const std::string& elementName, int count)
-{
-	auto it = scenes_.find(sceneId);
-
-	if (it == scenes_.end()) {
-		return;
-	}
-
-	for (auto& element : it->second.elements) {
-
-		if (element.name == elementName) {
-
-			element.count = count;
-
-			return;
-		}
-	}
-}
 #ifdef _DEBUG
 void UIeditor::DebugImGui() {
 
@@ -223,48 +205,6 @@ void UIeditor::DebugImGui() {
 
 			ImGui::DragFloat2("Position", &element.position.x, 1.0f);
 			ImGui::DragFloat2("Size", &element.size.x, 1.0f, 1.0f, 4096.0f);
-
-			const char* typeItems[] = {
-				"Image",
-				"Draw Count"
-			};
-
-			int typeIndex =
-				static_cast<int>(element.type);
-
-			if (ImGui::Combo(
-				"Type",
-				&typeIndex,
-				typeItems,
-				IM_ARRAYSIZE(typeItems)))
-			{
-				element.type =
-					static_cast<UIElementType>(typeIndex);
-			}
-
-			if (element.type == UIElementType::Rect) {
-
-				ImGui::DragFloat2(
-					"Digit Texture Origin",
-					&element.digitTextureOrigin.x,
-					1.0f,
-					0.0f,
-					4096.0f
-				);
-
-				ImGui::DragFloat2(
-					"Digit Texture Size",
-					&element.digitTextureSize.x,
-					1.0f,
-					1.0f,
-					4096.0f
-				);
-
-				ImGui::Text(
-					"Preview Count: %d",
-					element.count
-				);
-			}
 
 			ImGui::Checkbox("Press Animation", &element.pressAnimEnabled);
 			ImGui::DragFloat("Press Duration", &element.pressAnimDuration, 0.01f, 0.01f, 1.0f);
@@ -402,18 +342,6 @@ void UIeditor::Save(const std::string& filePath) {
 			elementJson["pressAnimDuration"] = element.pressAnimDuration;
 			elementJson["pressScale"] = element.pressScale;
 			elementJson["visible"] = element.visible;
-			elementJson["type"] =
-				static_cast<int>(element.type);
-
-			elementJson["digitTextureOrigin"] = {
-				element.digitTextureOrigin.x,
-				element.digitTextureOrigin.y
-			};
-
-			elementJson["digitTextureSize"] = {
-				element.digitTextureSize.x,
-				element.digitTextureSize.y
-			};
 
 			sceneJson["elements"].push_back(elementJson);
 		}
@@ -459,36 +387,6 @@ void UIeditor::Load(const std::string& filePath) {
 			element.size.y = elementJson["size"][1].get<float>();
 
 			element.visible = elementJson["visible"].get<bool>();
-
-			if (elementJson.contains("type")) {
-
-				element.type =
-					static_cast<UIElementType>(
-						elementJson["type"].get<int>()
-						);
-			}
-			if (elementJson.contains(
-				"digitTextureOrigin"))
-			{
-				element.digitTextureOrigin.x =
-					elementJson["digitTextureOrigin"][0]
-					.get<float>();
-
-				element.digitTextureOrigin.y =
-					elementJson["digitTextureOrigin"][1]
-					.get<float>();
-			}
-			if (elementJson.contains(
-				"digitTextureSize"))
-			{
-				element.digitTextureSize.x =
-					elementJson["digitTextureSize"][0]
-					.get<float>();
-
-				element.digitTextureSize.y =
-					elementJson["digitTextureSize"][1]
-					.get<float>();
-			}
 
 			if (!element.texturePath.empty()) {
 				element.sprite = std::make_unique<Sprite>();
@@ -584,32 +482,8 @@ void UIeditor::DrawUI(UIElement& element)
 		element.position.y + (element.size.y - drawSize.y) * 0.5f
 	};
 
-	if (element.type == UIElementType::Rect) {
-
-		int digit =
-			std::clamp(element.count, 0, 9);
-
-		Vector2 textureLeftTop = {
-
-			element.digitTextureOrigin.x +
-			element.digitTextureSize.x *
-			static_cast<float>(digit),
-
-			element.digitTextureOrigin.y
-		};
-
-		element.sprite->SetTextureLeftTop(
-			textureLeftTop
-		);
-
-		element.sprite->SetTextureSize(
-			element.digitTextureSize
-		);
-	}
-
 	element.sprite->SetPosition(drawPos);
 	element.sprite->SetSize(drawSize);
-
 	element.sprite->Update();
 	element.sprite->Draw();
 

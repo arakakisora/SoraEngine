@@ -80,23 +80,11 @@ void StageEditor::RenderUI()
 	ImGui::Checkbox("Show Stage Window", &showStageWindow_);
 
 	ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
-
-	// 発射制限
-	int shotLimit = stageData_.GetShotLimit();
-
-	if (ImGui::InputInt("Shot Limit", &shotLimit)) {
-
-		if (shotLimit < 0) {
-			shotLimit = 0;
-		}
-
-		stageData_.SetShotLimit(shotLimit);
-	}
-
-	if (ImGui::Button("New")) {
-		stageData_.Clear();// 新規作成
-		undoStack_.clear();// Undo/Redo履歴をクリア
-		redoStack_.clear();// Undo/Redo履歴をクリア
+	if (ImGui::Button("New"))
+	{
+		stageData_.Clear(); // 新規作成
+		undoStack_.clear(); // Undo/Redo履歴をクリア
+		redoStack_.clear(); // Undo/Redo履歴をクリア
 	}
 
 	// セーブ
@@ -341,13 +329,10 @@ void StageEditor::SaveCSV(const std::string& filename)
 
 	std::ofstream file(filename);
 
-	// 発射制限を保存
-	file << "#shotLimit,"
-		<< stageData_.GetShotLimit()
-		<< "\n";
-
-	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
-		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y)
+	{
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x)
+		{
 			const StageCell& cell = stageData_.At(x, y);
 
 			file << static_cast<int>(cell.type);
@@ -380,21 +365,8 @@ void StageEditor::LoadCSV(const std::string& filename)
 	std::string line;
 	uint32_t y = 0;
 
-	while (std::getline(file, line)) {
-
-		// 発射制限
-		if (line.rfind("#shotLimit,", 0) == 0) {
-
-			std::string valueText =
-				line.substr(std::string("#shotLimit,").size());
-
-			stageData_.SetShotLimit(
-				std::stoi(valueText)
-			);
-
-			continue;
-		}
-
+	while (std::getline(file, line))
+	{
 		std::stringstream lineStream(line);
 		std::string cellText;
 		uint32_t x = 0;

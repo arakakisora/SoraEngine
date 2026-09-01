@@ -115,50 +115,19 @@ bool Input::TriggerKey(BYTE keyNumber)
 bool Input::PushMouse(int buttonNumber)
 {
 	///押してるとき
-#ifdef USE_IMGUI
-	if (ImGui::GetIO().WantCaptureMouse) {
-		return false;
-	}
-#endif
-
 	if (mouse.rgbButtons[buttonNumber]) {
 		return true;
 	}
-
 	return false;
 }
 
 bool Input::TriggerMouse(int buttonNumber)
 {
-#ifdef USE_IMGUI
-	if (ImGui::GetIO().WantCaptureMouse) {
-		return false;
-	}
-#endif
-
-	if (mouse.rgbButtons[buttonNumber] &&
-		!preMouse.rgbButtons[buttonNumber]) {
-
+	///押したとき
+	if (mouse.rgbButtons[buttonNumber] && !preMouse.rgbButtons[buttonNumber]) {
 		return true;
 	}
-
 	return false;
-}
-
-MouseMove Input::GetMouseMove() const
-{
-#ifdef USE_IMGUI
-	if (ImGui::GetIO().WantCaptureMouse) {
-		return { 0, 0, 0 };
-	}
-#endif
-
-	MouseMove move;
-	move.lX = mouse.lX;
-	move.lY = mouse.lY;
-	move.lZ = mouse.lZ;
-
-	return move;
 }
 
 bool Input::PushGamePadButton(WORD button)

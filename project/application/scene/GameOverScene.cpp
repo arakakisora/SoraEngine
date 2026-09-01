@@ -30,9 +30,9 @@ void GameOverScene::Initialize()
 	playerObj = std::make_unique<Object3D>();
 	playerObj->Initialize(Object3DCommon::GetInstance());
 	playerObj->SetModel("player");
-	playerObj->SetLighting(false);
-	playerObj->SetEnableLighting(false);
-	playerObj->SetDirectionalLightEnable(false);
+	playerObj->SetLighting(true);
+	playerObj->SetEnableLighting(true);
+	playerObj->SetDirectionalLightEnable(true);
 
 	// 画面中央に配置
 	playerObj->SetTranslate({ 0.0f, -0.7f, 11.0f });
@@ -76,13 +76,12 @@ void GameOverScene::Update()
 	playerObj->Update();
 
 	// スペースで戻る
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || Input::GetInstance()->TriggerMouse(0)) {
-		UIeditor::GetInstance()->PlayPressAnimation("GameClear", "click");
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		fadeManager_.StartFadeOut();
 	}
 
 	if (fadeManager_.IsFadeOutFinished()) {
-		
+
 		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 		//SceneManager::GetInstance()->ChangeScene("TITELE");

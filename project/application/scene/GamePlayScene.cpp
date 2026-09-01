@@ -158,12 +158,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 		// ゲーム進行系（ポーズ中は実行しない）
 		if (!player->GetIsDead_()) {
 			player->Update();
-			UIeditor::GetInstance()->SetCount(
-				"GamePlay",
-				"ShotCount",
-				player->GetRemainingShots()
-			);
-			
+			// プレイヤーの弾などは player 内で管理される
 		}
 		//enemyManager_->Update();
 
@@ -339,18 +334,7 @@ void GamePlayScene::Imguidebug()
 		mapChipField_->ApplyStageData(editor_.GetStageData());
 
 		generateBlock_.GenerateObject3D();
-
-		// プレイヤー位置更新
-		auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
-		if (!spawnPositions.empty()) {
-			Vector3 playerPosition = spawnPositions.front();
-			player->GetObject3D()->SetTranslate(playerPosition);
-		}
-
-		// ゴール位置更新
-		goal = std::make_unique<Goal>();
-		goal->Initialize(mapChipField_.get(), player.get());
-
+		
 		editor.SetReloadRequested(false);
 	}
 
@@ -432,7 +416,6 @@ void GamePlayScene::ResetStage()
 
 	goal = std::make_unique<Goal>();
 	goal->Initialize(mapChipField_.get(), player.get());
-	
 
 	gameOverEffect_ = std::make_unique<GameOverEffect>();
 	gameOverEffect_->Initialize(player_->GetObject3D());

@@ -34,7 +34,6 @@ void StageSelectScene::Initialize()
 	ModelManager::GetInstance()->LoadModel("stage2");
 	ModelManager::GetInstance()->LoadModel("stage3");
 	ModelManager::GetInstance()->LoadModel("stage4");
-	ModelManager::GetInstance()->LoadModel("stage5");
 
 	ModelManager::GetInstance()->LoadModel("player");
 	playerobj = std::make_unique<Object3D>();
@@ -47,8 +46,7 @@ void StageSelectScene::Initialize()
 	"stage1",
 	"stage2",
 	"stage3",
-	"stage4",
-	"stage5"
+	"stage4"
 	// 必要ならさらに追加
 	};
 
@@ -120,8 +118,8 @@ void StageSelectScene::Update()
 		
 		if (!gateOutRequested_ &&
 			(!gate_ || !gate_->IsPlaying()) &&
-			Input::GetInstance()->TriggerKey(DIK_SPACE)||Input::GetInstance()->TriggerMouse(0)){
-			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "click");
+			Input::GetInstance()->TriggerKey(DIK_SPACE)){
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "space");
 			gateOutRequested_ = true;
 			if (gate_) gate_->StartOut(0.6f);
 		}
