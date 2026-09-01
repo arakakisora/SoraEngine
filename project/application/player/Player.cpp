@@ -1,11 +1,11 @@
-#include "Player.h"
+﻿#include "Player.h"
 
 #include "MapChipField.h"
 #include "MapCollisionSystem.h"
 #include "Input.h"
 #include "Logger.h"
 #include "Object3DCommon.h"
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "ParticleEmitter.h"
 #include "PlayerpaticleBehavior.h"
 #include "ChargeBehavior.h"
@@ -141,7 +141,7 @@ void Player::Update() {
 	PlayerMove();// 自機の動き
 	aabb_ = GetPlayerAABB();// AABB 更新
 	
-	Playerline();// プレイヤーの移動ライン描画
+	PlayerLine();// プレイヤーの移動ライン描画
 	DrawPredictLine();
 
 	// 衝突判定を初期化
@@ -468,12 +468,6 @@ PredictStepResult Player::SimulatePredictStep(
 void Player::PlayerLine()
 {
 
-	return result;
-}
-
-void Player::PlayerLine()
-{
-
 	// 始点はプレイヤーのワールド位置（発射位置）
 	Vector3 start = GetWorldPosition();
 	start.y += 0; // 少し上から発射するイメージ
@@ -767,7 +761,8 @@ void Player::ShowPredictionGhost(const Vector3& position, const CollisionMapInfo
 	DrawGhostAimPreview(position, nextFacingDir);
 }
 
-void Player::Playerdirection(const CollisionMapInfo& info) {
+void Player::PlayerDirection(const CollisionMapInfo& info)
+{
 	LRTBDirecion targetDir = direction_;
 
 	if (info.hasNormal) {
@@ -799,22 +794,22 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 	// 方向ごとの目標角度
 	switch (direction_) {
 
-	case LRTBDirection::kRight:
+	case LRTBDirecion::kRight:
 		targetY = std::numbers::pi_v<float> / 2.0f;
 		targetZ = 0.0f;
 		break;
 
-	case LRTBDirection::kLeft:
+	case LRTBDirecion::kLeft :
 		targetY = std::numbers::pi_v<float> *3.0f / 2.0f;
 		targetZ = 0.0f;
 		break;
 
-	case LRTBDirection::kTop:
+	case LRTBDirecion::kTop:
 		targetY = std::numbers::pi_v<float> / 2.0f;
 		targetZ = std::numbers::pi_v<float> / 2.0f;
 		break;
 
-	case LRTBDirection::kBottom:
+	case LRTBDirecion::kBottom:
 		targetY = std::numbers::pi_v<float> / 2.0f;
 		targetZ = -std::numbers::pi_v<float> / 2.0f;
 		break;
@@ -1125,7 +1120,8 @@ void Player::PlayerParticle()
 			smokeTransform.translate = object3D_->GetTransform().translate;
 
 			// 進行方向のちょい後ろに出すと“排気”感が出る
-			if (direction_ == LRTBDirection::kRight) {
+			if (direction_ == LRTBDirecion::kRight)
+			{
 				smokeTransform.translate.x -= 0.15f;
 			} else {
 				smokeTransform.translate.x += 0.15f;

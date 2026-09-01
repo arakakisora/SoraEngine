@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <algorithm>
 #include <array>
@@ -63,7 +63,7 @@ struct PlayerParameter {
 		float max = 26.0f; // 落下死の有効/無効
 	};
 	DeathHeight deathHeight;
-	Deathwidth deathwidth;
+	DeathWidth deathWidth;
 
 	// 予測線パラメータ
 	int predictMaxSteps = 1200;
