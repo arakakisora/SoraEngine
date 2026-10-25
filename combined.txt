@@ -1,6 +1,11 @@
 ### 🌳 Codebase File Tree (Excluding ignored directories)
 
 └── project/
+    ├── CollisionMapInfo.h
+    ├── MapCollisionSystem.cpp
+    ├── MapCollisionSystem.h
+    ├── MapCollisionTypes.cpp
+    ├── MapCollisionTypes.h
     ├── Resources/
     └── ├── Data/
     └── ├── Mapdata/
@@ -27,9 +32,10 @@
     └── └── ├── stage2/
     └── └── ├── stage3/
     └── └── ├── stage4/
+    └── └── ├── stage5/
     └── └── ├── title1/
     └── └── ├── titlemenu/
-    └── └── └── unbreakableBlokc/
+    └── └── └── unbreakableBlock/
     ├── SoraEngine.vcxproj
     ├── SoraEngine.vcxproj.filters
     ├── StageData.cpp
@@ -59,8 +65,8 @@
     └── └── ├── BarrierBreakBehavior.h
     └── └── ├── BarrierRingBehavior.cpp
     └── └── ├── BarrierRingBehavior.h
-    └── └── ├── ChargeBehabiaor.cpp
-    └── └── ├── ChargeBehabiaor.h
+    └── └── ├── ChargeBehavior.cpp
+    └── └── ├── ChargeBehavior.h
     └── └── ├── Damagearea.cpp
     └── └── ├── Damagearea.h
     └── └── ├── GameOverEffect.cpp
@@ -79,8 +85,6 @@
     └── └── ├── Player.cpp
     └── └── └── Player.h
     └── ├── scene/
-    └── └── ├── DebugScene.cpp
-    └── └── ├── DebugScene.h
     └── └── ├── GameClearScene.cpp
     └── └── ├── GameClearScene.h
     └── └── ├── GameOverScene.cpp
@@ -134,8 +138,8 @@
     └── └── ├── ImGuiManager.h
     └── └── ├── Logger.cpp
     └── └── ├── Logger.h
-    └── └── ├── OfscreenRenderManager.cpp
-    └── └── ├── OfscreenRenderManager.h
+    └── └── ├── OffscreenRenderManager.cpp
+    └── └── ├── OffscreenRenderManager.h
     └── └── ├── SrvManager.cpp
     └── └── ├── SrvManager.h
     └── └── ├── StringUtility.cpp
@@ -176,8 +180,8 @@
     └── └── ├── ParticleEditor.h
     └── └── ├── ParticleEmitter.cpp
     └── └── ├── ParticleEmitter.h
-    └── └── ├── ParticleMnager.cpp
-    └── └── └── ParticleMnager.h
+    └── └── ├── ParticleManager.cpp
+    └── └── └── ParticleManager.h
     └── ├── scene/
     └── └── ├── AbstractSceneFactory.cpp
     └── └── ├── AbstractSceneFactory.h
@@ -197,6 +201,563 @@
     └── main.cpp
 ================================================================================
 
+
+============================================================
+File Path: project/CollisionMapInfo.h
+============================================================
+#pragma once
+#include <cstdint>
+#include "Vector3.h"
+
+struct CollisionMapInfo {
+	bool ceiling = false; // 天井衝突
+	bool landing = false; // 着地
+	bool hitWall = false; // 壁接触
+
+	Vector3 move;         // 移動量
+	Vector3 normal;       // 法線
+	bool hasNormal = false;
+
+	float penX = 0.0f; // 壁方向めり込み
+	float penY = 0.0f; // 天井/床方向めり込み
+
+	bool hasBreakBlock = false;
+	uint32_t breakBlockX = 0;
+	uint32_t breakBlockY = 0;
+
+	bool hitDamageBlock = false;
+	bool hitGoal = false;
+};
+
+============================================================
+File Path: project/MapCollisionSystem.cpp
+============================================================
+#define NOMINMAX
+#include "MapCollisionSystem.h"
+#include <cmath>
+#include <algorithm>
+
+bool MapCollisionSystem::IsHittableBlock(MapChipType type)
+{
+	switch (type) {
+	case MapChipType::Block:
+	case MapChipType::UnbreakableBlock:
+	case MapChipType::damageBlock:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
+Vector3 MapCollisionSystem::NormalFromType(CollisionType type)
+{
+	static const std::array<Vector3, 4> normal{ {
+			/* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
+			/* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
+			/* Left   */ Vector3{ 1.0f,  0.0f, 0.0f },
+			/* Right  */ Vector3{ -1.0f, 0.0f, 0.0f }
+		} };
+
+	const auto index = static_cast<std::size_t>(type);
+	if (index < normal.size()) {
+		return normal[index];
+	}
+
+	return { 0.0f, 0.0f, 0.0f };
+}
+
+Vector3 MapCollisionSystem::CornerPosition(
+	const Vector3& center,
+	float width,
+	float height,
+	Corner corner
+)
+{
+	Vector3 offset{};
+
+	switch (corner) {
+	case kRightBottom:
+		offset = { width / 2.0f, -height / 2.0f, 0.0f };
+		break;
+
+	case kLeftBottom:
+		offset = { -width / 2.0f, -height / 2.0f, 0.0f };
+		break;
+
+	case kRightTop:
+		offset = { width / 2.0f, height / 2.0f, 0.0f };
+		break;
+
+	case kLeftTop:
+		offset = { -width / 2.0f, height / 2.0f, 0.0f };
+		break;
+
+	default:
+		offset = { 0.0f, 0.0f, 0.0f };
+		break;
+	}
+
+	return center + offset;
+}
+
+bool MapCollisionSystem::CheckCollisionPoints(
+	const Vector3& basePos,
+	const std::array<Vector3, 2>& posList,
+	CollisionType type,
+	CollisionMapInfo& info,
+	MapChipField* mapChipField,
+	float width,
+	float height,
+	float blank,
+	bool enableGoal
+)
+{
+	if (!mapChipField) {
+		return false;
+	}
+
+	const Vector3 movedCenter = basePos + info.move;
+
+	bool hit = false;
+	bool hasBest = false;
+	Rect bestRect{};
+	float bestPen = -1.0f;
+
+	for (const Vector3& p : posList) {
+		IndexSet idx = mapChipField->GetMapChipIndexSetByPosition(p);
+		MapChipType chip = mapChipField->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
+
+		Rect r = mapChipField->GetRectByIndex(idx.xIndex, idx.yIndex);
+
+		float pen = 0.0f;
+
+		switch (type) {
+		case CollisionType::Right:
+			pen = (movedCenter.x + width * 0.5f) - r.left;
+			break;
+
+		case CollisionType::Left:
+			pen = r.right - (movedCenter.x - width * 0.5f);
+			break;
+
+		case CollisionType::Top:
+			pen = (movedCenter.y + height * 0.5f) - r.bottom;
+			break;
+
+		case CollisionType::Bottom:
+			pen = r.top - (movedCenter.y - height * 0.5f);
+			break;
+		}
+
+		if (chip == MapChipType::Goal) {
+			if (enableGoal) {
+				if (pen > -blank) {
+					info.hitGoal = true;
+				}
+			}
+			continue;
+		}
+
+		if (chip == MapChipType::damageBlock) {
+			if (pen > 0.0f) {
+				info.hitDamageBlock = true;
+			}
+		}
+
+		if (chip == MapChipType::Block) {
+			if (pen > 0.0f) {
+				if (!info.hasBreakBlock) {
+					info.hasBreakBlock = true;
+					info.breakBlockX = idx.xIndex;
+					info.breakBlockY = idx.yIndex;
+				}
+			}
+		}
+
+		
+
+		if (!IsHittableBlock(chip)) {
+			continue;
+		}
+
+		hit = true;
+
+		if (pen > 0.0f) {
+			if (type == CollisionType::Right || type == CollisionType::Left) {
+				info.penX = std::max(info.penX, pen);
+			} else {
+				info.penY = std::max(info.penY, pen);
+			}
+
+			if (!hasBest || pen > bestPen) {
+				hasBest = true;
+				bestPen = pen;
+				bestRect = r;
+			}
+		}
+	}
+
+	if (!hit || !hasBest) {
+		return false;
+	}
+
+	switch (type) {
+	case CollisionType::Top:
+		info.ceiling = true;
+		info.move.y = bestRect.bottom - basePos.y - (height * 0.5f + blank);
+		info.normal = info.normal + NormalFromType(type);
+		info.hasNormal = true;
+		break;
+
+	case CollisionType::Bottom:
+		info.landing = true;
+		info.move.y = bestRect.top - basePos.y + (height * 0.5f + blank);
+		info.normal = info.normal + NormalFromType(type);
+		info.hasNormal = true;
+		break;
+
+	case CollisionType::Left:
+		info.hitWall = true;
+		info.move.x = bestRect.right - basePos.x + (width * 0.5f + blank);
+		info.normal = info.normal + NormalFromType(type);
+		info.hasNormal = true;
+		break;
+
+	case CollisionType::Right:
+		info.hitWall = true;
+		info.move.x = bestRect.left - basePos.x - (width * 0.5f + blank);
+		info.normal = info.normal + NormalFromType(type);
+		info.hasNormal = true;
+		break;
+	}
+
+	return true;
+}
+
+void MapCollisionSystem::CollisionMapInfoDirection(
+	const Vector3& basePos,
+	CollisionMapInfo& info,
+	CollisionType dir,
+	const std::array<Corner, 2>& checkCorners,
+	const Vector3& offset,
+	float width,
+	float height,
+	float blank,
+	MapChipField* mapChipField,
+	bool enableGoal
+)
+{
+	Vector3 movedPos = basePos + info.move;
+
+	std::array<Vector3, 2> posList = {
+		CornerPosition(movedPos, width, height, checkCorners[0]) + offset,
+		CornerPosition(movedPos, width, height, checkCorners[1]) + offset
+	};
+
+	CheckCollisionPoints(
+		basePos,
+		posList,
+		dir,
+		info,
+		mapChipField,
+		width,
+		height,
+		blank,
+		enableGoal
+	);
+}
+
+void MapCollisionSystem::CheckCollisionAt(
+	const Vector3& position,
+	CollisionMapInfo& info,
+	float width,
+	float height,
+	float blank,
+	float collisionEpsilon,
+	MapChipField* mapChipField,
+	bool enableGoal)
+{
+	if (!mapChipField) {
+		return;
+	}
+
+	Vector3 base = position;
+
+	// --------------------
+	// X方向だけ解く
+	// --------------------
+	CollisionMapInfo xInfo{};
+	xInfo.move = { info.move.x, 0.0f, 0.0f };
+	xInfo.normal = { 0.0f, 0.0f, 0.0f };
+	xInfo.hasNormal = false;
+	xInfo.penX = 0.0f;
+	xInfo.penY = 0.0f;
+
+	if (xInfo.move.x > 0.0f) {
+		CollisionMapInfoDirection(
+			base,
+			xInfo,
+			CollisionType::Right,
+			{ kRightTop, kRightBottom },
+			Vector3(collisionEpsilon, 0.0f, 0.0f),
+			width,
+			height,
+			blank,
+			mapChipField,
+			enableGoal
+		);
+	}
+
+	if (xInfo.move.x < 0.0f) {
+		CollisionMapInfoDirection(
+			base,
+			xInfo,
+			CollisionType::Left,
+			{ kLeftTop, kLeftBottom },
+			Vector3(-collisionEpsilon, 0.0f, 0.0f),
+			width,
+			height,
+			blank,
+			mapChipField,
+			enableGoal
+		);
+	}
+
+	// X反映
+	base.x += xInfo.move.x;
+	info.move.x = xInfo.move.x;
+
+	if (xInfo.hasNormal) {
+		info.normal = info.normal + xInfo.normal;
+		info.hasNormal = true;
+	}
+
+	info.hitWall = info.hitWall || xInfo.hitWall;
+	info.penX = std::max(info.penX, xInfo.penX);
+
+	if (xInfo.hasBreakBlock && !info.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = xInfo.breakBlockX;
+		info.breakBlockY = xInfo.breakBlockY;
+	}
+
+	if (xInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
+
+	if (xInfo.hitGoal) {
+		info.hitGoal = true;
+	}
+
+	// --------------------
+	// Y方向だけ解く
+	// X反映後の base で判定する
+	// --------------------
+	CollisionMapInfo yInfo{};
+	yInfo.move = { 0.0f, info.move.y, 0.0f };
+	yInfo.normal = { 0.0f, 0.0f, 0.0f };
+	yInfo.hasNormal = false;
+	yInfo.penX = 0.0f;
+	yInfo.penY = 0.0f;
+
+	if (yInfo.move.y > 0.0f) {
+		CollisionMapInfoDirection(
+			base,
+			yInfo,
+			CollisionType::Top,
+			{ kLeftTop, kRightTop },
+			Vector3(0.0f, collisionEpsilon, 0.0f),
+			width,
+			height,
+			blank,
+			mapChipField,
+			enableGoal
+		);
+	}
+
+	if (yInfo.move.y < 0.0f) {
+		CollisionMapInfoDirection(
+			base,
+			yInfo,
+			CollisionType::Bottom,
+			{ kLeftBottom, kRightBottom },
+			Vector3(0.0f, -collisionEpsilon, 0.0f),
+			width,
+			height,
+			blank,
+			mapChipField,
+			enableGoal
+		);
+	}
+
+	// Y反映
+	base.y += yInfo.move.y;
+	info.move.y = yInfo.move.y;
+
+	if (yInfo.hasNormal) {
+		info.normal = info.normal + yInfo.normal;
+		info.hasNormal = true;
+	}
+
+	info.ceiling = info.ceiling || yInfo.ceiling;
+	info.landing = info.landing || yInfo.landing;
+	info.penY = std::max(info.penY, yInfo.penY);
+
+	if (yInfo.hasBreakBlock && !info.hasBreakBlock) {
+		info.hasBreakBlock = true;
+		info.breakBlockX = yInfo.breakBlockX;
+		info.breakBlockY = yInfo.breakBlockY;
+	}
+
+	if (yInfo.hitDamageBlock) {
+		info.hitDamageBlock = true;
+	}
+
+	if (yInfo.hitGoal) {
+		info.hitGoal = true;
+	}
+}
+
+
+============================================================
+File Path: project/MapCollisionSystem.h
+============================================================
+#pragma once
+
+#include <array>
+
+#include "CollisionMapInfo.h"
+#include "MapChipField.h"
+#include "MapCollisionTypes.h"
+#include "Vector3.h"
+
+
+class MapCollisionSystem {
+public:
+	/// <summary>
+	/// 当たるブロックかどうか
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
+	static bool IsHittableBlock(MapChipType type);
+
+	/// <summary>
+	/// 衝突の法線をタイプから取得
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
+	static Vector3 NormalFromType(CollisionType type);
+
+	/// <summary>
+	/// コーナーのワールド座標を取得
+	/// </summary>
+	/// <param name="center"></param>
+	/// <param name="width"></param>
+	/// <param name="height"></param>
+	/// <param name="corner"></param>
+	/// <returns></returns>
+	static Vector3 CornerPosition(
+		const Vector3& center,
+		float width,
+		float height,
+		Corner corner
+	);
+	/// <summary>
+	/// 衝突判定の共通処理
+	/// </summary>
+	/// <param name="basePos"></param>
+	/// <param name="posList"></param>
+	/// <param name="type"></param>
+	/// <param name="info"></param>
+	/// <param name="mapChipField"></param>
+	/// <param name="enableGoal"></param>
+	/// <returns></returns>
+	static bool CheckCollisionPoints(
+		const Vector3& basePos,
+		const std::array<Vector3, 2>& posList,
+		CollisionType type,
+		CollisionMapInfo& info,
+		MapChipField* mapChipField,
+		float width,
+		float height,
+		float blank,
+		bool enableGoal
+	);
+
+	/// <summary>
+	/// 衝突判定の共通処理
+	/// </summary>
+	/// <param name="basePos"></param>
+	/// <param name="info"></param>
+	/// <param name="dir"></param>
+	/// <param name="checkCorners"></param>
+	/// <param name="offset"></param>
+	/// <param name="playerWidth"></param>
+	/// <param name="playerHeight"></param>
+	/// <param name="mapChipField"></param>
+	/// <param name="enableGoal"></param>
+	static void CollisionMapInfoDirection(
+		const Vector3& basePos,
+		CollisionMapInfo& info,
+		CollisionType dir,
+		const std::array<Corner, 2>& checkCorners,
+		const Vector3& offset,
+		float width,
+		float height,
+		float blank,
+		MapChipField* mapChipField,
+		bool enableGoal
+	);
+	/// <summary>
+	/// map衝突判定
+	/// </summary>
+	/// <param name="position"></param>
+	/// <param name="info"></param>
+	/// <param name="playerWidth"></param>
+	/// <param name="playerHeight"></param>
+	/// <param name="blank"></param>
+	/// <param name="mapChipField"></param>
+	/// <param name="enableGoal"></param>
+	static void CheckCollisionAt(
+		const Vector3& position,
+		CollisionMapInfo& info,
+		float width,
+		float height,
+		float blank,
+		float collisionEpsilon,
+		MapChipField* mapChipField,
+		bool enableGoal = true
+	);
+
+
+};
+
+============================================================
+File Path: project/MapCollisionTypes.cpp
+============================================================
+#include "MapCollisionTypes.h"
+
+
+============================================================
+File Path: project/MapCollisionTypes.h
+============================================================
+#pragma once
+
+enum Corner {
+	kRightBottom,
+	kLeftBottom,
+	kRightTop,
+	kLeftTop,
+	kNumCorner
+};
+
+enum class CollisionType {
+	Top,
+	Bottom,
+	Left,
+	Right
+};
 
 ============================================================
 File Path: project/SoraEngine.vcxproj
@@ -252,12 +813,14 @@ File Path: project/SoraEngine.vcxproj
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)DirectXTex;$(SolutionDir)externals\imgui</IncludePath>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>$(ProjectDir)Lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(SolutionDir)..\generated\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\generated\outputs\$(Configuration)\</OutDir>
     <IncludePath>$(IncludePath);$(SolutionDir)DirectXTex;$(SolutionDir)externals\imgui</IncludePath>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -318,7 +881,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
-    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
+    <ClCompile Include="application\particle\ChargeBehavior.cpp" />
     <ClCompile Include="application\collision\CollisionManager.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
@@ -374,13 +937,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
-    <ClCompile Include="engine\particle\ParticleMnager.cpp" />
-    <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
+    <ClCompile Include="engine\particle\ParticleManager.cpp" />
+    <ClCompile Include="engine\base\OffscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
     <ClCompile Include="application\particle\StageEndEffect.cpp" />
     <ClCompile Include="application\particle\StageStartEffect.cpp" />
+    <ClCompile Include="MapCollisionSystem.cpp" />
+    <ClCompile Include="MapCollisionTypes.cpp" />
     <ClCompile Include="StageData.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -504,7 +1069,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
-    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
+    <ClInclude Include="application\particle\ChargeBehavior.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
@@ -512,6 +1077,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\BarrierBreakBehavior.h" />
     <ClInclude Include="application\particle\BarrierRingBehavior.h" />
     <ClInclude Include="application\ui\UIeditor.h" />
+    <ClInclude Include="CollisionMapInfo.h" />
     <ClInclude Include="engine\math\Easing.h" />
     <ClInclude Include="application\particle\AttackBehavior.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
@@ -559,8 +1125,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
-    <ClInclude Include="engine\particle\ParticleMnager.h" />
-    <ClInclude Include="engine\base\OfscreenRenderManager.h" />
+    <ClInclude Include="engine\particle\ParticleManager.h" />
+    <ClInclude Include="engine\base\OffscreenRenderManager.h" />
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
     <ClInclude Include="engine\particle\IParticleBehavior.h" />
@@ -573,6 +1139,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="application\particle\StageStartEffect.h" />
     <ClInclude Include="application\map\GenerateBlock.h" />
     <ClInclude Include="application\particle\GateInOut.h" />
+    <ClInclude Include="MapCollisionSystem.h" />
+    <ClInclude Include="MapCollisionTypes.h" />
     <ClInclude Include="StageData.h" />
   </ItemGroup>
   <ItemGroup>
@@ -672,7 +1240,7 @@ File Path: project/SoraEngine.vcxproj.filters
   <ItemGroup>
     <ClCompile Include="application\map\MapChipField.cpp" />
     <ClCompile Include="application\map\StageEditor.cpp" />
-    <ClCompile Include="application\particle\ChargeBehabiaor.cpp" />
+    <ClCompile Include="application\particle\ChargeBehavior.cpp" />
     <ClCompile Include="application\collision\CollisionManager.cpp" />
     <ClCompile Include="application\collision\Collider.cpp" />
     <ClCompile Include="application\scene\StageSelectScene.cpp" />
@@ -719,8 +1287,8 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClCompile Include="application\scene\TitleScene.cpp" />
     <ClCompile Include="application\player\Player.cpp" />
     <ClCompile Include="engine\particle\ParticleEmitter.cpp" />
-    <ClCompile Include="engine\particle\ParticleMnager.cpp" />
-    <ClCompile Include="engine\base\OfscreenRenderManager.cpp" />
+    <ClCompile Include="engine\particle\ParticleManager.cpp" />
+    <ClCompile Include="engine\base\OffscreenRenderManager.cpp" />
     <ClCompile Include="engine\skybox\SkyBox.cpp" />
     <ClCompile Include="engine\skybox\SkyBoxCommon.cpp" />
     <ClCompile Include="application\map\MapChipDatabase.cpp" />
@@ -736,11 +1304,13 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClCompile Include="application\particle\MagicCircleBehavior.cpp" />
     <ClCompile Include="application\ui\UIeditor.cpp" />
     <ClCompile Include="StageData.cpp" />
+    <ClCompile Include="MapCollisionSystem.cpp" />
+    <ClCompile Include="MapCollisionTypes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\map\MapChipField.h" />
     <ClInclude Include="application\map\StageEditor.h" />
-    <ClInclude Include="application\particle\ChargeBehabiaor.h" />
+    <ClInclude Include="application\particle\ChargeBehavior.h" />
     <ClInclude Include="application\collision\CollisionManager.h" />
     <ClInclude Include="application\collision\Collider.h" />
     <ClInclude Include="application\scene\StageSelectScene.h" />
@@ -788,8 +1358,8 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClInclude Include="application\player\Player.h" />
     <ClInclude Include="engine\base\GraphicsPipeline.h" />
     <ClInclude Include="engine\particle\ParticleEmitter.h" />
-    <ClInclude Include="engine\particle\ParticleMnager.h" />
-    <ClInclude Include="engine\base\OfscreenRenderManager.h" />
+    <ClInclude Include="engine\particle\ParticleManager.h" />
+    <ClInclude Include="engine\base\OffscreenRenderManager.h" />
     <ClInclude Include="engine\Line\Line.h" />
     <ClInclude Include="engine\Line\LineCommon.h" />
     <ClInclude Include="engine\skybox\SkyBox.h" />
@@ -810,6 +1380,9 @@ File Path: project/SoraEngine.vcxproj.filters
     <ClInclude Include="application\particle\MagicCircleBehavior.h" />
     <ClInclude Include="application\ui\UIeditor.h" />
     <ClInclude Include="StageData.h" />
+    <ClInclude Include="CollisionMapInfo.h" />
+    <ClInclude Include="MapCollisionSystem.h" />
+    <ClInclude Include="MapCollisionTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Mapdate\testmap.csv" />
@@ -1022,13 +1595,22 @@ public:
 	uint32_t GetWidth() const { return width_; }
 	uint32_t GetHeight() const { return height_; }
 
+	// 発射制限
+	int GetShotLimit() const { return shotLimit_; }
+
+	void SetShotLimit(int shotLimit) {
+		// 発射回数が負の値の場合は0にする
+		shotLimit_ = (shotLimit < 0) ? 0 : shotLimit;
+	}
+
 	void Clear();
 
 private:
 	uint32_t width_ = 0;
 	uint32_t height_ = 0;
 	std::vector<std::vector<StageCell>> cells_;
-
+	// ステージの最大発射回数
+	int shotLimit_ = 3;
 };
 
 
@@ -1044,37 +1626,38 @@ File Path: project/application/Collision/Collider.h
 ============================================================
 #pragma once
 #include "Mymath.h"
-class Collider {
-public:
-    enum class Layer {
-        Player,
-        Enemy,
-        Enemy2,
-        PlayerBullet,
-        EnemyBullet,
-        // Map, Item など増やしたくなったらここに追加
-    };
+class Collider
+{
+  public:
+	enum class Layer
+	{
+		Player,
+		Enemy,
+		Enemy2,
+		PlayerBullet,
+		EnemyBullet,
+		// Map, Item など増やしたくなったらここに追加
+	};
 
-    virtual ~Collider() = default;
+	virtual ~Collider() = default;
 
-    // 当たり判定用のAABBを返す
-    virtual AABB GetAABB() const = 0;
+	// 当たり判定用のAABBを返す
+	virtual AABB GetAABB() const = 0;
 
-    // 当たった時に呼ばれるコールバック
-    virtual void OnCollision(Collider* other) = 0;
+	// 当たった時に呼ばれるコールバック
+	virtual void OnCollision(Collider* other) = 0;
 
-    Layer GetLayer() const { return layer_; }
+	Layer GetLayer() const { return layer_; }
 
-    // 当たり判定の有効/無効
-    void SetCollisionEnabled(bool v) { enabled_ = v; }
-    bool IsCollisionEnabled() const { return enabled_; }
+	// 当たり判定の有効/無効
+	void SetCollisionEnabled(bool v) { enabled_ = v; }
+	bool IsCollisionEnabled() const { return enabled_; }
 
-protected:
-    Collider(Layer layer) : layer_(layer) {}
-    Layer layer_;
-    bool enabled_ = true;
+  protected:
+	Collider(Layer layer) : layer_(layer) {}
+	Layer layer_;
+	bool enabled_ = true;
 };
-
 
 
 ============================================================
@@ -1083,104 +1666,101 @@ File Path: project/application/Collision/CollisionManager.cpp
 #include "CollisionManager.h"
 #include "Player.h"
 
-
 #include "MyMath.h"
-#include <assert.h>
 #include <array>
-
+#include <assert.h>
 
 std::unique_ptr<CollisionManager> CollisionManager::instance_ = nullptr;
 
 CollisionManager* CollisionManager::GetInstance()
 {
 	// シングルトン実体がなければ生成して返す
-	if (!instance_) {
+	if (!instance_)
+	{
 		instance_ = std::make_unique<CollisionManager>();
 	}
 	return instance_.get();
 }
 
-void CollisionManager::Finalize()
-{
-	instance_.reset();
-}
+void CollisionManager::Finalize() { instance_.reset(); }
 
 void CollisionManager::AddCollider(Collider* collider)
 {
 	// コライダーを登録
-    colliders_.push_back(collider);
-    
+	colliders_.push_back(collider);
 }
 
 void CollisionManager::Update()
 {
-    const size_t n = colliders_.size();
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = i + 1; j < n; ++j) {
-            Collider* a = colliders_[i];
-            Collider* b = colliders_[j];
+	const size_t n = colliders_.size();
+	for (size_t i = 0; i < n; ++i)
+	{
+		for (size_t j = i + 1; j < n; ++j)
+		{
+			Collider* a = colliders_[i];
+			Collider* b = colliders_[j];
 
-            // どちらかが当たり判定無効ならスキップ
-            if (!a->IsCollisionEnabled() || !b->IsCollisionEnabled()) {
-                continue;
-            }
+			// どちらかが当たり判定無効ならスキップ
+			if (!a->IsCollisionEnabled() || !b->IsCollisionEnabled())
+			{
+				continue;
+			}
 			// レイヤー同士で当たり判定を取るべきか
-            if (!CanCollide(a->GetLayer(), b->GetLayer())) {
-                continue;
-            }
+			if (!CanCollide(a->GetLayer(), b->GetLayer()))
+			{
+				continue;
+			}
 
-            if (MyMath::IsCollision(a->GetAABB(), b->GetAABB())) {
-                // 両方に知らせる
-                a->OnCollision(b);
-                b->OnCollision(a);
-            }
-        }
-    }
+			if (MyMath::IsCollision(a->GetAABB(), b->GetAABB()))
+			{
+				// 両方に知らせる
+				a->OnCollision(b);
+				b->OnCollision(a);
+			}
+		}
+	}
 }
 
 bool CollisionManager::CanCollide(Collider::Layer a, Collider::Layer b) const
 {
 	// レイヤー同士の当たり判定を定義するテーブル
-    constexpr std::size_t LAYER_COUNT = 5;
-    static constexpr std::array<std::array<bool, LAYER_COUNT>, LAYER_COUNT> table{{
-        /* Player      */ std::array<bool, LAYER_COUNT>{ false, true,  true,  false, true  },
-        /* Enemy       */ std::array<bool, LAYER_COUNT>{ true,  false, false, true,  false },
-        /* Enemy2      */ std::array<bool, LAYER_COUNT>{ true,  false, false, true,  false },
-        /* PlayerBullet*/ std::array<bool, LAYER_COUNT>{ false, true,  true,  false, false },
-        /* EnemyBullet */ std::array<bool, LAYER_COUNT>{ true,  false, false, false, false },
-    }};
+	constexpr std::size_t LAYER_COUNT = 5;
+	static constexpr std::array<std::array<bool, LAYER_COUNT>, LAYER_COUNT> table{{
+		/* Player      */ std::array<bool, LAYER_COUNT>{false, true, true, false, true},
+		/* Enemy       */ std::array<bool, LAYER_COUNT>{true, false, false, true, false},
+		/* Enemy2      */ std::array<bool, LAYER_COUNT>{true, false, false, true, false},
+		/* PlayerBullet*/ std::array<bool, LAYER_COUNT>{false, true, true, false, false},
+		/* EnemyBullet */ std::array<bool, LAYER_COUNT>{true, false, false, false, false},
+	}};
 
-    const auto ia = static_cast<std::size_t>(a);
-    const auto ib = static_cast<std::size_t>(b);
+	const auto ia = static_cast<std::size_t>(a);
+	const auto ib = static_cast<std::size_t>(b);
 
-    if (ia >= LAYER_COUNT || ib >= LAYER_COUNT) {
-        // 未知のレイヤーは false を返す（安全側）
-        return false;
-    }
+	if (ia >= LAYER_COUNT || ib >= LAYER_COUNT)
+	{
+		// 未知のレイヤーは false を返す（安全側）
+		return false;
+	}
 
-    return table[ia][ib];
+	return table[ia][ib];
 }
 
-void CollisionManager::Clear() {
-    
-	colliders_.clear();
-}
+void CollisionManager::Clear() { colliders_.clear(); }
 
 
 ============================================================
 File Path: project/application/Collision/CollisionManager.h
 ============================================================
 #pragma once
-#include "Collider.h"	
+#include "Collider.h"
 #include <vector>
-
 
 /// <summary>
 /// 当たり判定管理クラス（シングルトン）
 /// </summary>
 class CollisionManager
 {
-public:
+  public:
 	// シングルトン取得
 	static CollisionManager* GetInstance();
 	// コンストラクタは private（外部から new できない）
@@ -1213,10 +1793,7 @@ public:
 	/// </summary>
 	void Update();
 
-	
-
-private:
-	
+  private:
 	/// <summary>
 	/// 当たり判定を取るべきか
 	/// </summary>
@@ -1231,16 +1808,15 @@ private:
 };
 
 
-
 ============================================================
 File Path: project/application/goal/Goal.cpp
 ============================================================
 #include "Goal.h"
-#include "Object3DCommon.h"
 #include "MapChipField.h"
+#include "Object3DCommon.h"
 #include "SceneManager.h"
-#include <memory>
 #include <CameraManager.h>
+#include <memory>
 
 void Goal::Initialize(MapChipField* map, Player* paleyr)
 {
@@ -1259,40 +1835,45 @@ void Goal::Initialize(MapChipField* map, Player* paleyr)
 	fadeManager_.Initialize("Resources/white.png");
 	fadeManager_.StartFadeIn();
 	isFadeOutStarted_ = false;
-	
 }
 
 void Goal::Update(bool isGoal, float deltaTime, Vector3 goalpos)
 {
 	fadeManager_.Update();
 	// オブジェクトの更新
-	if (object3D_) {
+	if (object3D_)
+	{
 		object3D_->Update();
 	}
 
 	// ゴールに到達したかどうかの更新
 
-	Vector3 offset = { 0, 0, -20 };
-	
+	Vector3 offset = {0, 0, -20};
+
 	isGoal_ = isGoal;
-	if (isGoal_ && !isEffectStarted_) {
+	if (isGoal_ && !isEffectStarted_)
+	{
 		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(goalpos + offset);
 		isEffectStarted_ = true;
-		if (stageClearEffect_) {
+		if (stageClearEffect_)
+		{
 			stageClearEffect_->Begin();
 		}
 	}
 
-	if (isEffectStarted_ && stageClearEffect_) {
+	if (isEffectStarted_ && stageClearEffect_)
+	{
 		stageClearEffect_->Update(deltaTime);
 
-		if (stageClearEffect_->IsFinished() && !isFadeOutStarted_) {
+		if (stageClearEffect_->IsFinished() && !isFadeOutStarted_)
+		{
 			isFadeOutStarted_ = true;
 			fadeManager_.StartFadeOut();
 		}
 	}
 
-	if (fadeManager_.IsFadeOutFinished()) {
+	if (fadeManager_.IsFadeOutFinished())
+	{
 		SceneManager::GetInstance()->ChangeScene("GAMECLEAR");
 	}
 }
@@ -1300,55 +1881,51 @@ void Goal::Update(bool isGoal, float deltaTime, Vector3 goalpos)
 void Goal::Draw()
 {
 	// オブジェクトの描画
-	if (!isEffectStarted_) {
-		if (object3D_) {
+	if (!isEffectStarted_)
+	{
+		if (object3D_)
+		{
 			object3D_->Draw();
 		}
 	}
 
-	if (isEffectStarted_ && stageClearEffect_) {
+	if (isEffectStarted_ && stageClearEffect_)
+	{
 		stageClearEffect_->Draw();
 	}
 }
 
-void Goal::Draw2D()
-{
-	fadeManager_.Draw();
-}
+void Goal::Draw2D() { fadeManager_.Draw(); }
 
 
 ============================================================
 File Path: project/application/goal/Goal.h
 ============================================================
 #pragma once
+#include "FadeManager.h"
+#include "Player.h"
 #include <Object3D.h>
 #include <StageEndEffect.h>
-#include "Player.h"
-#include "FadeManager.h"
 #include <memory>
 
 class MapChipField;
 class Goal
 {
-public:
-
+  public:
 	/// <summary>
-	/// デストラクタ（所有リソースは smart pointer が解放するため明示的な delete は不要）
+	/// デストラクタ
 	/// </summary>
 	~Goal() = default;
 
 	/// <summary>
 	/// 初期化
-	/// - マップとプレイヤー参照を受け取りゴール位置などを設定します
-	/// - 必要なオブジェクトは unique_ptr で所有します
 	/// </summary>
 	void Initialize(MapChipField* map, Player* player);
 
 	/// <summary>
 	/// 更新
-	/// - ゴール判定、エフェクト開始、フェード制御などを行います
 	/// </summary>
-	void Update(bool isGoal, float deltaTime,Vector3 goalpos);
+	void Update(bool isGoal, float deltaTime, Vector3 goalpos);
 
 	/// <summary>
 	/// 3D 描画
@@ -1362,12 +1939,12 @@ public:
 
 	// Getter / Setter
 	/// <summary>
-	/// ゴールに到達したかどうかを取得します
+	/// ゴールに到達したかどうかを取得
 	/// </summary>
 	bool GetIsGoal() const { return isGoal_; }
 
 	/// <summary>
-	/// ゴールに到達したかどうかを設定します
+	/// ゴールに到達したかどうかを設定
 	/// </summary>
 	void SetIsGoal(bool isGoal) { isGoal_ = isGoal; }
 
@@ -1376,46 +1953,44 @@ public:
 	/// </summary>
 	bool GetIsEffectStarted() const { return isEffectStarted_; }
 
-private:
+  private:
 	static constexpr float kDefaultFadeDuration = 1.0f;
 
 	// メンバ（処理コメント付き）
-	bool isGoal_ = false;                          // ゴール到達フラグ
+	bool isGoal_ = false; // ゴール到達フラグ
 
-	std::unique_ptr<Object3D> object3D_;           // ゴールの3Dオブジェクト（所有）
+	std::unique_ptr<Object3D> object3D_; // ゴールの3Dオブジェクト（所有）
 
-	Vector3 goalPosition_;                         // ゴールのワールド位置
+	Vector3 goalPosition_; // ゴールのワールド位置
 
 	std::unique_ptr<StageEndEffect> stageClearEffect_;
-	bool isEffectStarted_ = false;                 // エフェクト開始済みフラグ
+	bool isEffectStarted_ = false; // エフェクト開始済みフラグ
 
-	
 	FadeManager fadeManager_;
-	bool isFadeOutStarted_ = false;                // フェードアウト開始フラグ
+	bool isFadeOutStarted_ = false; // フェードアウト開始フラグ
 };
-
 
 
 ============================================================
 File Path: project/application/map/GenerateBlock.cpp
 ============================================================
-#include "GenerateBlock.h"
+﻿#include "GenerateBlock.h"
 #include "Object3DCommon.h"
 
-void GenerateBlock::Initialize(MapChipField* map)
-{
-	mapChipField_ = map;
-
-}
+void GenerateBlock::Initialize(MapChipField* map) { mapChipField_ = map; }
 
 void GenerateBlock::Update()
 {
-	for (auto& line : tileObjects_) {
-		for (auto& tile : line) {
-			if (!tile.object) {
+	for (auto& line : tileObjects_)
+	{
+		for (auto& tile : line)
+		{
+			// 3Dオブジェクトが存在しない場合はスキップ
+			if (!tile.object)
+			{
 				continue;
 			}
-
+			// 3Dオブジェクトの更新
 			tile.object->Update();
 		}
 	}
@@ -1423,69 +1998,86 @@ void GenerateBlock::Update()
 
 void GenerateBlock::Draw()
 {
-	for (auto& line : tileObjects_) {
-		for (auto& tile : line) {
-			if (!tile.object) {
+	for (auto& line : tileObjects_)
+	{
+		for (auto& tile : line)
+		{
+			// 3Dオブジェクトが存在しない場合はスキップ
+			if (!tile.object)
+			{
 				continue;
 			}
-
+			// 3Dオブジェクトの更新
 			tile.object->Draw();
 		}
 	}
 }
+
 void GenerateBlock::GenerateObject3D()
 {
-	if (!mapChipField_) {
+	// マップチップフィールドが設定されていない場合は処理を中断
+	if (!mapChipField_)
+	{
 		return;
 	}
 
-	const uint32_t height = mapChipField_->GetNumBlockVirtical();
-	const uint32_t width = mapChipField_->GetNumBlockHorizontal();
+	const uint32_t kHeight = mapChipField_->GetNumBlockVertical();	// 縦のブロック数を取得
+	const uint32_t kWidth = mapChipField_->GetNumBlockHorizontal(); // 横のブロック数を取得
 
-	tileObjects_.clear();
-	tileObjects_.resize(height);
+	tileObjects_.clear();		  // 既存のタイルオブジェクトをクリア
+	tileObjects_.resize(kHeight); // 縦のブロック数に合わせてタイルオブジェクトの行数をリサイズ
 
-	for (uint32_t y = 0; y < height; ++y) {
-		tileObjects_[y].resize(width);
+	for (uint32_t y = 0; y < kHeight; ++y)
+	{
+		tileObjects_[y].resize(kWidth); // 横のブロック数に合わせてタイルオブジェクトの列数をリサイズ
 	}
-
+	// 各マップチップに対応する3Dオブジェクトを生成
 	SyncBlockObjectsWithMap();
 }
 
 void GenerateBlock::SyncBlockObjectsWithMap()
 {
-	if (!mapChipField_) {
+
+	if (!mapChipField_)
+	{
 		return;
 	}
 
-	const uint32_t height = mapChipField_->GetNumBlockVirtical();
-	const uint32_t width = mapChipField_->GetNumBlockHorizontal();
+	const uint32_t kHeight = mapChipField_->GetNumBlockVertical();
+	const uint32_t kWidth = mapChipField_->GetNumBlockHorizontal();
 
 	// サイズが合ってなければ作り直す
-	if (tileObjects_.size() != height) {
+	if (tileObjects_.size() != kHeight)
+	{
 		GenerateObject3D();
 		return;
 	}
 
-	for (uint32_t y = 0; y < height; ++y) {
-		if (tileObjects_[y].size() != width) {
+	for (uint32_t y = 0; y < kHeight; ++y)
+	{
+		// サイズが合ってなければ作り直す
+		if (tileObjects_[y].size() != kWidth)
+		{
 			GenerateObject3D();
 			return;
 		}
 
-		for (uint32_t x = 0; x < width; ++x) {
-			MapChipType currentType = mapChipField_->GetMapChipTypeByIndex(x, y);
-			TileObject& tile = tileObjects_[y][x];
+		for (uint32_t x = 0; x < kWidth; ++x)
+		{
+			MapChipType currentType = mapChipField_->GetMapChipTypeByIndex(x, y); // 現在のマップチップタイプを取得
+			TileObject& tile = tileObjects_[y][x];								  // 対応するタイルオブジェクトを取得
 
 			// 表示しないチップなら消す
-			if (!IsDrawableTile(currentType)) {
+			if (!IsDrawableTile(currentType))
+			{
 				tile.object.reset();
 				tile.type = MapChipType::Empty;
 				continue;
 			}
 
 			// タイプが変わっていないならそのまま
-			if (tile.object && tile.type == currentType) {
+			if (tile.object && tile.type == currentType)
+			{
 				continue;
 			}
 
@@ -1498,35 +2090,40 @@ void GenerateBlock::SyncBlockObjectsWithMap()
 
 std::unique_ptr<Object3D> GenerateBlock::CreateTileObject(MapChipType type, uint32_t x, uint32_t y)
 {
-	if (!IsDrawableTile(type)) {
+	if (!IsDrawableTile(type))
+	{
 		return nullptr;
 	}
 
-	const char* modelName = GetModelName(type);
-	if (modelName[0] == '\0') {
+	const char* kModelName = GetModelName(type);
+	if (kModelName[0] == '\0')
+	{
 		return nullptr;
 	}
+	// 3Dオブジェクトを生成
 
 	auto obj = std::make_unique<Object3D>();
 	obj->Initialize(Object3DCommon::GetInstance());
-	obj->SetModel(modelName);
-	obj->SetTranslate(mapChipField_->GetMapChipPostionByIndex(x, y));
+	obj->SetModel(kModelName);
+	obj->SetTranslate(mapChipField_->GetMapChipPositionByIndex(x, y));
 
 	obj->SetLighting(true);
 	obj->SetDirectionalLightEnable(true);
-	obj->SetDirectionalLightDirection({ 0.88f, -1.90f, 4.0f });
+	obj->SetDirectionalLightDirection({0.88f, -1.90f, 4.0f});
 
 	return obj;
 }
 
 const char* GenerateBlock::GetModelName(MapChipType type) const
 {
-	switch (type) {
+	// マップチップタイプに応じたモデル名を返す
+	switch (type)
+	{
 	case MapChipType::Block:
 		return "block";
 
 	case MapChipType::UnbreakableBlock:
-		return "unbreakableBlokc";
+		return "unbreakableBlock";
 
 	case MapChipType::damageBlock:
 		return "damageblock";
@@ -1541,7 +2138,9 @@ const char* GenerateBlock::GetModelName(MapChipType type) const
 
 bool GenerateBlock::IsDrawableTile(MapChipType type) const
 {
-	switch (type) {
+	// 描画可能なマップチップタイプかどうかを判定
+	switch (type)
+	{
 	case MapChipType::Block:
 	case MapChipType::UnbreakableBlock:
 	case MapChipType::damageBlock:
@@ -1558,39 +2157,74 @@ bool GenerateBlock::IsDrawableTile(MapChipType type) const
 File Path: project/application/map/GenerateBlock.h
 ============================================================
 #pragma once
-#include <vector>
 #include <memory>
+#include <vector>
 
+#include "MapChipField.h"
 #include "MyMath.h"
 #include "Object3D.h"
-#include "MapChipField.h"
 
-struct TileObject {
+struct TileObject
+{
 	MapChipType type = MapChipType::Empty;
 	std::unique_ptr<Object3D> object = nullptr;
 };
 
 class GenerateBlock
 {
-public:
+  public:
 	GenerateBlock() = default;
 	~GenerateBlock() = default;
 
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="map"></param>
 	void Initialize(MapChipField* map);
+	/// <summary>
+	/// 更新
+	/// </summary>
 	void Update();
+	/// <summary>
+	/// 描画
+	/// </summary>
 	void Draw();
 
+	/// <summary>
+	/// 3Dオブジェクトの生成
+	/// </summary>
 	void GenerateObject3D();
+	/// <summary>
+	/// 3Dオブジェクトの同期
+	/// </summary>
 	void SyncBlockObjectsWithMap();
 
-private:
+  private:
+	/// <summary>
+	/// 指定したマップチップタイプの3Dオブジェクトを生成
+	/// </summary>
+	/// <param name="type"></param>
+	/// <param name="x"></param>
+	/// <param name="y"></param>
+	/// <returns></returns>
 	std::unique_ptr<Object3D> CreateTileObject(MapChipType type, uint32_t x, uint32_t y);
+	/// <summary>
+	/// 指定したマップチップタイプのモデル名を取得
+	/// 生成時にIDとして使用する
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
 	const char* GetModelName(MapChipType type) const;
+	/// <summary>
+	/// 指定したマップチップタイプが描画可能かどうかを判定
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
 	bool IsDrawableTile(MapChipType type) const;
 
-private:
-	std::vector<std::vector<TileObject>> tileObjects_;
-	MapChipField* mapChipField_ = nullptr;
+  private:
+	std::vector<std::vector<TileObject>> tileObjects_; // 2D配列でマップチップの3Dオブジェクトを管理
+	MapChipField* mapChipField_ = nullptr;			   // マップチップフィールドへのポインタ（非所有）
 };
 
 
@@ -1601,63 +2235,60 @@ File Path: project/application/map/MapChipDatabase.cpp
 #include "json.hpp"
 #include <fstream>
 
-static MapChipDatabase s_instance;
+static MapChipDatabase instance_;
 
-//シングルトンインスタンス取得
-MapChipDatabase* MapChipDatabase::GetInstance()
-{
-	return &s_instance;
-}
+// シングルトンインスタンス取得
+MapChipDatabase* MapChipDatabase::GetInstance() { return &instance_; }
 
 void MapChipDatabase::LoadJson(const std::string& path)
 {
-	std::ifstream file(path);// ファイルストリームを開く
-	assert(file.is_open() && "Failed to open JSON file");// ファイルが開けなかった場合はアサート
+	std::ifstream file(path);							  // ファイルストリームを開く
+	assert(file.is_open() && "Failed to open JSON file"); // ファイルが開けなかった場合はアサート
 
 	nlohmann::json jsonData; // JSONデータオブジェクト
-	file >> jsonData;// JSONデータを読み込む
+	file >> jsonData;		 // JSONデータを読み込む
 
 	chips_.clear();
 	chipsById_.clear();
 
-	for (auto& chip : jsonData["chips"]) {
+	for (auto& chip : jsonData["chips"])
+	{
 		MapChipInfo info;
-		info.id = chip["id"];// マップチップIDを取得
-		info.label = chip["label"];// マップチップラベルを取得
+		info.id = chip["id"];		// マップチップIDを取得
+		info.label = chip["label"]; // マップチップラベルを取得
 
-		auto color = chip["color"];// カラー配列を取得
-		info.color = Vector4(
-			static_cast<float>(color[0]),
-			static_cast<float>(color[1]),
-			static_cast<float>(color[2]),
-			static_cast<float>(color[3])// マップチップカラーを設定
+		auto color = chip["color"]; // カラー配列を取得
+		info.color = Vector4(static_cast<float>(color[0]), static_cast<float>(color[1]), static_cast<float>(color[2]),
+							 static_cast<float>(color[3]) // マップチップカラーを設定
 		);
 
-		info.collision = chip["collision"];// 衝突情報を取得
-		info.spawn = chip["spawn"];// スポーン情報を取得
+		info.collision = chip["collision"]; // 衝突情報を取得
+		info.spawn = chip["spawn"];			// スポーン情報を取得
 
 		// 敵番号が存在する場合
-		if (chip.contains("enemyNumber")) {
+		if (chip.contains("enemyNumber"))
+		{
 			// 敵番号を取得
 			info.enemyNumber = chip["enemyNumber"];
 		}
 
 		// hitPoints が存在すれば読み込む（なければデフォルト 0）
-		if (chip.contains("hitPoints")) {
+		if (chip.contains("hitPoints"))
+		{
 			info.hitPoints = chip["hitPoints"];
 		}
 
 		chips_.push_back(info);
 		chipsById_[info.id] = info;
-
 	}
-
 }
 
 const MapChipInfo* MapChipDatabase::GetById(MapChipType id) const
 {
+	//
 	auto it = chipsById_.find(id);
-	if (it == chipsById_.end()) {
+	if (it == chipsById_.end())
+	{
 		return nullptr;
 	}
 	return &it->second;
@@ -1670,8 +2301,8 @@ File Path: project/application/map/MapChipDatabase.h
 #pragma once
 #include "MyMath.h"
 
-
-enum class MapChipType : int {
+enum class MapChipType : int
+{
 
 	Empty = 0,
 	Block,
@@ -1682,22 +2313,22 @@ enum class MapChipType : int {
 	UnbreakableBlock,
 	damageBlock,
 
-
 };
 
 #include <unordered_map>
-	struct MapChipInfo {
-		MapChipType id;// マップチップID
-		std::string label;// マップチップラベル
-		Vector4 color;// マップチップカラー
-		std::string collision;// 衝突情報
-		std::string spawn;
-		int enemyNumber = -1;// 敵番号
-		int hitPoints = 0; // 追加: タイルの耐久値（0 = 壊せない / 1以上 = 壊せる）
-	};
+struct MapChipInfo
+{
+	MapChipType id;		   // マップチップID
+	std::string label;	   // マップチップラベル
+	Vector4 color;		   // マップチップカラー
+	std::string collision; // 衝突情報
+	std::string spawn;
+	int enemyNumber = -1; // 敵番号
+	int hitPoints = 0;	  // 追加: タイルの耐久値（0 = 壊せない / 1以上 = 壊せる）
+};
 class MapChipDatabase
 {
-public:
+  public:
 	static MapChipDatabase* GetInstance();
 
 	/// <summary>
@@ -1716,47 +2347,49 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	const std::vector<MapChipInfo>& GetAll() const { return chips_; }
-private:
-	std::vector<MapChipInfo> chips_;// マップチップ情報リスト
-	std::unordered_map<MapChipType, MapChipInfo> chipsById_;// IDによるマップチップ情報マップ
 
+  private:
+	std::vector<MapChipInfo> chips_;						 // マップチップ情報リスト
+	std::unordered_map<MapChipType, MapChipInfo> chipsById_; // IDによるマップチップ情報マップ
 };
 
 
 ============================================================
 File Path: project/application/map/MapChipField.cpp
 ============================================================
-#include "MapChipField.h"
+﻿#include "MapChipField.h"
+#include "MapChipDatabase.h"
 #include <fstream>
 #include <map>
 #include <sstream>
-#include "MapChipDatabase.h"
 
-
-
-void MapChipField::ResetMapChipData() {
+void MapChipField::ResetMapChipData()
+{
 	// マップチップデータのリセット
 	mapChipData_.data.clear();
-	mapChipData_.data.resize(kNumBlockVirtical);
-	for (auto& line : mapChipData_.data) {
+	mapChipData_.data.resize(kNumBlockVertical);
+	for (auto& line : mapChipData_.data)
+	{
 		line.clear();
 		line.resize(kNumBlockHorizontal, MapChipType::Empty);
 	}
 
 	// hpData_ のリセット
 	hpData_.clear();
-	hpData_.resize(kNumBlockVirtical);
-	for (auto& line : hpData_) {
+	hpData_.resize(kNumBlockVertical);
+	for (auto& line : hpData_)
+	{
 		line.clear();
 		line.resize(kNumBlockHorizontal, 0);
 	}
 
 	// 新しいStageDataも同じサイズで初期化
-	stageData_.Resize(kNumBlockHorizontal, kNumBlockVirtical);
+	stageData_.Resize(kNumBlockHorizontal, kNumBlockVertical);
 	stageData_.Clear();
 }
 
-void MapChipField::LoadMapChipCsv(const std::string& filePath) {
+void MapChipField::LoadMapChipCsv(const std::string& filePath)
+{
 	// マップチップデータをリセット
 	ResetMapChipData();
 	portals_.clear();
@@ -1776,13 +2409,31 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	std::string line;
 	uint32_t y = 0;
 
-	while (std::getline(mapChipCsv, line)) {
+	while (std::getline(mapChipCsv, line))
+	{
+
+		
+			// 発射制限
+			if (line.rfind("#shotLimit,", 0) == 0)
+			{
+				std::string valueText =
+					line.substr(std::string("#shotLimit,").size());
+
+				stageData_.SetShotLimit(std::stoi(valueText));
+
+				// この行はマップデータではないのでyを増やさない
+				continue;
+			}
+
+
 		std::stringstream lineStream(line);
 		std::string cell;
 		uint32_t x = 0;
 
-		while (std::getline(lineStream, cell, ',')) {
-			if (y < kNumBlockVirtical && x < kNumBlockHorizontal) {
+		while (std::getline(lineStream, cell, ','))
+		{
+			if (y < kNumBlockVertical && x < kNumBlockHorizontal)
+			{
 
 				std::string cellText = cell;
 
@@ -1795,15 +2446,15 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 				MapChipType id = static_cast<MapChipType>(std::stoi(typeText));
 				mapChipData_.data[y][x] = id;
 
-				
 				stageData_.SetType(x, y, id);
 
-				if (id == MapChipType::Portal) {
+				if (id == MapChipType::Portal)
+				{
 					std::string pairText;
 					std::string dirText;
 
-					if (std::getline(cellParser, pairText, ':') &&
-						std::getline(cellParser, dirText, ':')) {
+					if (std::getline(cellParser, pairText, ':') && std::getline(cellParser, dirText, ':'))
+					{
 
 						PortalInfo portal;
 						portal.pairId = std::stoi(pairText);
@@ -1819,12 +2470,14 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 						cellData.direction = portal.dir;
 					}
 				}
-				
+
 				const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(id);
-				if (info) {
+				if (info)
+				{
 					hpData_[y][x] = info->hitPoints;
 				}
-				else {
+				else
+				{
 					hpData_[y][x] = 0;
 				}
 			}
@@ -1834,34 +2487,38 @@ void MapChipField::LoadMapChipCsv(const std::string& filePath) {
 	}
 }
 
-MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex) {
+MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex)
+{
 
 	// 範囲チェック（unsigned なので 0 未満チェックは不要）
-	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight())
+	{
 		return MapChipType::Empty;
 	}
 
 	return stageData_.GetType(xIndex, yIndex);
 }
 
-Vector3 MapChipField::GetMapChipPostionByIndex(uint32_t xIndex, uint32_t yIndex) {
+Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex)
+{
 	// 指定したインデックスのマップチップのワールド座標を返す
-	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVirtical - 1 - yIndex), 0);
+	return Vector3(kBlockWidth * xIndex, kBlockHeight * (kNumBlockVertical - 1 - yIndex), 0);
 }
 
-IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position) {
+IndexSet MapChipField::GetMapChipIndexSetByPosition(const Vector3& position)
+{
 	// 指定したワールド座標からマップチップのインデックスを返す
 	IndexSet indexSet = {};
 	// インデックスを計算
 	indexSet.xIndex = static_cast<uint32_t>((position.x + kBlockWidth / 2) / kBlockWidth);
-	indexSet.yIndex = kNumBlockVirtical - 1 - static_cast<uint32_t>((position.y + kBlockHeight / 2) / kBlockHeight);
+	indexSet.yIndex = kNumBlockVertical - 1 - static_cast<uint32_t>((position.y + kBlockHeight / 2) / kBlockHeight);
 	return indexSet;
-
 }
 
-Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex) {
+Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex)
+{
 	// 指定したインデックスからマップチップの矩形情報を取得
-	Vector3 center = GetMapChipPostionByIndex(xindex, yIndex);
+	Vector3 center = GetMapChipPositionByIndex(xindex, yIndex);
 	// 矩形情報を計算して返す
 	Rect rect;
 	rect.left = center.x - kBlockWidth / 2.0f;
@@ -1869,49 +2526,56 @@ Rect MapChipField::GetRectByIndex(uint32_t xindex, uint32_t yIndex) {
 	rect.bottom = center.y - kBlockHeight / 2.0f;
 	rect.top = center.y + kBlockHeight / 2.0f;
 	return rect;
-
-
 }
 
 std::vector<Vector3> MapChipField::GetEnemyPositions()
 {
 	std::vector<Vector3> enemyPositions;
-	Enemynumber.clear();
+	enemyNumber_.clear();
 
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
-		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y)
+	{
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x)
+		{
 
 			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-			if (!info) {
+			if (!info)
+			{
 				continue;
 			}
 
 			// JSON で spawn == "enemy" のタイルを敵として扱う
-			if (info->spawn == "enemy") {
-				enemyPositions.push_back(GetMapChipPostionByIndex(x, y));
-				Enemynumber.push_back(info->enemyNumber); // enemyNumber をそのまま保存
+			if (info->spawn == "enemy")
+			{
+				enemyPositions.push_back(GetMapChipPositionByIndex(x, y));
+				enemyNumber_.push_back(info->enemyNumber); // enemyNumber をそのまま保存
 			}
 		}
 	}
 	return enemyPositions;
 }
 
-Vector3 MapChipField::GetGoalPosition() {
-	Vector3 pos{ 0.0f, 0.0f, 0.0f };
+Vector3 MapChipField::GetGoalPosition()
+{
+	Vector3 pos{0.0f, 0.0f, 0.0f};
 
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
-		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y)
+	{
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x)
+		{
 
 			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-			if (!info) {
+			if (!info)
+			{
 				continue;
 			}
 
 			// JSON で spawn == "goal" のタイルをゴールとして扱う
-			if (info->spawn == "goal") {
-				pos = GetMapChipPostionByIndex(x, y);
+			if (info->spawn == "goal")
+			{
+				pos = GetMapChipPositionByIndex(x, y);
 				// 複数ある場合は最後のものが採用される
 			}
 		}
@@ -1919,32 +2583,37 @@ Vector3 MapChipField::GetGoalPosition() {
 	return pos;
 }
 
-bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex) 
+bool MapChipField::IsSolid(uint32_t xIndex, uint32_t yIndex)
 {
 	MapChipType type = GetMapChipTypeByIndex(xIndex, yIndex);
 
 	const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(type);
-	if (!info) {
+	if (!info)
+	{
 		return false;
 	}
-	//collision == "solid" を「通れないブロック」として扱う
+	// collision == "solid" を「通れないブロック」として扱う
 	return info->collision == "solid";
 }
 
-std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTag)
+std::vector<Vector3> MapChipField::GetPositionBySpawn(const std::string& spawnTag)
 {
 	std::vector<Vector3> result;
 
-	for (uint32_t y = 0; y < kNumBlockVirtical; ++y) {
-		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y)
+	{
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x)
+		{
 
 			MapChipType typeId = GetMapChipTypeByIndex(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-			if (!info) {
+			if (!info)
+			{
 				continue;
 			}
-			if (info->spawn == spawnTag) {
-				result.push_back(GetMapChipPostionByIndex(x, y));
+			if (info->spawn == spawnTag)
+			{
+				result.push_back(GetMapChipPositionByIndex(x, y));
 			}
 		}
 	}
@@ -1953,8 +2622,10 @@ std::vector<Vector3> MapChipField::GetPositionBySpwan(const std::string& spawnTa
 }
 
 //  指定インデックスのHPを取得
-int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
-	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const
+{
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight())
+	{
 		return 0;
 	}
 
@@ -1962,33 +2633,41 @@ int MapChipField::GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const {
 }
 
 //  指定インデックスにダメージを与える（HPが0以下になったらタイルを 0 にする）
-void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage) {
-	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight()) {
+void MapChipField::DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage)
+{
+	if (xIndex >= stageData_.GetWidth() || yIndex >= stageData_.GetHeight())
+	{
 		return;
 	}
 
 	stageData_.DamageHP(xIndex, yIndex, damage);
 
 	// 並走期間中だけ、旧データにも反映しておく
-	if (yIndex < mapChipData_.data.size() && xIndex < mapChipData_.data[yIndex].size()) {
+	if (yIndex < mapChipData_.data.size() && xIndex < mapChipData_.data[yIndex].size())
+	{
 		mapChipData_.data[yIndex][xIndex] = stageData_.GetType(xIndex, yIndex);
 	}
 
-	if (yIndex < hpData_.size() && xIndex < hpData_[yIndex].size()) {
+	if (yIndex < hpData_.size() && xIndex < hpData_[yIndex].size())
+	{
 		hpData_[yIndex][xIndex] = stageData_.GetHP(xIndex, yIndex);
 	}
 }
 
 //  ワールド座標からダメージを与えるユーティリティ
-void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage) {
+void MapChipField::DamageMapChipByPosition(const Vector3& position, int damage)
+{
 	IndexSet indexSet = GetMapChipIndexSetByPosition(position);
 	DamageMapChipByIndex(indexSet.xIndex, indexSet.yIndex, damage);
 }
 
 bool MapChipField::TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const
 {
-	for (const PortalInfo& portal : portals_) {
-		if (portal.x == x && portal.y == y) {
+	// 指定した座標にポータルが存在するかどうかを判定し、存在する場合はその情報を out に格納
+	for (const PortalInfo& portal : portals_)
+	{
+		if (portal.x == x && portal.y == y)
+		{
 			out = portal;
 			return true;
 		}
@@ -1998,9 +2677,10 @@ bool MapChipField::TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const
 
 bool MapChipField::TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const
 {
-	for (const PortalInfo& portal : portals_) {
-		if (portal.pairId == in.pairId &&
-			!(portal.x == in.x && portal.y == in.y)) {
+	for (const PortalInfo& portal : portals_)
+	{
+		if (portal.pairId == in.pairId && !(portal.x == in.x && portal.y == in.y))
+		{
 			out = portal;
 			return true;
 		}
@@ -2011,12 +2691,16 @@ bool MapChipField::TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const
 Vector3 MapChipField::DirFromString(const std::string& dir)
 {
 	{
-		if (dir == "right") return { 1.0f, 0.0f, 0.0f };
-		if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
-		if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
-		if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+		if (dir == "right")
+			return {1.0f, 0.0f, 0.0f};
+		if (dir == "left")
+			return {-1.0f, 0.0f, 0.0f};
+		if (dir == "up")
+			return {0.0f, 1.0f, 0.0f};
+		if (dir == "down")
+			return {0.0f, -1.0f, 0.0f};
 
-		return { 1.0f, 0.0f, 0.0f };
+		return {1.0f, 0.0f, 0.0f};
 	}
 }
 
@@ -2024,18 +2708,19 @@ void MapChipField::ApplyStageData(const StageData& stageData)
 {
 	stageData_ = stageData;
 
-	// 旧データにも同期しておく
 	mapChipData_.data.clear();
 	mapChipData_.data.resize(stageData_.GetHeight());
 
 	hpData_.clear();
 	hpData_.resize(stageData_.GetHeight());
 
-	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y)
+	{
 		mapChipData_.data[y].resize(stageData_.GetWidth(), MapChipType::Empty);
 		hpData_[y].resize(stageData_.GetWidth(), 0);
 
-		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x)
+		{
 			mapChipData_.data[y][x] = stageData_.GetType(x, y);
 			hpData_[y][x] = stageData_.GetHP(x, y);
 		}
@@ -2044,11 +2729,14 @@ void MapChipField::ApplyStageData(const StageData& stageData)
 	// ポータル情報も再構築
 	portals_.clear();
 
-	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
-		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y)
+	{
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x)
+		{
 			const StageCell& cell = stageData_.At(x, y);
 
-			if (cell.type == MapChipType::Portal) {
+			if (cell.type == MapChipType::Portal)
+			{
 				PortalInfo portal;
 				portal.pairId = cell.linkId;
 				portal.x = x;
@@ -2059,8 +2747,6 @@ void MapChipField::ApplyStageData(const StageData& stageData)
 			}
 		}
 	}
-
-
 }
 
 
@@ -2068,32 +2754,35 @@ void MapChipField::ApplyStageData(const StageData& stageData)
 File Path: project/application/map/MapChipField.h
 ============================================================
 #pragma once
+#include "MapChipDatabase.h"
 #include "Vector3.h"
+#include <StageData.h>
 #include <assert.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include "MapChipDatabase.h"
-#include <StageData.h>
 
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
 /// </summary>
-struct MapChipData {
+struct MapChipData
+{
 
 	std::vector<std::vector<MapChipType>> data;
 };
 /// <summary>
 /// マップチップのインデックス（配列上の位置）
 /// </summary>
-struct IndexSet {
+struct IndexSet
+{
 	uint32_t xIndex;
 	uint32_t yIndex;
 };
 /// <summary>
 /// マップチップ1マス分のワールド上の矩形
 /// </summary>
-struct Rect {
+struct Rect
+{
 
 	float left;
 	float right;
@@ -2101,20 +2790,21 @@ struct Rect {
 	float top;
 };
 
-struct PortalInfo {
+struct PortalInfo
+{
 	int pairId = -1;
 	uint32_t x = 0;
 	uint32_t y = 0;
-	Vector3 dir = { 1.0f, 0.0f, 0.0f };
+	Vector3 dir = {1.0f, 0.0f, 0.0f};
 };
 
 /// <summary>
 /// マップチップフィールドクラス
 /// </summary>
-class MapChipField {
+class MapChipField
+{
 
-
-public:
+  public:
 	/// <summary>
 	/// マップチップデータのリセット
 	/// </summary>
@@ -2123,18 +2813,19 @@ public:
 	/// マップチップCSVの読み込み
 	/// </summary>
 	void LoadMapChipCsv(const std::string& filePath);
+
 	/// <summary>
 	/// 指定したインデックスのマップチップID（= JSON の id）を取得
 	/// </summary>
-	MapChipType  GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
+	MapChipType GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
 	/// <summary>
 	/// 指定したインデックスのマップチップのワールド座標を取得
 	/// </summary>
-	Vector3 GetMapChipPostionByIndex(uint32_t xIndex, uint32_t yIndex);
+	Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
 	/// <summary>
 	/// 縦のブロック数を取得
 	/// </summary>
-	uint32_t GetNumBlockVirtical() { return kNumBlockVirtical; }
+	uint32_t GetNumBlockVertical() { return kNumBlockVertical; }
 	/// <summary>
 	/// 横のブロック数を取得
 	/// </summary>
@@ -2142,11 +2833,11 @@ public:
 	/// <summary>
 	/// 指定したワールド座標からマップチップのインデックスを取得
 	/// </summary>
-	IndexSet GetMapChipIndexSetByPosition(const Vector3& posotopn);
+	IndexSet GetMapChipIndexSetByPosition(const Vector3& position);
 	/// <summary>
 	/// 指定したインデックスからマップチップの矩形情報を取得
 	/// </summary>
-	Rect GetRectByIndex(uint32_t xindex, uint32_t yIndex);
+	Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex);
 	/// <summary>
 	/// 敵の座標リストを取得
 	/// </summary>
@@ -2155,46 +2846,105 @@ public:
 	/// <summary>
 	/// 敵の番号リストを取得します
 	/// </summary>
-	std::vector<int> GetEnemyNumbers() { return Enemynumber; } //敵の番号を取得
+	std::vector<int> GetEnemyNumbers() { return enemyNumber_; } // 敵の番号を取得
 	/// <summary>
-	//ゴール
+	// ゴール
 	/// </summary>
 	/// <returns>ゴールの座標を返す</returns>
 	Vector3 GetGoalPosition();
-
+	/// <summary>
+	/// 指定したインデックスのマップチップが通行可能かどうかを判定
+	/// </summary>
+	/// <param name="xIndex"></param>
+	/// <param name="yIndex"></param>
+	/// <returns></returns>
 	bool IsSolid(uint32_t xIndex, uint32_t yIndex);
+	/// <summary>
+	/// 指定した spawn タグに対応するマップチップの座標リストを取得
+	/// </summary>
+	/// <param name="spawnTag"></param>
+	/// <returns></returns>
+	std::vector<Vector3> GetPositionBySpawn(const std::string& spawnTag);
 
-	std::vector<Vector3>GetPositionBySpwan(const std::string& spawnTag);
-
-
+	/// <summary>
+	/// 指定したインデックスのマップチップの耐久値を取得
+	/// </summary>
+	/// <param name="xIndex"></param>
+	/// <param name="yIndex"></param>
+	/// <returns></returns>
 	int GetMapChipHPByIndex(uint32_t xIndex, uint32_t yIndex) const;
+	/// <summary>
+	/// 指定したインデックスのマップチップにダメージを与える（HPが0以下になったらタイルを 0 にする）
+	/// </summary>
+	/// <param name="xIndex"></param>
+	/// <param name="yIndex"></param>
+	/// <param name="damage"></param>
 	void DamageMapChipByIndex(uint32_t xIndex, uint32_t yIndex, int damage);
+	/// <summary>
+	/// 指定したワールド座標のマップチップにダメージを与える（HPが0以下になったらタイルを 0 にする）
+	/// </summary>
+	/// <param name="position"></param>
+	/// <param name="damage"></param>
 	void DamageMapChipByPosition(const Vector3& position, int damage);
 
 	// 1ブロックの幅と高さを取得
 	float GetBlockWidth() const { return kBlockWidth; }
 	// 1ブロックの高さを取得
 	float GetBlockHeight() const { return kBlockHeight; }
-
+	/// <summary>
+	/// ポータル情報のリストを取得
+	/// </summary>
+	/// <returns></returns>
 	const std::vector<PortalInfo>& GetPortals() const { return portals_; }
+	/// <summary>
+	/// 指定した座標にポータルが存在するかどうかを判定し、存在する場合はその情報を out に格納
+	/// </summary>
+	/// <param name="x"></param>
+	/// <param name="y"></param>
+	/// <param name="out"></param>
+	/// <returns></returns>
 	bool TryGetPortal(uint32_t x, uint32_t y, PortalInfo& out) const;
+	/// <summary>
+	/// 指定したポータルのペアとなるポータル情報を取得し、存在する場合はその情報を out に格納
+	/// </summary>
+	/// <param name="in"></param>
+	/// <param name="out"></param>
+	/// <returns></returns>
 	bool TryGetPairPortal(const PortalInfo& in, PortalInfo& out) const;
+	/// <summary>
+	/// 指定した文字列から方向ベクトルを取得
+	/// </summary>
+	/// <param name="dir"></param>
+	/// <returns></returns>
 	Vector3 DirFromString(const std::string& dir);
-	
 
+	/// <summary>
+	/// ステージデータを取得
+	/// </summary>
+	/// <returns></returns>
 	StageData& GetStageData() { return stageData_; }
+	/// <summary>
+	/// ステージデータを取得（const版）
+	/// </summary>
+	/// <returns></returns>
 	const StageData& GetStageData() const { return stageData_; }
+	/// <summary>
+	/// ステージデータを適用
+	/// </summary>
+	/// <param name="stageData"></param>
 	void ApplyStageData(const StageData& stageData);
-private:
+
+  private:
 	// 1ブロックのサイズ
 	static inline const float kBlockWidth = 1.0f;
 	static inline const float kBlockHeight = 1.0f;
 	// ブロック個数
-	static inline const uint32_t kNumBlockVirtical = 25;
+	static inline const uint32_t kNumBlockVertical = 25;
 	static inline const uint32_t kNumBlockHorizontal = 100;
 	MapChipData mapChipData_;
 
-	std::vector<int> Enemynumber;
+	// 敵の番号リスト
+	std::vector<int> enemyNumber_;
 	// ポータルのペアIDと位置、向きを管理する構造体のリスト
 	std::vector<PortalInfo> portals_;
 
@@ -2202,7 +2952,6 @@ private:
 
 	// ステージデータ
 	StageData stageData_;
-
 };
 
 
@@ -2213,52 +2962,62 @@ File Path: project/application/map/StageEditor.cpp
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif // USE_IMGUI
+#include "MapChipDatabase.h"
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
-#include "MapChipDatabase.h"
 
 namespace fs = std::filesystem;
 
-void StageEditor::Run() {
+void StageEditor::Run()
+{
 	// 初期化
-	if (stageData_.GetWidth() == 0 || stageData_.GetHeight() == 0) {
+	if (stageData_.GetWidth() == 0 || stageData_.GetHeight() == 0)
+	{
 		// グリッドの初期化
 		constexpr int kGridWidth = 50;
 		constexpr int kGridHeight = 25;
-		//指定サイズで初期化
+		// 指定サイズで初期化
 		stageData_.Resize(kGridWidth, kGridHeight);
 		stageData_.Clear();
 	}
 	// ストローク訪問管理の初期化
-	if (strokeVisited_.empty()) {
-		strokeVisited_.resize(
-			stageData_.GetHeight(),
-			std::vector<bool>(stageData_.GetWidth(), false)
-		);
+	if (strokeVisited_.empty())
+	{
+		strokeVisited_.resize(stageData_.GetHeight(), std::vector<bool>(stageData_.GetWidth(), false));
 	}
 
 	RenderUI();
 }
 
-void StageEditor::RenderUI() {
+void StageEditor::RenderUI()
+{
 #ifdef USE_IMGUI
 
-	if (fs::exists("Resources/Mapdata") && fs::is_directory("Resources/Mapdata")) {
+	if (fs::exists("Resources/Mapdata") && fs::is_directory("Resources/Mapdata"))
+	{
 		std::vector<std::string> newList;
-		for (const auto& entry : fs::directory_iterator("Resources/Mapdata")) {
-			if (entry.path().extension() == ".csv") {
+		for (const auto& entry : fs::directory_iterator("Resources/Mapdata"))
+		{
+			if (entry.path().extension() == ".csv")
+			{
 				newList.push_back(entry.path().filename().string());
 			}
 		}
 		std::sort(newList.begin(), newList.end());
-		if (newList != availableStages) {
+		if (newList != availableStages)
+		{
 			availableStages = std::move(newList);
-			if (!availableStages.empty()) {
-				if (selectedStageIndex >= availableStages.size()) selectedStageIndex = 0;
-				strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[selectedStageIndex].c_str(), _TRUNCATE);
+			if (!availableStages.empty())
+			{
+				if (selectedStageIndex >= availableStages.size())
+					selectedStageIndex = 0;
+				strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[selectedStageIndex].c_str(),
+						  _TRUNCATE);
 				fileNameBuffer[sizeof(fileNameBuffer) - 1] = '\0';
-			} else {
+			}
+			else
+			{
 				selectedStageIndex = 0;
 				fileNameBuffer[0] = '\0';
 			}
@@ -2269,20 +3028,41 @@ void StageEditor::RenderUI() {
 	ImGuiIO& io = ImGui::GetIO();
 
 	// Ctrl+Z / Ctrl+Y
-	if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z)) { Undo(); }
-	if (io.KeyCtrl && (ImGui::IsKeyPressed(ImGuiKey_Y) || (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_Z)))) { Redo(); }
+	if (io.KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_Z))
+	{
+		Undo();
+	}
+	if (io.KeyCtrl && (ImGui::IsKeyPressed(ImGuiKey_Y) || (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_Z))))
+	{
+		Redo();
+	}
 
-	ImGui::Checkbox("Show Stage Window", &showStagewindow_);
+	ImGui::Checkbox("Show Stage Window", &showStageWindow_);
 
 	ImGui::InputText("FileName", fileNameBuffer, IM_ARRAYSIZE(fileNameBuffer));
-	if (ImGui::Button("New")) {
-		stageData_.Clear();// 新規作成
-		undoStack_.clear();// Undo/Redo履歴をクリア
-		redoStack_.clear();// Undo/Redo履歴をクリア
+
+	
+	// 発射制限
+	int shotLimit = stageData_.GetShotLimit();
+
+	if (ImGui::InputInt("Shot Limit", &shotLimit)) {
+
+		if (shotLimit < 0) {
+			shotLimit = 0;
+		}
+
+		stageData_.SetShotLimit(shotLimit);
+	}
+	if (ImGui::Button("New"))
+	{
+		stageData_.Clear(); // 新規作成
+		undoStack_.clear(); // Undo/Redo履歴をクリア
+		redoStack_.clear(); // Undo/Redo履歴をクリア
 	}
 
 	// セーブ
-	if (ImGui::Button("Save CSV")) {
+	if (ImGui::Button("Save CSV"))
+	{
 		// ファイルパスの生成
 		std::string fullPath = "Resources/Mapdata/" + std::string(fileNameBuffer);
 		SaveCSV(fullPath);
@@ -2290,18 +3070,25 @@ void StageEditor::RenderUI() {
 
 	// ステージリスト（ドロップダウン） — 常に表示。空なら "No Stages"
 	const char* comboPreview = availableStages.empty() ? "No Stages" : availableStages[selectedStageIndex].c_str();
-	if (ImGui::BeginCombo("Stage List", comboPreview)) {
-		if (availableStages.empty()) {
+	if (ImGui::BeginCombo("Stage List", comboPreview))
+	{
+		if (availableStages.empty())
+		{
 			ImGui::Selectable("No stages", false, ImGuiSelectableFlags_Disabled);
-		} else {
-			for (int i = 0; i < static_cast<int>(availableStages.size()); ++i) {
+		}
+		else
+		{
+			for (int i = 0; i < static_cast<int>(availableStages.size()); ++i)
+			{
 				const bool isSelected = (i == selectedStageIndex);
-				if (ImGui::Selectable(availableStages[i].c_str(), isSelected)) {
+				if (ImGui::Selectable(availableStages[i].c_str(), isSelected))
+				{
 					selectedStageIndex = i;
 					strncpy_s(fileNameBuffer, sizeof(fileNameBuffer), availableStages[i].c_str(), _TRUNCATE);
 					fileNameBuffer[sizeof(fileNameBuffer) - 1] = '\0'; // null終端
 				}
-				if (isSelected) {
+				if (isSelected)
+				{
 					ImGui::SetItemDefaultFocus();
 				}
 			}
@@ -2310,29 +3097,34 @@ void StageEditor::RenderUI() {
 	}
 
 	// ロード（選択中のファイル）
-	if (ImGui::Button("Load Selected Stage")) {
-		if (!availableStages.empty()) {
+	if (ImGui::Button("Load Selected Stage"))
+	{
+		if (!availableStages.empty())
+		{
 			// 選択中のステージをロード
 			std::string selectedPath = "Resources/Mapdata/" + availableStages[selectedStageIndex];
 			LoadCSV(selectedPath);
 		}
 	}
 
-	if (ImGui::Button("Reload Map")) {
+	if (ImGui::Button("Reload Map"))
+	{
 		isReloadRequested_ = true;
 	}
 
-	for (const auto& info : MapChipDatabase::GetInstance()->GetAll()) {
+	for (const auto& info : MapChipDatabase::GetInstance()->GetAll())
+	{
 		ImGui::RadioButton(info.label.c_str(), &selectedType_, static_cast<int>(info.id));
 	}
 
-	if (static_cast<MapChipType>(selectedType_) == MapChipType::Portal) {
+	if (static_cast<MapChipType>(selectedType_) == MapChipType::Portal)
+	{
 		ImGui::Separator();
 		ImGui::Text("Portal Settings");
 
 		ImGui::InputInt("Portal Link ID", &selectedPortalLinkId_);
 
-		const char* dirItems[] = { "right", "left", "up", "down" };
+		const char* dirItems[] = {"right", "left", "up", "down"};
 		ImGui::Combo("Portal Direction", &selectedPortalDir_, dirItems, IM_ARRAYSIZE(dirItems));
 	}
 
@@ -2355,7 +3147,8 @@ void StageEditor::RenderUI() {
 
 	// 1個だけ入力用の透明ボタンを置く
 	ImGui::InvisibleButton("StageCanvasButton", canvasSize,
-		ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
+						   ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
+							   ImGuiButtonFlags_MouseButtonMiddle);
 
 	bool isHovered = ImGui::IsItemHovered();
 	bool isActive = ImGui::IsItemActive();
@@ -2363,10 +3156,8 @@ void StageEditor::RenderUI() {
 	ImVec2 mousePos = ImGui::GetIO().MousePos;
 
 	// 背景
-	dl->AddRectFilled(
-		canvasPos,
-		ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y),
-		IM_COL32(40, 40, 40, 255));
+	dl->AddRectFilled(canvasPos, ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y),
+					  IM_COL32(40, 40, 40, 255));
 
 	// 見えてる範囲だけ描画する
 	ImVec2 winPos = ImGui::GetWindowPos();
@@ -2385,43 +3176,54 @@ void StageEditor::RenderUI() {
 	// マウス座標→セル座標
 	int hoverX = -1;
 	int hoverY = -1;
-	if (isHovered) {
+	if (isHovered)
+	{
 		hoverX = static_cast<int>((mousePos.x - canvasPos.x) / kCellSize);
 		hoverY = static_cast<int>((mousePos.y - canvasPos.y) / kCellSize);
-		if (hoverX < 0 || hoverX >= cols || hoverY < 0 || hoverY >= rows) {
+		if (hoverX < 0 || hoverX >= cols || hoverY < 0 || hoverY >= rows)
+		{
 			hoverX = -1;
 			hoverY = -1;
 		}
 	}
 
 	// ストローク開始/終了
-	if (isHovered) {
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+	if (isHovered)
+	{
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
 			BeginStroke();
 			isEditingDrag_ = true;
 			dragButton_ = ImGui::IsMouseClicked(ImGuiMouseButton_Left) ? ImGuiMouseButton_Left : ImGuiMouseButton_Right;
 		}
 
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle) && hoverX >= 0 && hoverY >= 0) {
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Middle) && hoverX >= 0 && hoverY >= 0)
+		{
 			stageData_.GetType(hoverX, hoverY);
 		}
 	}
 
-	if (isEditingDrag_) {
+	if (isEditingDrag_)
+	{
 		if ((dragButton_ == ImGuiMouseButton_Left && ImGui::IsMouseDown(ImGuiMouseButton_Left)) ||
-			(dragButton_ == ImGuiMouseButton_Right && ImGui::IsMouseDown(ImGuiMouseButton_Right))) {
-			if (hoverX >= 0 && hoverY >= 0) {
-				if (dragButton_ == ImGuiMouseButton_Left) {
+			(dragButton_ == ImGuiMouseButton_Right && ImGui::IsMouseDown(ImGuiMouseButton_Right)))
+		{
+			if (hoverX >= 0 && hoverY >= 0)
+			{
+				if (dragButton_ == ImGuiMouseButton_Left)
+				{
 					ApplyCellWithUndo(hoverX, hoverY, selectedType_);
 				}
-				if (dragButton_ == ImGuiMouseButton_Right) {
+				if (dragButton_ == ImGuiMouseButton_Right)
+				{
 					ApplyCellWithUndo(hoverX, hoverY, 0);
 				}
 			}
 		}
 
 		if ((dragButton_ == ImGuiMouseButton_Left && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) ||
-			(dragButton_ == ImGuiMouseButton_Right && ImGui::IsMouseReleased(ImGuiMouseButton_Right))) {
+			(dragButton_ == ImGuiMouseButton_Right && ImGui::IsMouseReleased(ImGuiMouseButton_Right)))
+		{
 			isEditingDrag_ = false;
 			dragButton_ = -1;
 			EndStroke();
@@ -2429,13 +3231,16 @@ void StageEditor::RenderUI() {
 	}
 
 	// セル描画
-	for (int y = startY; y < endY; ++y) {
-		for (int x = startX; x < endX; ++x) {
+	for (int y = startY; y < endY; ++y)
+	{
+		for (int x = startX; x < endX; ++x)
+		{
 			MapChipType typeId = stageData_.GetType(x, y);
 			const MapChipInfo* info = MapChipDatabase::GetInstance()->GetById(typeId);
-			
+
 			ImVec4 colorV = ImVec4(1, 1, 1, 1);
-			if (info) {
+			if (info)
+			{
 				colorV = ImVec4(info->color.x, info->color.y, info->color.z, info->color.w);
 			}
 
@@ -2447,15 +3252,18 @@ void StageEditor::RenderUI() {
 			dl->AddRectFilled(p0, p1, fillColor);
 			dl->AddRect(p0, p1, IM_COL32(25, 25, 25, 255));
 
-			if (info && info->collision != "none") {
+			if (info && info->collision != "none")
+			{
 				dl->AddRect(p0, p1, IM_COL32(0, 0, 0, 255), 0.0f, 0, 1.0f);
 			}
 
-			if (info && info->hitPoints > 0) {
+			if (info && info->hitPoints > 0)
+			{
 				dl->AddLine(ImVec2(p0.x, p1.y), ImVec2(p1.x, p0.y), IM_COL32(0, 0, 0, 255), 1.0f);
 			}
 
-			if (info && !info->spawn.empty() && info->spawn != "none") {
+			if (info && !info->spawn.empty() && info->spawn != "none")
+			{
 				ImVec2 c((p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f);
 				dl->AddCircleFilled(c, 3.0f, IM_COL32(0, 0, 0, 255));
 			}
@@ -2463,15 +3271,16 @@ void StageEditor::RenderUI() {
 	}
 
 	// ホバー中セルを強調
-	if (hoverX >= 0 && hoverY >= 0) {
+	if (hoverX >= 0 && hoverY >= 0)
+	{
 		ImVec2 p0(canvasPos.x + hoverX * kCellSize, canvasPos.y + hoverY * kCellSize);
 		ImVec2 p1(p0.x + kCellSize, p0.y + kCellSize);
 		dl->AddRect(p0, p1, IM_COL32(255, 255, 0, 255), 0.0f, 0, 2.0f);
 
-		const MapChipInfo* hoverInfo =
-			MapChipDatabase::GetInstance()->GetById(stageData_.GetType(hoverX, hoverY));
+		const MapChipInfo* hoverInfo = MapChipDatabase::GetInstance()->GetById(stageData_.GetType(hoverX, hoverY));
 
-		if (hoverInfo) {
+		if (hoverInfo)
+		{
 			ImGui::BeginTooltip();
 			ImGui::Text("id:%d  %s", hoverInfo->id, hoverInfo->label.c_str());
 			ImGui::Text("collision: %s", hoverInfo->collision.c_str());
@@ -2487,23 +3296,33 @@ void StageEditor::RenderUI() {
 #endif // USE_IMGUI
 }
 
-void StageEditor::SaveCSV(const std::string& filename) {
+void StageEditor::SaveCSV(const std::string& filename)
+{
 	fs::create_directories("Resources/Mapdata");
 
 	std::ofstream file(filename);
 
-	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y) {
-		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x) {
+	// 発射制限を保存
+	file << "#shotLimit,"
+		<< stageData_.GetShotLimit()
+		<< "\n";
+
+	for (uint32_t y = 0; y < stageData_.GetHeight(); ++y)
+	{
+		for (uint32_t x = 0; x < stageData_.GetWidth(); ++x)
+		{
 			const StageCell& cell = stageData_.At(x, y);
 
 			file << static_cast<int>(cell.type);
 
 			// ポータルなら 3:0:right みたいに保存したい場合
-			if (cell.type == MapChipType::Portal) {
+			if (cell.type == MapChipType::Portal)
+			{
 				file << ":" << cell.linkId << ":" << DirectionToString(cell.direction);
 			}
 
-			if (x + 1 < stageData_.GetWidth()) {
+			if (x + 1 < stageData_.GetWidth())
+			{
 				file << ",";
 			}
 		}
@@ -2511,9 +3330,11 @@ void StageEditor::SaveCSV(const std::string& filename) {
 	}
 }
 
-void StageEditor::LoadCSV(const std::string& filename) {
+void StageEditor::LoadCSV(const std::string& filename)
+{
 	std::ifstream file(filename);
-	if (!file.is_open()) {
+	if (!file.is_open())
+	{
 		return;
 	}
 
@@ -2522,13 +3343,16 @@ void StageEditor::LoadCSV(const std::string& filename) {
 	std::string line;
 	uint32_t y = 0;
 
-	while (std::getline(file, line)) {
+	while (std::getline(file, line))
+	{
 		std::stringstream lineStream(line);
 		std::string cellText;
 		uint32_t x = 0;
 
-		while (std::getline(lineStream, cellText, ',')) {
-			if (x >= stageData_.GetWidth() || y >= stageData_.GetHeight()) {
+		while (std::getline(lineStream, cellText, ','))
+		{
+			if (x >= stageData_.GetWidth() || y >= stageData_.GetHeight())
+			{
 				++x;
 				continue;
 			}
@@ -2541,12 +3365,13 @@ void StageEditor::LoadCSV(const std::string& filename) {
 			MapChipType type = static_cast<MapChipType>(std::stoi(typeText));
 			stageData_.SetType(x, y, type);
 
-			if (type == MapChipType::Portal) {
+			if (type == MapChipType::Portal)
+			{
 				std::string linkText;
 				std::string dirText;
 
-				if (std::getline(cellParser, linkText, ':') &&
-					std::getline(cellParser, dirText, ':')) {
+				if (std::getline(cellParser, linkText, ':') && std::getline(cellParser, dirText, ':'))
+				{
 
 					StageCell& cell = stageData_.At(x, y);
 					cell.linkId = std::stoi(linkText);
@@ -2567,46 +3392,53 @@ void StageEditor::LoadCSV(const std::string& filename) {
 void StageEditor::BeginStroke()
 {
 	// ストローク開始
-	isStrokeActive_ = true;// ストロークアクティブ化
-	currentStroke_.clear();// 現在のストローククリア
+	isStrokeActive_ = true; // ストロークアクティブ化
+	currentStroke_.clear(); // 現在のストローククリア
 	// すでに記録したセルの重複防止用配列をクリア
-	for (auto& row : strokeVisited_) {
+	for (auto& row : strokeVisited_)
+	{
 		// セル訪問情報をクリア
 		std::fill(row.begin(), row.end(), false);
 	}
-
 }
 
 void StageEditor::EndStroke()
 {
-	if (!isStrokeActive_) return;
+	if (!isStrokeActive_)
+		return;
 	isStrokeActive_ = false;
 
-	if (!currentStroke_.empty()) {
+	if (!currentStroke_.empty())
+	{
 		undoStack_.push_back(currentStroke_);
 		redoStack_.clear(); // 新規編集が入ったらRedoは消す
 	}
 	currentStroke_.clear();
-
 }
 
 void StageEditor::ApplyCellWithUndo(int x, int y, int newType)
 {
-	if (x < 0 || y < 0) return;
-	if (x >= static_cast<int>(stageData_.GetWidth())) return;
-	if (y >= static_cast<int>(stageData_.GetHeight())) return;
+	if (x < 0 || y < 0)
+		return;
+	if (x >= static_cast<int>(stageData_.GetWidth()))
+		return;
+	if (y >= static_cast<int>(stageData_.GetHeight()))
+		return;
 
 	int before = static_cast<int>(stageData_.GetType(x, y));
-	if (before == newType) return;
+	if (before == newType)
+		return;
 
-	if (isStrokeActive_ && !strokeVisited_[y][x]) {
+	if (isStrokeActive_ && !strokeVisited_[y][x])
+	{
 		strokeVisited_[y][x] = true;
-		currentStroke_.push_back(CellEdit{ x, y, before, newType });
+		currentStroke_.push_back(CellEdit{x, y, before, newType});
 	}
 
 	stageData_.SetType(x, y, static_cast<MapChipType>(newType));
 
-	if (static_cast<MapChipType>(newType) == MapChipType::Portal) {
+	if (static_cast<MapChipType>(newType) == MapChipType::Portal)
+	{
 		StageCell& cell = stageData_.At(x, y);
 		cell.linkId = selectedPortalLinkId_;
 		cell.direction = GetSelectedPortalDirection();
@@ -2615,19 +3447,18 @@ void StageEditor::ApplyCellWithUndo(int x, int y, int newType)
 
 void StageEditor::Undo()
 {
-	if (undoStack_.empty()) { return; }
+	if (undoStack_.empty())
+	{
+		return;
+	}
 
 	Stroke s = undoStack_.back();
 	undoStack_.pop_back();
 
-
-	// 逆順で戻す
-	for (auto it = s.rbegin(); it != s.rend(); ++it) {
-		stageData_.SetType(
-			static_cast<uint32_t>(it->x),
-			static_cast<uint32_t>(it->y), 
-			static_cast<MapChipType>(it->before)
-		);
+	for (auto it = s.rbegin(); it != s.rend(); ++it)
+	{
+		stageData_.SetType(static_cast<uint32_t>(it->x), static_cast<uint32_t>(it->y),
+						   static_cast<MapChipType>(it->before));
 	}
 
 	redoStack_.push_back(std::move(s));
@@ -2635,17 +3466,17 @@ void StageEditor::Undo()
 
 void StageEditor::Redo()
 {
-	
-	if (redoStack_.empty()) { return; }// リドゥスタックが空なら何もしない
+
+	if (redoStack_.empty())
+	{
+		return;
+	} // リドゥスタックが空なら何もしない
 	Stroke s = redoStack_.back();
 	redoStack_.pop_back();
 	// 順番に適用する
-	for (auto& e : s) {
-		stageData_.SetType(
-			static_cast<uint32_t>(e.x),
-			static_cast<uint32_t>(e.y),
-			static_cast<MapChipType>(e.after)
-		);
+	for (auto& e : s)
+	{
+		stageData_.SetType(static_cast<uint32_t>(e.x), static_cast<uint32_t>(e.y), static_cast<MapChipType>(e.after));
 	}
 
 	undoStack_.push_back(std::move(s));
@@ -2653,37 +3484,46 @@ void StageEditor::Redo()
 
 std::string StageEditor::DirectionToString(const Vector3& dir) const
 {
-	if (dir.x > 0.5f) return "right";
-	if (dir.x < -0.5f) return "left";
-	if (dir.y > 0.5f) return "up";
-	if (dir.y < -0.5f) return "down";
+	if (dir.x > 0.5f)
+		return "right";
+	if (dir.x < -0.5f)
+		return "left";
+	if (dir.y > 0.5f)
+		return "up";
+	if (dir.y < -0.5f)
+		return "down";
 
 	return "right";
 }
 
 Vector3 StageEditor::DirFromString(const std::string& dir) const
 {
-	if (dir == "right") return { 1.0f, 0.0f, 0.0f };
-	if (dir == "left")  return { -1.0f, 0.0f, 0.0f };
-	if (dir == "up")    return { 0.0f, 1.0f, 0.0f };
-	if (dir == "down")  return { 0.0f, -1.0f, 0.0f };
+	if (dir == "right")
+		return {1.0f, 0.0f, 0.0f};
+	if (dir == "left")
+		return {-1.0f, 0.0f, 0.0f};
+	if (dir == "up")
+		return {0.0f, 1.0f, 0.0f};
+	if (dir == "down")
+		return {0.0f, -1.0f, 0.0f};
 
-	return { 1.0f, 0.0f, 0.0f };
+	return {1.0f, 0.0f, 0.0f};
 }
 
 Vector3 StageEditor::GetSelectedPortalDirection() const
 {
-	switch (selectedPortalDir_) {
+	switch (selectedPortalDir_)
+	{
 	case 0:
-		return { 1.0f, 0.0f, 0.0f };   // right
+		return {1.0f, 0.0f, 0.0f}; // right
 	case 1:
-		return { -1.0f, 0.0f, 0.0f };  // left
+		return {-1.0f, 0.0f, 0.0f}; // left
 	case 2:
-		return { 0.0f, 1.0f, 0.0f };   // up
+		return {0.0f, 1.0f, 0.0f}; // up
 	case 3:
-		return { 0.0f, -1.0f, 0.0f };  // down
+		return {0.0f, -1.0f, 0.0f}; // down
 	default:
-		return { 1.0f, 0.0f, 0.0f };
+		return {1.0f, 0.0f, 0.0f};
 	}
 }
 
@@ -2776,9 +3616,22 @@ private:
 	/// Redo操作
 	/// </summary>
 	void Redo();
-
+	/// <summary>
+	/// 選択中のポータルの方向を文字列に変換
+	/// </summary>
+	/// <param name="dir"></param>
+	/// <returns></returns>
 	std::string DirectionToString(const Vector3& dir) const;
+	/// <summary>
+	/// 文字列から方向ベクトルを取得
+	/// </summary>
+	/// <param name="dir"></param>
+	/// <returns></returns>
 	Vector3 DirFromString(const std::string& dir) const;
+	/// <summary>
+	/// 選択中のポータルの方向を取得
+	/// </summary>
+	/// <returns></returns>
 	Vector3 GetSelectedPortalDirection() const;
 
 private:
@@ -2791,14 +3644,14 @@ private:
 
 
 	// Undo/Redo 用データ構造
-	using Stroke = std::vector<CellEdit>;
+	using Stroke = std::vector<CellEdit>;// ストローク（連続したセル編集の集合）
 	std::vector<Stroke> undoStack_;// 元に戻すスタック
 	std::vector<Stroke> redoStack_;// やり直すスタック
 	Stroke currentStroke_;// 現在のストローク
 	bool isStrokeActive_ = false;// ストロークがアクティブかどうか
 	// すでに記録したセルの重複防止
 	std::vector<std::vector<bool>> strokeVisited_;
-	bool showStagewindow_ = true;
+	bool showStageWindow_ = true;
 
 	int selectedPortalLinkId_ = 0;
 	int selectedPortalDir_ = 0;
@@ -2810,46 +3663,46 @@ private:
 ============================================================
 File Path: project/application/particle/AttackBehavior.cpp
 ============================================================
-#include "AttackBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "AttackBehavior.h"
+#include "ParticleManager.h"
 #include <numbers>
 
 Particle AttackBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
-	lifetime = lifetime;
-	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
-	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
-	std::uniform_real_distribution<float>disRotate(-std::numbers::pi_v<float>, std::numbers::pi_v<float>);
-	std::uniform_real_distribution<float>disScale(0.4f, 1.5f);
+	lifetime_ = lifetime;
+	std::uniform_real_distribution<float> distribution(-1.0, 1.0f);
+	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
+	std::uniform_real_distribution<float> disRotate(-std::numbers::pi_v<float>, std::numbers::pi_v<float>);
+	std::uniform_real_distribution<float> disScale(0.4f, 1.5f);
 
 	Particle particle;
-	Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+	Vector3 randomTranslate{distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)};
 
-	particle.transform.scale = { 0.5f,disScale(randomEngine),1.0f };
-	//particle.transform.scale = { 1.0f,1.0f,1.0f };
-	//particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	particle.transform.rotate = { disRotate(randomEngine),disRotate(randomEngine),disRotate(randomEngine) };
-	//particle.transform.translate = translate + randomTranslate;
+	particle.transform.scale = {0.5f, disScale(randomEngine), 1.0f};
+	// particle.transform.scale = { 1.0f,1.0f,1.0f };
+	// particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	particle.transform.rotate = {disRotate(randomEngine), disRotate(randomEngine), disRotate(randomEngine)};
+	// particle.transform.translate = translate + randomTranslate;
 	particle.transform.translate = transform.translate;
-	//particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
-	particle.Velocity = { 0.0f,0.0f,0.0f };
-	particle.color = { distColor(randomEngine),distColor(randomEngine),distColor(randomEngine),1.0f };
-	//particle.color = { 1.0f,1.0f,1.0f,1.0f };
-	//particle.lifetime = distTime(randomEngine);
+	// particle.Velocity = { distribution(randomEngine),distribution(randomEngine) ,distribution(randomEngine) };
+	particle.Velocity = {0.0f, 0.0f, 0.0f};
+	particle.color = {distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f};
+	// particle.color = { 1.0f,1.0f,1.0f,1.0f };
+	// particle.lifetime = distTime(randomEngine);
 	particle.lifetime = 1.0f;
 	particle.currentTime = 0;
 	return particle;
 }
 
-void AttackBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void AttackBehavior::Update(Particle& particle, Material* matelialData, float alpha)
 {
-	alpha = alpha;
-	matelialData= matelialData; // X方向スクロール
-	dt = dt;
-	//パーティクルの位置を更新
+	alpha_ = alpha;
+	materialData_ = matelialData; // X方向スクロール
+	
+	// パーティクルの位置を更新
 	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
-	//パーティクルの寿命を減らす
+	// パーティクルの寿命を減らす
 	particle.currentTime += 1.0f / 60.0f;
 }
 
@@ -2857,14 +3710,14 @@ void AttackBehavior::Update(Particle& particle, float dt, Material* matelialData
 ============================================================
 File Path: project/application/particle/AttackBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 
 class AttackBehavior : public IParticleBehavior
 {
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
 
-	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
+	void Update(Particle& particle, Material* matelialData, float alpha) override;
 
 };
 
@@ -2873,8 +3726,8 @@ class AttackBehavior : public IParticleBehavior
 ============================================================
 File Path: project/application/particle/BarrierBreakBehavior.cpp
 ============================================================
-#include "BarrierBreakBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "BarrierBreakBehavior.h"
+#include "ParticleManager.h"
 #include <random>
 #include <numbers>
 #include <algorithm>
@@ -2885,139 +3738,134 @@ File Path: project/application/particle/BarrierBreakBehavior.cpp
 
 Particle BarrierBreakBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
-    Particle particle{};
+	Particle particle{};
 
-    std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
-    std::uniform_real_distribution<float> distXZ(-1.0f, 1.0f);
-    std::uniform_real_distribution<float> distSpeed(speedMin_, speedMax_);
-    std::uniform_real_distribution<float> distUp(upMin_, upMax_);
-    std::uniform_real_distribution<float> distRot(rotateSpeedMin_, rotateSpeedMax_);
-    std::uniform_real_distribution<float> distScaleX(0.0f, scaleRandom_.x);
-    std::uniform_real_distribution<float> distScaleY(0.0f, scaleRandom_.y);
-    std::uniform_real_distribution<float> distScaleZ(0.0f, scaleRandom_.z);
+	std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
+	std::uniform_real_distribution<float> distXZ(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distSpeed(speedMin_, speedMax_);
+	std::uniform_real_distribution<float> distUp(upMin_, upMax_);
+	std::uniform_real_distribution<float> distRot(rotateSpeedMin_, rotateSpeedMax_);
+	std::uniform_real_distribution<float> distScaleX(0.0f, scaleRandom_.x);
+	std::uniform_real_distribution<float> distScaleY(0.0f, scaleRandom_.y);
+	std::uniform_real_distribution<float> distScaleZ(0.0f, scaleRandom_.z);
 
-    Vector3 dir = { distXZ(rng), 0.0f, distXZ(rng) };
+	Vector3 dir = {distXZ(rng), 0.0f, distXZ(rng)};
 
-    float len = std::sqrt(dir.x * dir.x + dir.z * dir.z);
-    if (len < 0.001f) {
-        dir = { 1.0f, 0.0f, 0.0f };
-    }
-    else {
-        dir.x /= len;
-        dir.z /= len;
-    }
+	float len = std::sqrt(dir.x * dir.x + dir.z * dir.z);
+	if (len < 0.001f)
+	{
+		dir = {1.0f, 0.0f, 0.0f};
+	}
+	else
+	{
+		dir.x /= len;
+		dir.z /= len;
+	}
 
-    float speed = distSpeed(rng);
+	float speed = distSpeed(rng);
 
-    particle.center = transform.translate;
-    particle.transform.translate = transform.translate;
+	particle.center = transform.translate;
+	particle.transform.translate = transform.translate;
 
-    particle.transform.scale = {
-        initScale_.x + distScaleX(rng),
-        initScale_.y + distScaleY(rng),
-        initScale_.z + distScaleZ(rng)
-    };
+	particle.transform.scale = {initScale_.x + distScaleX(rng), initScale_.y + distScaleY(rng),
+								initScale_.z + distScaleZ(rng)};
 
-    particle.transform.rotate = {
-        dist01(rng) * std::numbers::pi_v<float>,
-        dist01(rng) * std::numbers::pi_v<float>,
-        dist01(rng) * std::numbers::pi_v<float>
-    };
+	particle.transform.rotate = {dist01(rng) * std::numbers::pi_v<float>, dist01(rng) * std::numbers::pi_v<float>,
+								 dist01(rng) * std::numbers::pi_v<float>};
 
-    particle.Velocity = {
-        dir.x * speed,
-        distUp(rng),
-        dir.z * speed
-    };
+	particle.Velocity = {dir.x * speed, distUp(rng), dir.z * speed};
 
-    particle.color = { 0.4f, 0.9f, 1.0f, 1.0f };
-    particle.lifetime = lifetime;
-    particle.currentTime = 0.0f;
+	particle.color = {0.4f, 0.9f, 1.0f, 1.0f};
+	particle.lifetime = lifetime;
+	particle.currentTime = 0.0f;
 
-    return particle;
+	return particle;
 }
 
-void BarrierBreakBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void BarrierBreakBehavior::Update(Particle& particle, Material* materialData, float alpha)
 {
-    materialData = materialData;
-    alpha = alpha;
+	materialData_ = materialData;
+	alpha_ = alpha;
 
-    // 重力
-    particle.Velocity.y -= gravity_ * dt;
+	// 重力
+	particle.Velocity.y -= gravity_ * kdt;
 
-    // 移動
-    particle.transform.translate += particle.Velocity * dt;
+	// 移動
+	particle.transform.translate += particle.Velocity * kdt;
 
-    // 回転
-    particle.transform.rotate.x += particle.Velocity.x * 0.2f * dt;
-    particle.transform.rotate.y += particle.Velocity.y * 0.1f * dt;
-    particle.transform.rotate.z += particle.Velocity.z * 0.2f * dt;
+	// 回転
+	particle.transform.rotate.x += particle.Velocity.x * 0.2f * kdt;
+	particle.transform.rotate.y += particle.Velocity.y * 0.1f * kdt;
+	particle.transform.rotate.z += particle.Velocity.z * 0.2f * kdt;
 
-    // 時間
-    particle.currentTime += dt;
+	// 時間
+	particle.currentTime += kdt;
 
-    // フェード
-    float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
-    particle.color.w = 1.0f - t;
+	// フェード
+	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
+	particle.color.w = 1.0f - t;
 
-    // 終盤で少し縮む
-    float scaleFade = 1.0f - t * 0.4f;
-    particle.transform.scale.x *= scaleFade;
-    particle.transform.scale.y *= scaleFade;
+	// 終盤で少し縮む
+	float scaleFade = 1.0f - t * 0.4f;
+	particle.transform.scale.x *= scaleFade;
+	particle.transform.scale.y *= scaleFade;
 }
 
 #ifdef USE_IMGUI
 void BarrierBreakBehavior::DrawImgui(const char* effectName)
 {
-    effectName = effectName;
+	effectName = effectName;
 
-    if (ImGui::CollapsingHeader("BarrierBreakBehavior", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::DragFloat3("Init Scale", &initScale_.x, 0.01f, 0.01f, 5.0f);
-        ImGui::DragFloat3("Scale Random", &scaleRandom_.x, 0.01f, 0.0f, 5.0f);
-        ImGui::DragFloat("Speed Min", &speedMin_, 0.1f, 0.0f, 20.0f);
-        ImGui::DragFloat("Speed Max", &speedMax_, 0.1f, 0.0f, 20.0f);
-        ImGui::DragFloat("Up Min", &upMin_, 0.1f, 0.0f, 20.0f);
-        ImGui::DragFloat("Up Max", &upMax_, 0.1f, 0.0f, 20.0f);
-        ImGui::DragFloat("Gravity", &gravity_, 0.1f, 0.0f, 30.0f);
-    }
+	if (ImGui::CollapsingHeader("BarrierBreakBehavior", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::DragFloat3("Init Scale", &initScale_.x, 0.01f, 0.01f, 5.0f);
+		ImGui::DragFloat3("Scale Random", &scaleRandom_.x, 0.01f, 0.0f, 5.0f);
+		ImGui::DragFloat("Speed Min", &speedMin_, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat("Speed Max", &speedMax_, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat("Up Min", &upMin_, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat("Up Max", &upMax_, 0.1f, 0.0f, 20.0f);
+		ImGui::DragFloat("Gravity", &gravity_, 0.1f, 0.0f, 30.0f);
+	}
 }
 #endif
+
 
 ============================================================
 File Path: project/application/particle/BarrierBreakBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 
 class BarrierBreakBehavior : public IParticleBehavior
 {
-public:
-    Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
-    void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
+  public:
+	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
+	void Update(Particle& particle,Material* materialData, float alpha) override;
 
 #ifdef USE_IMGUI
-    void DrawImgui(const char* effectName) override;
+	void DrawImgui(const char* effectName) override;
 #endif
 
-private:
-    Vector3 initScale_ = { 0.25f, 0.25f, 0.05f };
-    Vector3 scaleRandom_ = { 0.15f, 0.15f, 0.02f };
+  private:
+	Vector3 initScale_ = {0.25f, 0.25f, 0.05f};
+	Vector3 scaleRandom_ = {0.15f, 0.15f, 0.02f};
 
-    float speedMin_ = 2.0f;
-    float speedMax_ = 6.0f;
-    float upMin_ = 1.5f;
-    float upMax_ = 4.0f;
+	float speedMin_ = 2.0f;
+	float speedMax_ = 6.0f;
+	float upMin_ = 1.5f;
+	float upMax_ = 4.0f;
 
-    float gravity_ = 6.0f;
-    float rotateSpeedMin_ = -6.0f;
-    float rotateSpeedMax_ = 6.0f;
+	float gravity_ = 6.0f;
+	float rotateSpeedMin_ = -6.0f;
+	float rotateSpeedMax_ = 6.0f;
 };
+
 
 ============================================================
 File Path: project/application/particle/BarrierRingBehavior.cpp
 ============================================================
-#include "BarrierRingBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "BarrierRingBehavior.h"
+#include "ParticleManager.h"
 #include <cmath>
 #include <algorithm>
 
@@ -3027,110 +3875,114 @@ File Path: project/application/particle/BarrierRingBehavior.cpp
 
 Particle BarrierRingBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
-    rng = rng;
+	std::mt19937& rng_ = rng;
 
-    Particle particle{};
-    particle.center = transform.translate;
-    particle.transform.translate = transform.translate;
-    particle.transform.scale = baseScale_;
-    particle.transform.rotate = baseRotate_;
-    particle.Velocity = { 0.0f, 0.0f, 0.0f };
+	Particle particle{};
+	particle.center = transform.translate;
+	particle.transform.translate = transform.translate;
+	particle.transform.scale = baseScale_;
+	particle.transform.rotate = baseRotate_;
+	particle.Velocity = {0.0f, 0.0f, 0.0f};
 
-    // 水色寄りバリア色
-    particle.color = { 0.35f, 0.85f, 1.0f, 0.85f };
+	// 水色寄りバリア色
+	particle.color = {0.35f, 0.85f, 1.0f, 0.85f};
 
-    particle.lifetime = lifetime;
-    particle.currentTime = 0.0f;
-    return particle;
+	particle.lifetime = lifetime;
+	particle.currentTime = 0.0f;
+	return particle;
 }
 
-void BarrierRingBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void BarrierRingBehavior::Update(Particle& particle,Material* materialData, float alpha)
 {
-    alpha = alpha;
+	alpha_ = alpha;
 
-    particle.currentTime += dt;
+	particle.currentTime += kdt;
 
-    float t = particle.currentTime;
+	float t = particle.currentTime;
 
-    // じりじり脈動
-    float pulse = 1.0f + std::sin(t * pulseSpeed_) * pulseWidth_;
-    particle.transform.scale.x = baseScale_.x * pulse;
-    particle.transform.scale.y = baseScale_.y * pulse;
-    particle.transform.scale.z = baseScale_.z;
+	// じりじり脈動
+	float pulse = 1.0f + std::sin(t * pulseSpeed_) * pulseWidth_;
+	particle.transform.scale.x = baseScale_.x * pulse;
+	particle.transform.scale.y = baseScale_.y * pulse;
+	particle.transform.scale.z = baseScale_.z;
 
-    // ちょい回転
-    particle.transform.rotate.z += rotateSpeed_ * dt;
+	// ちょい回転
+	particle.transform.rotate.z += rotateSpeed_ * kdt;
 
-    // アルファを揺らす
-    float wave = (std::sin(t * pulseSpeed_) + 1.0f) * 0.5f;
-    particle.color.w = std::lerp(alphaMin_, alphaMax_, wave);
+	// アルファを揺らす
+	float wave = (std::sin(t * pulseSpeed_) + 1.0f) * 0.5f;
+	particle.color.w = std::lerp(alphaMin_, alphaMax_, wave);
 
-    // 少しだけ終盤フェード
-    float lifeRate = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
-    if (lifeRate > 0.8f) {
-        float fade = 1.0f - (lifeRate - 0.8f) / 0.2f;
-        particle.color.w *= fade;
-    }
+	// 少しだけ終盤フェード
+	float lifeRate = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
+	if (lifeRate > 0.8f)
+	{
+		float fade = 1.0f - (lifeRate - 0.8f) / 0.2f;
+		particle.color.w *= fade;
+	}
 
-    // UVスクロールでビリビリ感
-    if (materialData) {
-        materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
-        materialData->uvTransform.m[3][0] = std::fmod(t * uvScrollSpeed_, 1.0f);
-    }
+	// UVスクロールでビリビリ感
+	if (materialData)
+	{
+		materialData->uvTransform = materialData->uvTransform.MakeIdentity4x4();
+		materialData->uvTransform.m[3][0] = std::fmod(t * uvScrollSpeed_, 1.0f);
+	}
 }
 
 #ifdef USE_IMGUI
 void BarrierRingBehavior::DrawImgui(const char* effectName)
 {
-    effectName = effectName;
+	effectName = effectName;
 
-    if (ImGui::CollapsingHeader("BarrierRingBehavior", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::DragFloat3("Base Scale", &baseScale_.x, 0.01f, 0.1f, 20.0f);
-        ImGui::DragFloat3("Base Rotate", &baseRotate_.x, 0.01f, -6.28f, 6.28f);
-        ImGui::DragFloat("Pulse Speed", &pulseSpeed_, 0.1f, 0.0f, 30.0f);
-        ImGui::DragFloat("Pulse Width", &pulseWidth_, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Alpha Min", &alphaMin_, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Alpha Max", &alphaMax_, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("Rotate Speed", &rotateSpeed_, 0.01f, -10.0f, 10.0f);
-        ImGui::DragFloat("UV Scroll", &uvScrollSpeed_, 0.01f, -10.0f, 10.0f);
-    }
+	if (ImGui::CollapsingHeader("BarrierRingBehavior", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::DragFloat3("Base Scale", &baseScale_.x, 0.01f, 0.1f, 20.0f);
+		ImGui::DragFloat3("Base Rotate", &baseRotate_.x, 0.01f, -6.28f, 6.28f);
+		ImGui::DragFloat("Pulse Speed", &pulseSpeed_, 0.1f, 0.0f, 30.0f);
+		ImGui::DragFloat("Pulse Width", &pulseWidth_, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Alpha Min", &alphaMin_, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Alpha Max", &alphaMax_, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Rotate Speed", &rotateSpeed_, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat("UV Scroll", &uvScrollSpeed_, 0.01f, -10.0f, 10.0f);
+	}
 }
 #endif
+
 
 ============================================================
 File Path: project/application/particle/BarrierRingBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 
 class BarrierRingBehavior : public IParticleBehavior
 {
-public:
-    Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
-    void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
+  public:
+	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
+	void Update(Particle& particle, Material* materialData, float alpha) override;
 
 #ifdef USE_IMGUI
-    void DrawImgui(const char* effectName) override;
+	void DrawImgui(const char* effectName) override;
 #endif
 
-private:
-    Vector3 baseScale_ = { 0.5f, 0.5f, 0.5f };
-    Vector3 baseRotate_ = { 0.0f, 0.0f, 0.0f };
+  private:
+	Vector3 baseScale_ = {0.5f, 0.5f, 0.5f};
+	Vector3 baseRotate_ = {0.0f, 0.0f, 0.0f};
 
-    float pulseSpeed_ = 0;     // じりじり感
-    float pulseWidth_ = 0.12f;    // 脈動幅
-    float alphaMin_ = 0.55f;
-    float alphaMax_ = 0.95f;
-    float rotateSpeed_ = 0;    // じわっと回る
-    float uvScrollSpeed_ = 0.5f;  // テクスチャ流し
+	float pulseSpeed_ = 0;	   // じりじり感
+	float pulseWidth_ = 0.12f; // 脈動幅
+	float alphaMin_ = 0.55f;
+	float alphaMax_ = 0.95f;
+	float rotateSpeed_ = 0;		 // じわっと回る
+	float uvScrollSpeed_ = 0.5f; // テクスチャ流し
 };
 
+
 ============================================================
-File Path: project/application/particle/ChargeBehabiaor.cpp
+File Path: project/application/particle/ChargeBehavior.cpp
 ============================================================
-#include "ChargeBehabiaor.h"
-#include "IParticleBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "ChargeBehavior.h"
+#include "ParticleManager.h"
 #include <Input.h>
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -3138,50 +3990,46 @@ File Path: project/application/particle/ChargeBehabiaor.cpp
 #include "MyMath.h"
 #include <numbers>
 
-Particle ChargeBehabiaor::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
+Particle ChargeBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime_)
 {
-	rng = rng;
+	std::mt19937& rng_ = rng;
 	Particle particle;
 
 	particle.transform.translate = transform.translate;
-	particle.transform.scale = { 1.2f, 1.2f, 1.2f }; // 最初は大きめ
-	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	particle.Velocity = { 0.0f, 0.0f, 0.0f };
+	particle.transform.scale = {1.2f, 1.2f, 1.2f}; // 最初は大きめ
+	particle.transform.rotate = {0.0f, 0.0f, 0.0f};
+	particle.Velocity = {0.0f, 0.0f, 0.0f};
 
 	// 黄色っぽい色から始める
-	particle.color = { 1.0f, 1.0f, 0.5f, 1.0f };
+	particle.color = {1.0f, 1.0f, 0.5f, 1.0f};
 
 	particle.lifetime = lifetime_;
 	particle.currentTime = 0;
 
 	return particle;
-
 }
 
-void ChargeBehabiaor::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void ChargeBehavior::Update(Particle& particle, Material* matelialData, float alpha)
 {
-	matelialData = matelialData;
-	alpha = alpha;
+	materialData_ = matelialData;
+	alpha_ = alpha;
 
-	particle.currentTime += dt;
+	particle.currentTime += kdt;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
 	// === スムーズに縮小（EaseIn） ===
-	float eased = t * t; // EaseInQuad
+	float eased = t * t;						// EaseInQuad
 	float scale = std::lerp(1.2f, 0.3f, eased); // 大→小へ
 
-	particle.transform.scale = { scale, scale, scale };
+	particle.transform.scale = {scale, scale, scale};
 
 	// === 色変化（黄色→白） ===
-	particle.color.x = std::lerp(1.0f, 1.0f, t);  // R
-	particle.color.y = std::lerp(1.0f, 1.0f, t);  // G
-	particle.color.z = std::lerp(0.5f, 1.0f, t);  // B (黄→白)
-	particle.color.w = 1.0f - t; // アルファ減衰
+	particle.color.x = std::lerp(1.0f, 1.0f, t); // R
+	particle.color.y = std::lerp(1.0f, 1.0f, t); // G
+	particle.color.z = std::lerp(0.5f, 1.0f, t); // B (黄→白)
+	particle.color.w = 1.0f - t;				 // アルファ減衰
 }
-
-
-
 
 Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
@@ -3189,7 +4037,7 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 
 	// --- ランダムな方向とスピード（ゆっくり広がる） ---
 	std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
-	Vector3 dir = MyMath::Normalize(Vector3{ dist(rng), dist(rng) * 0.5f, dist(rng) }); // Y成分は少し抑える
+	Vector3 dir = MyMath::Normalize(Vector3{dist(rng), dist(rng) * 0.5f, dist(rng)}); // Y成分は少し抑える
 	std::uniform_real_distribution<float> speedDist(0.3f, 1.0f);
 	particle.Velocity = dir * speedDist(rng);
 
@@ -3197,15 +4045,15 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 	particle.transform.translate = transform.translate;
 	std::uniform_real_distribution<float> scaleDist(0.2f, 0.5f);
 	float initialScale = scaleDist(rng);
-	particle.transform.scale = { initialScale, initialScale, initialScale };
+	particle.transform.scale = {initialScale, initialScale, initialScale};
 
-	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> *2.0f);
-	particle.transform.rotate = { 0.0f, 0.0f, rotDist(rng) };
+	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> * 2.0f);
+	particle.transform.rotate = {0.0f, 0.0f, rotDist(rng)};
 
 	// --- 色：煙（グレー系） ---
 	std::uniform_real_distribution<float> grayDist(0.1f, 0.4f);
 	float gray = grayDist(rng);
-	particle.color = { gray, gray, gray, 1.0f };
+	particle.color = {gray, gray, gray, 1.0f};
 
 	particle.lifetime = lifetime;
 	particle.currentTime = 0;
@@ -3213,24 +4061,23 @@ Particle ExplosionBehavior::Create(std::mt19937& rng, const EulerTransform trans
 	return particle;
 }
 
-void ExplosionBehavior::Update(Particle& particle, float dt, Material* matelialData, float alpha)
+void ExplosionBehavior::Update(Particle& particle, Material* matelialData, float alpha)
 {
-	alpha = alpha;
-	particle.currentTime += dt;
-	matelialData = matelialData;
+	alpha_ = alpha;
+	particle.currentTime += kdt;
+	materialData_ = matelialData;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
 	// 位置更新（速度ベクトルで拡がる）
-	particle.transform.translate += particle.Velocity * dt;
+	particle.transform.translate += particle.Velocity * kdt;
 
 	// スケールをわずかに拡大
 	float scale = std::lerp(0.3f, 0.6f, t);
-	particle.transform.scale = { scale, scale, scale };
+	particle.transform.scale = {scale, scale, scale};
 
 	// アルファ減衰（一気に消える）
 	particle.color.w = 1.0f - t;
-
 }
 
 Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
@@ -3241,26 +4088,25 @@ Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform tran
 	std::uniform_real_distribution<float> offsetX(-0.05f, 0.05f);
 	std::uniform_real_distribution<float> offsetZ(-0.02f, 0.02f);
 
-	particle.transform.translate = transform.translate +
-		Vector3(offsetX(rng), -0.1f, offsetZ(rng));
+	particle.transform.translate = transform.translate + Vector3(offsetX(rng), -0.1f, offsetZ(rng));
 
 	// --- 初期スケール（小さめからスタート） ---
 	float s = 0.12f;
-	particle.transform.scale = { s, s, s };
+	particle.transform.scale = {s, s, s};
 
 	// --- 初期回転（軽くランダム回転） ---
-	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> *2.0f);
-	particle.transform.rotate = { 0.0f, 0.0f, rotDist(rng) };
+	std::uniform_real_distribution<float> rotDist(0.0f, std::numbers::pi_v<float> * 2.0f);
+	particle.transform.rotate = {0.0f, 0.0f, rotDist(rng)};
 
 	// --- 上昇 + 少し揺れるゆっくりした速度 ---
 	std::uniform_real_distribution<float> vx(-0.005f, 0.005f);
 	std::uniform_real_distribution<float> vz(-0.005f, 0.005f);
-	particle.Velocity = { vx(rng), 0.015f, vz(rng) };
+	particle.Velocity = {vx(rng), 0.015f, vz(rng)};
 
 	// --- 色（ほぼ白〜薄いグレー・透明気味） ---
 	std::uniform_real_distribution<float> gray(0.75f, 0.9f);
 	float c = gray(rng);
-	particle.color = { c, c, c, 0.6f }; // αは控えめ
+	particle.color = {c, c, c, 0.6f}; // αは控えめ
 
 	// --- 寿命（短めでサッと消える） ---
 	particle.lifetime = 0.7f;
@@ -3269,43 +4115,44 @@ Particle ExhaustGasBehavior::Create(std::mt19937& rng, const EulerTransform tran
 	return particle;
 }
 
-void ExhaustGasBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void ExhaustGasBehavior::Update(Particle& particle, Material* materialData, float alpha)
 {
 	(void)materialData;
 	(void)alpha;
 
-	particle.currentTime += dt;
+	particle.currentTime += kdt;
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
 	// 速度で移動（少しずつ上昇させる）
-	particle.transform.translate += particle.Velocity * dt;
+	particle.transform.translate += particle.Velocity * kdt;
 
 	// 上昇につれてわずかに減速＆上向きに寄せると「漂ってる感」が出る
 	particle.Velocity.x *= 0.98f;
 	particle.Velocity.z *= 0.98f;
-	particle.Velocity.y += 0.005f * dt; // ほんの少しだけ浮力
+	particle.Velocity.y += 0.005f * kdt; // ほんの少しだけ浮力
 
 	// スケール拡大（じんわり大きくなる）
 	float scale = std::lerp(0.12f, 0.35f, t);
-	particle.transform.scale = { scale, scale, scale };
+	particle.transform.scale = {scale, scale, scale};
 
 	// アルファはなめらかに消えていく (二乗カーブで最後ふっと消える)
 	float a = 1.0f - t;
 	particle.color.w = a * a;
 }
 
+
 ============================================================
-File Path: project/application/particle/ChargeBehabiaor.h
+File Path: project/application/particle/ChargeBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 
 /// <summary>
 /// チャージエフェクトのビヘイビアクラス
 /// </summary>
-class ChargeBehabiaor: public IParticleBehavior
+class ChargeBehavior : public IParticleBehavior
 {
-public:
+  public:
 	/// <summary>
 	/// パーティクルの生成
 	/// </summary>
@@ -3321,25 +4168,23 @@ public:
 	/// <param name="dt"></param>
 	/// <param name="matelialData"></param>
 	/// <param name="alpha"></param>
-	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
+	void Update(Particle& particle, Material* matelialData, float alpha) override;
 
+  private:
+	Vector3 initScale_ = {0.0f, 0.0f, 0.0f};
+	Vector3 initRotate_ = {1.27f, 0.0f, 0.0f};
 
-private:
-	Vector3 initScale_ = { 0.0f, 0.0f, 0.0f };
-	Vector3 initRotate_ = { 1.27f, 0.0f, 0.0f };
-
-private:
+  private:
 	float scrollX_ = 0.0f;
-	float scrollSpeed_ = 0.2f; 
-
+	float scrollSpeed_ = 0.2f;
 };
- 
+
 /// <summary>
 /// 爆発エフェクトのビヘイビアクラス
 /// </summary>
 class ExplosionBehavior : public IParticleBehavior
 {
-public:
+  public:
 	/// <summary>
 	// パーティクルの生成
 	/// </summary>
@@ -3355,26 +4200,24 @@ public:
 	/// <param name="dt"></param>
 	/// <param name="matelialData"></param>
 	/// <param name="alpha"></param>
-	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
+	void Update(Particle& particle, Material* matelialData, float alpha) override;
 
+  private:
+	Vector3 initScale_ = {0.0f, 0.0f, 0.0f};
+	Vector3 initRotate_ = {1.27f, 0.0f, 0.0f};
 
-private:
-	Vector3 initScale_ = { 0.0f, 0.0f, 0.0f };
-	Vector3 initRotate_ = { 1.27f, 0.0f, 0.0f };
-
-private:
+  private:
 	float scrollX_ = 0.0f;
 	float scrollSpeed_ = 0.2f;
-
-
-
 };
 
-class ExhaustGasBehavior : public IParticleBehavior {
-public:
+class ExhaustGasBehavior : public IParticleBehavior
+{
+  public:
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
-	void Update(Particle& particle, float dt, Material* materialData, float alpha) override;
+	void Update(Particle& particle, Material* materialData, float alpha) override;
 };
+
 
 ============================================================
 File Path: project/application/particle/Damagearea.cpp
@@ -3538,7 +4381,7 @@ File Path: project/application/particle/GameOverEffect.cpp
 #include "GameOverEffect.h"
 #include "Player.h"
 
-void GameOverEffect::Initialize(Object3D *obj)
+void GameOverEffect::Initialize(Object3D* obj)
 {
 	playerobject3D_ = obj;
 
@@ -3550,18 +4393,18 @@ void GameOverEffect::Initialize(Object3D *obj)
 	startpos_ = playerobject3D_->GetTransform().translate;
 
 	// 距離・速度などの定数設定
-	jumpPower_ = 0.2f;      // 初速度
-	gravity_ = 0.01f;       // 重力加速度
-	forwardSpeed_ = 0.05f;  // 手前への移動速度
-
-
+	jumpPower_ = 0.2f;	   // 初速度
+	gravity_ = 0.01f;	   // 重力加速度
+	forwardSpeed_ = 0.05f; // 手前への移動速度
 }
 
 void GameOverEffect::Update(float dt)
 {
-	if (!isPlaying_) return;
-	//プレイヤーの位置をエフェクトが見えるようにエックスを真ん中に移動
-	playerobject3D_->SetTranslate({ 13.0f, playerobject3D_->GetTransform().translate.y, playerobject3D_->GetTransform().translate.z });
+	if (!isPlaying_)
+		return;
+	// プレイヤーの位置をエフェクトが見えるようにエックスを真ん中に移動
+	playerobject3D_->SetTranslate(
+		{13.0f, playerobject3D_->GetTransform().translate.y, playerobject3D_->GetTransform().translate.z});
 
 	// 経過時間を更新
 	timer_ += dt;
@@ -3577,21 +4420,17 @@ void GameOverEffect::Update(float dt)
 
 	float subway = -5.0f; // 地面の高さ
 	// 下限を超えたら停止
-	if (pos.y <= subway) { // 地面より下まで落ちたら終了
+	if (pos.y <= subway)
+	{ // 地面より下まで落ちたら終了
 		pos.y = subway;
 		isPlaying_ = false;
 	}
 
-	playerobject3D_->SetRotate({ 3.0f, timer_ * 10.0f, 0.0f }); // 回転アニメーション
+	playerobject3D_->SetRotate({3.0f, timer_ * 10.0f, 0.0f}); // 回転アニメーション
 	playerobject3D_->SetTranslate(pos);
 	playerobject3D_->Update();
-
 }
-void GameOverEffect::Draw()
-{
-}
-
-
+void GameOverEffect::Draw() {}
 
 
 ============================================================
@@ -3841,8 +4680,8 @@ private:
 ============================================================
 File Path: project/application/particle/MagicCircleBehavior.cpp
 ============================================================
-#include "MagicCircleBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "MagicCircleBehavior.h"
+#include "ParticleManager.h"
 #include <Input.h>
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -3852,7 +4691,7 @@ File Path: project/application/particle/MagicCircleBehavior.cpp
 Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
 	Particle particle;
-	rng = rng;
+	std::mt19937& rng_ = rng;
 
 	particle.transform.scale = initScale_;
 	particle.transform.rotate = initRotate_;
@@ -3864,7 +4703,7 @@ Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform tra
 	return particle;
 }
 
-void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materialData,float alpha)
+void MagicCircleBehavior::Update(Particle& particle, Material* materialData,float alpha)
 {
 	alpha = alpha;
 	// UVスクロール
@@ -3873,8 +4712,8 @@ void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materi
 	if (materialData->uvTransform.m[3][0] < 0.0f) materialData->uvTransform.m[3][0] += 1.0f;
 
 	// 位置更新
-	particle.transform.translate += particle.Velocity * dt;
-	particle.currentTime += dt;
+	particle.transform.translate += particle.Velocity * kdt;
+	particle.currentTime += kdt;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 
@@ -3908,7 +4747,7 @@ void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materi
 ============================================================
 File Path: project/application/particle/MagicCircleBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 #include "MyMath.h"
 
@@ -3919,7 +4758,7 @@ public:
 	
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
 		
-	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
+	void Update(Particle& particle, Material* matelialData, float alpha) override;
 
 	
 private:
@@ -3933,13 +4772,13 @@ private:
 ============================================================
 File Path: project/application/particle/PlayerpaticleBehavior.cpp
 ============================================================
-#include "PlayerpaticleBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "PlayerpaticleBehavior.h"
+#include "ParticleManager.h"
 #include <numbers>
 
 Particle PlayerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTransform transform, float lifetime)
 {
-	lifetime = lifetime;
+	lifetime_ = lifetime;
 	std::uniform_real_distribution<float>distribution(-1.0, 1.0f);
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
@@ -3965,12 +4804,11 @@ Particle PlayerpaticleBehavior::Create(std::mt19937& randomEngine, const EulerTr
 	return particle;
 }
 
-void PlayerpaticleBehavior::Update(Particle& particle, float dt, Material* materialData, float alpha)
+void PlayerpaticleBehavior::Update(Particle& particle,Material* materialData, float alpha)
 {
 
-	materialData= materialData; // X方向スクロール
-	dt = dt;
-	alpha = alpha;
+	materialData_= materialData; // X方向スクロール
+	alpha_ = alpha;
 	//パーティクルの位置を更新
 	particle.transform.translate += particle.Velocity * 1.0f / 60.0f;
 	//パーティクルの寿命を減らす
@@ -3984,14 +4822,14 @@ void PlayerpaticleBehavior::Update(Particle& particle, float dt, Material* mater
 ============================================================
 File Path: project/application/particle/PlayerpaticleBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 
 class PlayerpaticleBehavior : public IParticleBehavior
 {
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
 
-	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
+	void Update(Particle& particle, Material* matelialData, float alpha) override;
 
 };
 
@@ -4393,30 +5231,43 @@ private:
 ============================================================
 File Path: project/application/player/Player.cpp
 ============================================================
-#define NOMINMAX
-#include "Player.h"
+﻿#include "Player.h"
+
 #include "MapChipField.h"
-#include <cassert>
+#include "MapCollisionSystem.h"
 #include "Input.h"
 #include "Logger.h"
+#include "Object3DCommon.h"
+#include "ParticleManager.h"
+#include "ParticleEmitter.h"
+#include "PlayerpaticleBehavior.h"
+#include "ChargeBehavior.h"
+#include "CollisionManager.h"
+#include "LineCommon.h"
+#include "CameraManager.h"
+#include "UIeditor.h"
+#include "Easing.h"
+
+#include <cassert>
+#include <array>
+#include <memory>
+#include <cmath>
+
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif // USE_IMGUI
-#include "Object3DCommon.h"
-#include "ParticleMnager.h"
-#include "PlayerpaticleBehavior.h"
-#include "ChargeBehabiaor.h"
-#include "CollisionManager.h"
-#include "LineCommon.h" 
-#include <memory>      
-#include "Easing.h"
-#include <array> 
-#include "CameraManager.h"
-#include <UIeditor.h>
 
 void Player::Initialize(const Vector3& position) {
 
-	// 初期配置と Object3D の作成（unique_ptr 所有）
+	if (mapChipField_) {
+
+		SetShotLimit(
+			mapChipField_
+			->GetStageData()
+			.GetShotLimit()
+		);
+	}
+
 	playerPosition_ = position;
 	object3D_ = std::make_unique<Object3D>();
 	object3D_->Initialize(Object3DCommon::GetInstance());
@@ -4438,12 +5289,6 @@ void Player::Initialize(const Vector3& position) {
 	// ゴーストは少し暗くしたいのでライトOFF
 	ghostObject_->SetLighting(false);
 
-	//ParticleManager::GetInstance()->CreateParticleGroup(
-	//	"dash_smoke",
-	//	"Resources/smoke.png", // 使いたいテクスチャ
-	//	VerticesType::Quad,
-	//	std::make_unique<ExhaustGasBehavior>()
-	//);
 	exhaustEmitter_ = std::make_unique<ParticleEmitter>(
 		EulerTransform{ position, {0,0,0}, {1,1,1} },
 		1.0f, // lifetime
@@ -4453,7 +5298,7 @@ void Player::Initialize(const Vector3& position) {
 	);
 
 	ParticleManager::GetInstance()->CreateParticleGroup("enemydeath", "Resources/ParticleTexture/honoo.png", VerticesType::Quad, std::make_unique<ExplosionBehavior>());
-	deatheEffect = std::make_unique<ParticleEmitter>(
+	deathEffect_ = std::make_unique<ParticleEmitter>(
 		EulerTransform{ position, {0,0,0}, {1,1,1} },
 		1.0f, // lifetime
 		0.0f, // currentTime
@@ -4528,8 +5373,8 @@ void Player::Update() {
 
 	PlayerMove();// 自機の動き
 	aabb_ = GetPlayerAABB();// AABB 更新
-	//Attack();// 攻撃
-	Playerline();// プレイヤーの移動ライン描画
+	
+	PlayerLine();// プレイヤーの移動ライン描画
 	DrawPredictLine();
 
 	// 衝突判定を初期化
@@ -4538,7 +5383,25 @@ void Player::Update() {
 	collisionMapInfo.move = velocity_;
 
 	// マップ衝突チェック
-	MapCollision(collisionMapInfo);// マップとの衝突判定と情報の取得
+	MapCollisionSystem::CheckCollisionAt(
+		object3D_->GetTransform().translate,
+		collisionMapInfo,
+		parameter_.kWidth,
+		parameter_.kHeight,
+		parameter_.kBlank,
+		parameter_.kCollisionEpsilon,
+		mapChipField_,
+		true
+	);
+
+	if (collisionMapInfo.hitGoal) {
+		goal_ = true;
+
+		// ゴールしたらバリアリングを消す
+		isBarrierActive_ = false;
+		ParticleManager::GetInstance()->StopFollow("barriering");
+	}
+
 	Reflect(collisionMapInfo);// 反射処理
 	PlayerCondition(collisionMapInfo);// プレイヤーの状態更新	
 
@@ -4556,7 +5419,7 @@ void Player::Update() {
 			int afterHp = mapChipField_->GetMapChipHPByIndex(bx, by);
 
 			// 壊れた瞬間だけエフェクト
-			if (afterHp <= 0 && deatheEffect) {
+			if (afterHp <= 0 && deathEffect_) {
 				Rect r = mapChipField_->GetRectByIndex(bx, by);
 
 				Vector3 breakPos{};
@@ -4564,8 +5427,8 @@ void Player::Update() {
 				breakPos.y = (r.top + r.bottom) * 0.5f;
 				breakPos.z = object3D_->GetTransform().translate.z;
 
-				deatheEffect->SetPosition(breakPos);
-				deatheEffect->Emit();
+				deathEffect_->SetPosition(breakPos);
+				deathEffect_->Emit();
 				//カメラシェイク
 				StartCameraShake(0.08f, 0.15f);
 
@@ -4582,7 +5445,7 @@ void Player::Update() {
 	{
 		Vector3 pos = object3D_->GetTransform().translate;
 
-		if (TryPortalWarp(pos, velocity_,true)) {
+		if (TryPortalWarp(pos, velocity_, true)) {
 			object3D_->SetTranslate(pos);
 
 			shotVel_ = velocity_;
@@ -4596,7 +5459,7 @@ void Player::Update() {
 	CeilingCollisionMove(collisionMapInfo);// 天井衝突時の移動処理
 	LandingCollisionMove(collisionMapInfo);// 着地時の移動処理
 	HitWallCollisionMove(collisionMapInfo);// 壁衝突時の移動処理
-	Playerdirection(collisionMapInfo);// プレイヤーの振り向き
+	PlayerDirection(collisionMapInfo);// プレイヤーの振り向き
 
 	// プレイヤーのワールド位置を更新
 	object3D_->Update();
@@ -4631,8 +5494,6 @@ void Player::PlayerMove() {
 		cannonAngleDeg_ -= kCannonAngleStepDeg;
 	}
 
-	// マウスのホイール差分を取得して角度に反映
-
 	
 	auto mouseMove = Input::GetInstance()->GetMouseMove();
 	if (mouseMove.lZ != 0) {
@@ -4647,32 +5508,24 @@ void Player::PlayerMove() {
 
 	// 角度更新はそのまま（UP/DOWN + ホイール）
 	cannonAngleDeg_ = std::clamp(cannonAngleDeg_, kAimMinDeg, kAimMaxDeg);
-
-	const float rad = cannonAngleDeg_ * (3.14159265f / 180.0f);
-	const float spd = parameter_.kLimitRunSpeed;
-
-	Vector3 localDir{};
-	localDir.y = std::sinf(rad);
-	localDir.z = std::cosf(rad);
-	localDir.x = 0.0f;
-
-	// ワールド変換（回転を考慮）
-	Vector3 worldDir = MyMath::TransformNormal(
-		localDir,
-		object3D_->GetWorldMatrix()
-	);
-
-	Vector3 v = worldDir.Normalize() * spd;
+	
 
 	//スペースで発射
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerMouse(0)) {
 
 		UIeditor::GetInstance()->PlayPressAnimation("GamePlay", "SPACE");
 
 		const bool canShoot =
-			(playerState_ == PlayerState::sticky) || isStopped_;
+			(
+				playerState_ == PlayerState::sticky ||
+				isStopped_
+				)
+			&& remainingShots_ > 0;
 
 		if (canShoot) {
+
+			// 発射したので1回減らす
+			remainingShots_--;
 
 			playerState_ = PlayerState::hard;
 			isBarrierActive_ = true;
@@ -4731,60 +5584,121 @@ void Player::PlayerCondition(const CollisionMapInfo& info)
 
 }
 
-Vector3 Player::NormalFromType(CollisionType type)
-{
-	//CollisionType の順序 (Top, Bottom, Right, Left) に合わせたルックアップテーブル
-	static const std::array<Vector3, 4> normals{ {
-			/* Top    */ Vector3{ 0.0f, -1.0f, 0.0f },
-			/* Bottom */ Vector3{ 0.0f,  1.0f, 0.0f },
-			/* Left   */ Vector3{ 1.0f,  0.0f, 0.0f },
-			/* Right  */ Vector3{ -1.0f, 0.0f, 0.0f }
-		} };
 
-	const auto idx = static_cast<std::size_t>(type);
-	if (idx < normals.size()) return normals[idx];
-	return { 0.0f, 0.0f, 0.0f };
-}
 
 void Player::Reflect(const CollisionMapInfo& info)
 {
-	if (playerState_ == PlayerState::sticky) return;
-	if (!info.hasNormal) return;
-
-	Vector3 n{};
-
-	const bool hitX = info.hitWall;
-	const bool hitY = (info.ceiling || info.landing);
-
-	if (hitX && hitY) {
-		if (info.penX >= info.penY) {
-			// 壁で反射
-			n = { (velocity_.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-		}
-		else {
-			// 天井/床で反射
-			n = { 0.0f, (velocity_.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
-		}
-	}
-	else {
-		// 合成法線
-		n = MyMath::Normalize(info.normal);
+	if (playerState_ == PlayerState::sticky) {
+		return;
 	}
 
-	if (n.x == 0 && n.y == 0 && n.z == 0) return;
+	if (!info.hasNormal) {
+		return;
+	}
 
-	const float vn = MyMath::Dot(velocity_, n);
-	if (vn >= 0.0f) return;
+	Vector3 n = GetReflectNormal(info, velocity_);
 
-	velocity_ = velocity_ - n * (2.0f * vn);
-
-
+	if (n.x == 0.0f && n.y == 0.0f && n.z == 0.0f) {
+		return;
+	}
+	// 反射処理
+	ReflectVelocity(velocity_, n);
+	// 反射後の速度を保存
 	shotVel_ = velocity_;
 	hasShotVel_ = true;
 
 }
 
-void Player::Playerline()
+Vector3 Player::GetReflectNormal(const CollisionMapInfo& info, const Vector3& velocity) const
+{
+	Vector3 normal{};
+
+	const bool hitX = info.hitWall;
+	const bool hitY = info.ceiling || info.landing;
+
+	if (hitX && hitY) {
+		if (info.penX >= info.penY) {
+			normal = { (velocity.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
+		} else {
+			normal = { 0.0f, (velocity.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
+		}
+	} else {
+		normal = MyMath::Normalize(info.normal);
+	}
+
+	return normal;
+}
+
+PredictStepResult Player::SimulatePredictStep(
+	Vector3& simPos,
+	Vector3& simVel,
+	Vector3& prev,
+	int& hitCountSim,
+	bool& wasTouchingSim,
+	const Vector4& lineColor
+)
+{
+	PredictStepResult result{};
+
+	CollisionMapInfo info{};
+	info.move = simVel;
+	info.normal = { 0.0f, 0.0f, 0.0f };
+	info.hasNormal = false;
+
+	CheckPredictCollision(simPos, info, false);
+
+	const bool touchingNow = info.ceiling || info.landing || info.hitWall;
+
+	if (touchingNow && !wasTouchingSim) {
+		hitCountSim++;
+	}
+
+	wasTouchingSim = touchingNow;
+
+	simPos = simPos + info.move;
+
+	line_->Draw(prev, simPos, lineColor);
+	prev = simPos;
+
+	Vector3 beforePortalPos = simPos;
+
+	if (TryPortalWarp(simPos, simVel, false)) {
+		// ポータル通過時のラインを描画
+		line_->Draw(
+			beforePortalPos,
+			simPos,
+			parameter_.predictPortalLineColor
+		);
+
+		prev = simPos;
+		wasTouchingSim = false;
+	}
+
+	if (hitCountSim >= 2) {
+		ShowPredictionGhost(simPos, info);
+
+		result.shouldEnd = true;
+		result.hitSecondSurface = true;
+		return result;
+	}
+
+	if (info.hasNormal) {
+		Vector3 n = GetReflectNormal(info, simVel);
+		ReflectVelocity(simVel, n);
+	}
+
+	if (std::abs(simVel.x) < parameter_.predictStopEpsilon &&
+		std::abs(simVel.y) < parameter_.predictStopEpsilon) 
+	{
+		result.shouldEnd = true;
+		result.stopped = true;
+		return result;
+	}
+
+	return result;
+}
+
+void Player::PlayerLine()
 {
 
 	// 始点はプレイヤーのワールド位置（発射位置）
@@ -4827,99 +5741,32 @@ void Player::DrawPredictLine()
 	if (!line_) return;
 	if (!mapChipField_) return;
 
-	// ゴーストは予測線と同時に表示する
 	isGhostVisible_ = false;
 
-	// 速度0のとき（発射前）だけ予測線を見せたいならこれ
 	if (!(velocity_.x == 0.0f && velocity_.y == 0.0f)) return;
 
-	// 発射ベクトル（予測用）
 	Vector3 simVel = MakeShotVelocity();
 	Vector3 simPos = object3D_->GetTransform().translate;
 
-	// 2回触れたらsticky
 	int hitCountSim = 0;
 	bool wasTouchingSim = false;
 
-	// 色（好きに）
-	Vector4 color = { 1.0f, 1.0f, 0.0f, 1.0f };
-
-	// 何ステップ先まで描くか
-	const int kMaxSteps = 240; // 30fps想定なら8秒
-	const float epsPush = parameter_.kCollisionEpsilon * 2.0f;
+	const Vector4 color = parameter_.predictLineColor;
 
 	Vector3 prev = simPos;
 
-	for (int step = 0; step < kMaxSteps; ++step) {
+	for (int step = 0; step < parameter_.predictMaxSteps; ++step) {
 
-		Vector3 moveDirBeforeHit = simVel.Normalize();
+		PredictStepResult result = SimulatePredictStep(
+			simPos,
+			simVel,
+			prev,
+			hitCountSim,
+			wasTouchingSim,
+			color
+		);
 
-		CollisionMapInfo info{};
-		info.move = simVel;
-		info.normal = { 0,0,0 };
-		info.hasNormal = false;
-
-		MapCollisionAt(simPos, info, false);
-
-		const bool touchingNow = info.ceiling || info.landing || info.hitWall;
-
-		if (touchingNow && !wasTouchingSim) {
-			hitCountSim++;
-		}
-
-		wasTouchingSim = touchingNow;
-
-		simPos = simPos + info.move;
-
-		line_->Draw(prev, simPos, color);
-		prev = simPos;
-
-		Vector3 beforePortalPos = simPos;
-
-		if (TryPortalWarp(simPos, simVel, false)) {
-			Vector4 portalColor = { 0.0f, 1.0f, 1.0f, 1.0f };
-
-			// 入口から出口へつながる線
-			line_->Draw(beforePortalPos, simPos, portalColor);
-
-			prev = simPos;
-
-			// ポータルは壁接触扱いにしない
-			wasTouchingSim = false;
-		}
-
-		if (hitCountSim >= 2) {
-			Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
-
-			SetGhostPreview(simPos, nextFacingDir);// ゴーストの位置と向きをセットして表示
-			DrawGhostAimPreview(simPos, nextFacingDir);// ゴーストの射出可能方向を表示	
-
-			break;
-		}
-
-		// 反射
-		if (info.hasNormal) {
-			Vector3 n{};
-			const bool hitX = info.hitWall;
-			const bool hitY = (info.ceiling || info.landing);
-
-			if (hitX && hitY) {
-				if (info.penX >= info.penY) {
-					n = { (simVel.x > 0.0f) ? -1.0f : 1.0f, 0.0f, 0.0f };
-				}
-				else {
-					n = { 0.0f, (simVel.y > 0.0f) ? -1.0f : 1.0f, 0.0f };
-				}
-			}
-			else {
-				n = MyMath::Normalize(info.normal);
-			}
-
-			ReflectVelocity(simVel, n);
-		}
-
-		// 速度がほぼゼロなら終了
-		if (std::abs(simVel.x) < 1e-6f && std::abs(simVel.y) < 1e-6f) {
+		if (result.shouldEnd) {
 			break;
 		}
 	}
@@ -5010,8 +5857,7 @@ Vector3 Player::GetFacingDirFromCollisionInfo(const CollisionMapInfo& info)
 			if (info.normal.x < 0.0f) {
 				return { -1.0f, 0.0f, 0.0f };
 			}
-		}
-		else {
+		} else {
 			if (info.normal.y > 0.0f) {
 				return { 0.0f, 1.0f, 0.0f };
 			}
@@ -5124,8 +5970,7 @@ Vector3 Player::GetGhostRotateFromFacingDir(const Vector3& facingDir)
 			rotate.y = std::numbers::pi_v<float> *3.0f / 2.0f;
 			rotate.z = 0.0f;
 		}
-	}
-	else {
+	} else {
 		// 上向き
 		if (facingDir.y >= 0.0f) {
 			rotate.y = std::numbers::pi_v<float> / 2.0f;
@@ -5141,22 +5986,29 @@ Vector3 Player::GetGhostRotateFromFacingDir(const Vector3& facingDir)
 	return rotate;
 }
 
-void Player::Playerdirection(const CollisionMapInfo& info) {
+void Player::ShowPredictionGhost(const Vector3& position, const CollisionMapInfo& info)
+{
+	Vector3 nextFacingDir = GetFacingDirFromCollisionInfo(info);
+
+	SetGhostPreview(position, nextFacingDir);
+	DrawGhostAimPreview(position, nextFacingDir);
+}
+
+void Player::PlayerDirection(const CollisionMapInfo& info)
+{
 	LRTBDirecion targetDir = direction_;
 
 	if (info.hasNormal) {
 
 		if (info.normal.x < 0.0f) {
 			targetDir = LRTBDirecion::kLeft;
-		}
-		else if (info.normal.x > 0.0f) {
+		} else if (info.normal.x > 0.0f) {
 			targetDir = LRTBDirecion::kRight;
 		}
 
 		if (info.normal.y > 0.0f) {
 			targetDir = LRTBDirecion::kTop;
-		}
-		else if (info.normal.y < 0.0f) {
+		} else if (info.normal.y < 0.0f) {
 			targetDir = LRTBDirecion::kBottom;
 		}
 	}
@@ -5180,7 +6032,7 @@ void Player::Playerdirection(const CollisionMapInfo& info) {
 		targetZ = 0.0f;
 		break;
 
-	case LRTBDirecion::kLeft:
+	case LRTBDirecion::kLeft :
 		targetY = std::numbers::pi_v<float> *3.0f / 2.0f;
 		targetZ = 0.0f;
 		break;
@@ -5243,132 +6095,29 @@ void Player::PlayerDeathTerms()
 	// 落下による死亡判定
 	if (object3D_->GetTransform().translate.y < parameter_.deathHeight.min
 		|| object3D_->GetTransform().translate.y>parameter_.deathHeight.max
-		|| object3D_->GetTransform().translate.x < parameter_.deathwidth.min
-		|| object3D_->GetTransform().translate.x > parameter_.deathwidth.max)
+		|| object3D_->GetTransform().translate.x < parameter_.deathWidth.min
+		|| object3D_->GetTransform().translate.x > parameter_.deathWidth.max)
 	{
 		isDead_ = true;
 	}
 
 }
 
-void Player::MapCollision(CollisionMapInfo& info) {
-
-	const Vector3 position = object3D_->GetTransform().translate;
-	MapCollisionAt(position, info, true);
-}
-
-void Player::MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal)
+void Player::CheckPredictCollision(const Vector3& position, CollisionMapInfo& info, bool enableGoal)
 {
-	Vector3 base = position;
-
-	// --------------------
-	// X解く
-	// --------------------
-	CollisionMapInfo xInfo{};
-	xInfo.move = { info.move.x, 0.0f, 0.0f };
-	xInfo.normal = { 0,0,0 };
-	xInfo.hasNormal = false;
-	xInfo.penX = 0.0f;
-	xInfo.penY = 0.0f;
-
-	CollisionMapInfoDirection(
-		base, xInfo, CollisionType::Right,
-		{ kRightTop, kRightBottom },
-		Vector3(parameter_.kCollisionEpsilon, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.x > 0; },
+	MapCollisionSystem::CheckCollisionAt(
+		position,
+		info,
+		parameter_.kWidth,
+		parameter_.kHeight,
+		parameter_.kBlank,
+		parameter_.kCollisionEpsilon,
+		mapChipField_,
 		enableGoal
 	);
-	CollisionMapInfoDirection(
-		base, xInfo, CollisionType::Left,
-		{ kLeftTop, kLeftBottom },
-		Vector3(-parameter_.kCollisionEpsilon, 0, 0),
-		[](const CollisionMapInfo& i) { return i.move.x < 0; },
-		enableGoal
-	);
-
-	// X反映
-	base.x += xInfo.move.x;
-	info.move.x = xInfo.move.x;
-
-	if (xInfo.hasNormal) {
-		info.normal = info.normal + xInfo.normal;
-		info.hasNormal = true;
-	}
-	info.hitWall = info.hitWall || xInfo.hitWall;
-	info.penX = std::max(info.penX, xInfo.penX);
-	// ブロック破壊情報反映
-	if (xInfo.hasBreakBlock) {
-		info.hasBreakBlock = true;
-		info.breakBlockX = xInfo.breakBlockX;
-		info.breakBlockY = xInfo.breakBlockY;
-
-	}
-	if (xInfo.hitDamageBlock) {
-		info.hitDamageBlock = true;
-	}
-
-	// --------------------
-	// Y（X反映後の位置で）
-	// --------------------
-	CollisionMapInfo yInfo{};
-	yInfo.move = { 0.0f, info.move.y, 0.0f };
-	yInfo.normal = { 0,0,0 };
-	yInfo.hasNormal = false;
-	yInfo.penX = 0.0f;
-	yInfo.penY = 0.0f;
-
-	CollisionMapInfoDirection(
-		base, yInfo, CollisionType::Top,
-		{ kLeftTop, kRightTop },
-		Vector3(0, parameter_.kCollisionEpsilon, 0),
-		[](const CollisionMapInfo& i) { return i.move.y > 0; },
-		enableGoal
-	);
-	CollisionMapInfoDirection(
-		base, yInfo, CollisionType::Bottom,
-		{ kLeftBottom, kRightBottom },
-		Vector3(0, -parameter_.kCollisionEpsilon, 0),
-		[](const CollisionMapInfo& i) { return i.move.y < 0; },
-		enableGoal
-	);
-
-	// Y反映
-	base.y += yInfo.move.y;
-	info.move.y = yInfo.move.y;
-
-	if (yInfo.hasNormal) {
-		info.normal = info.normal + yInfo.normal;
-		info.hasNormal = true;
-	}
-	info.ceiling = info.ceiling || yInfo.ceiling;
-	info.landing = info.landing || yInfo.landing;
-	info.penY = std::max(info.penY, yInfo.penY);
-	// ブロック破壊情報反映
-	if (yInfo.hasBreakBlock && !info.hasBreakBlock) {
-		info.hasBreakBlock = true;
-		info.breakBlockX = yInfo.breakBlockX;
-		info.breakBlockY = yInfo.breakBlockY;
-
-	}
-
-	if (yInfo.hitDamageBlock) {
-		info.hitDamageBlock = true;
-	}
 }
 
-Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 
-	Vector3 offseetTable[kNumCorner] = {
-
-		{+parameter_.kWidth / 2.0f, -parameter_.kHeight / 2.0f, 0},
-		{-parameter_.kWidth / 2.0f, -parameter_.kHeight / 2.0f, 0},
-		{+parameter_.kWidth / 2.0f, +parameter_.kHeight / 2.0f, 0},
-		{-parameter_.kWidth / 2.0f, +parameter_.kHeight / 2.0f, 0}
-	};
-
-	return center + offseetTable[static_cast<uint32_t>(corner)];
-
-}
 
 void Player::PlayerCollisionMove(const CollisionMapInfo& info) {
 	// 移動
@@ -5391,8 +6140,7 @@ void Player::CeilingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		}
-		else {
+		} else {
 
 			Logger::Log("hard\n");
 
@@ -5410,8 +6158,7 @@ void Player::LandingCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		}
-		else {
+		} else {
 
 			Logger::Log("hard\n");
 
@@ -5430,8 +6177,7 @@ void Player::HitWallCollisionMove(const CollisionMapInfo& info) {
 			velocity_.x = 0.0f;
 			velocity_.y = 0.0f;
 			velocity_.z = 0.0f;
-		}
-		else {
+		} else {
 
 			Logger::Log("hard\n");
 
@@ -5506,7 +6252,7 @@ bool Player::TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldow
 		outPortal.dir
 	);
 
-	Vector3 exitPos = mapChipField_->GetMapChipPostionByIndex(outPortal.x, outPortal.y);
+	Vector3 exitPos = mapChipField_->GetMapChipPositionByIndex(outPortal.x, outPortal.y);
 
 	const float pushOut = 0.8f;
 	Vector3 outDir = outPortal.dir.Normalize();
@@ -5592,8 +6338,7 @@ void Player::PlayerParticle()
 
 	if (playerState_ == PlayerState::hard && isBarrierActive_) {
 		ParticleManager::GetInstance()->EmitFollowOne("barriering", object3D_->GetTransform());
-	}
-	else {
+	} else {
 		ParticleManager::GetInstance()->StopFollow("barriering");
 	}
 
@@ -5608,10 +6353,10 @@ void Player::PlayerParticle()
 			smokeTransform.translate = object3D_->GetTransform().translate;
 
 			// 進行方向のちょい後ろに出すと“排気”感が出る
-			if (direction_ == LRTBDirecion::kRight) {
+			if (direction_ == LRTBDirecion::kRight)
+			{
 				smokeTransform.translate.x -= 0.15f;
-			}
-			else {
+			} else {
 				smokeTransform.translate.x += 0.15f;
 			}
 
@@ -5622,190 +6367,36 @@ void Player::PlayerParticle()
 
 		}
 
-	}
-	else {
+	} else {
 		// 止まったらタイマーリセット
 		exhaustTimer_ = 0.0f;
 	}
 }
 
-bool Player::IsHittableBlock(MapChipType type)
-{
-	switch (type) {
-	case MapChipType::Block:
-	case MapChipType::UnbreakableBlock:
-	case MapChipType::damageBlock:
-		return true;
-	default:
-		return false;
-	}
-}
-
-bool Player::CheckCollisionPoints(const Vector3& basePos, const std::array<Vector3, 2>& posList, CollisionType type, CollisionMapInfo& info, bool enableGoal)
-{
-	const Vector3 movedCenter = basePos + info.move;
-
-	bool hit = false;
-
-	bool hasBest = false;
-	Rect bestRect{};
-	float bestPen = -1.0f;
-
-	for (const auto& p : posList) {
-		IndexSet idx = mapChipField_->GetMapChipIndexSetByPosition(p);
-		MapChipType chip = mapChipField_->GetMapChipTypeByIndex(idx.xIndex, idx.yIndex);
-
-		Rect r = mapChipField_->GetRectByIndex(idx.xIndex, idx.yIndex);
-
-		float pen = 0.0f;
-		switch (type) {
-		case CollisionType::Right:
-			pen = (movedCenter.x + parameter_.kWidth * 0.5f) - r.left;
-			break;
-		case CollisionType::Left:
-			pen = r.right - (movedCenter.x - parameter_.kWidth * 0.5f);
-			break;
-		case CollisionType::Top:
-			pen = (movedCenter.y + parameter_.kHeight * 0.5f) - r.bottom;
-			break;
-		case CollisionType::Bottom:
-			pen = r.top - (movedCenter.y - parameter_.kHeight * 0.5f);
-			break;
-		}
-
-		if (chip == MapChipType::Goal) {
-			if (enableGoal) {
-				if (pen > -parameter_.kCollisionEpsilon) { // 少し甘くする
-					goal_ = true;
-				}
-			}
-			continue;
-		}
-
-		if (chip == MapChipType::damageBlock) {
-			if (pen > 0.0f) {
-				info.hitDamageBlock = true;
-
-			}
-		}
-
-		if (chip == MapChipType::Block) {
-			if (enableGoal && playerState_ == PlayerState::hard) {
-				if (pen > 0.0f) {
-					if (!info.hasBreakBlock) {
-						info.hasBreakBlock = true;
-						info.breakBlockX = idx.xIndex;
-						info.breakBlockY = idx.yIndex;
-					}
-				}
-			}
-		}
-
-		// 壁になるブロック以外は無視
-		if (!IsHittableBlock(chip)) continue;
-
-		hit = true;
-
-		// めり込みがある時だけ採用
-		if (pen > 0.0f) {
-			if (type == CollisionType::Right || type == CollisionType::Left) {
-				info.penX = std::max(info.penX, pen);
-			}
-			else {
-				info.penY = std::max(info.penY, pen);
-			}
-
-			if (!hasBest || pen > bestPen) {
-				hasBest = true;
-				bestPen = pen;
-				bestRect = r;
-			}
-		}
-	}
-
-	if (!hit || !hasBest) return false;
-
-	// 法線加算
-	Vector3 n = NormalFromType(type);
-	info.normal = info.normal + n;
-	info.hasNormal = true;
-
-	// 押し戻し（bestRect 基準）
-	switch (type) {
-	case CollisionType::Top:
-		// 天井：ブロックの bottom に合わせる
-		info.move.y = bestRect.bottom - basePos.y - (parameter_.kHeight * 0.5f + parameter_.kBlank);
-		info.ceiling = true;
-		break;
-
-	case CollisionType::Bottom:
-		// 床：ブロックの top に合わせる
-		info.move.y = bestRect.top - basePos.y + (parameter_.kHeight * 0.5f + parameter_.kBlank);
-		info.landing = true;
-		break;
-
-	case CollisionType::Right:
-		// 右壁：ブロックの left に合わせる
-		info.move.x = bestRect.left - basePos.x - (parameter_.kWidth * 0.5f + parameter_.kBlank);
-		info.hitWall = true;
-		break;
-
-	case CollisionType::Left:
-		// 左壁：ブロックの right に合わせる
-		info.move.x = bestRect.right - basePos.x + (parameter_.kWidth * 0.5f + parameter_.kBlank);
-		info.hitWall = true;
-		break;
-	}
-
-	return true;
-}
-
-
-void Player::CollisionMapInfoDirection(
-	const Vector3& basePos,
-	CollisionMapInfo& info,
-	CollisionType dir,
-	const std::array<Corner, 2>& checkCorners,
-	const Vector3& offset,
-	std::function<bool(const CollisionMapInfo&)> moveCondition,
-	bool enableGoal
-)
-{
-	if (!moveCondition(info)) return;
-
-	Vector3 position = basePos + info.move;
-
-	std::array<Vector3, 2> points = {
-		CornerPosition(position, checkCorners[0]) + offset,
-		CornerPosition(position, checkCorners[1]) + offset
-	};
-
-	CheckCollisionPoints(basePos, points, dir, info, enableGoal);
-}
 
 
 ============================================================
 File Path: project/application/player/Player.h
 ============================================================
-#pragma once
-#include "Input.h"
-#include "Model.h"
+﻿#pragma once
 
-#include "assert.h"
 #include <algorithm>
+#include <array>
+#include <memory>
 #include <numbers>
+#include <functional>
+
 #include "MyMath.h"
-
-#include "RenderingData.h"
-
 #include "Object3D.h"
-
-#include <ParticleEmitter.h>
-#include "StageStartEffect.h"
+#include "RenderingData.h"
 #include "Collider.h"
-#include "Line.h"       
-#include <memory>       
-#include "MapChipField.h"
+#include "CollisionMapInfo.h"
+#include "MapCollisionTypes.h"
+#include "ParticleEmitter.h"
+
+
+class MapChipField;
+class Line;
 
 enum class LRTBDirecion {
 	kRight,
@@ -5814,90 +6405,72 @@ enum class LRTBDirecion {
 	kBottom
 };
 
-enum class PlayerState {
+enum class PlayerState
+{
 	hard,
 	sticky,
 };
 
-struct CollisionMapInfo {
-	bool ceiling = false; // 天井衝突
-	bool landing = false; // 着地
-	bool hitWall = false; // 壁接触
-	Vector3 move;         // 移動量
-	Vector3 normal;       // 法線
-	bool hasNormal = false;
-
-	float penX = 0.0f; //壁方向めり込み
-	float penY = 0.0f; //天井/床方向めり込み
-
-	bool hasBreakBlock = false;
-	uint32_t breakBlockX = 0;
-	uint32_t breakBlockY = 0;
-	bool hitDamageBlock = false;
-};
-
-enum Corner {
-	kRightBottom,
-	kLeftBottom,
-	kRightTop,
-	kLeftTop,
-	kNumCorner // 要素数
-};
-
-enum class CollisionType {
-	Top,
-	Bottom,
-	Left,
-	Right
-};
 
 struct PlayerParameter {
 	//プレイヤーパラメータ
 	//speedパラメータ
 	float kAcceleration = 0.02f;  // 定数加速度
-	float kAttenuation = 0.9f;   // 速度減衰率
+	float kAttenuation = 0.9f;	  // 速度減衰率
 	float kLimitRunSpeed = 0.15f; // 最大速度制限
-	//jannpパラメータ
+	//jumpパラメータ
 	float kGravityAcceleration = 0.02f; // 重力加速度
-	float kLimitFallSpeed = 1.0f;      // 最大落下速度
-	float kJumpAcceleration = 0.3f;    // ジャンプ初速
-	//当たり判定パラメータ
-	float kWidth = 0.4f;//当たり判定の幅
-	float kHeight = 0.4f;//当たり判定の高さ
-	float kBlank = 0.05f;//当たり判定の余裕
-	float kCollisionEpsilon = 0.1f;//当たり判定の余裕
-	//減衰パラメータ
-	float kAttenuationLanding = 0.5f;//着地時の減衰率
-	float kAttenuationWall = 0.1f;//壁に当たった時の減衰率
+	float kLimitFallSpeed = 1.0f;		// 最大落下速度
+	float kJumpAcceleration = 0.3f;		// ジャンプ初速
+	// 当たり判定パラメータ
+	float kWidth = 0.4f;			// 当たり判定の幅
+	float kHeight = 0.4f;			// 当たり判定の高さ
+	float kBlank = 0.05f;			// 当たり判定の余裕
+	float kCollisionEpsilon = 0.1f; // 当たり判定の余裕
+	// 減衰パラメータ
+	float kAttenuationLanding = 0.5f; // 着地時の減衰率
+	float kAttenuationWall = 0.1f;	  // 壁に当たった時の減衰率
 	// 振り向きパラメータ
 	float kTimeTurn = 0.5; // 角度補間タイム
 
-	struct DeathHeight {
-		float min = 0.0f; // 落下死の高さ
+	struct DeathHeight
+	{
+		float min = 0.0f;  // 落下死の高さ
 		float max = 20.0f; // 落下死の有効/無効
 	};
-	struct Deathwidth {
+	struct DeathWidth {
 		float min = -3.0f; // 落下死の高さ
 		float max = 26.0f; // 落下死の有効/無効
 	};
 	DeathHeight deathHeight;
-	Deathwidth deathwidth;
+	DeathWidth deathWidth;
+
+	// 予測線パラメータ
+	int predictMaxSteps = 1200;
+	float predictStopEpsilon = 1e-6f;
+
+	Vector4 predictLineColor = { 1.0f, 1.0f, 0.0f, 1.0f };
+	Vector4 predictPortalLineColor = { 0.0f, 1.0f, 1.0f, 1.0f };
 };
 
-class Enemy;
+struct PredictStepResult {
+	bool shouldEnd = false;			 // 予測線ループを終了するか
+	bool hitSecondSurface = false;	 // 2回目接触でゴースト表示したか
+	bool stopped = false;			 // 速度がほぼ0になったか
+};
+
+
 class MapChipField;
 /// <summary>
 /// Playerクラス
 /// </summary>
-class Player :public Collider {
+class Player : public Collider
+{
 
-public:
-
+  public:
 	Player() : Collider(Layer::Player) {};
 
-	AABB GetAABB() const override {
-		return aabb_;
-	}
+	AABB GetAABB() const override { return aabb_; }
 
 	void OnCollision(Collider* other) override;
 	AABB GetPlayerAABB();
@@ -5920,23 +6493,33 @@ public:
 	/// </summary>
 	void Draw();
 
-	/// <summary>
-	/// 衝突の法線をタイプから取得
-	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
-	static Vector3 NormalFromType(CollisionType type);
+
 	/// <summary>
 	/// 衝突の法線をタイプから取得
 	/// </summary>
 	/// <param name="info"></param>
 	void Reflect(const CollisionMapInfo& info);
 
+	Vector3 GetReflectNormal(
+		const CollisionMapInfo& info,
+		const Vector3& velocity
+	) const;
+
 	//====================ライン描画=======================//
+
+	PredictStepResult SimulatePredictStep(
+		Vector3& simPos,
+		Vector3& simVel,
+		Vector3& prev,
+		int& hitCountSim,
+		bool& wasTouchingSim,
+		const Vector4& lineColor
+	);
+
 	/// <summary>
 	/// プレイヤーの移動ライン描画
 	/// </summary>
-	void Playerline(); // プレイヤーの移動ライン描画
+	void PlayerLine(); // プレイヤーの移動ライン描画
 	/// <summary>
 	/// プレイヤーの移動予測ライン描画
 	/// </summary>
@@ -5969,8 +6552,13 @@ public:
 	void DrawGhost();
 	void SetGhostPreview(const Vector3& landingPos, const Vector3& nextFacingDir);
 	Vector3 GetGhostRotateFromFacingDir(const Vector3& facingDir);
+
+	void ShowPredictionGhost(
+		const Vector3& position,
+		const CollisionMapInfo& info
+	);
 	//=====================ゴースト関連========================//
-	
+
 	//====================ライン描画========================//
 
 	/////////////======プレイヤーの動き======///////////////
@@ -5982,79 +6570,30 @@ public:
 	/// <summary>
 	// 自機の振り向き
 	/// </summary>
-	void Playerdirection(const CollisionMapInfo& info);
+	void PlayerDirection(const CollisionMapInfo& info);
 	/// <summary>
 	// 死亡条件しているかどうか
 	/// </summary>
 	void PlayerDeathTerms();
 
-
-
 	/////////////======プレイヤーの動き======///////////////
 
 	void PlayerParticle();
 
-	/// <summary>
-	/// 当たるブロックかどうか
-	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
-	bool IsHittableBlock(MapChipType type);
-	/// <summary>
-	/// 衝突判定の共通処理
-	/// </summary>
-	/// <param name="posList"></param>
-	/// <param name="type"></param>
-	/// <param name="info"></param>
-	/// <returns></returns>
-	bool CheckCollisionPoints(
-		const Vector3& basePos,
-		const std::array<Vector3, 2>& posList,
-		CollisionType type,
-		CollisionMapInfo& info,
-		bool enableGoal
-	);
-	/// <summary>
-	/// 衝突判定の共通処理
-	/// </summary>
-	/// <param name="info"></param>
-	/// <param name="dir"></param>
-	/// <param name="checkCorners"></param>
-	/// <param name="offset"></param>
-	/// <param name="moveCondition"></param>
-	void CollisionMapInfoDirection(
-		const Vector3& basePos,
-		CollisionMapInfo& info,
-		CollisionType dir,
-		const std::array<Corner, 2>& checkCorners,
-		const Vector3& offset,
-		std::function<bool(const CollisionMapInfo&)> moveCondition,
-		bool enableGoal
-	);
 
-	/// <summary>
-	// map衝突判定
-	/// </summary>
-	void MapCollision(CollisionMapInfo& info);
 	/// <summary>
 	/// map衝突判定（位置指定版）
 	/// </summary>
 	/// <param name="position"></param>
 	/// <param name="info"></param>
 	/// <param name="enableGoal"></param>
-	void MapCollisionAt(const Vector3& position, CollisionMapInfo& info, bool enableGoal = true);
+	void CheckPredictCollision(const Vector3& position, CollisionMapInfo& info, bool enableGoal = false);
 
-	/// <summary>
-	/// コーナーのワールド座標を取得
-	/// </summary>
-	/// <param name="center"></param>
-	/// <param name="corner"></param>
-	/// <returns></returns>
-	Vector3 CornerPosition(const Vector3& centor, Corner corner);
+
 	/// <summary>
 	// プレイヤーの移動処理
 	/// </summary>
-	void PlayerCollisionMove(const CollisionMapInfo& inffo);
+	void PlayerCollisionMove(const CollisionMapInfo& info);
 	/// <summary>
 	/// 天井衝突時の移動処理
 	/// </summary>
@@ -6085,14 +6624,14 @@ public:
 	/// 右移動フラグを取得します
 	/// </summary>
 	/// <returns></returns>
-	bool GetPrayerMoveRight() { return playerMoveRight_; }
+	bool GetPlayerMoveRight() { return playerMoveRight_; }
 	/// <summary>
 	/// 左移動フラグを取得します
 	/// </summary>
 	/// <returns></returns>
-	bool GetPrayerMoveLeft() { return playerMoveLeft; }
+	bool GetPlayerMoveLeft() { return playerMoveLeft_; }
 	/// <summary>
-	/// Object3Dを取得します（所有は Player） 
+	/// Object3Dを取得します（所有は Player）
 	/// </summary>
 	Object3D* GetObject3D() const { return object3D_.get(); }
 	/// <summary>
@@ -6107,7 +6646,7 @@ public:
 	/// <summary>
 	// トランスフォーム取得
 	///< / summary>
-	///<returns>トランスフォームを返す</returns>
+	///< returns>トランスフォームを返す</returns>
 	const EulerTransform& GetTransform() { return object3D_->GetTransform(); }
 
 	/// <summary>
@@ -6120,19 +6659,14 @@ public:
 	/// </summary>
 	PlayerState GetPlayerState() const { return playerState_; }
 
-
 	/// <summary>
 	/// プレイヤーの発射アニメーション
 	/// </summary>
 	void PlayerShotAnimation();
 
-	//portal用
+	// portal用
 	bool TryPortalWarp(Vector3& position, Vector3& velocity, bool useCooldown);
-	Vector3 RotateVelocityByPortal(
-		const Vector3& velocity,
-		const Vector3& inDir,
-		const Vector3& outDir
-	);
+	Vector3 RotateVelocityByPortal(const Vector3& velocity, const Vector3& inDir, const Vector3& outDir);
 
 	///////////////======setter======///////////////
 	/// <summary>
@@ -6144,22 +6678,53 @@ public:
 	/// 右移動フラグを設定します
 	/// </summary>
 	/// <param name="right"></param>
-	void SetPrayerMoveRight(bool right) { playerMoveRight_ = right; }
+	void SetPlayerMoveRight(bool right) { playerMoveRight_ = right; }
 	/// <summary>
 	/// 左移動フラグを設定します
 	/// </summary>
 	/// <param name="left"></param>
-	void SetPrayerMoveLeft(bool left) { playerMoveLeft = left; }
+	void SetPlayerMoveLeft(bool left) { playerMoveLeft_ = left; }
 
 	/// <summary>
 	// 速度設定
 	/// </summary>
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
+	/// <summary>
+	/// プレイヤーの発射アニメーションを設定
+	/// </summary>
+	/// <param name="limit"></param>
+	void SetShotLimit(int limit) {
+
+		shotLimit_ = limit;
+		remainingShots_ = limit;
+	}
+	/// <summary>
+	/// プレイヤーの発射制限を取得
+	/// </summary>
+	/// <returns></returns>
+	int GetShotLimit() const {
+		return shotLimit_;
+	}
+	/// <summary>
+	/// プレイヤーの残り発射回数を取得
+	/// </summary>
+	/// <returns></returns>
+	int GetRemainingShots() const {
+		return remainingShots_;
+	}
+	/// <summary>
+	/// プレイヤーが発射制限により発射可能かどうかを取得
+	/// </summary>
+	/// <returns></returns>
+	bool CanShootByLimit() const {
+		return remainingShots_ > 0;
+	}
+
 private:
 
 	std::unique_ptr<Object3D> object3D_;//Player3Dオブジェクト
-	
+
 	PlayerState playerState_ = PlayerState::hard;//プレイヤーステート
 	Vector3 playerPosition_ = {};// プレイヤーの位置
 	Vector3 velocity_ = {};// 速度
@@ -6167,44 +6732,47 @@ private:
 	AABB aabb_;// 当たり判定用AABB
 	LRTBDirecion direction_ = LRTBDirecion::kRight;// 振り向き
 
-	//Animation
-	Vector3 shotAnimationRotate_ = {};//発射アニメーションの回転
-	float shotAnimationTimer_ = 0.0f; //発射アニメーションのタイマー
-	bool isShotAnimation_ = false; //発射アニメーション中かどうか
+	// Animation
+	Vector3 shotAnimationRotate_ = {}; // 発射アニメーションの回転
+	float shotAnimationTimer_ = 0.0f;  // 発射アニメーションのタイマー
+	bool isShotAnimation_ = false;	   // 発射アニメーション中かどうか
 
-	//振り向き
-	float turnTimer_ = 0.0f;                    // 振り向き時間
+	// 振り向き
+	float turnTimer_ = 0.0f; // 振り向き時間
 
-	//マップ
+	// マップ
 	MapChipField* mapChipField_ = nullptr;
 
-	//Particle
-	float exhaustTimer_ = 0.0f;//パーティクルの間隔
-	std::unique_ptr<ParticleEmitter> exhaustEmitter_;//排気ガスエミッター 
-	std::unique_ptr<ParticleEmitter> deatheEffect;//排気ガスエミッター 
+	// Particle
+	float exhaustTimer_ = 0.0f;						  // パーティクルの間隔
+	std::unique_ptr<ParticleEmitter> exhaustEmitter_; // 排気ガスエミッター
+	std::unique_ptr<ParticleEmitter> deathEffect_;	  // 排気ガスエミッター
 
-	//攻撃
+	// 攻撃
 	float cannonAngleDeg_ = 20.0f; // デフォルト仰角 20度
 	std::unique_ptr<Line> line_; // 角度表示用ライン
 	int32_t fireTimer = 0;
+	// 発射回数
+	int shotLimit_ = 3;
+	int remainingShots_ = 3;
 
-	//フラグ
+	// フラグ
 	bool goal_ = false; // ゴールに到達したかどうか
 	bool playerMoveRight_ = false;
-	bool playerMoveLeft = false;
-	bool isDead_ = false;//死んだ
-	int hitCount = 0; // 衝突した数
+	bool playerMoveLeft_ = false;
+	bool isDead_ = false; // 死んだ
+	int hitCount = 0;	  // 衝突した数
 	bool wasTouching_ = false;
-	bool hitDamageBlock = false;
-	int portalCooldown_ = 0;
+	bool hitDamageBlock_ = false;
+	int32_t portalCooldown_ = 0;
 
-	//定数
-	static inline constexpr float kCannonAngleStepDeg = 2.0f; //大砲の角度定数
+	// 定数
+	static inline constexpr float kCannonAngleStepDeg = 2.0f;	   // 大砲の角度定数
 	static inline constexpr float kExhaustInterval = 1.0f / 15.0f; // 1/15秒ごとに出す
-	static inline constexpr float kPi = std::numbers::pi_v<float>;//π
-	static inline constexpr float kAimMinDeg = -60.0f;//仰角の上限
-	static inline constexpr float kAimMaxDeg = 60.0f;//仰角の下限
-	static inline constexpr float kStopEps = 1e-4f;//停止判定のための微小値
+	static inline constexpr float kPi = std::numbers::pi_v<float>; // π
+	static inline constexpr float kAimMinDeg = -60.0f;			   // 仰角の上限
+	static inline constexpr float kAimMaxDeg = 60.0f;			   // 仰角の下限
+	static inline constexpr float kStopEps = 1e-4f;				   // 停止判定のための微小値
 
 	Vector3 shotVel_{};
 	bool hasShotVel_ = false;
@@ -6221,108 +6789,11 @@ private:
 	float cameraShakeTimer_ = 0.0f;
 	float cameraShakeDuration_ = 0.0f;
 	float cameraShakePower_ = 0.0f;
-	Vector3 cameraShakePrevOffset_ = { 0.0f, 0.0f, 0.0f };
+	Vector3 cameraShakePrevOffset_ = {0.0f, 0.0f, 0.0f};
 	void StartCameraShake(float power, float duration);
 	void UpdateCameraShake();
 };
 
-
-============================================================
-File Path: project/application/scene/DebugScene.cpp
-============================================================
-#include "DebugScene.h"
-#include <Input.h>
-#include <SceneManager.h>
-#include <Object3DCommon.h>
-#include <SpriteCommon.h>
-#include <CameraManager.h>
-#include <memory>
-#include <ModelManager.h>
-#include <cmath>
-#include <imgui.h>
-
-void DebugScene::Initialize()
-{
-	
-}
-
-void DebugScene::Finalize()
-{
-	// CameraManager から先にカメラを削除してから unique_ptr をリセットする
-	CameraManager::GetInstance()->RemoveCamera("maincam");
-
-}
-void DebugScene::Update()
-{
-	CameraManager::GetInstance()->GetActiveCamera()->Update();
-	
-
-#ifdef USE_IMGUI
-	ImGui::Begin("SWgame");
-
-	ImGui::End();
-#endif
-}
-
-void DebugScene::Draw()
-{
-
-	SpriteCommon::GetInstance()->CommonDraw();
-
-#pragma region 3Dオブジェクト描画
-
-	//3dオブジェクトの描画準備。3Dオブジェクトの描画に共通のグラフィックスコマンドを積む
-	Object3DCommon::GetInstance()->CommonDraw();
-
-
-	ParticleManager::GetInstance()->Draw();
-#pragma endregion
-
-
-#pragma region スプライト描画
-	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
-	SpriteCommon::GetInstance()->CommonDraw();
-	//Spriteの描画
-	
-
-}
-
-
-============================================================
-File Path: project/application/scene/DebugScene.h
-============================================================
-#pragma once
-#include "BaseScene.h"
-#include "Sprite.h"
-#include <memory>
-#include <FadeManager.h>
-#include "GateInOut.h"
-#include <ParticleEmitter.h>
-#include "Object3D.h"
-
-class Camera;
-
-class DebugScene : public BaseScene
-{
-public:
-	void Initialize() override;
-	void Finalize() override;
-	void Update() override;
-	void Draw() override;
-
-private:
-	
-	// カメラ
-	std::unique_ptr<Camera> camera;
-	
-
-
-
-#ifdef USE_IMGUI
-	
-#endif
-
-};
 
 ============================================================
 File Path: project/application/scene/GameClearScene.cpp
@@ -6359,9 +6830,9 @@ void GameClearScene::Initialize()
 	playerObj = std::make_unique<Object3D>();
 	playerObj->Initialize(Object3DCommon::GetInstance());
 	playerObj->SetModel("player");
-	playerObj->SetLighting(true);
-	playerObj->SetEnableLighting(true);
-	playerObj->SetDirectionalLightEnable(true);
+	playerObj->SetLighting(false);
+	playerObj->SetEnableLighting(false);
+	playerObj->SetDirectionalLightEnable(false);
 
 	// 画面中央に配置
 	basePos_ = { 0.0f, -0.7f, 11.0f };
@@ -6443,7 +6914,8 @@ void GameClearScene::Update()
 	playerObj->Update();
 
 	// スペースで戻る
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)||Input::GetInstance()->TriggerMouse(0)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GameClear", "click");
 		fadeManager_.StartFadeOut();
 	}
 
@@ -6621,7 +7093,7 @@ File Path: project/application/scene/GameOverScene.cpp
 #include "CameraManager.h"
 #include "ModelManager.h"
 #include <imgui.h>
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include <UIeditor.h>
 
 void GameOverScene::Initialize()
@@ -6644,9 +7116,9 @@ void GameOverScene::Initialize()
 	playerObj = std::make_unique<Object3D>();
 	playerObj->Initialize(Object3DCommon::GetInstance());
 	playerObj->SetModel("player");
-	playerObj->SetLighting(true);
-	playerObj->SetEnableLighting(true);
-	playerObj->SetDirectionalLightEnable(true);
+	playerObj->SetLighting(false);
+	playerObj->SetEnableLighting(false);
+	playerObj->SetDirectionalLightEnable(false);
 
 	// 画面中央に配置
 	playerObj->SetTranslate({ 0.0f, -0.7f, 11.0f });
@@ -6690,12 +7162,13 @@ void GameOverScene::Update()
 	playerObj->Update();
 
 	// スペースで戻る
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE) || Input::GetInstance()->TriggerMouse(0)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GameClear", "click");
 		fadeManager_.StartFadeOut();
 	}
 
 	if (fadeManager_.IsFadeOutFinished()) {
-
+		
 		SceneManager::GetInstance()->ChangeScene("STAGESELECT");
 	}
 		//SceneManager::GetInstance()->ChangeScene("TITELE");
@@ -6853,7 +7326,7 @@ private:
 ============================================================
 File Path: project/application/scene/GamePlayScene.cpp
 ============================================================
-#include "GamePlayScene.h"
+﻿#include "GamePlayScene.h"
 #include <ModelManager.h>
 #include "Object3DCommon.h"
 #include "SpriteCommon.h"
@@ -6864,8 +7337,8 @@ File Path: project/application/scene/GamePlayScene.cpp
 #include "Input.h"
 #include "TitleScene.h"
 #include "CameraManager.h"
-#include <ParticleMnager.h>
-#include "ChargeBehabiaor.h"
+#include <ParticleManager.h>
+#include "ChargeBehavior.h"
 #include "LineCommon.h"
 
 #include "Easing.h"
@@ -6879,21 +7352,21 @@ void GamePlayScene::Initialize()
 	fadeManager_.StartFadeIn();
 
 	//カメラの生成
-	camera = std::make_unique<Camera>();
-	camera->SetRotate({ 0,0,0, });
-	camera->SetTranslate({ 15,13,-60, });
-	CameraManager::GetInstance()->AddCamera("maincam", camera.get());
+	camera_ = std::make_unique<Camera>();
+	camera_->SetRotate({ 0,0,0, });
+	camera_->SetTranslate(cameraPos_);
+	CameraManager::GetInstance()->AddCamera("maincam", camera_.get());
 
-	debugCamera = std::make_unique<Camera>();
-	debugCamera->SetRotate({ 0,0,0, });
-	debugCamera->SetTranslate({ 15,13,-60, });
-	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera.get());
+	debugCamera_ = std::make_unique<Camera>();
+	debugCamera_->SetRotate({ 0,0,0, });
+	debugCamera_->SetTranslate(cameraPos_);
+	CameraManager::GetInstance()->AddCamera("debugcam", debugCamera_.get());
 
 	// デフォルトカメラを設定
 	CameraManager::GetInstance()->SetActiveCamera("maincam");
 
 	//モデルの読み込み
-	Road();
+	Load();
 
 	MapChipDatabase::GetInstance()->LoadJson("Resources/Data/MapChipTypes.json");
 	// MapChipFiled
@@ -6915,31 +7388,31 @@ void GamePlayScene::Initialize()
 	generateBlock_.GenerateObject3D();
 
 	// --- プレイヤースポーン位置をマップから取得する ---
-	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	Vector3 playerPosition = {};
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
-		playerPostion = spawnPositions.front();
+		playerPosition = spawnPositions.front();
 	}
 	else {
 		// フォールバック: 既存の手打ち位置
-		playerPostion = mapChipField_->GetMapChipPostionByIndex(6, 18);
+		playerPosition = mapChipField_->GetMapChipPositionByIndex(6, 18);
 	}
 	//playerの生成
-	player = std::make_unique<Player>();
-	player->SetMapChipField(mapChipField_.get());
-	player->Initialize(playerPostion);
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
+	player_ = std::make_unique<Player>();
+	player_->SetMapChipField(mapChipField_.get());
+	player_->Initialize(playerPosition);
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({cameraEndPos_});
 
 	// スタート演出生成
 	stageStartEffect_ = std::make_unique<StageStartEffect>();
-	stageStartEffect_->Initialize(player->GetObject3D(), playerPostion);
+	stageStartEffect_->Initialize(player_->GetObject3D(), playerPosition);
 	stageStartEffect_->Begin();
 	isStageStartPlaying_ = true;
 
 	//ゲームオーバー演出生成
 	gameOverEffect_ = std::make_unique<GameOverEffect>();
-	gameOverEffect_->Initialize(player->GetObject3D());
+	gameOverEffect_->Initialize(player_->GetObject3D());
 
 
 	////エネミー
@@ -6947,22 +7420,22 @@ void GamePlayScene::Initialize()
 	//enemyManager_->Initialize(mapChipField_.get());
 
 	//3Dオブジェクトの初期化
-	object3D2nd = std::make_unique<Object3D>();
-	object3D2nd->Initialize(Object3DCommon::GetInstance());
-	object3D2nd->SetModel("plane");
+	object3D2nd_ = std::make_unique<Object3D>();
+	object3D2nd_->Initialize(Object3DCommon::GetInstance());
+	object3D2nd_->SetModel("plane");
 
 	
 
 	//ゴールの初期化
-	goal = std::make_unique<Goal>();
-	goal->Initialize(mapChipField_.get(), player.get());
+	goal_ = std::make_unique<Goal>();
+	goal_->Initialize(mapChipField_.get(), player_.get());
 
 	
 
 	//ポーズメニュー
-	pauseMenu = std::make_unique<PauseMenu>();
-	pauseMenu->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
-	pauseMenu->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
+	pauseMenu_ = std::make_unique<PauseMenu>();
+	pauseMenu_->Initialize(Object3DCommon::GetInstance(), PauseType::GamePlayScene);
+	pauseMenu_->SetCamera(CameraManager::GetInstance()->GetCamera("maincam"));
 
 	UIeditor::GetInstance()->SetScene("GamePlay");
 }
@@ -6979,25 +7452,24 @@ void GamePlayScene::UpdateGameLogic(float dt)
 {
 	
 
-	goal->Update(player->GetGoal(), dt,player->GetObject3D()->GetTransform().translate);
+	goal_->Update(player_->GetGoal(), dt,player_->GetObject3D()->GetTransform().translate);
 	const float fixedDt = dt;
 	Vector3 offset = { 0, 0, -20 };
 	Vector3 playerPostion = {};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player"); 
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player"); 
 	if (!spawnPositions.empty()) {
 		// マップに player スポーンが複数ある場合は最初のものを使用
 		playerPostion = spawnPositions.front();
 	}
-	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
-		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player->GetObject3D()->GetTransform().translate + offset);
+	if (isStageStartPlaying_ || goal_->GetIsEffectStarted()) {
+		CameraManager::GetInstance()->GetActiveCamera()->SetTranslate(player_->GetObject3D()->GetTransform().translate + offset);
 		stageStartEffect_->Update(dt);
 		if (stageStartEffect_->IsFinished()) {
 			isStageStartPlaying_ = false;
 			CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(false);
 
 			Vector3 startPos = playerPostion + offset;
-			Vector3 endPos = { 13, 6.85f, -32.0f };
-			StartCameraBlend(startPos, endPos, 1.0f);
+			StartCameraBlend(startPos, cameraEndPos_, 1.0f);
 			
 		}
 		// 見た目の更新は UpdateObjects で行う（ここではロジックのみ）
@@ -7008,13 +7480,18 @@ void GamePlayScene::UpdateGameLogic(float dt)
 			UpdateCameraBlend(dt);
 		}
 		else {
-			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13,6.85f,-32, });
+			CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({cameraEndPos_});
 		}
 
 		// ゲーム進行系（ポーズ中は実行しない）
-		if (!player->GetIsDead_()) {
-			player->Update();
-			// プレイヤーの弾などは player 内で管理される
+		if (!player_->GetIsDead_()) {
+			player_->Update();
+			UIeditor::GetInstance()->SetCount(
+				"GamePlay",
+				"ShotCount",
+				player_->GetRemainingShots()
+			);
+			
 		}
 		//enemyManager_->Update();
 
@@ -7027,7 +7504,7 @@ void GamePlayScene::UpdateGameLogic(float dt)
 	}
 
 	// プレイヤーが死んだらゲームオーバー演出
-	if (player->GetIsDead_()) {
+	if (player_->GetIsDead_()) {
 		gameOverEffect_->Update(dt);
 		CameraManager::GetInstance()->GetCamera("maincam")->SetFollowMode(true);
 	}
@@ -7039,14 +7516,14 @@ void GamePlayScene::UpdateGameLogic(float dt)
 void GamePlayScene::UpdateObjects(float dt)
 {
 	// オブジェクトの見た目更新はここで行う（ポーズ中でも継続）
-	if (isStageStartPlaying_ || goal->GetIsEffectStarted()) {
+	if (isStageStartPlaying_ || goal_->GetIsEffectStarted()) {
 		// ステージ開始演出でプレイヤーオブジェクトだけ別更新している形に合わせる
-		player->GetObject3D()->Update();
+		player_->GetObject3D()->Update();
 		//enemyManager_->EnemyObjectUpdate();
 	}
 	else {
 		// 普通時も見た目の更新は行う（物理・ロジックは UpdateGameLogic 側）
-		player->GetObject3D()->Update();
+		player_->GetObject3D()->Update();
 		//enemyManager_->EnemyObjectUpdate();
 	}
 
@@ -7098,13 +7575,13 @@ void GamePlayScene::Update()
 	// Camera は常に現在の active camera を更新（ポーズ用カメラ切替後に反映されるよう、ここで行う）
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 	// ポーズメニューの入力・イージングを先に処理（カメラ切替等を即時反映させるため）
-	pauseMenu->Update();
+	pauseMenu_->Update();
 
 	// フェードは常に更新
 	fadeManager_.Update();
 
 	// ポーズ中かどうかを判定
-	const bool isPaused = pauseMenu->IsPaused();
+	const bool isPaused = pauseMenu_->IsPaused();
 
 	// 固定 dt
 	const float dt = 1.0f / 60.0f;
@@ -7139,24 +7616,24 @@ void GamePlayScene::Draw()
 	Object3DCommon::GetInstance()->CommonDraw();
 
 	//SkyDome
-	goal->Draw();
+	goal_->Draw();
 
 	if (isStageStartPlaying_) {
-		if (!pauseMenu->IsPaused())
+		if (!pauseMenu_->IsPaused())
 		{
 			stageStartEffect_->Draw();
-		} // ←ゲートのみ描画
-		player->Draw();            
+		} //ゲートのみ描画
+		player_->Draw();            
 	}
 	else {
 
-		player->Draw();
+		player_->Draw();
 
 	}
 	//ブロックを描画
 	generateBlock_.Draw();
 
-	pauseMenu->Draw();
+	pauseMenu_->Draw();
 
 	//object3D2nd->Draw();
 	ParticleManager::GetInstance()->Draw();
@@ -7167,16 +7644,16 @@ void GamePlayScene::Draw()
 
 	//Spriteの描画準備。spriteの描画に共通のグラフィックスコマンドを積む
 	SpriteCommon::GetInstance()->CommonDraw();
-	if (!pauseMenu->IsPaused()) {
+	if (!pauseMenu_->IsPaused()) {
 		// ControlGuide をここで描画すると UI レイヤーで最前面に来ます
 		UIeditor::GetInstance()->Render();
 	}
 	/*sprite->Draw();*/
 	fadeManager_.Draw();
-	goal->Draw2D();
+	goal_->Draw2D();
 
 	if (isStageStartPlaying_) {
-		if (!pauseMenu->IsPaused())
+		if (!pauseMenu_->IsPaused())
 			stageStartEffect_->Draw2D();
 	}
 }
@@ -7184,14 +7661,25 @@ void GamePlayScene::Draw()
 void GamePlayScene::Imguidebug()
 {
 	//マップ作製エディタ
-	editor.Run();
+	editor_.Run();
 
-	if (editor.GetReloadRequested()) {
-		mapChipField_->ApplyStageData(editor.GetStageData());
+	if (editor_.GetReloadRequested()) {
+		mapChipField_->ApplyStageData(editor_.GetStageData());
 
 		generateBlock_.GenerateObject3D();
-		
-		editor.SetReloadRequested(false);
+
+		// プレイヤー位置更新
+		auto spawnPositions = mapChipField_->GetPositionBySpawn("player");
+		if (!spawnPositions.empty()) {
+			Vector3 playerPosition = spawnPositions.front();
+			player_->GetObject3D()->SetTranslate(playerPosition);
+		}
+
+		// ゴール位置更新
+		goal_ = std::make_unique<Goal>();
+		goal_->Initialize(mapChipField_.get(), player_.get());
+
+		editor_.SetReloadRequested(false);
 	}
 
 	
@@ -7221,7 +7709,7 @@ void GamePlayScene::Imguidebug()
 
 }
 
-void GamePlayScene::Road()
+void GamePlayScene::Load()
 {
 	//3Dオブジェクト読み込み
 	ModelManager::GetInstance()->LoadModel("plane");
@@ -7235,7 +7723,7 @@ void GamePlayScene::Road()
 	ModelManager::GetInstance()->LoadModel("goal");
 	ModelManager::GetInstance()->LoadModel("sphere");
 	ModelManager::GetInstance()->LoadModel("gate");
-	ModelManager::GetInstance()->LoadModel("unbreakableBlokc");
+	ModelManager::GetInstance()->LoadModel("unbreakableBlock");
 	ModelManager::GetInstance()->LoadModel("damageblock");
 }
 
@@ -7261,25 +7749,26 @@ void GamePlayScene::ResetStage()
 
 	// プレイヤースポーン取得
 	Vector3 playerPosition{};
-	auto spawnPositions = mapChipField_->GetPositionBySpwan("player");
+	auto spawnPositions = mapChipField_->GetPositionBySpawn("player");
 	if (!spawnPositions.empty()) {
 		playerPosition = spawnPositions.front();
 	}
 
-	player = std::make_unique<Player>();
-	player->SetMapChipField(mapChipField_.get());
-	player->Initialize(playerPosition);
+	player_ = std::make_unique<Player>();
+	player_->SetMapChipField(mapChipField_.get());
+	player_->Initialize(playerPosition);
 
-	goal = std::make_unique<Goal>();
-	goal->Initialize(mapChipField_.get(), player.get());
+	goal_ = std::make_unique<Goal>();
+	goal_->Initialize(mapChipField_.get(), player_.get());
+	
 
 	gameOverEffect_ = std::make_unique<GameOverEffect>();
-	gameOverEffect_->Initialize(player->GetObject3D());
+	gameOverEffect_->Initialize(player_->GetObject3D());
 
 	isStageStartPlaying_ = false;
 	isCameraBlending_ = false;
 
-	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({ 13, 6.85f, -32.0f });
+	CameraManager::GetInstance()->GetActiveCamera()->SetTranslate({cameraEndPos_});
 
 }
 
@@ -7288,7 +7777,7 @@ void GamePlayScene::ResetStage()
 ============================================================
 File Path: project/application/scene/GamePlayScene.h
 ============================================================
-#pragma once
+﻿#pragma once
 
 #include "Camera.h"	
 #include "Model.h"
@@ -7353,7 +7842,7 @@ public:
 	/// <summary>
 	/// モデルをロードする
 	/// </summary>
-	void Road();
+	void Load();
 
 	//ステージreset
 	void ResetStage();
@@ -7370,17 +7859,19 @@ private:
 public:
 
 	//カメラのポインタ
-	std::unique_ptr<Camera> camera = nullptr;
-	std::unique_ptr<Camera> debugCamera = nullptr;
+	std::unique_ptr<Camera> camera_ = nullptr;
+	std::unique_ptr<Camera> debugCamera_ = nullptr;
+	Vector3 cameraPos_ = {15,13,-60,};
+	Vector3 cameraEndPos_ = {13, 6.85f, -32.0f};
 	//スプライトの初期化
-	std::unique_ptr<Object3D> object3D2nd = nullptr;
+	std::unique_ptr<Object3D> object3D2nd_ = nullptr;
 	//player
-	std::unique_ptr<Player> player = nullptr;
-	std::unique_ptr<Goal> goal = nullptr; // ゴールオブジェクト
+	std::unique_ptr<Player> player_ = nullptr;
+	std::unique_ptr<Goal> goal_ = nullptr; // ゴールオブジェクト
 
 	//wvpData用のTransform変数を作る
-	EulerTransform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
-	EulerTransform transformModel = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transform_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+	EulerTransform transformModel_ = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//mapchip
 	
 	std::unique_ptr <MapChipField> mapChipField_;
@@ -7390,7 +7881,7 @@ public:
 
 	//ブロック生成
 	GenerateBlock generateBlock_;
-	StageEditor editor;
+	StageEditor editor_;
 
 	FadeManager fadeManager_;
 
@@ -7407,7 +7898,7 @@ public:
 	//ゲームオーバー演出
 	std::unique_ptr<GameOverEffect> gameOverEffect_;
 
-	std::unique_ptr<PauseMenu>pauseMenu;
+	std::unique_ptr<PauseMenu>pauseMenu_;
 
 	//debug用
 #ifdef _DEBUG
@@ -7459,6 +7950,7 @@ void StageSelectScene::Initialize()
 	ModelManager::GetInstance()->LoadModel("stage2");
 	ModelManager::GetInstance()->LoadModel("stage3");
 	ModelManager::GetInstance()->LoadModel("stage4");
+	ModelManager::GetInstance()->LoadModel("stage5");
 
 	ModelManager::GetInstance()->LoadModel("player");
 	playerobj = std::make_unique<Object3D>();
@@ -7471,7 +7963,8 @@ void StageSelectScene::Initialize()
 	"stage1",
 	"stage2",
 	"stage3",
-	"stage4"
+	"stage4",
+	"stage5"
 	// 必要ならさらに追加
 	};
 
@@ -7543,8 +8036,8 @@ void StageSelectScene::Update()
 		
 		if (!gateOutRequested_ &&
 			(!gate_ || !gate_->IsPlaying()) &&
-			Input::GetInstance()->TriggerKey(DIK_SPACE)){
-			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "space");
+			Input::GetInstance()->TriggerKey(DIK_SPACE)||Input::GetInstance()->TriggerMouse(0)){
+			UIeditor::GetInstance()->PlayPressAnimation("StageSelect", "click");
 			gateOutRequested_ = true;
 			if (gate_) gate_->StartOut(0.6f);
 		}
@@ -7762,7 +8255,7 @@ private:
 
 	std::unique_ptr<Camera> camera1;
 
-	int MaxSelectIndex_ = 4;	// 最大ステージ数
+	int MaxSelectIndex_ = 5;	// 最大ステージ数
 	int currentIndex_ = 0;	// 現在のステージ
 	float deltaTime_ = 1.0f / 60.0f;	// デルタタイム
 
@@ -7799,8 +8292,8 @@ File Path: project/application/scene/TitleScene.cpp
 #include "imgui.h"
 #endif // USE_IMGUI
 #include <memory>
-#include <ParticleMnager.h>
-#include <ChargeBehabiaor.h>
+#include <ParticleManager.h>
+#include <ChargeBehavior.h>
 #include <UIeditor.h>
 
 // 初期化：モデル読み込み、オブジェクト生成、フェード開始など
@@ -7858,21 +8351,14 @@ void TitleScene::Initialize() {
 	// 状態初期化
 	state_ = TitleAnimState::IntroRun;
 	ropeAttached_ = false;
-	// プレイヤーパーティクル
-	//ParticleManager::GetInstance()->CreateParticleGroup(
-	//	"dash_smoke",
-	//	"Resources/ParticleTexture/smoke.png", // 使いたいテクスチャ
-	//	VerticesType::Quad,
-	//	std::make_unique<ExhaustGasBehavior>()
-	//);
+	
 }
 
 // 終了処理：CameraManager から削除し、unique_ptr が破棄してメモリ解放
 void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("maincam");
 
-	// unique_ptr の破棄に任せる（明示的な delete は不要）
-	//titleSprite_.reset();
+	
 	titleObj_.reset();
 	object3D_.reset();
 	camera.reset();
@@ -7880,7 +8366,7 @@ void TitleScene::Finalize() {
 
 // 更新処理：カメラ更新、アニメ状態遷移、入力検出、フェード遷移
 void TitleScene::Update() {
-	// カメラ更新・フェード更新
+	// カメラ更新
 	CameraManager::GetInstance()->GetActiveCamera()->Update();
 
 	float dt = 1.0f / 60.0f;
@@ -8029,9 +8515,9 @@ void TitleScene::Update() {
 
 	if (!gateOutRequested_ &&
 		(!gate_ || !gate_->IsPlaying()) &&
-		Input::GetInstance()->TriggerKey(DIK_SPACE))
+		Input::GetInstance()->TriggerMouse(0))
 	{
-		UIeditor::GetInstance()->PlayPressAnimation("Title", "space");
+		UIeditor::GetInstance()->PlayPressAnimation("Title", "click");
 		gateOutRequested_ = true;
 		if (gate_) gate_->StartOut(0.6f);
 	}
@@ -8668,7 +9154,7 @@ File Path: project/application/ui/UIeditor.cpp
 #include <cassert>
 #include <filesystem>
 #include <fstream>
-
+#include <algorithm>
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
@@ -8779,6 +9265,24 @@ void UIeditor::SetPressed(const std::string& sceneId, const std::string& element
 		}
 	}
 }
+void UIeditor::SetCount(const std::string& sceneId, const std::string& elementName, int count)
+{
+	auto it = scenes_.find(sceneId);
+
+	if (it == scenes_.end()) {
+		return;
+	}
+
+	for (auto& element : it->second.elements) {
+
+		if (element.name == elementName) {
+
+			element.count = count;
+
+			return;
+		}
+	}
+}
 #ifdef _DEBUG
 void UIeditor::DebugImGui() {
 
@@ -8868,6 +9372,48 @@ void UIeditor::DebugImGui() {
 
 			ImGui::DragFloat2("Position", &element.position.x, 1.0f);
 			ImGui::DragFloat2("Size", &element.size.x, 1.0f, 1.0f, 4096.0f);
+
+			const char* typeItems[] = {
+				"Image",
+				"Draw Count"
+			};
+
+			int typeIndex =
+				static_cast<int>(element.type);
+
+			if (ImGui::Combo(
+				"Type",
+				&typeIndex,
+				typeItems,
+				IM_ARRAYSIZE(typeItems)))
+			{
+				element.type =
+					static_cast<UIElementType>(typeIndex);
+			}
+
+			if (element.type == UIElementType::Rect) {
+
+				ImGui::DragFloat2(
+					"Digit Texture Origin",
+					&element.digitTextureOrigin.x,
+					1.0f,
+					0.0f,
+					4096.0f
+				);
+
+				ImGui::DragFloat2(
+					"Digit Texture Size",
+					&element.digitTextureSize.x,
+					1.0f,
+					1.0f,
+					4096.0f
+				);
+
+				ImGui::Text(
+					"Preview Count: %d",
+					element.count
+				);
+			}
 
 			ImGui::Checkbox("Press Animation", &element.pressAnimEnabled);
 			ImGui::DragFloat("Press Duration", &element.pressAnimDuration, 0.01f, 0.01f, 1.0f);
@@ -9005,6 +9551,18 @@ void UIeditor::Save(const std::string& filePath) {
 			elementJson["pressAnimDuration"] = element.pressAnimDuration;
 			elementJson["pressScale"] = element.pressScale;
 			elementJson["visible"] = element.visible;
+			elementJson["type"] =
+				static_cast<int>(element.type);
+
+			elementJson["digitTextureOrigin"] = {
+				element.digitTextureOrigin.x,
+				element.digitTextureOrigin.y
+			};
+
+			elementJson["digitTextureSize"] = {
+				element.digitTextureSize.x,
+				element.digitTextureSize.y
+			};
 
 			sceneJson["elements"].push_back(elementJson);
 		}
@@ -9050,6 +9608,36 @@ void UIeditor::Load(const std::string& filePath) {
 			element.size.y = elementJson["size"][1].get<float>();
 
 			element.visible = elementJson["visible"].get<bool>();
+
+			if (elementJson.contains("type")) {
+
+				element.type =
+					static_cast<UIElementType>(
+						elementJson["type"].get<int>()
+						);
+			}
+			if (elementJson.contains(
+				"digitTextureOrigin"))
+			{
+				element.digitTextureOrigin.x =
+					elementJson["digitTextureOrigin"][0]
+					.get<float>();
+
+				element.digitTextureOrigin.y =
+					elementJson["digitTextureOrigin"][1]
+					.get<float>();
+			}
+			if (elementJson.contains(
+				"digitTextureSize"))
+			{
+				element.digitTextureSize.x =
+					elementJson["digitTextureSize"][0]
+					.get<float>();
+
+				element.digitTextureSize.y =
+					elementJson["digitTextureSize"][1]
+					.get<float>();
+			}
 
 			if (!element.texturePath.empty()) {
 				element.sprite = std::make_unique<Sprite>();
@@ -9145,8 +9733,32 @@ void UIeditor::DrawUI(UIElement& element)
 		element.position.y + (element.size.y - drawSize.y) * 0.5f
 	};
 
+	if (element.type == UIElementType::Rect) {
+
+		int digit =
+			std::clamp(element.count, 0, 9);
+
+		Vector2 textureLeftTop = {
+
+			element.digitTextureOrigin.x +
+			element.digitTextureSize.x *
+			static_cast<float>(digit),
+
+			element.digitTextureOrigin.y
+		};
+
+		element.sprite->SetTextureLeftTop(
+			textureLeftTop
+		);
+
+		element.sprite->SetTextureSize(
+			element.digitTextureSize
+		);
+	}
+
 	element.sprite->SetPosition(drawPos);
 	element.sprite->SetSize(drawSize);
+
 	element.sprite->Update();
 	element.sprite->Draw();
 
@@ -9166,6 +9778,11 @@ File Path: project/application/ui/UIeditor.h
 #include "Sprite.h"
 #include "SpriteCommon.h"
 #include "Vector2.h"
+
+enum class UIElementType {
+    Image,
+    Rect
+};
 
 class UIeditor {
 public:
@@ -9205,6 +9822,12 @@ public:
     /// <param name="isPressed"></param>
     void SetPressed(const std::string& sceneId, const std::string& elementName, bool isPressed);
 
+    void SetCount(
+        const std::string& sceneId,
+        const std::string& elementName,
+        int count
+    );
+
 #ifdef _DEBUG
     void DebugImGui();
 #endif
@@ -9221,6 +9844,15 @@ private:
 		// SpriteはUIエレメントの描画に使用
         std::unique_ptr<Sprite> sprite;
 
+        // UIの種類
+        UIElementType type = UIElementType::Image;
+        // DrawCount用
+        int count = 0;
+        // 数字画像の1文字分のサイズ
+        Vector2 digitTextureSize{ 32.0f, 48.0f };
+        // 数字0が始まる位置
+        Vector2 digitTextureOrigin{ 0.0f, 0.0f };
+
         bool pressAnimEnabled = true;
         // 押した時アニメ
         float pressAnimTime = 0.0f;
@@ -9231,6 +9863,8 @@ private:
         float currentScale = 1.0f;
         float targetScale = 1.0f;
         float animSpeed = 0.25f;
+
+        
     };
 
     struct UIScene {
@@ -9269,8 +9903,13 @@ private:
     /// </summary>
     /// <param name="sceneId"></param>
     void AddSceneIfMissing(const std::string& sceneId);
-
-   
+    /// <summary>
+	/// 指定されたシーンIDと要素名に対して、カウント値を設定します
+    /// </summary>
+    /// <param name="sceneId"></param>
+    /// <param name="elementName"></param>
+    /// <param name="count"></param>
+     
 
     void DrawUI(UIElement& element);
   
@@ -13004,7 +13643,7 @@ File Path: project/engine/base/Framework.cpp
 ============================================================
 #include "Framework.h"
 #include <CameraManager.h>
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "UIeditor.h"
 
 void Framework::Initialize()
@@ -13024,8 +13663,8 @@ void Framework::Initialize()
 	srvManager = std::make_unique<SrvManager>();
 	srvManager->Initialize(dxCommon.get());
 	//ofscreenRenderManagerの初期化
-	ofscreenRenderManager = std::make_unique<OfscreenRenderManager>();
-	ofscreenRenderManager->Initialize(dxCommon.get(), srvManager.get());
+	offscreenRenderManager = std::make_unique<OffscreenRenderManager>();
+	offscreenRenderManager->Initialize(dxCommon.get(), srvManager.get());
 
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
@@ -13057,8 +13696,8 @@ void Framework::Initialize()
 
 #ifdef _DEBUG
 	//imguiMnagerの初期化
-	imGuiMnager = std::make_unique<ImGuiManager>();
-	imGuiMnager->Initialize(dxCommon.get(), winApp.get());
+	imGuiManager = std::make_unique<ImGuiManager>();
+	imGuiManager->Initialize(dxCommon.get(), winApp.get());
 #endif // _DEBUG
 
 	//sceneManager = std::make_unique<SceneManager>();
@@ -13067,7 +13706,7 @@ void Framework::Initialize()
 void Framework::Finalize()
 {
 #ifdef _DEBUG
-	imGuiMnager->Finalize();
+	imGuiManager->Finalize();
 #endif // DEBUG
 
 	//aoudio解放
@@ -13089,7 +13728,7 @@ void Framework::Finalize()
 	UIeditor::DestroyInstance();
 	
 #ifdef _DEBUG
-	imGuiMnager.reset();
+	imGuiManager.reset();
 #endif // _DEBUG
 
 	Input::GetInstance()->Finalize();
@@ -13169,7 +13808,7 @@ File Path: project/engine/base/Framework.h
 #include "SrvManager.h"
 #include "SceneManager.h"
 #include <SceneFactory.h>
-#include "OfscreenRenderManager.h"
+#include "OffscreenRenderManager.h"
 
 #include "Linecommon.h"
 #include "Line.h"
@@ -13225,10 +13864,10 @@ public:
 	//SrvManagerのポインタ
 	std::unique_ptr<SrvManager> srvManager;
 	//ImGuiManagerのポインタ
-	std::unique_ptr<ImGuiManager> imGuiMnager;
+	std::unique_ptr<ImGuiManager> imGuiManager;
 	//SceneManagerのポインタ
 	std::unique_ptr<AbstractSceneFactory> sceneFactory;
-	std::unique_ptr<OfscreenRenderManager> ofscreenRenderManager;
+	std::unique_ptr<OffscreenRenderManager> offscreenRenderManager;
 
 
 };
@@ -13238,9 +13877,9 @@ public:
 ============================================================
 File Path: project/engine/base/GraphicsPipeline.cpp
 ============================================================
-#include "GraphicsPipeline.h"
+﻿#include "GraphicsPipeline.h"
 #include "Logger.h"
-#include "OfscreenRenderManager.h"
+#include "OffscreenRenderManager.h"
 
 
 
@@ -14432,6 +15071,7 @@ void GraphicsPipeline::Initialize(DirectXCommon* dxCommon)
 
 }
 
+
 ============================================================
 File Path: project/engine/base/GraphicsPipeline.h
 ============================================================
@@ -14816,13 +15456,13 @@ namespace Logger
 
 
 ============================================================
-File Path: project/engine/base/OfscreenRenderManager.cpp
+File Path: project/engine/base/OffscreenRenderManager.cpp
 ============================================================
-#include "OfscreenRenderManager.h"
+#include "OffscreenRenderManager.h"
 #ifdef USE_IMGUI
 #include "imgui.h"
 #endif // USE_IMGUI
-void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
+void OffscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvmanager)
 {
 	dxCommon_ = dxcommon;
 	srvManager_ = srvmanager;
@@ -14853,7 +15493,7 @@ void OfscreenRenderManager::Initialize(DirectXCommon* dxcommon, SrvManager* srvm
 	graphicsPipeline_->CreateAllPostEffects(); 
 }
 
-void OfscreenRenderManager::Begin()
+void OffscreenRenderManager::Begin()
 {
 	if (currentState_ != D3D12_RESOURCE_STATE_RENDER_TARGET) {
 
@@ -14890,7 +15530,7 @@ void OfscreenRenderManager::Begin()
 
 }
 
-void OfscreenRenderManager::End()
+void OffscreenRenderManager::End()
 {
 	if (currentState_ != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE) {
 		D3D12_RESOURCE_BARRIER barrier{};
@@ -14907,7 +15547,7 @@ void OfscreenRenderManager::End()
 
 }
 
-void OfscreenRenderManager::Draw()
+void OffscreenRenderManager::Draw()
 {
 	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipeline_->GetGraphicsPipelineStateCopyImage(currentEffectType_));
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(graphicsPipeline_->GetRootSignatureCopyImage());
@@ -14926,7 +15566,7 @@ void OfscreenRenderManager::Draw()
 
 
 
-Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format)
+Microsoft::WRL::ComPtr<ID3D12Resource> OffscreenRenderManager::CreateRenderTargetTextureResource(uint32_t width, uint32_t height, DXGI_FORMAT format)
 {
 	D3D12_RESOURCE_DESC resouceDesc{ };
 	resouceDesc.Width = width;//Textureの幅
@@ -14966,11 +15606,11 @@ Microsoft::WRL::ComPtr<ID3D12Resource> OfscreenRenderManager::CreateRenderTarget
 	return resource;
 }
 
-void OfscreenRenderManager::DrawImGui()
+void OffscreenRenderManager::DrawImGui()
 {
 #ifdef USE_IMGUI
 
-	ImGui::Begin("OfscreenRenderManager");
+	ImGui::Begin("OffscreenRenderManager");
 	const char* items[] = {
 	   "Fullscreen",
 	   "Grayscale",
@@ -14994,7 +15634,7 @@ void OfscreenRenderManager::DrawImGui()
 
 
 ============================================================
-File Path: project/engine/base/OfscreenRenderManager.h
+File Path: project/engine/base/OffscreenRenderManager.h
 ============================================================
 #pragma once
 #include"DirectXCommon.h"
@@ -15014,7 +15654,7 @@ enum class PostEffectType {
 /// <summary>
 /// オフスクリーンレンダーマネージャー
 /// </summary>
-class OfscreenRenderManager
+class OffscreenRenderManager
 {
 public:
 	/// <summary>
@@ -16352,19 +16992,50 @@ bool Input::TriggerKey(BYTE keyNumber)
 bool Input::PushMouse(int buttonNumber)
 {
 	///押してるとき
+#ifdef USE_IMGUI
+	if (ImGui::GetIO().WantCaptureMouse) {
+		return false;
+	}
+#endif
+
 	if (mouse.rgbButtons[buttonNumber]) {
 		return true;
 	}
+
 	return false;
 }
 
 bool Input::TriggerMouse(int buttonNumber)
 {
-	///押したとき
-	if (mouse.rgbButtons[buttonNumber] && !preMouse.rgbButtons[buttonNumber]) {
+#ifdef USE_IMGUI
+	if (ImGui::GetIO().WantCaptureMouse) {
+		return false;
+	}
+#endif
+
+	if (mouse.rgbButtons[buttonNumber] &&
+		!preMouse.rgbButtons[buttonNumber]) {
+
 		return true;
 	}
+
 	return false;
+}
+
+MouseMove Input::GetMouseMove() const
+{
+#ifdef USE_IMGUI
+	if (ImGui::GetIO().WantCaptureMouse) {
+		return { 0, 0, 0 };
+	}
+#endif
+
+	MouseMove move;
+	move.lX = mouse.lX;
+	move.lY = mouse.lY;
+	move.lZ = mouse.lZ;
+
+	return move;
 }
 
 bool Input::PushGamePadButton(WORD button)
@@ -16443,6 +17114,19 @@ template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 #include <memory>
 #include <Xinput.h>
 #pragma comment(lib, "Xinput.lib")
+
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
+
+/// <summary>
+/// マウス移動量構造体
+/// </summary>
+struct MouseMove {
+	LONG lX;
+	LONG lY;
+	LONG lZ;
+};
 /// <summary>
 /// 入力管理クラス
 /// </summary>
@@ -16458,14 +17142,7 @@ public:
 	Input(Input&) = default;
 	Input& operator=(Input&) = delete;
 
-	/// <summary>
-	/// マウス移動量構造体
-	/// </summary>
-	struct MouseMove {
-		LONG lX;
-		LONG lY;
-		LONG lZ;
-	};
+
 public:
 	/// <summary>
 	/// シングルトンインスタンスの取得
@@ -16516,13 +17193,7 @@ public:
 	//マウスの移動量
 	/// </summary>
 	/// <returns></returns>
-	MouseMove GetMouseMove()const {
-		MouseMove move;
-		move.lX = mouse.lX;
-		move.lY = mouse.lY;
-		move.lZ = mouse.lZ;
-		return move;
-	};
+	MouseMove GetMouseMove()const;
 	/// <summary>
 	//ボタンの入力状態
 	/// </summary>
@@ -18453,14 +19124,14 @@ File Path: project/engine/particle/IParticleBehavior.cpp
 ============================================================
 File Path: project/engine/particle/IParticleBehavior.h
 ============================================================
-#pragma once
+﻿#pragma once
 
-
-#include <random>        
-#include "Vector3.h"
-#include"MyMath.h"
+#include "MyMath.h"
 #include "RenderingData.h"
-struct PerticleParameter {
+#include "Vector3.h"
+#include <random>
+struct PerticleParameter
+{
 	float speedMin_ = 0.3f;
 	float speedMax_ = 1.0f;
 	float spreadY_ = 0.5f;
@@ -18471,29 +19142,34 @@ struct PerticleParameter {
 };
 
 struct Particle;
-struct Material; 
+struct Material;
 class IParticleBehavior
 {
-public:
-	virtual~IParticleBehavior() = default;
+  public:
+	virtual ~IParticleBehavior() = default;
 	// 毎フレームの更新処理
-	virtual void Update(Particle& particle, float dt,  Material* matelialData,float alpha) = 0;
+	virtual void Update(Particle& particle, Material* matelialData, float alpha) = 0;
 	// 新規生成時の初期化（Emitの中で呼ばれる）
-	virtual Particle Create(std::mt19937& rng, const EulerTransform transform,float lifetime) = 0;
+	virtual Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) = 0;
 
+  protected:
+	float lifetime_; // パーティクルの寿命
+	float alpha_;	 // パーティクルの透明度
+	Material* materialData_; // パーティクルのマテリアルデータ
+
+	const float kdt = 1.0f / 60.0f; // デフォルトのデルタタイム
+  public:
 #ifdef USE_IMGUI
 	virtual void DrawImgui(const char* effectName) {}
 #endif
-
 };
-
 
 
 ============================================================
 File Path: project/engine/particle/ParticleBehaviorFactory.cpp
 ============================================================
 #include "ParticleBehaviorFactory.h"
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include "BarrierBreakBehavior.h"
 #include "BarrierRingBehavior.h"
 
@@ -18506,7 +19182,7 @@ std::unique_ptr<IParticleBehavior> ParticleBehaviorFactory::Create(const std::st
     }
     if (name == "Charge") {
 		//chargeビヘイビアを生成して返す
-        return std::make_unique<ChargeBehabiaor>();
+        return std::make_unique<ChargeBehavior>();
     }
     if (name == "ExhaustGas") {
 		//exhaustgasビヘイビアを生成して返す
@@ -18573,12 +19249,12 @@ File Path: project/engine/particle/ParticleEditor.cpp
 ============================================================
 #define NOMINMAX
 #include "ParticleEditor.h"
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "ParticleBehaviorFactory.h"
 #include <algorithm>
 #include <filesystem>
 #include "imgui.h"
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include <cassert>
 #include "CameraManager.h"
 
@@ -18867,7 +19543,7 @@ void ParticleEditor::BehaviorIMGui(const std::string& currentName)
 	if (!behaviorNames.empty()) {
 		// 現在のbehavior型から index 推定
 		std::string currentType = "Explosion";
-		if (dynamic_cast<ChargeBehabiaor*>(currentGroup.behavior.get())) {
+		if (dynamic_cast<ChargeBehavior*>(currentGroup.behavior.get())) {
 			currentType = "Charge";
 		}
 		else if (dynamic_cast<ExhaustGasBehavior*>(currentGroup.behavior.get())) {
@@ -19000,7 +19676,7 @@ File Path: project/engine/particle/ParticleEditor.h
 #include "imgui.h"
 #include <vector>
 #include <string>
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "Line.h"
 
 /// <summary>
@@ -19135,7 +19811,7 @@ File Path: project/engine/particle/ParticleEmitter.h
 #pragma once
 #include <Vector3.h>
 #include <string>
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 
 
 class ParticleEmitter
@@ -19194,9 +19870,9 @@ private:
 
 
 ============================================================
-File Path: project/engine/particle/ParticleMnager.cpp
+File Path: project/engine/particle/ParticleManager.cpp
 ============================================================
-#include "ParticleMnager.h"
+﻿#include "ParticleManager.h"
 #include <ModelManager.h>
 #include <TextureManager.h>
 #include "CameraManager.h"
@@ -19209,7 +19885,7 @@ File Path: project/engine/particle/ParticleMnager.cpp
 
 #include <json.hpp>
 #include <fstream>
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include "ParticleEditor.h"
 
 #include <filesystem>
@@ -19238,7 +19914,7 @@ namespace
 			return std::make_unique<ExplosionBehavior>();
 		}
 		if (name == "Charge") {
-			return std::make_unique<ChargeBehabiaor>();
+			return std::make_unique<ChargeBehavior>();
 		}
 		if (name == "ExhaustGas") {
 			return std::make_unique<ExhaustGasBehavior>();
@@ -19296,7 +19972,7 @@ void ParticleManager::Initialize(DirectXCommon* dxcommn, SrvManager* srvmaneger)
 	graphicsPipeline_->CreateParticle();
 
 
-	//カメラとモデルのTrandform変数
+	//カメラとモデルのTransform変数
 	transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 	//worldMatrix = MyMath::MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 
@@ -19393,7 +20069,7 @@ void ParticleManager::SaveToJson(const std::string& filepath)
 		std::string behaviorTypeStr = "Unknown";
 		if (dynamic_cast<ExplosionBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "Explosion";
-		} else if (dynamic_cast<ChargeBehabiaor*>(group.behavior.get())) {
+		} else if (dynamic_cast<ChargeBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "Charge";
 		} else if (dynamic_cast<ExhaustGasBehavior*>(group.behavior.get())) {
 			behaviorTypeStr = "ExhaustGas";
@@ -19492,7 +20168,7 @@ void ParticleManager::Update()
 			}
 			float alpha1 = 0.5;
 
-			behavior->Update((*particleIterator), 1.0f / 60.0f, particleGroup.materialData, alpha1);
+			behavior->Update((*particleIterator), particleGroup.materialData, alpha1);
 
 			//ローテート
 			Matrix4x4 rotateMatrix = MyMath::MakeRotateMatrix((*particleIterator).transform.rotate);
@@ -19858,7 +20534,7 @@ void ParticleManager::SetBehavior(const std::string& groupName, std::unique_ptr<
 
 
 ============================================================
-File Path: project/engine/particle/ParticleMnager.h
+File Path: project/engine/particle/ParticleManager.h
 ============================================================
 #pragma once
 #include <vector>
@@ -20191,15 +20867,15 @@ void Game::Update()
 	
 #ifdef _DEBUG
 
-	imGuiMnager->Begin();
+	imGuiManager->Begin();
 #endif // _DEBUG
 	//更新
 	Framework::Update();
 
 	
 #ifdef _DEBUG
-	ofscreenRenderManager->DrawImGui();
-	imGuiMnager->End();
+	offscreenRenderManager->DrawImGui();
+	imGuiManager->End();
 #endif // _DEBUG
 }
 
@@ -20207,16 +20883,16 @@ void Game::Draw()
 {
 
 	//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
-	ofscreenRenderManager->Begin();
+	offscreenRenderManager->Begin();
 	srvManager->PreDraw();
 	SceneManager::GetInstance()->Draw();
-	ofscreenRenderManager->End();
+	offscreenRenderManager->End();
 	
 	dxCommon->Begin();
 	//描画
-	ofscreenRenderManager->Draw();
+	offscreenRenderManager->Draw();
 #ifdef _DEBUG
-	imGuiMnager->Draw();
+	imGuiManager->Draw();
 
 #endif // _DEBUG
 	dxCommon->End();
