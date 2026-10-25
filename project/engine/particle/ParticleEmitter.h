@@ -1,7 +1,7 @@
 #pragma once
 #include <Vector3.h>
 #include <string>
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 
 
 class ParticleEmitter

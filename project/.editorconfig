@@ -1,2 +1,18 @@
-[*.{cpp,h,hlsl,hlsli}]
-charset = utf-8
+root = true
+
+[*]
+# 文字コードを BOM付き UTF-8 に統一（Visual Studioでの日本語コメントの文字化け・ビルド警告防止用）
+charset = utf-8-bom
+
+# 改行コードを Windows 標準（CRLF）に統一
+end_of_line = crlf
+
+# インデントにタブを使用、幅は4
+indent_style = tab
+indent_size = 4
+
+# 行末の不要なスペース（ゴミスペース）を保存時に自動削除
+trim_trailing_whitespace = true
+
+# ファイルの末尾に必ず空行を1行挿入する
+insert_final_newline = true

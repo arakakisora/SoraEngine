@@ -1,5 +1,5 @@
 #include "ParticleBehaviorFactory.h"
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include "BarrierBreakBehavior.h"
 #include "BarrierRingBehavior.h"
 
@@ -12,7 +12,7 @@ std::unique_ptr<IParticleBehavior> ParticleBehaviorFactory::Create(const std::st
     }
     if (name == "Charge") {
 		//chargeビヘイビアを生成して返す
-        return std::make_unique<ChargeBehabiaor>();
+        return std::make_unique<ChargeBehavior>();
     }
     if (name == "ExhaustGas") {
 		//exhaustgasビヘイビアを生成して返す

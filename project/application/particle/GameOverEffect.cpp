@@ -1,7 +1,7 @@
 #include "GameOverEffect.h"
 #include "Player.h"
 
-void GameOverEffect::Initialize(Object3D *obj)
+void GameOverEffect::Initialize(Object3D* obj)
 {
 	playerobject3D_ = obj;
 
@@ -13,18 +13,18 @@ void GameOverEffect::Initialize(Object3D *obj)
 	startpos_ = playerobject3D_->GetTransform().translate;
 
 	// 距離・速度などの定数設定
-	jumpPower_ = 0.2f;      // 初速度
-	gravity_ = 0.01f;       // 重力加速度
-	forwardSpeed_ = 0.05f;  // 手前への移動速度
-
-
+	jumpPower_ = 0.2f;	   // 初速度
+	gravity_ = 0.01f;	   // 重力加速度
+	forwardSpeed_ = 0.05f; // 手前への移動速度
 }
 
 void GameOverEffect::Update(float dt)
 {
-	if (!isPlaying_) return;
-	//プレイヤーの位置をエフェクトが見えるようにエックスを真ん中に移動
-	playerobject3D_->SetTranslate({ 13.0f, playerobject3D_->GetTransform().translate.y, playerobject3D_->GetTransform().translate.z });
+	if (!isPlaying_)
+		return;
+	// プレイヤーの位置をエフェクトが見えるようにエックスを真ん中に移動
+	playerobject3D_->SetTranslate(
+		{13.0f, playerobject3D_->GetTransform().translate.y, playerobject3D_->GetTransform().translate.z});
 
 	// 経過時間を更新
 	timer_ += dt;
@@ -40,18 +40,14 @@ void GameOverEffect::Update(float dt)
 
 	float subway = -5.0f; // 地面の高さ
 	// 下限を超えたら停止
-	if (pos.y <= subway) { // 地面より下まで落ちたら終了
+	if (pos.y <= subway)
+	{ // 地面より下まで落ちたら終了
 		pos.y = subway;
 		isPlaying_ = false;
 	}
 
-	playerobject3D_->SetRotate({ 3.0f, timer_ * 10.0f, 0.0f }); // 回転アニメーション
+	playerobject3D_->SetRotate({3.0f, timer_ * 10.0f, 0.0f}); // 回転アニメーション
 	playerobject3D_->SetTranslate(pos);
 	playerobject3D_->Update();
-
 }
-void GameOverEffect::Draw()
-{
-}
-
-
+void GameOverEffect::Draw() {}

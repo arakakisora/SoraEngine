@@ -83,9 +83,22 @@ private:
 	/// Redo操作
 	/// </summary>
 	void Redo();
-
+	/// <summary>
+	/// 選択中のポータルの方向を文字列に変換
+	/// </summary>
+	/// <param name="dir"></param>
+	/// <returns></returns>
 	std::string DirectionToString(const Vector3& dir) const;
+	/// <summary>
+	/// 文字列から方向ベクトルを取得
+	/// </summary>
+	/// <param name="dir"></param>
+	/// <returns></returns>
 	Vector3 DirFromString(const std::string& dir) const;
+	/// <summary>
+	/// 選択中のポータルの方向を取得
+	/// </summary>
+	/// <returns></returns>
 	Vector3 GetSelectedPortalDirection() const;
 
 private:
@@ -98,14 +111,14 @@ private:
 
 
 	// Undo/Redo 用データ構造
-	using Stroke = std::vector<CellEdit>;
+	using Stroke = std::vector<CellEdit>;// ストローク（連続したセル編集の集合）
 	std::vector<Stroke> undoStack_;// 元に戻すスタック
 	std::vector<Stroke> redoStack_;// やり直すスタック
 	Stroke currentStroke_;// 現在のストローク
 	bool isStrokeActive_ = false;// ストロークがアクティブかどうか
 	// すでに記録したセルの重複防止
 	std::vector<std::vector<bool>> strokeVisited_;
-	bool showStagewindow_ = true;
+	bool showStageWindow_ = true;
 
 	int selectedPortalLinkId_ = 0;
 	int selectedPortalDir_ = 0;

@@ -30,9 +30,9 @@ void GameClearScene::Initialize()
 	playerObj = std::make_unique<Object3D>();
 	playerObj->Initialize(Object3DCommon::GetInstance());
 	playerObj->SetModel("player");
-	playerObj->SetLighting(true);
-	playerObj->SetEnableLighting(true);
-	playerObj->SetDirectionalLightEnable(true);
+	playerObj->SetLighting(false);
+	playerObj->SetEnableLighting(false);
+	playerObj->SetDirectionalLightEnable(false);
 
 	// 画面中央に配置
 	basePos_ = { 0.0f, -0.7f, 11.0f };
@@ -114,7 +114,8 @@ void GameClearScene::Update()
 	playerObj->Update();
 
 	// スペースで戻る
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)||Input::GetInstance()->TriggerMouse(0)) {
+		UIeditor::GetInstance()->PlayPressAnimation("GameClear", "click");
 		fadeManager_.StartFadeOut();
 	}
 

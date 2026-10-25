@@ -1,6 +1,6 @@
 #include "Framework.h"
 #include <CameraManager.h>
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "UIeditor.h"
 
 void Framework::Initialize()
@@ -20,8 +20,8 @@ void Framework::Initialize()
 	srvManager = std::make_unique<SrvManager>();
 	srvManager->Initialize(dxCommon.get());
 	//ofscreenRenderManagerの初期化
-	ofscreenRenderManager = std::make_unique<OfscreenRenderManager>();
-	ofscreenRenderManager->Initialize(dxCommon.get(), srvManager.get());
+	offscreenRenderManager = std::make_unique<OffscreenRenderManager>();
+	offscreenRenderManager->Initialize(dxCommon.get(), srvManager.get());
 
 	//テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon.get(), srvManager.get());
@@ -53,8 +53,8 @@ void Framework::Initialize()
 
 #ifdef _DEBUG
 	//imguiMnagerの初期化
-	imGuiMnager = std::make_unique<ImGuiManager>();
-	imGuiMnager->Initialize(dxCommon.get(), winApp.get());
+	imGuiManager = std::make_unique<ImGuiManager>();
+	imGuiManager->Initialize(dxCommon.get(), winApp.get());
 #endif // _DEBUG
 
 	//sceneManager = std::make_unique<SceneManager>();
@@ -63,7 +63,7 @@ void Framework::Initialize()
 void Framework::Finalize()
 {
 #ifdef _DEBUG
-	imGuiMnager->Finalize();
+	imGuiManager->Finalize();
 #endif // DEBUG
 
 	//aoudio解放
@@ -85,7 +85,7 @@ void Framework::Finalize()
 	UIeditor::DestroyInstance();
 	
 #ifdef _DEBUG
-	imGuiMnager.reset();
+	imGuiManager.reset();
 #endif // _DEBUG
 
 	Input::GetInstance()->Finalize();

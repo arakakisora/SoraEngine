@@ -1,0 +1,23 @@
+# どの標準デザインスタイルをベースにするか（LLVM, Google, Chromium, Mozilla, Microsoft など）
+BasedOnStyle: LLVM
+
+# 言語の指定
+Language: Cpp
+
+# インデントにタブを使用するか（Always: 常にタブ, Never: 常にスペース）
+UseTab: Always
+
+# インデント幅（通常 4）
+IndentWidth: 4
+TabWidth: 4
+
+# 1行の文字数上限。これを超えると自動で改行されます。
+# ゲーム開発では数式や関数引数が長くなりがちなため、少し長めの「120」程度が一般的です。
+ColumnLimit: 120
+
+# すべての中括弧 { } を次の行に改行する (Allmanスタイル)
+BreakBeforeBraces: Allman
+
+# ポインタや参照の & や * をどこに寄せるか
+# Leftにすると `Vector3& position`、Rightにすると `Vector3 &position` になります。
+PointerAlignment: Left

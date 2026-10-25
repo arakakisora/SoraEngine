@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include <vector>
 #include <string>
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "Line.h"
 
 /// <summary>

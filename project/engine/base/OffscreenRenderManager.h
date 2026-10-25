@@ -16,7 +16,7 @@ enum class PostEffectType {
 /// <summary>
 /// オフスクリーンレンダーマネージャー
 /// </summary>
-class OfscreenRenderManager
+class OffscreenRenderManager
 {
 public:
 	/// <summary>

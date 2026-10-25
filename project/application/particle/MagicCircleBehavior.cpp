@@ -1,5 +1,5 @@
-#include "MagicCircleBehavior.h"
-#include "ParticleMnager.h"
+﻿#include "MagicCircleBehavior.h"
+#include "ParticleManager.h"
 #include <Input.h>
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -9,7 +9,7 @@
 Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform transform, float lifetime)
 {
 	Particle particle;
-	rng = rng;
+	std::mt19937& rng_ = rng;
 
 	particle.transform.scale = initScale_;
 	particle.transform.rotate = initRotate_;
@@ -21,7 +21,7 @@ Particle MagicCircleBehavior::Create(std::mt19937& rng, const EulerTransform tra
 	return particle;
 }
 
-void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materialData,float alpha)
+void MagicCircleBehavior::Update(Particle& particle, Material* materialData,float alpha)
 {
 	alpha = alpha;
 	// UVスクロール
@@ -30,8 +30,8 @@ void MagicCircleBehavior::Update(Particle& particle, float dt,  Material* materi
 	if (materialData->uvTransform.m[3][0] < 0.0f) materialData->uvTransform.m[3][0] += 1.0f;
 
 	// 位置更新
-	particle.transform.translate += particle.Velocity * dt;
-	particle.currentTime += dt;
+	particle.transform.translate += particle.Velocity * kdt;
+	particle.currentTime += kdt;
 
 	float t = std::clamp(particle.currentTime / particle.lifetime, 0.0f, 1.0f);
 

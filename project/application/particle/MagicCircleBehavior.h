@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "IParticleBehavior.h"
 #include "MyMath.h"
 
@@ -9,7 +9,7 @@ public:
 	
 	Particle Create(std::mt19937& rng, const EulerTransform transform, float lifetime) override;
 		
-	void Update(Particle& particle, float dt, Material* matelialData, float alpha) override;
+	void Update(Particle& particle, Material* matelialData, float alpha) override;
 
 	
 private:

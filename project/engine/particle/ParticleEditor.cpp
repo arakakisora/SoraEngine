@@ -1,11 +1,11 @@
 #define NOMINMAX
 #include "ParticleEditor.h"
-#include "ParticleMnager.h"
+#include "ParticleManager.h"
 #include "ParticleBehaviorFactory.h"
 #include <algorithm>
 #include <filesystem>
 #include "imgui.h"
-#include <ChargeBehabiaor.h>
+#include <ChargeBehavior.h>
 #include <cassert>
 #include "CameraManager.h"
 
@@ -294,7 +294,7 @@ void ParticleEditor::BehaviorIMGui(const std::string& currentName)
 	if (!behaviorNames.empty()) {
 		// 現在のbehavior型から index 推定
 		std::string currentType = "Explosion";
-		if (dynamic_cast<ChargeBehabiaor*>(currentGroup.behavior.get())) {
+		if (dynamic_cast<ChargeBehavior*>(currentGroup.behavior.get())) {
 			currentType = "Charge";
 		}
 		else if (dynamic_cast<ExhaustGasBehavior*>(currentGroup.behavior.get())) {

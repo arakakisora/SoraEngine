@@ -11,6 +11,19 @@ template <class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
 #include <memory>
 #include <Xinput.h>
 #pragma comment(lib, "Xinput.lib")
+
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
+
+/// <summary>
+/// マウス移動量構造体
+/// </summary>
+struct MouseMove {
+	LONG lX;
+	LONG lY;
+	LONG lZ;
+};
 /// <summary>
 /// 入力管理クラス
 /// </summary>
@@ -26,14 +39,7 @@ public:
 	Input(Input&) = default;
 	Input& operator=(Input&) = delete;
 
-	/// <summary>
-	/// マウス移動量構造体
-	/// </summary>
-	struct MouseMove {
-		LONG lX;
-		LONG lY;
-		LONG lZ;
-	};
+
 public:
 	/// <summary>
 	/// シングルトンインスタンスの取得
@@ -84,13 +90,7 @@ public:
 	//マウスの移動量
 	/// </summary>
 	/// <returns></returns>
-	MouseMove GetMouseMove()const {
-		MouseMove move;
-		move.lX = mouse.lX;
-		move.lY = mouse.lY;
-		move.lZ = mouse.lZ;
-		return move;
-	};
+	MouseMove GetMouseMove()const;
 	/// <summary>
 	//ボタンの入力状態
 	/// </summary>

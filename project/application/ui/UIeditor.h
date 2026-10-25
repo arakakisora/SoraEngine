@@ -9,6 +9,11 @@
 #include "SpriteCommon.h"
 #include "Vector2.h"
 
+enum class UIElementType {
+    Image,
+    Rect
+};
+
 class UIeditor {
 public:
     static UIeditor* GetInstance();
@@ -47,6 +52,12 @@ public:
     /// <param name="isPressed"></param>
     void SetPressed(const std::string& sceneId, const std::string& elementName, bool isPressed);
 
+    void SetCount(
+        const std::string& sceneId,
+        const std::string& elementName,
+        int count
+    );
+
 #ifdef _DEBUG
     void DebugImGui();
 #endif
@@ -63,6 +74,15 @@ private:
 		// SpriteはUIエレメントの描画に使用
         std::unique_ptr<Sprite> sprite;
 
+        // UIの種類
+        UIElementType type = UIElementType::Image;
+        // DrawCount用
+        int count = 0;
+        // 数字画像の1文字分のサイズ
+        Vector2 digitTextureSize{ 32.0f, 48.0f };
+        // 数字0が始まる位置
+        Vector2 digitTextureOrigin{ 0.0f, 0.0f };
+
         bool pressAnimEnabled = true;
         // 押した時アニメ
         float pressAnimTime = 0.0f;
@@ -73,6 +93,8 @@ private:
         float currentScale = 1.0f;
         float targetScale = 1.0f;
         float animSpeed = 0.25f;
+
+        
     };
 
     struct UIScene {
@@ -111,8 +133,13 @@ private:
     /// </summary>
     /// <param name="sceneId"></param>
     void AddSceneIfMissing(const std::string& sceneId);
-
-   
+    /// <summary>
+	/// 指定されたシーンIDと要素名に対して、カウント値を設定します
+    /// </summary>
+    /// <param name="sceneId"></param>
+    /// <param name="elementName"></param>
+    /// <param name="count"></param>
+     
 
     void DrawUI(UIElement& element);
   

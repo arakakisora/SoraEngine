@@ -37,15 +37,15 @@ void Game::Update()
 	
 #ifdef _DEBUG
 
-	imGuiMnager->Begin();
+	imGuiManager->Begin();
 #endif // _DEBUG
 	//更新
 	Framework::Update();
 
 	
 #ifdef _DEBUG
-	ofscreenRenderManager->DrawImGui();
-	imGuiMnager->End();
+	offscreenRenderManager->DrawImGui();
+	imGuiManager->End();
 #endif // _DEBUG
 }
 
@@ -53,16 +53,16 @@ void Game::Draw()
 {
 
 	//DirectXの描画準備。すべての描画に共通のグラフィックスコマンドを積む
-	ofscreenRenderManager->Begin();
+	offscreenRenderManager->Begin();
 	srvManager->PreDraw();
 	SceneManager::GetInstance()->Draw();
-	ofscreenRenderManager->End();
+	offscreenRenderManager->End();
 	
 	dxCommon->Begin();
 	//描画
-	ofscreenRenderManager->Draw();
+	offscreenRenderManager->Draw();
 #ifdef _DEBUG
-	imGuiMnager->Draw();
+	imGuiManager->Draw();
 
 #endif // _DEBUG
 	dxCommon->End();
